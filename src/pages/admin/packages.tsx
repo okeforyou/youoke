@@ -38,6 +38,7 @@ interface PackageData {
     features: any;
     isActive: boolean;
     isPopular?: boolean;
+    externalLink?: string; // URL to external product details
     createdAt?: any;
     updatedAt?: any;
 }
@@ -74,7 +75,8 @@ export default function PackagesPage() {
         durationDays: 30,
         planId: 'premium',
         features: {},
-        isActive: true
+        isActive: true,
+        externalLink: ''
     });
     const [featuresJson, setFeaturesJson] = useState('{}');
 
@@ -185,7 +187,8 @@ export default function PackagesPage() {
             price: 0,
             durationDays: 30,
             features: defaultFeatures,
-            isActive: true
+            isActive: true,
+            externalLink: ''
         });
         setFeaturesJson(JSON.stringify(defaultFeatures, null, 4));
     };
@@ -218,6 +221,7 @@ export default function PackagesPage() {
                 features: parsedFeatures,
                 isActive: formData.isActive,
                 isPopular: formData.isPopular || false,
+                externalLink: formData.externalLink || "",
                 updatedAt: serverTimestamp(),
                 createdAt: editMode ? formData.createdAt : serverTimestamp()
             };
@@ -443,6 +447,11 @@ export default function PackagesPage() {
                                     <label className="text-[10px] font-black uppercase text-muted-foreground ml-1">ชื่อแพ็กเกจ</label>
                                     <input type="text" className="w-full bg-muted/40 border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 ring-primary transition-all" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Pro Monthly" />
                                 </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-muted-foreground ml-1">Link รายละเอียดสินค้า (URL)</label>
+                                <input type="text" className="w-full bg-muted/40 border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 ring-primary transition-all" value={formData.externalLink || ''} onChange={e => setFormData({ ...formData, externalLink: e.target.value })} placeholder="https://example.com/product-details" />
                             </div>
 
                             <div className="grid grid-cols-3 gap-6">

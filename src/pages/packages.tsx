@@ -306,7 +306,7 @@ export default function PackagesPage() {
                                         </div>
 
                                         <div className="space-y-3.5 pt-4">
-                                            {KILLER_FEATURES.slice(0, isAnnual ? 8 : 5).map((feature, idx) => (
+                                            {KILLER_FEATURES.map((feature, idx) => (
                                                 <div key={idx} className="flex items-center gap-4">
                                                     <div className={cn(
                                                         "w-5 h-5 rounded-lg flex items-center justify-center flex-shrink-0 border-2",
@@ -324,18 +324,30 @@ export default function PackagesPage() {
                                         </div>
                                     </div>
 
-                                    <button
-                                        onClick={() => handleBuy(pkg)}
-                                        className={cn(
-                                            "mt-10 w-full h-16 rounded-2xl flex items-center justify-center gap-4 font-black text-base transition-all active:scale-95 shadow-lg",
-                                            isPopular
-                                                ? "bg-primary text-white shadow-primary/20 hover:bg-primary/90"
-                                                : "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 shadow-zinc-950/10 dark:shadow-none"
+                                    <div className="mt-10 space-y-3">
+                                        {(pkg as any).externalLink && (
+                                            <button
+                                                onClick={() => window.open((pkg as any).externalLink, '_blank')}
+                                                className="w-full h-14 rounded-2xl flex items-center justify-center gap-3 font-black text-sm transition-all active:scale-95 border-2 border-zinc-100 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                                            >
+                                                <BookOpen className="w-4 h-4" />
+                                                <span>ดูรายละเอียดสินค้า</span>
+                                            </button>
                                         )}
-                                    >
-                                        <span>สมัครแพ็กเกจนี้</span>
-                                        <ChevronRight className="w-5 h-5 stroke-[4]" />
-                                    </button>
+                                        
+                                        <button
+                                            onClick={() => handleBuy(pkg)}
+                                            className={cn(
+                                                "w-full h-16 rounded-2xl flex items-center justify-center gap-4 font-black text-base transition-all active:scale-95 shadow-lg",
+                                                isPopular
+                                                    ? "bg-primary text-white shadow-primary/20 hover:bg-primary/90"
+                                                    : "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 shadow-zinc-950/10 dark:shadow-none"
+                                            )}
+                                        >
+                                            <span>{isLifetime ? 'สั่งซื้อแพ็กเกจนี้' : 'สมัครแพ็กเกจนี้'}</span>
+                                            <ChevronRight className="w-5 h-5 stroke-[4]" />
+                                        </button>
+                                    </div>
                                 </div>
                             );
                         })
