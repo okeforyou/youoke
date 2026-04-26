@@ -214,6 +214,35 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
         }
     };
 
+    const handleDeleteUser = () => {
+        setConfirmModal({
+            isOpen: true,
+            title: "ยืนยันการลบข้อมูล (อันตราย)",
+            message: "คุณกำลังจะลบข้อมูลลูกค้ารายนี้ออกจากฐานข้อมูล การกระทำนี้ไม่สามารถย้อนกลับได้ คุณต้องการดำเนินการต่อหรือไม่?",
+            type: 'danger',
+            confirmText: 'ยืนยันการลบ',
+            onConfirm: async () => {
+                setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                setLocalLoading(true);
+                try {
+                    await AdminService.deleteUser(user.uid);
+                    if (onRefresh) onRefresh();
+                    onClose();
+                } catch (e: any) {
+                    setConfirmModal({
+                        isOpen: true,
+                        title: "เกิดข้อผิดพลาด",
+                        message: e.message,
+                        type: 'danger',
+                        onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+                    });
+                } finally {
+                    setLocalLoading(false);
+                }
+            }
+        });
+    };
+
     const handleSendLineMessage = async () => {
         if (!messageText.trim() || !(user as any).lineUserId) return;
 
@@ -624,6 +653,23 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                                 <p className="text-[11px] text-slate-500 font-medium">ยังไม่มีการเชื่อมต่อบัญชี LINE กับ Gmail นี้</p>
                             </div>
                         )}
+                    </div>
+
+                    {/* 🗑️ v5.5.65: Danger Zone - Manual Cleanup for Duplicates */}
+                    <div className="bg-red-50 rounded-xl border border-red-100 p-4 mt-2">
+                        <label className="text-[10px] font-bold text-red-600 uppercase mb-1 block px-1 flex items-center gap-2">
+                             ⚠️ โซนอันตราย (ลบข้อมูล)
+                        </label>
+                        <p className="text-[9px] text-red-500/70 mb-3 px-1 leading-tight">
+                            * ใช้สำหรับลบข้อมูลที่ซ้ำซ้อน (Ghost Records) การกระทำนี้ไม่สามารถกู้คืนได้
+                        </p>
+                        <button
+                            onClick={handleDeleteUser}
+                            disabled={isLoading}
+                            className="w-full py-3 rounded-lg bg-red-100 text-red-600 text-[11px] font-bold hover:bg-red-200 transition-colors active:scale-95 disabled:opacity-50"
+                        >
+                            ลบข้อมูลลูกค้ารายนี้
+                        </button>
                     </div>
 
                 </div>

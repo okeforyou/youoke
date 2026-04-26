@@ -7,6 +7,7 @@ import {
     orderBy,
     doc,
     updateDoc,
+    deleteDoc,
     getDoc,
     limit,
     getCountFromServer, // Import getCountFromServer
@@ -608,5 +609,17 @@ export const AdminService = {
         });
         if (!response.ok) throw new Error("Status update failed");
         return await response.json();
+    },
+    /**
+     * Delete a user profile from Firestore (Danger Zone)
+     */
+    deleteUser: async (uid: string) => {
+        try {
+            const userRef = doc(db, 'users', uid);
+            await deleteDoc(userRef);
+        } catch (error: any) {
+            console.error('Error deleting user:', error);
+            throw new Error(`ไม่สามารถลบข้อมูลได้: ${error.message}`);
+        }
     }
 };

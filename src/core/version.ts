@@ -1,15 +1,26 @@
-// 🛡️ v5.5.60: Member Shield (Membership Integrity)
+// 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.60";
+export const SYSTEM_VERSION = "5.5.65";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
-export const SYSTEM_CODENAME = "Member-Shield";
+export const SYSTEM_CODENAME = "Admin-Utility";
 
 export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA 
     ? `#${process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA.slice(0, 7)}` 
     : "";
 
 export const CHANGELOGS = [
+    {
+        version: "v5.5.65 (Admin Utility & Remote Polish)",
+        date: "26 เม.ย. 2569",
+        changes: [
+            "FEATURE: Added 'Delete User' button in Admin User Management for manual cleanup of duplicate/orphaned records",
+            "UX: Updated Remote Control to default to Light Mode for better initial visibility",
+            "FIX: Resolved invisible Search and Voice Search icons in Remote Dark Mode by implementing dynamic theme-aware colors",
+            "STABILITY: Reinforced AdminService with safe delete operations",
+        ],
+        recent_updates: "Admin Delete Feature & Remote UI Polish"
+    },
     {
         version: "v5.5.60 (Member Shield)",
         date: "26 เม.ย. 2569",

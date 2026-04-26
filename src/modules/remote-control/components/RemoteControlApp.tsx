@@ -103,7 +103,7 @@ export default function RemoteControlApp() {
 
     const [isSearchOpen, setSearchOpen] = useState(false);
     const [showLocalQr, setShowLocalQr] = useState(false);
-    const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+    const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
     // Toast State
     const [remoteToast, setRemoteToast] = useState<{ message: string, sub: string, type: 'added' | 'upnext' } | null>(null);
@@ -770,7 +770,7 @@ export default function RemoteControlApp() {
                                         : 'bg-gray-100 text-gray-900 focus:ring-2 focus:ring-primary/20 placeholder:text-gray-400'
                                         }`}
                                 />
-                                <div className={`absolute left-4 top-1/2 -translate-y-1/2 text-black`}>
+                                <div className={`absolute left-4 top-1/2 -translate-y-1/2 ${theme === 'dark' ? 'text-gray-500' : 'text-black'}`}>
                                     <Search size={20} strokeWidth={3} />
                                 </div>
                                 {isSearching && (
@@ -781,7 +781,7 @@ export default function RemoteControlApp() {
                                 {isVoiceSupported && (
                                     <button
                                         onClick={toggleListening}
-                                        className={`absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full transition-all active:scale-95 ${isListening ? 'bg-primary text-white shadow-lg shadow-primary/40 animate-pulse' : 'text-black hover:text-primary'
+                                        className={`absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full transition-all active:scale-95 ${isListening ? 'bg-primary text-white shadow-lg shadow-primary/40 animate-pulse' : (theme === 'dark' ? 'text-gray-400 hover:text-primary' : 'text-black hover:text-primary')
                                             }`}
                                     >
                                         <Mic size={20} strokeWidth={3} className={isListening ? 'animate-bounce' : ''} />
