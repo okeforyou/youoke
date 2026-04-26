@@ -228,7 +228,7 @@ export default function PackagesPage() {
                                 </div>
 
                                 {!isTrialActive && (
-                                    <button className="w-full md:w-auto h-14 px-8 bg-white text-emerald-950 rounded-2xl font-black text-base flex items-center justify-center gap-3 transition-all cursor-pointer">
+                                    <button className="w-full md:w-auto h-14 px-8 bg-white text-emerald-950 rounded-2xl font-black text-base flex items-center justify-center gap-3 transition-all cursor-pointer shadow-lg shadow-emerald-900/20">
                                         <Sparkles className="w-5 h-5" />
                                         รับสิทธิ์ฟรีทันที
                                     </button>
@@ -238,72 +238,87 @@ export default function PackagesPage() {
                     </div>
                 )}
 
-                {/* 2. Main Title - Thai High Contrast */}
-                <div className="text-center space-y-3 mb-12">
-                    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-100 dark:bg-zinc-900 text-zinc-950 dark:text-white rounded-xl text-[10px] font-black tracking-widest uppercase border-2 border-zinc-200 dark:border-zinc-800">
-                        <Crown className="w-3 h-3 text-amber-500" />
-                        แพ็กเกจแนะนำ
+                {/* 2. Unified Main Title (Simple & Clean) */}
+                <div className="text-center space-y-4 mb-16">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 text-zinc-950 dark:text-white rounded-2xl text-[10px] font-black tracking-widest uppercase border-2 border-zinc-200 dark:border-zinc-800">
+                        <Crown className="w-4 h-4 text-amber-500" />
+                        YouOKE Premium Store
                     </div>
-                    <h2 className="text-3xl md:text-6xl font-black text-zinc-950 dark:text-white tracking-tighter leading-none">
+                    <h2 className="text-4xl md:text-7xl font-black text-zinc-950 dark:text-white tracking-tighter leading-none">
                         สมัครเป็น <span className="text-primary">สมาชิกพรีเมียม</span>
                     </h2>
-                    <p className="text-zinc-500 font-bold text-xs md:text-base">เลือกแพ็กเกจที่โดนใจ จ่ายครั้งเดียว ร้องเพลงได้ยาวๆ ไม่มีค่าธรรมเนียมแอบแฝง</p>
+                    <p className="text-zinc-500 font-bold text-sm md:text-lg max-w-2xl mx-auto leading-relaxed">
+                        เลือกแพ็กเกจที่โดนใจ ร้องเพลงได้ยาวๆ ไม่มีโฆษณาคั่น <br className="hidden md:block" />
+                        ปลดล็อกความสามารถทั้งหมดเพื่อความบันเทิงระดับมืออาชีพ
+                    </p>
                 </div>
-
-                {/* 3. Ultra Compact Thai Package Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {loading ? (
                         Array.from({ length: 3 }).map((_, i) => (
-                            <div key={i} className="h-72 rounded-[32px] bg-zinc-100 dark:bg-zinc-900 border-2 border-zinc-200 dark:border-zinc-800 animate-pulse" />
+                            <div key={i} className="h-80 rounded-[40px] bg-zinc-100 dark:bg-zinc-900 border-2 border-zinc-200 dark:border-zinc-800 animate-pulse" />
                         ))
                     ) : (
                         packages.filter(p => p.price > 0).map((pkg) => {
-                            const isAnnual = pkg.durationDays >= 300;
-                            const isPopular = pkg.isPopular || isAnnual;
+                            const isAnnual = pkg.durationDays >= 365;
+                            const isLifetime = pkg.durationDays >= 9999;
+                            const isPopular = pkg.isPopular || isAnnual || isLifetime;
+
+                            // Dynamic Label Helper
+                            const getPackageLabel = () => {
+                                if (isLifetime) return "💎 ถาวร / ตลอดชีพ";
+                                if (isAnnual) return "⭐️ รายปี (คุ้มที่สุด)";
+                                if (pkg.durationDays >= 30) return "📱 รายเดือน";
+                                return "⚡️ แพ็กเกจเริ่มต้น";
+                            };
                             
                             return (
                                 <div 
                                     key={pkg.id}
                                     className={cn(
-                                        "group relative flex flex-col h-full rounded-[32px] p-6 transition-all duration-300 border-4",
+                                        "group relative flex flex-col h-full rounded-[40px] p-8 transition-all duration-500 border-2",
                                         isPopular 
-                                            ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 border-zinc-950 dark:border-white z-10" 
-                                            : "bg-white dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800"
+                                            ? "bg-white dark:bg-zinc-900 border-primary/30 shadow-xl shadow-primary/5 ring-4 ring-primary/5" 
+                                            : "bg-white dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800 hover:border-zinc-300"
                                     )}
                                 >
-                                    {isPopular && (
-                                        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-primary text-white rounded-full text-[9px] font-black tracking-widest uppercase flex items-center gap-2 border-4 border-white dark:border-zinc-950 shadow-none">
-                                            🔥 คุ้มค่าที่สุด
-                                        </div>
-                                    )}
+                                    <div className="absolute -top-4 left-8 px-4 py-2 bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 rounded-2xl text-[10px] font-black tracking-widest uppercase flex items-center gap-2 border-4 border-zinc-50 dark:border-zinc-950">
+                                        {getPackageLabel()}
+                                    </div>
 
-                                    <div className="space-y-4 flex-grow">
-                                        <div className="space-y-0.5">
-                                            <p className={cn("text-[9px] font-black uppercase tracking-widest", isPopular ? "text-primary" : "text-zinc-400")}>
-                                                ระดับสมาชิก
+                                    <div className="space-y-6 flex-grow">
+                                        <div className="space-y-1">
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest", isPopular ? "text-primary" : "text-zinc-400")}>
+                                                ระดับสมาชิกพรีเมียม
                                             </p>
-                                            <h3 className="text-2xl font-black tracking-tight">{pkg.name}</h3>
+                                            <h3 className="text-3xl font-black tracking-tight text-zinc-950 dark:text-white leading-none">
+                                                {pkg.name}
+                                            </h3>
                                         </div>
                                         
-                                        <div className="flex flex-col border-t-2 border-dashed border-zinc-100 dark:border-zinc-800 pt-4">
-                                            <div className="flex items-baseline gap-1">
-                                                <span className="text-5xl font-black tracking-tighter text-inherit">฿{pkg.price}</span>
-                                                <span className={cn("text-xs font-black uppercase tracking-widest opacity-40 ml-1")}>
-                                                    /{pkg.durationDays >= 9999 ? 'ตลอดชีพ' : `${pkg.durationDays} วัน`}
+                                        <div className="flex flex-col border-t-2 border-dashed border-zinc-100 dark:border-zinc-800 pt-6">
+                                            <div className="flex items-baseline gap-2">
+                                                <span className="text-6xl font-black tracking-tighter text-zinc-950 dark:text-white">฿{pkg.price}</span>
+                                                <span className="text-[11px] font-black uppercase tracking-widest text-zinc-400">
+                                                    /{isLifetime ? 'ตลอดชีพ' : `${pkg.durationDays} วัน`}
                                                 </span>
                                             </div>
+                                            <p className="text-[11px] font-bold text-zinc-400 mt-2 italic">ชำระเงินครั้งเดียว ใช้งานได้ทันที</p>
                                         </div>
 
-                                        <div className="space-y-2.5 pt-4">
-                                            {KILLER_FEATURES.slice(0, 4).map((feature, idx) => (
-                                                <div key={idx} className="flex items-center gap-3">
+                                        <div className="space-y-3.5 pt-4">
+                                            {KILLER_FEATURES.slice(0, isAnnual ? 8 : 5).map((feature, idx) => (
+                                                <div key={idx} className="flex items-center gap-4">
                                                     <div className={cn(
-                                                        "w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 border",
-                                                        isPopular ? "bg-white text-zinc-950 border-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-400 border-zinc-200 dark:border-zinc-800"
+                                                        "w-5 h-5 rounded-lg flex items-center justify-center flex-shrink-0 border-2",
+                                                        isPopular 
+                                                            ? "bg-primary/10 text-primary border-primary/20" 
+                                                            : "bg-zinc-50 dark:bg-zinc-800 text-zinc-400 border-zinc-100 dark:border-zinc-800"
                                                     )}>
-                                                        <Check className="w-2.5 h-2.5 stroke-[4]" />
+                                                        <Check className="w-3 h-3 stroke-[4]" />
                                                     </div>
-                                                    <span className="text-[12px] font-black">{feature.title}</span>
+                                                    <span className="text-[13px] font-black text-zinc-700 dark:text-zinc-300 tracking-tight">
+                                                        {feature.title}
+                                                    </span>
                                                 </div>
                                             ))}
                                         </div>
@@ -312,14 +327,14 @@ export default function PackagesPage() {
                                     <button
                                         onClick={() => handleBuy(pkg)}
                                         className={cn(
-                                            "mt-6 w-full h-14 rounded-2xl flex items-center justify-center gap-3 font-black text-sm transition-all active:scale-95 shadow-none",
+                                            "mt-10 w-full h-16 rounded-2xl flex items-center justify-center gap-4 font-black text-base transition-all active:scale-95 shadow-lg",
                                             isPopular
-                                                ? "bg-primary text-white border-none"
-                                                : "bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950 border-none"
+                                                ? "bg-primary text-white shadow-primary/20 hover:bg-primary/90"
+                                                : "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 shadow-zinc-950/10 dark:shadow-none"
                                         )}
                                     >
-                                        <ChevronRight className="w-5 h-5 stroke-[3]" />
                                         <span>สมัครแพ็กเกจนี้</span>
+                                        <ChevronRight className="w-5 h-5 stroke-[4]" />
                                     </button>
                                 </div>
                             );

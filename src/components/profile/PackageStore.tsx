@@ -13,6 +13,9 @@ import { UploadSlipModal } from './UploadSlipModal';
 import { LineRequiredModal } from './LineRequiredModal';
 import { useUIStore } from '@/stores/useUIStore';
 
+import { db } from '@/firebase';
+import { collection, query, getDocs, orderBy } from 'firebase/firestore';
+
 interface Package {
     id: string;
     name: string;
@@ -20,23 +23,48 @@ interface Package {
     durationDays: number;
     description?: string;
     isPopular?: boolean;
+    isActive?: boolean;
 }
 
-const PACKAGES: Package[] = [
-    { id: 'trial_1d', name: '1 วัน', price: 0, durationDays: 1, description: 'ทดลองใช้งานเครื่องมือพรีเมียมทั้งหมด' },
-    { id: 'monthly_50', name: '1 เดือน', price: 50, durationDays: 30, description: 'ร้องเพลงไม่อั้น ไม่มีโฆษณาคั่น' },
-    { id: 'yearly_350', name: '1 ปี', price: 350, durationDays: 365, description: 'คุ้มค่าที่สุด สนุกต่อเนื่องยาวนาน' },
-];
-
 export const PackageStore = () => {
+    const [packages, setPackages] = useState<Package[]>([]);
+    const [loading, setLoading] = useState(true);
     const router = useRouter();
     const { user } = useAuthStore();
     const { showConfirm } = useUIStore();
     const [selectedPkg, setSelectedPkg] = useState<Package | undefined>(undefined);
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [showLineModal, setShowLineModal] = useState(false);
-
     const [realProfile, setRealProfile] = useState<any>(null);
+
+    // 🌐 Fetch Dynamic Packages from Firebase
+    useEffect(() => {
+        const fetchPackages = async () => {
+            try {
+                if (!db) return;
+                const q = query(
+                    collection(db, "packages"),
+                    orderBy("price", "asc")
+                );
+
+                const snapshot = await getDocs(q);
+                const pkgList = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                })) as Package[];
+
+                // Filter only active packages
+                const activePackages = pkgList.filter(pkg => pkg.isActive !== false);
+                setPackages(activePackages);
+            } catch (error) {
+                console.error("Error fetching packages:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPackages();
+    }, []);
 
     useEffect(() => {
         if (!user?.uid) return;
@@ -95,15 +123,28 @@ export const PackageStore = () => {
         setSelectedPkg(pkg);
         setShowUploadModal(true);
     };
+    if (loading) {
+        return (
+            <div className="flex flex-col space-y-4">
+                <div className="h-24 rounded-3xl bg-zinc-100 dark:bg-zinc-900 animate-pulse border-2 border-zinc-200 dark:border-zinc-800" />
+                <div className="space-y-3">
+                    <div className="h-32 rounded-3xl bg-zinc-50 dark:bg-zinc-900/50 animate-pulse border-2 border-zinc-100 dark:border-zinc-800" />
+                    <div className="h-32 rounded-3xl bg-zinc-50 dark:bg-zinc-900/50 animate-pulse border-2 border-zinc-100 dark:border-zinc-800" />
+                </div>
+            </div>
+        );
+    }
+
+    const trialPackage = packages.find(p => p.price === 0);
 
     return (
         <div className="flex flex-col space-y-4">
             {/* v5.4: Trial Hero (Thai & Ultra Compact) */}
-            {!hideTrialCard && (
+            {!hideTrialCard && trialPackage && (
                 <div 
                     onClick={() => {
                         if (isTrialActive) return;
-                        handleSelect(PACKAGES[0]);
+                        handleSelect(trialPackage);
                     }}
                     className={cn(
                         "group relative overflow-hidden rounded-3xl p-4 border-2 transition-all",
@@ -138,7 +179,7 @@ export const PackageStore = () => {
             <p className="text-[11px] font-black text-zinc-400 uppercase tracking-widest px-1">เลือกแพ็กเกจ VIP</p>
 
             <div className="space-y-3">
-                {PACKAGES.filter(p => p.price > 0).map((pkg) => {
+                {packages.filter(p => p.price > 0).map((pkg) => {
                     const isPremium = pkg.price > 100;
 
                     return (
@@ -148,14 +189,14 @@ export const PackageStore = () => {
                             className={cn(
                                 "group relative p-5 rounded-3xl border-2 transition-all cursor-pointer active:scale-[0.98]",
                                 isPremium 
-                                    ? "bg-zinc-50 border-purple-100 hover:border-purple-300" 
-                                    : "bg-zinc-50 border-blue-100 hover:border-blue-300"
+                                    ? "bg-zinc-50 border-purple-100 hover:border-purple-300 dark:bg-zinc-900 dark:border-purple-900/30" 
+                                    : "bg-zinc-50 border-blue-100 hover:border-blue-300 dark:bg-zinc-900 dark:border-blue-900/30"
                             )}
                         >
                             <div className="flex justify-between items-start mb-4">
                                 <div>
                                     <div className="flex items-center gap-2 mb-1">
-                                        <h4 className="text-xl font-black text-zinc-950 tracking-tight">{pkg.name}</h4>
+                                        <h4 className="text-xl font-black text-zinc-950 dark:text-white tracking-tight">{pkg.name}</h4>
                                         <span className={cn(
                                             "px-2 py-0.5 rounded-lg text-[9px] font-black text-white uppercase",
                                             isPremium ? "bg-purple-500" : "bg-blue-500"
@@ -174,15 +215,15 @@ export const PackageStore = () => {
                                 </div>
                             </div>
 
-                            <div className="pt-4 border-t border-dashed border-zinc-200 flex items-center justify-between">
+                            <div className="pt-4 border-t border-dashed border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
                                 <div className="flex items-baseline gap-1">
                                     <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest block mb-0.5">ราคาแพ็กเกจ</p>
                                     <div className="flex items-baseline gap-1">
-                                        <span className="text-2xl font-black text-zinc-950">฿{pkg.price}</span>
+                                        <span className="text-2xl font-black text-zinc-950 dark:text-white">฿{pkg.price}</span>
                                         <span className="text-[10px] font-bold text-zinc-400">/ ครั้งเดียว</span>
                                     </div>
                                 </div>
-                                <div className="px-3 py-1.5 rounded-full bg-white border border-zinc-100 flex items-center gap-1.5">
+                                <div className="px-3 py-1.5 rounded-full bg-white dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 flex items-center gap-1.5">
                                     <ShieldCheckIcon className="w-3.5 h-3.5 text-emerald-500" />
                                     <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">ชำระเงินปลอดภัย</span>
                                 </div>
