@@ -1,15 +1,26 @@
-// 🛡️ v5.5.58: Split Shield (Stability Hardening)
+// 🛡️ v5.5.60: Member Shield (Membership Integrity)
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.58";
+export const SYSTEM_VERSION = "5.5.60";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
-export const SYSTEM_CODENAME = "Production-Diagnostics";
+export const SYSTEM_CODENAME = "Member-Shield";
 
 export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA 
     ? `#${process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA.slice(0, 7)}` 
     : "";
 
 export const CHANGELOGS = [
+    {
+        version: "v5.5.60 (Member Shield)",
+        date: "26 เม.ย. 2569",
+        changes: [
+            "RELIABILITY: Implemented Lifetime Membership Shield to prevent automatic downgrades",
+            "FIX: Unified membership schema across Admin and Omise payment systems",
+            "PERFORMANCE: Upgraded Admin Search with Smart Query (Email/UID detection) to reduce reads",
+            "DATA: Prevented membership data loss by migrating to dot-notation updates",
+        ],
+        recent_updates: "Membership Integrity & Search Optimization"
+    },
     {
         version: "v5.5.58 (Split Shield)",
         date: "16 เม.ย. 2569",

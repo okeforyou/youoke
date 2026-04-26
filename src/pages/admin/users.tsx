@@ -247,15 +247,36 @@ export default function AdminUsersPage() {
             
             let q;
             if (term) {
-                // 🛡️ Optimized Search: Search by exact UID or Starts-with prefix
-                // Note: Firestore doesn't support full-text search, but "prefix" works well
-                q = query(
-                    collection(db, "users"), 
-                    orderBy("displayName"), 
-                    where("displayName", ">=", term),
-                    where("displayName", "<=", term + '\uf8ff'),
-                    limit(50)
-                );
+                // 🛡️ v5.5.60: Smart Query Detection (Quota Optimized)
+                const cleanTerm = term.trim();
+                
+                if (cleanTerm.includes('@')) {
+                    // 1. Exact Email Search (Cost: 1 Read)
+                    console.log("🔍 Searching by Email:", cleanTerm);
+                    q = query(
+                        collection(db, "users"), 
+                        where("email", "==", cleanTerm.toLowerCase()),
+                        limit(50)
+                    );
+                } else if (cleanTerm.length >= 20 && !cleanTerm.includes(' ')) {
+                    // 2. Potential UID Search (Cost: 1 Read)
+                    console.log("🔍 Searching by UID:", cleanTerm);
+                    q = query(
+                        collection(db, "users"), 
+                        where("uid", "==", cleanTerm),
+                        limit(50)
+                    );
+                } else {
+                    // 3. Name Prefix Search (Case Sensitive - Fallback)
+                    console.log("🔍 Searching by Name Prefix:", cleanTerm);
+                    q = query(
+                        collection(db, "users"), 
+                        orderBy("displayName"), 
+                        where("displayName", ">=", cleanTerm),
+                        where("displayName", "<=", cleanTerm + '\uf8ff'),
+                        limit(50)
+                    );
+                }
             } else {
                 // Default: Latest 50 users (prevents 1000+ read operations per refresh)
                 q = query(collection(db, "users"), orderBy("createdAt", "desc"), limit(50));

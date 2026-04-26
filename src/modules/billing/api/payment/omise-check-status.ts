@@ -56,16 +56,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     }
 
                     if (adminFirestore) {
-                        await adminFirestore.collection('users').doc(userId).set({
-                            membership: {
-                                type: 'pro', // or vip, depending on mapping
-                                status: 'active',
-                                sku: packageId,
-                                packageName: packageName || 'Premium',
-                                expiryDate: expiryDate.toISOString(),
-                                updatedAt: new Date().toISOString()
-                            }
-                        }, { merge: true });
+                        const lowPkgId = packageId.toLowerCase();
+                        let membershipType = 'monthly';
+                        if (lowPkgId.includes('year')) membershipType = 'yearly';
+                        if (lowPkgId.includes('life') || lowPkgId.includes('perman')) membershipType = 'lifetime';
+
+                        // 🛡️ v5.5.50: Use dot notation to prevent overwriting other membership fields (like startedAt)
+                        await adminFirestore.collection('users').doc(userId).update({
+                            'membership.type': membershipType,
+                            'membership.status': 'active',
+                            'membership.sku': packageId,
+                            'membership.packageName': packageName || 'Premium',
+                            'membership.expiresAt': membershipType === 'lifetime' ? null : expiryDate,
+                            'membership.updatedAt': new Date(),
+                            'isPremium': true,
+                            'tier': membershipType,
+                            'updatedAt': new Date()
+                        });
                     }
 
                     // Log Proof

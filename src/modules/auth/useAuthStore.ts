@@ -292,8 +292,15 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                 const userData = userSnap.data();
                                 let membership = userData.membership || DEFAULT_MEMBERSHIP;
 
-                                // 🛡️ SERVER-SIDE VALIDATION: CHECK EXPIRY
-                                if (membership.expiresAt) {
+                                // 🛡️ v5.5.55: EXPLICIT SHIELD - Never downgrade Lifetime/Permanent members
+                                if (membership.type === 'lifetime' || membership.type === 'permanent' || userData.tier === 'lifetime') {
+                                    console.log('👑 [AuthStore] Lifetime Member Detected. Skipping Expiry Guard.');
+                                    // Ensure status stays active
+                                    if (membership.status !== 'active') {
+                                        const { updateDoc } = await import('firebase/firestore');
+                                        updateDoc(userRef, { 'membership.status': 'active' }).catch(e => console.error('Status repair failed', e));
+                                    }
+                                } else if (membership.expiresAt) {
                                     const expiry = membership.expiresAt.toDate ? membership.expiresAt.toDate() : new Date(membership.expiresAt);
                                     const now = new Date();
                                     const isExpired = now > expiry;
