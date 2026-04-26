@@ -1,4 +1,6 @@
 import { apiClient } from "../lib/api-client";
+import { safeSplit } from "./stringUtils";
+
 
 import {
   GetArtists,
@@ -145,7 +147,7 @@ export const cleanSearchQuery = (q: any): string => {
      "channel", "subscribe", "sub", "karaoke", "คาราโอเกะ", "ศิลปิน", "เพลง"
   ]);
 
-  const words = cleaned.split(/\s+/).filter(word => {
+  const words = safeSplit(cleaned, /\s+/).filter(word => {
     const lowerWord = word.toLowerCase();
     
     // Skip if it's in noise list

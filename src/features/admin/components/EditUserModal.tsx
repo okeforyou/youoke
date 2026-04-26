@@ -3,6 +3,7 @@ import { XMarkIcon, ShieldCheckIcon, StarIcon, ClipboardIcon, UserIcon, ChartBar
 import Link from 'next/link';
 import { cn } from "../../../utils/cn";
 import { AdminService } from '../services/adminService';
+import { safeSplit } from '@/utils/stringUtils';
 import { ConfirmModal } from './ConfirmModal';
 import { db } from '../../../firebase';
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
@@ -52,13 +53,13 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
     const [editName, setEditName] = useState(user.displayName || '');
     const [startedAt, setStartedAt] = useState<string>(
         user.membership?.startedAt 
-            ? (user.membership.startedAt.toDate ? user.membership.startedAt.toDate().toISOString().split('T')[0] : new Date(user.membership.startedAt).toISOString().split('T')[0]) 
-            : ''
+            ? (user.membership.startedAt.toDate ? safeSplit(user.membership.startedAt.toDate().toISOString(), 'T')[0] : safeSplit(new Date(user.membership.startedAt).toISOString(), 'T')[0]) 
+            : safeSplit(new Date().toISOString(), 'T')[0]
     );
     const [expiresAt, setExpiresAt] = useState<string>(
         user.membership?.expiresAt 
-            ? (user.membership.expiresAt.toDate ? user.membership.expiresAt.toDate().toISOString().split('T')[0] : new Date(user.membership.expiresAt).toISOString().split('T')[0]) 
-            : ''
+            ? (user.membership.expiresAt.toDate ? safeSplit(user.membership.expiresAt.toDate().toISOString(), 'T')[0] : safeSplit(new Date(user.membership.expiresAt).toISOString(), 'T')[0]) 
+            : safeSplit(new Date().toISOString(), 'T')[0]
     );
     const [savingDates, setSavingDates] = useState(false);
     const [messageText, setMessageText] = useState('');

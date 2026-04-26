@@ -9,6 +9,7 @@ import { playerService } from "../services/playerService";
 import { YouTubeAdapter } from "../adapters/YouTubeAdapter";
 import { useSystemConfig } from "../../../hooks/useSystemConfig";
 import { useUIStore } from "../../../stores/useUIStore";
+import { safeSplit } from '@/utils/stringUtils';
 
 import { useShallow } from 'zustand/react/shallow';
 import { QuotaIndicator } from "./QuotaIndicator";
@@ -527,7 +528,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                     <span className="text-[10px] font-black text-white/80 uppercase tracking-widest flex items-center gap-1.5">
                         <LockClosedIcon className="w-3 h-3 text-primary" />
                         <span className="max-w-[120px] truncate hidden sm:inline-block">
-                            {user.youtubeEmail || (typeof user.email === 'string' ? user.email.split('@')[0] : 'USER')}
+                            {user.youtubeEmail || (typeof user.email === 'string' ? safeSplit(user.email, '@')[0] : 'USER')}
                         </span>
                         <span className="sm:hidden">SHELLED</span>
                     </span>

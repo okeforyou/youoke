@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSystemConfig } from '../../../hooks/useSystemConfig';
+import { safeSplit } from '@/utils/stringUtils';
 import { DEFAULT_CONFIG } from '../../../services/systemConfigService';
 import { useAuthStore } from '@/modules/auth/useAuthStore';
 import { useUIStore } from '../../../stores/useUIStore';
@@ -55,7 +56,7 @@ export const usePlayerLifecycle = (currentSource: string | null, showDjOverlay: 
     // Initial Load
     useEffect(() => {
         if (typeof window !== 'undefined') {
-            const today = new Date().toISOString().split('T')[0];
+            const today = safeSplit(new Date().toISOString(), 'T')[0];
             const storageKey = `daily_songs_${today}`;
             setDailyCount(parseInt(localStorage.getItem(storageKey) || '0'));
         }
@@ -66,7 +67,7 @@ export const usePlayerLifecycle = (currentSource: string | null, showDjOverlay: 
         if (!currentSource || showDjOverlay) return;
 
         // 1. Determine local source of truth
-        const today = new Date().toISOString().split('T')[0];
+        const today = safeSplit(new Date().toISOString(), 'T')[0];
         const storageKey = `daily_songs_${today}`;
         
         let currentCount = 0;

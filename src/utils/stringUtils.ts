@@ -62,6 +62,6 @@ export const safeStartsWith = (str: any, search: string): boolean => {
  */
 export const safeArtistName = (name: any): string => {
     if (typeof name !== 'string') return "";
-    const clean = name.includes(' (') ? name.split(' (')[0] : name;
+    const clean = name.includes(' (') ? safeSplit(name, ' (')[0] : name;
     return clean.trim();
 };

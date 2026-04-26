@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { safeSplit } from '@/utils/stringUtils';
 import { PlayerState, Video, QueueItem, PlayerStore } from '../types';
 // Enhance type definition inline if not editing types file, or assume it's merged.
 // Actually I need to verify where PlayerStore is defined.
@@ -303,7 +304,7 @@ export const usePlayerStore = create<PlayerStore>()(
                 // v5.5.36: Bypass check if skipQuota is requested (Trusted Remote/Internal)
                 if (!skipQuota) {
                     const authUser = useAuthStore.getState().user;
-                    const today = new Date().toISOString().split('T')[0];
+                    const today = safeSplit(new Date().toISOString(), 'T')[0];
                     const storageKey = `daily_songs_${today}`;
                     
                     let currentUsed = 0;
@@ -411,7 +412,7 @@ export const usePlayerStore = create<PlayerStore>()(
             setCurrentIndex: (index) => set((state) => {
                 // 🛡️ [GATEKEEPER] v4.9.63: Enforce quota on manual song switch
                 const authUser = useAuthStore.getState().user;
-                const today = new Date().toISOString().split('T')[0];
+                const today = safeSplit(new Date().toISOString(), 'T')[0];
                 const storageKey = `daily_songs_${today}`;
                 
                 let currentUsed = 0;

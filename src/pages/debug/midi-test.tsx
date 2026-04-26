@@ -1,5 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useMidiEngine } from '@/context/MidiEngineContext';
+import { useAuthStore } from '@/modules/auth/useAuthStore';
+import { safeSplit } from '@/utils/stringUtils';
+import { useSystemConfig } from '@/hooks/useSystemConfig';
 import { EmkParser } from '@/utils/EmkParser';
 import { decodeThai } from '../../utils/textDecoder';
 import { extractLyrics, LyricEvent } from '../../utils/MidiLyricsParser';
@@ -39,7 +42,7 @@ export default function MidiTestPage() {
     // Enhanced Search Logic (Space-separated terms)
     const filteredSongs = useMemo(() => {
         if (!searchTerm.trim()) return songList;
-        const terms = searchTerm.toLowerCase().split(/\s+/).filter(t => t.length > 0);
+        const terms = safeSplit(searchTerm.toLowerCase(), /\s+/).filter(t => t.length > 0);
 
         return songList.filter(s => {
             const nameLower = s.name.toLowerCase();
@@ -373,13 +376,13 @@ export default function MidiTestPage() {
                                 {filteredSongs.slice(0, 100).map((song, i) => (
                                     <tr key={i} className="hover:bg-white/5 transition-colors">
                                         <td className="px-4 py-3 text-green-400 font-mono">
-                                            {song.name.split('.')[0].substring(0, 6)}
+                                            {safeSplit(song.name, '.')[0].substring(0, 6)}
                                         </td>
                                         <td className="px-4 py-3 font-medium text-gray-200">
                                             {song.name.replace(/\.[^/.]+$/, "")}
                                         </td>
                                         <td className="px-4 py-3 text-center text-gray-500">
-                                            {song.name.split('.').pop()?.toUpperCase()}
+                                            {safeSplit(song.name, '.').pop()?.toUpperCase()}
                                         </td>
                                         <td className="px-4 py-3">
                                             <button

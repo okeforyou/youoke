@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/features/admin/layouts/AdminLayout';
 import { useSystemConfig } from '../../hooks/useSystemConfig';
+import { safeSplit } from "@/utils/stringUtils";
 import { updateSystemConfig, DEFAULT_CONFIG } from '../../services/systemConfigService';
 import ConfigToggle from '@/features/admin/components/ConfigToggle';
 import {
@@ -707,7 +708,7 @@ export default function AdminConfigPage() {
                                                     ...localConfig.integrations!,
                                                     youtube: {
                                                         ...localConfig.integrations!.youtube,
-                                                        apiKeys: e.target.value.split(',').map(k => k.trim()).filter(k => k)
+                                                        apiKeys: safeSplit(e.target.value, ',').map(k => k.trim()).filter(k => k)
                                                     }
                                                 }
                                             })}
