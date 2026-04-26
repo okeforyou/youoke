@@ -85,7 +85,7 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
 
             // 4. v4.9.28: Premium Flex Messaging Architecture (Minimal & Clean)
             const adminLineId = "Ub8ea2b9830c838a8df71333dee79c0dd"; // Verified Admin ID
-            const magicLink = `${window.location.origin}/admin/users?uid=${user.uid}`;
+            const magicLink = `${window.location.origin}/admin/users?uid=${user.uid}&openExternalBrowser=1`;
             const refId = paymentId.slice(-8).toUpperCase();
             const qrUrl = `${window.location.origin}/img/scb-qr.jpg`;
             
