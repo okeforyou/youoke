@@ -191,9 +191,15 @@ export default async function handler(
           const data = cacheDoc.data();
           if (data && data.charts && data.charts.length > 0) {
             const cacheTotalSongs = data.charts.reduce((sum: number, c: any) => sum + (c.singles?.length || 0), 0);
-            debugLog(`[CACHE FALLBACK] Found cache doc. cacheTotalSongs = ${cacheTotalSongs}`);
-            if (cacheTotalSongs > 0) {
-              debugLog("⚡ Serving JOOX charts from Firestore Cache as fallback!");
+            
+            // Check if all 4 allowed charts are present and contain songs
+            const isCacheComplete = allowedCharts.every(allowed => 
+              data.charts.some((c: any) => c.id === allowed.id && Array.isArray(c.singles) && c.singles.length > 0)
+            );
+
+            debugLog(`[CACHE FALLBACK] Found cache doc. cacheTotalSongs = ${cacheTotalSongs}, isCacheComplete = ${isCacheComplete}`);
+            if (isCacheComplete) {
+              debugLog("⚡ Serving complete JOOX charts from Firestore Cache as fallback!");
               res.setHeader("Cache-Control", "no-store");
               return res.status(200).json({ 
                   status: "success", 
@@ -201,6 +207,8 @@ export default async function handler(
                   fallback: true,
                   staleAt: data.updatedAt 
               });
+            } else {
+              debugLog("⚠️ Cache is incomplete (missing some charts or songs), falling through to fresh API recovery...");
             }
           }
         } else {
