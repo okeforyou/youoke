@@ -237,39 +237,93 @@ export default async function handler(
     }
 
     // 2. Fallback to YouTube Music Playlists (Automated Sync)
-    if (totalSongs === 0 && youtubeKeys.length > 0) {
+    if (totalSongs === 0) {
       try {
         debugLog("⚠️ JOOX & Firestore cache empty, attempting YouTube Music playlists automated sync...");
         
-        const fetchYouTubePlaylist = async (playlistId: string, apiKey: string) => {
+        const fetchYouTubePlaylist = async (playlistId: string) => {
+          // A. Try API Key if available
+          if (youtubeKeys && youtubeKeys.length > 0) {
+             try {
+                const apiKey = youtubeKeys[0];
+                const axios = (await import("axios")).default;
+                const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=20&playlistId=${playlistId}&key=${apiKey}`;
+                const response = await axios.get(url);
+                const items = response.data.items || [];
+                
+                if (items.length > 0) {
+                   debugLog(`[YOUTUBE PLAYLIST] Fetched ${items.length} items using API Key.`);
+                   return items.map((item: any) => {
+                      const snippet = item.snippet || {};
+                      const title = snippet.title || "";
+                      const channelTitle = snippet.videoOwnerChannelTitle || snippet.channelTitle || "";
+                      const videoId = snippet.resourceId?.videoId || "";
+                      const coverImageURL = snippet.thumbnails?.high?.url || snippet.thumbnails?.medium?.url || snippet.thumbnails?.default?.url || "";
+                      
+                      return {
+                         id: videoId,
+                         title: title.replace(/Official MV/i, "").replace(/\[.*?\]/g, "").replace(/\(.*?\)/g, "").trim(),
+                         artist_name: channelTitle.replace(/ - Topic$/i, "").replace(/Official$/i, "").trim() || "Unknown Artist",
+                         coverImageURL: coverImageURL
+                      };
+                   }).filter((item: any) => item.id && item.title);
+                }
+             } catch (apiErr: any) {
+                debugLog(`[YOUTUBE PLAYLIST] API Key fetch failed: ${apiErr.message}, falling back to anonymous RSS...`);
+             }
+          }
+          
+          // B. Try anonymous RSS feed scraper (no developer key or quota required!)
           try {
              const axios = (await import("axios")).default;
-             const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=20&playlistId=${playlistId}&key=${apiKey}`;
-             const response = await axios.get(url);
-             const items = response.data.items || [];
+             const url = `https://www.youtube.com/feeds/videos.xml?playlist_id=${playlistId}`;
+             const response = await axios.get(url, {
+               headers: {
+                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
+               }
+             });
+             const xml = response.data;
+             const entries = xml.match(/<entry>[\s\S]*?<\/entry>/g) || [];
              
-             return items
-                .map((item: any) => {
-                   const snippet = item.snippet || {};
-                   const title = snippet.title || "";
-                   const channelTitle = snippet.videoOwnerChannelTitle || snippet.channelTitle || "";
-                   const videoId = snippet.resourceId?.videoId || "";
-                   const coverImageURL = snippet.thumbnails?.high?.url || snippet.thumbnails?.medium?.url || snippet.thumbnails?.default?.url || "";
+             if (entries.length > 0) {
+                debugLog(`[YOUTUBE PLAYLIST] Fetched ${entries.length} items using RSS anonymously.`);
+                return entries.map((entry: string) => {
+                   const videoIdMatch = entry.match(/<yt:videoId>([\s\S]*?)<\/yt:videoId>/);
+                   const titleMatch = entry.match(/<title>([\s\S]*?)<\/title>/);
+                   const authorMatch = entry.match(/<name>([\s\S]*?)<\/name>/);
+                   const thumbnailMatch = entry.match(/<media:thumbnail[^>]*url="([^"]+)"/);
                    
-                   const artistName = channelTitle.replace(/ - Topic$/i, "").replace(/Official$/i, "").trim() || "Unknown Artist";
+                   const videoId = videoIdMatch ? videoIdMatch[1].trim() : "";
+                   let title = titleMatch ? titleMatch[1].trim() : "";
+                   let artistName = authorMatch ? authorMatch[1].trim() : "Unknown Artist";
+                   const coverImageURL = thumbnailMatch ? thumbnailMatch[1] : `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+                   
+                   title = title
+                      .replace(/&amp;/g, "&")
+                      .replace(/&lt;/g, "<")
+                      .replace(/&gt;/g, ">")
+                      .replace(/&quot;/g, '"')
+                      .replace(/&#39;/g, "'")
+                      .replace(/Official MV/i, "")
+                      .replace(/\[.*?\]/g, "")
+                      .replace(/\(.*?\)/g, "")
+                      .trim();
+                      
+                   artistName = artistName.replace(/&amp;/g, "&").replace(/ - Topic$/i, "").replace(/Official$/i, "").trim();
                    
                    return {
-                      id: videoId, // DIRECT VIDEO ID! Plays instantly!
-                      title: title.replace(/Official MV/i, "").replace(/\[.*?\]/g, "").replace(/\(.*?\)/g, "").trim(),
+                      id: videoId,
+                      title: title,
                       artist_name: artistName,
                       coverImageURL: coverImageURL
                    };
-                })
-                .filter((item: any) => item.id && item.title);
-          } catch (err: any) {
-             debugLog(`[YOUTUBE PLAYLIST] Error fetching ${playlistId}: ${err.message}`);
-             return null;
+                }).filter((song: any) => song.id && song.title);
+             }
+          } catch (rssErr: any) {
+             debugLog(`[YOUTUBE PLAYLIST] RSS fetch failed: ${rssErr.message}`);
           }
+          
+          return null;
         };
 
         const playlistMappings = [
@@ -279,10 +333,9 @@ export default async function handler(
           { id: 57, name: "THTOP100 2024", playlistId: youtubeChartsConfig?.evergreen || "PLMC9KNkIncKvYin_USF1qoIQ7dfyOPAKr" }
         ];
 
-        const apiKey = youtubeKeys[0];
         const ytResults = await Promise.all(playlistMappings.map(async (chart) => {
            debugLog(`[YOUTUBE PLAYLIST] Syncing ${chart.name} (${chart.playlistId})...`);
-           const singles = await fetchYouTubePlaylist(chart.playlistId, apiKey);
+           const singles = await fetchYouTubePlaylist(chart.playlistId);
            if (singles && singles.length > 0) {
               return {
                  id: chart.id,

@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.79";
+export const SYSTEM_VERSION = "5.5.80";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
 
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
 
 export const CHANGELOGS = [
+    {
+        version: "v5.5.80 (Zero-API-Key Automated Charts Scraper)",
+        date: "17 พ.ค. 2569",
+        changes: [
+            "FEAT: Overhauled YouTube Music Playlists Sync to run anonymously (without developer API keys/quotas) using a highly resilient, official RSS feed parsing pipeline.",
+            "UX: Guaranteed 100% automated background syncing out-of-the-box regardless of whether the admin has configured custom API keys.",
+            "RELIABILITY: Maintained the visual visual charts override dashboard as a hybrid fallback."
+        ],
+        recent_updates: "Zero-API-Key Automated Charts Scraper"
+    },
     {
         version: "v5.5.79 (Automated YouTube Music Playlists Sync)",
         date: "17 พ.ค. 2569",
