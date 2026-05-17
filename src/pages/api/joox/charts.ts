@@ -410,100 +410,27 @@ export default async function handler(
         ];
 
         // Fetch playlists strictly sequentially to avoid concurrent InnerTube rate limits or session collisions
-        const ytResults = [];
-        for (const chart of playlistMappings) {
-           debugLog(`[YOUTUBE PLAYLIST] Syncing ${chart.name} (${chart.playlistId})...`);
-           const singles = await fetchYouTubePlaylist(chart.playlistId);
-           if (singles && singles.length > 0) {
-              ytResults.push({
-                 id: chart.id,
-                 name: chart.name,
-                 singles: singles
-              });
-           }
-           // 300ms polite delay to preserve session health
-           await new Promise(resolve => setTimeout(resolve, 300));
-        }
-
-        const validYtCharts = ytResults.filter(c => c !== null && c.singles.length > 0);
-        if (validYtCharts.length > 0) {
-           finalCharts = validYtCharts;
-           totalSongs = finalCharts.reduce((sum, c) => sum + (c.singles?.length || 0), 0);
-           debugLog(`✅ YouTube Music Playlists Sync Successful! Loaded ${totalSongs} live songs across ${finalCharts.length} charts.`);
-        }
-      } catch (ytErr: any) {
-        debugLog(`❌ YouTube Music Playlists sync failed: ${ytErr.message}`);
-      }
-    }
-
-    // 3. Fallback to Spotify Curated Playlists
-    if (totalSongs === 0) {
-      try {
-        debugLog("⚠️ JOOX & Firestore cache empty, attempting Spotify curated playlists fallback...");
-        const { getAccessToken } = await import("@/modules/spotify-theme/services/auth");
-        const accessToken = await getAccessToken().catch((err: any) => {
-          debugLog(`[SPOTIFY] getAccessToken caught error: ${err.message}`);
-          return null;
-        });
-        debugLog(`[SPOTIFY] accessToken exists = ${!!accessToken}`);
-        if (accessToken) {
-          const axios = (await import("axios")).default;
-          const spotifyCharts = [
-            { id: 42, name: "Thailand Top 100", playlistId: "3oLUwlQTdzsCkTK72wCbv9" },
-            { id: 128, name: "อันดับเพลงใหม่", playlistId: "37i9dQZF1DX4F65Zr44g7e" },
-            { id: 133, name: "อันดับเพลงมาแรง", playlistId: "37i9dQZF1DXcBWDOXla6n6" },
-            { id: 57, name: "THTOP100 2024", playlistId: "37i9dQZF1DX5E5X2d19tQG" }
-          ];
-
-          const spotifyResults = await Promise.all(spotifyCharts.map(async (chart) => {
-             try {
-                debugLog(`[SPOTIFY] Fetching playlist ${chart.name} (${chart.playlistId})...`);
-                const response = await axios.get(`https://api.spotify.com/v1/playlists/${chart.playlistId}/tracks`, {
-                   headers: { Authorization: `Bearer ${accessToken}` }
-                });
-                const tracks = response.data.items || [];
-                const singles = tracks
-                   .filter((item: any) => item?.track)
-                   .map((item: any) => {
-                      const track = item.track;
-                      return {
-                         id: track.id,
-                         title: track.name,
-                         artist_name: track.artists.map((a: any) => a.name).join(", "),
-                         coverImageURL: track.album?.images?.[0]?.url || ""
-                      };
-                   })
-                   .slice(0, 30);
-                
-                debugLog(`[SPOTIFY] Playlist ${chart.name} parsed successfully with ${singles.length} songs.`);
-                return {
-                   id: chart.id,
-                   name: chart.name,
-                   singles
-                };
-             } catch (err: any) {
-                debugLog(`[SPOTIFY] Fetch failed for ${chart.name}: ${err.message}`);
-                return null;
-             }
-          }));
-          
-          const validSpotifyCharts = spotifyResults.filter(c => c !== null && c.singles.length > 0);
-          if (validSpotifyCharts.length > 0) {
-             finalCharts = validSpotifyCharts;
-             totalSongs = finalCharts.reduce((sum, c) => sum + (c.singles?.length || 0), 0);
-             debugLog(`✅ Spotify Fallback Successful! Fetched ${totalSongs} songs across ${finalCharts.length} charts.`);
-          }
-        }
-      } catch (spotifyErr: any) {
-        debugLog(`❌ Spotify fallback failed: ${spotifyErr.message}`);
-      }
-    }
-
-    // 3. Fallback to Premium Curated Thai Singles (100% เพลงเดี่ยวยอดฮิต)
-    if (totalSongs === 0) {
-      try {
-        debugLog("⚠️ Spotify fallback failed, activating Premium Curated Thai Singles fallback (100% เพลงเดี่ยว)...");
+        // And implement a per-chart dynamic fallback to Spotify and Curated lists
         
+        // 1. Prepare Spotify access token beforehand to be reused across fallback channels
+        let spotifyToken: string | null = null;
+        try {
+          const { getAccessToken } = await import("@/modules/spotify-theme/services/auth");
+          spotifyToken = await getAccessToken().catch((err: any) => {
+            debugLog(`[SPOTIFY] getAccessToken caught error: ${err.message}`);
+            return null;
+          });
+        } catch (tokenErr: any) {
+          debugLog(`[SPOTIFY] Failed to initialize Spotify auth: ${tokenErr.message}`);
+        }
+        
+        const spotifyChartsMap: Record<number, string> = {
+          42: "3oLUwlQTdzsCkTK72wCbv9", // Thailand Top 100
+          128: "37i9dQZF1DX4F65Zr44g7e", // อันดับเพลงใหม่
+          133: "37i9dQZF1DXcBWDOXla6n6", // อันดับเพลงมาแรง
+          57: "37i9dQZF1DX5E5X2d19tQG"   // THTOP100 2024
+        };
+
         const curatedCharts = [
           {
             id: 42,
@@ -591,13 +518,82 @@ export default async function handler(
           }
         ];
 
-        finalCharts = curatedCharts;
+        const syncedCharts = [];
+        for (const chart of playlistMappings) {
+           let chartSingles: any[] = [];
+           debugLog(`[SYNC-ORCHESTRATOR] Syncing chart: ${chart.name} (ID: ${chart.id})...`);
+           
+           // Step A: YouTube Playlist Sync
+           try {
+              debugLog(`[YOUTUBE PLAYLIST] Syncing ${chart.name} (${chart.playlistId})...`);
+              const ytSingles = await fetchYouTubePlaylist(chart.playlistId);
+              if (ytSingles && ytSingles.length > 0) {
+                 chartSingles = ytSingles;
+                 debugLog(`[YOUTUBE PLAYLIST] youtubei.js Sync Successful! Loaded ${chartSingles.length} songs.`);
+              }
+           } catch (ytErr: any) {
+              debugLog(`[YOUTUBE PLAYLIST] Sync failed for ${chart.name}: ${ytErr.message}`);
+           }
+           
+           // Step B: Spotify Fallback Sync (Run only if YouTube failed)
+           if (chartSingles.length === 0 && spotifyToken) {
+              const spotifyPlaylistId = spotifyChartsMap[chart.id];
+              if (spotifyPlaylistId) {
+                 try {
+                    debugLog(`[SPOTIFY] Falling back for ${chart.name} (${spotifyPlaylistId})...`);
+                    const axios = (await import("axios")).default;
+                    const response = await axios.get(`https://api.spotify.com/v1/playlists/${spotifyPlaylistId}/tracks`, {
+                       headers: { Authorization: `Bearer ${spotifyToken}` }
+                    });
+                    const tracks = response.data.items || [];
+                    const spotifySingles = tracks
+                       .filter((item: any) => item?.track)
+                       .map((item: any) => {
+                          const track = item.track;
+                          return {
+                             id: track.id,
+                             title: track.name,
+                             artist_name: track.artists.map((a: any) => a.name).join(", "),
+                             coverImageURL: track.album?.images?.[0]?.url || ""
+                          };
+                       })
+                       .slice(0, 30);
+                    
+                    if (spotifySingles.length > 0) {
+                       chartSingles = spotifySingles;
+                       debugLog(`[SPOTIFY] Fallback Successful! Loaded ${chartSingles.length} songs from Spotify.`);
+                    }
+                 } catch (spotErr: any) {
+                    debugLog(`[SPOTIFY] Fallback failed for ${chart.name}: ${spotErr.message}`);
+                 }
+              }
+           }
+           
+           // Step C: Premium Curated Fallback Sync (Run only if both failed)
+           if (chartSingles.length === 0) {
+              debugLog(`[CURATED] Falling back to Premium Curated list for ${chart.name}...`);
+              const curatedChart = curatedCharts.find(c => c.id === chart.id);
+              if (curatedChart && curatedChart.singles && curatedChart.singles.length > 0) {
+                 chartSingles = curatedChart.singles;
+                 debugLog(`[CURATED] Fallback Successful! Loaded ${chartSingles.length} curated songs.`);
+              }
+           }
+           
+           if (chartSingles.length > 0) {
+              syncedCharts.push({
+                 id: chart.id,
+                 name: chart.name,
+                 singles: chartSingles
+              });
+           }
+           
+           // 300ms polite delay to preserve session health
+           await new Promise(resolve => setTimeout(resolve, 300));
+        }
+
+        finalCharts = syncedCharts;
         totalSongs = finalCharts.reduce((sum, c) => sum + (c.singles?.length || 0), 0);
-        debugLog(`✅ Premium Curated Thai Singles Fallback Successful! Fetched ${totalSongs} songs across ${finalCharts.length} charts.`);
-      } catch (curatedErr: any) {
-        debugLog(`❌ Premium Curated Thai Singles fallback failed: ${curatedErr.message}`);
-      }
-    }
+        debugLog(`✅ Unified Charts Sync Successful! Loaded ${totalSongs} total songs across ${finalCharts.length} active charts.`);
 
     debugLog(`[FINAL] totalSongs = ${totalSongs}, finalCharts count = ${finalCharts.length}`);
 

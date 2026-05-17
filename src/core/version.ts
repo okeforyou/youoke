@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.86";
+export const SYSTEM_VERSION = "5.5.87";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "v5.5.87 (Resilient Per-Chart Dynamic Fallback Orchestration)",
+        date: "17 พ.ค. 2569",
+        changes: [
+            "FIX: Overhauled the backend charts sync pipeline to use a Per-Chart isolated fallback strategy rather than an all-or-nothing check. Now, a failing YouTube playlist will individually trigger fallbacks (Spotify / Premium Curated) for that specific chart without affecting others.",
+            "RELIABILITY: Resolved the issue where a single active chart from YouTube prevented the other three failed charts from calling their fallbacks, ensuring all 4 categories populate with high-fidelity songs 100% of the time.",
+            "PERFORMANCE: Ensured complete, non-empty database caching to Firestore during cron or manual triggers."
+        ],
+        recent_updates: "Resilient Per-Chart Dynamic Fallback Orchestration"
+    },
     {
         version: "v5.5.86 (Dynamic Chart Selection & Auto-Eviction of Empty Categories)",
         date: "17 พ.ค. 2569",
