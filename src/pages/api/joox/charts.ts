@@ -163,25 +163,132 @@ export default async function handler(
     const results = await Promise.all(allowedCharts.map(c => fetchChart(c)));
     let finalCharts = results.filter(c => c !== null);
 
-    const totalSongs = finalCharts.reduce((sum, c) => sum + (c.singles?.length || 0), 0);
+    let totalSongs = finalCharts.reduce((sum, c) => sum + (c.singles?.length || 0), 0);
 
-    // If fetching failed OR returned 0 songs, try to serve ANY available cache as fallback
+    // 1. Fallback to Firestore Cache
     if (totalSongs === 0 && adminFirestore) {
-      const cacheDoc = await adminFirestore.collection('system_cache').doc('joox_charts').get();
-      if (cacheDoc.exists) {
-        const data = cacheDoc.data();
-        if (data && data.charts && data.charts.length > 0) {
-          const cacheTotalSongs = data.charts.reduce((sum: number, c: any) => sum + (c.singles?.length || 0), 0);
-          if (cacheTotalSongs > 0) {
-            res.setHeader("Cache-Control", "no-store");
-            return res.status(200).json({ 
-                status: "success", 
-                charts: data.charts, 
-                fallback: true,
-                staleAt: data.updatedAt 
-            });
+      try {
+        console.log("🔍 Checking Firestore cache for JOOX charts (Fallback Mode)...");
+        const cacheDoc = await adminFirestore.collection('system_cache').doc('joox_charts').get();
+        if (cacheDoc.exists) {
+          const data = cacheDoc.data();
+          if (data && data.charts && data.charts.length > 0) {
+            const cacheTotalSongs = data.charts.reduce((sum: number, c: any) => sum + (c.singles?.length || 0), 0);
+            if (cacheTotalSongs > 0) {
+              console.log("⚡ Serving JOOX charts from Firestore Cache as fallback!");
+              res.setHeader("Cache-Control", "no-store");
+              return res.status(200).json({ 
+                  status: "success", 
+                  charts: data.charts, 
+                  fallback: true,
+                  staleAt: data.updatedAt 
+              });
+            }
           }
         }
+      } catch (err) {
+        console.error("❌ Failed to read Firestore cache fallback:", err);
+      }
+    }
+
+    // 2. Fallback to Spotify Curated Playlists
+    if (totalSongs === 0) {
+      try {
+        console.log("⚠️ JOOX & Firestore cache empty, attempting Spotify curated playlists fallback...");
+        const { getAccessToken } = await import("@/modules/spotify-theme/services/auth");
+        const accessToken = await getAccessToken().catch(() => null);
+        if (accessToken) {
+          const axios = (await import("axios")).default;
+          const spotifyCharts = [
+            { id: 42, name: "Thailand Top 100", playlistId: "3oLUwlQTdzsCkTK72wCbv9" },
+            { id: 128, name: "อันดับเพลงใหม่", playlistId: "37i9dQZF1DX4F65Zr44g7e" },
+            { id: 133, name: "อันดับเพลงมาแรง", playlistId: "37i9dQZF1DXcBWDOXla6n6" },
+            { id: 57, name: "THTOP100 2024", playlistId: "37i9dQZF1DX5E5X2d19tQG" }
+          ];
+
+          const spotifyResults = await Promise.all(spotifyCharts.map(async (chart) => {
+             try {
+                const response = await axios.get(`https://api.spotify.com/v1/playlists/${chart.playlistId}/tracks`, {
+                   headers: { Authorization: `Bearer ${accessToken}` }
+                });
+                const tracks = response.data.items || [];
+                const singles = tracks
+                   .filter((item: any) => item?.track)
+                   .map((item: any) => {
+                      const track = item.track;
+                      return {
+                         id: track.id,
+                         title: track.name,
+                         artist_name: track.artists.map((a: any) => a.name).join(", "),
+                         coverImageURL: track.album?.images?.[0]?.url || ""
+                      };
+                   })
+                   .slice(0, 30);
+                
+                return {
+                   id: chart.id,
+                   name: chart.name,
+                   singles
+                };
+             } catch (err: any) {
+                console.error(`Spotify fetch failed for ${chart.name}:`, err.message);
+                return null;
+             }
+          }));
+          
+          const validSpotifyCharts = spotifyResults.filter(c => c !== null && c.singles.length > 0);
+          if (validSpotifyCharts.length > 0) {
+             finalCharts = validSpotifyCharts;
+             totalSongs = finalCharts.reduce((sum, c) => sum + (c.singles?.length || 0), 0);
+             console.log(`✅ Spotify Fallback Successful! Fetched ${totalSongs} songs across ${finalCharts.length} charts.`);
+          }
+        }
+      } catch (spotifyErr: any) {
+        console.error("❌ Spotify fallback failed:", spotifyErr.message);
+      }
+    }
+
+    // 3. Fallback to YouTube Search Scraper
+    if (totalSongs === 0) {
+      try {
+        console.log("⚠️ Spotify fallback failed or not configured, attempting YouTube search scraper fallback...");
+        const { scrapeYouTubeSearch } = await import("@/utils/youtubeScraper");
+        
+        const youtubeCharts = [
+          { id: 42, name: "Thailand Top 100", query: "เพลงไทยฮิตล่าสุด 2026" },
+          { id: 128, name: "อันดับเพลงใหม่", query: "เพลงใหม่ล่าสุด 2026" },
+          { id: 133, name: "อันดับเพลงมาแรง", query: "เพลงใหม่มาแรง 2026" },
+          { id: 57, name: "THTOP100 2024", query: "เพลงไทยฮิตตลอดกาล" }
+        ];
+
+        const ytResults = await Promise.all(youtubeCharts.map(async (chart) => {
+           try {
+              const results = await scrapeYouTubeSearch(chart.query);
+              const singles = results.slice(0, 30).map(item => ({
+                 id: item.videoId,
+                 title: item.title,
+                 artist_name: item.author || "YouTube Music",
+                 coverImageURL: item.videoThumbnails?.[0]?.url || item.videoThumbnails?.[1]?.url || ""
+              }));
+              return {
+                 id: chart.id,
+                 name: chart.name,
+                 singles
+              };
+           } catch (err: any) {
+              console.error(`YouTube fetch failed for ${chart.name}:`, err.message);
+              return null;
+           }
+        }));
+        
+        const validYtCharts = ytResults.filter(c => c !== null && c.singles.length > 0);
+        if (validYtCharts.length > 0) {
+           finalCharts = validYtCharts;
+           totalSongs = finalCharts.reduce((sum, c) => sum + (c.singles?.length || 0), 0);
+           console.log(`✅ YouTube Fallback Successful! Fetched ${totalSongs} songs across ${finalCharts.length} charts.`);
+        }
+      } catch (ytErr: any) {
+        console.error("❌ YouTube fallback failed:", ytErr.message);
       }
     }
 

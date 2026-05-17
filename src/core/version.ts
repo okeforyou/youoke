@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.70";
+export const SYSTEM_VERSION = "5.5.71";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
 
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
 
 export const CHANGELOGS = [
+    {
+        version: "v5.5.71 (Fail-Safe Song Charts)",
+        date: "17 พ.ค. 2569",
+        changes: [
+            "API: Upgraded /api/joox/charts into a 4-layer fail-safe architecture (JOOX Scraper -> Firestore Cache -> Spotify Playlists -> YouTube Search)",
+            "RELIABILITY: Resolved empty/blank charts screen by automatically failing over to Spotify Curated Playlists & YouTube Scraper Search",
+            "SYNC: Automatically caches fallback results back to Firestore to ensure ultra-fast future deliveries"
+        ],
+        recent_updates: "Fail-Safe Song Charts (Spotify & YouTube Fallbacks)"
+    },
     {
         version: "v5.5.70 (Lifetime & Auth Hardening)",
         date: "17 พ.ค. 2569",
