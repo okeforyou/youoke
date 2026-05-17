@@ -1,15 +1,38 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.66";
+export const SYSTEM_VERSION = "5.5.70";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
-export const SYSTEM_CODENAME = "Split-Shield-Omega";
+export const SYSTEM_CODENAME = "Premium-Unified-Omega";
 
 export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA 
     ? `#${process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA.slice(0, 7)}` 
     : "";
 
 export const CHANGELOGS = [
+    {
+        version: "v5.5.70 (Lifetime & Auth Hardening)",
+        date: "17 พ.ค. 2569",
+        changes: [
+            "STABILITY: Implemented Active Self-Healing Lifetime Member Shield in useAuthStore.ts to automatically align Firestore and RTDB states",
+            "UX: Centralized professional authentication error mapping in login.tsx to display polite Thai message for disabled accounts",
+            "SYNC: Unified state self-healing to actively protect lifetime members from accidental downgrades"
+        ],
+        recent_updates: "Lifetime Self-Healing Shield & Custom Auth Mapping"
+    },
+    {
+        version: "v5.5.69 (Premium Unified Omega)",
+        date: "26 เม.ย. 2569",
+        changes: [
+            "DESIGN: Redesigned /packages page with Clean Premium UI to match Profile Drawer",
+            "SYNC: Implemented dynamic Firestore package fetching for both Profile and Shop (removed hardcoded data)",
+            "ADMIN: Added 'External Product Link' support to Admin Packages manager with auto-sync to Firestore",
+            "UX: Added 'View Product Details' button for packages with external links (e.g., Bluetooth speakers)",
+            "LINE: Forced Admin Magic Link to open in external browser (Safari/Chrome) using openExternalBrowser=1",
+            "STABILITY: Final polish on Split Shield Omega to prevent g.split errors across all dynamic modules"
+        ],
+        recent_updates: "Unified Premium Design & Admin Link Power-up"
+    },
     {
         version: "v5.5.66 (Split Shield Omega)",
         date: "26 เม.ย. 2569",

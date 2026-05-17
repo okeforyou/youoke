@@ -292,13 +292,71 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                 const userData = userSnap.data();
                                 let membership = userData.membership || DEFAULT_MEMBERSHIP;
 
-                                // 🛡️ v5.5.55: EXPLICIT SHIELD - Never downgrade Lifetime/Permanent members
-                                if (membership.type === 'lifetime' || membership.type === 'permanent' || userData.tier === 'lifetime') {
-                                    console.log('👑 [AuthStore] Lifetime Member Detected. Skipping Expiry Guard.');
-                                    // Ensure status stays active
-                                    if (membership.status !== 'active') {
+                                // 👑 [HARDENED LIFETIME SHIELD] - Ultimate active self-healing
+                                const isLifetime = membership?.type === 'lifetime' || 
+                                                   membership?.type === 'permanent' || 
+                                                   userData.tier === 'lifetime' ||
+                                                   (membership?.expiresAt === null && membership?.type && !['free', 'trial', 'day_pass'].includes(membership.type));
+
+                                if (isLifetime) {
+                                    console.log('👑 [AuthStore] Lifetime Member Shield Activated. Auto-healing...');
+                                    
+                                    // 1. Force the correct values in client-side state memory
+                                    membership = {
+                                        ...membership,
+                                        type: 'lifetime',
+                                        status: 'active',
+                                        expiresAt: null
+                                    };
+                                    userData.isPremium = true;
+                                    userData.tier = 'lifetime';
+                                    if (userData.role !== 'admin' && userData.role !== 'owner') {
+                                        userData.role = 'premium';
+                                    }
+
+                                    // 2. Self-heal Firestore if out of sync
+                                    const needsFirestoreHealing = 
+                                        userData.membership?.type !== 'lifetime' ||
+                                        userData.membership?.status !== 'active' ||
+                                        userData.membership?.expiresAt !== null ||
+                                        userData.isPremium !== true ||
+                                        userData.tier !== 'lifetime' ||
+                                        (userData.role !== 'admin' && userData.role !== 'owner' && userData.role !== 'premium');
+
+                                    if (needsFirestoreHealing) {
+                                        console.log('🩹 [AuthStore] Healing Lifetime data in Firestore...');
                                         const { updateDoc } = await import('firebase/firestore');
-                                        updateDoc(userRef, { 'membership.status': 'active' }).catch(e => console.error('Status repair failed', e));
+                                        updateDoc(userRef, {
+                                            'membership.type': 'lifetime',
+                                            'membership.status': 'active',
+                                            'membership.expiresAt': null,
+                                            isPremium: true,
+                                            tier: 'lifetime',
+                                            role: userData.role
+                                        }).catch(e => console.error('Firestore lifetime repair failed', e));
+                                    }
+
+                                    // 3. Self-heal Realtime DB if out of sync
+                                    if (realtimeDb) {
+                                        const rtdbPath = `users/${firebaseUser.uid}`;
+                                        const needsRtdbHealing = 
+                                            !rtdbData ||
+                                            rtdbData.role !== userData.role ||
+                                            rtdbData.tier !== 'lifetime' ||
+                                            rtdbData.subscription?.plan !== 'lifetime' ||
+                                            rtdbData.subscription?.status !== 'active' ||
+                                            rtdbData.subscription?.endDate !== null;
+
+                                        if (needsRtdbHealing) {
+                                            console.log('🩹 [AuthStore] Healing Lifetime data in RealtimeDB...');
+                                            rtdbUpdate(ref(realtimeDb, rtdbPath), {
+                                                role: userData.role,
+                                                tier: 'lifetime',
+                                                'subscription/plan': 'lifetime',
+                                                'subscription/status': 'active',
+                                                'subscription/endDate': null
+                                            }).catch(e => console.error('RTDB lifetime repair failed', e));
+                                        }
                                     }
                                 } else if (membership.expiresAt) {
                                     const expiry = membership.expiresAt.toDate ? membership.expiresAt.toDate() : new Date(membership.expiresAt);

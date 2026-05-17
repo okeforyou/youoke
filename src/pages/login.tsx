@@ -23,6 +23,21 @@ import {
 import { useSystemConfig } from '../hooks/useSystemConfig';
 import clsx from 'clsx';
 
+const getFriendlyErrorMessage = (err: any): string => {
+    if (!err) return 'เกิดข้อผิดพลาดในการเชื่อมต่อ';
+    const code = err.code || err.message;
+    if (code === 'auth/invalid-credential' || code === 'auth/user-not-found' || code === 'auth/wrong-password') {
+        return 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
+    }
+    if (code === 'auth/email-already-in-use') {
+        return 'อีเมลนี้ถูกใช้งานแล้ว';
+    }
+    if (code === 'auth/user-disabled' || (err.message && err.message.includes('user-disabled'))) {
+        return 'บัญชีนี้หมดอายุการใช้งาน/มีปัญหา กรุณาติดต่อ Admin เพื่อดำเนินการแก้ไข';
+    }
+    return err.message || 'เกิดข้อผิดพลาดในการเชื่อมต่อ';
+};
+
 export default function LoginPage() {
     const router = useRouter();
     const { user, signInWithGoogle, linkGoogleAccount, signInWithLine, signInWithCustomToken, signIn, signUp, error, isLoading } = useAuthStore();
@@ -151,13 +166,7 @@ export default function LoginPage() {
                 await signUp(email, password);
             }
         } catch (err: any) {
-            let msg = err.message;
-            if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
-                msg = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
-            } else if (err.code === 'auth/email-already-in-use') {
-                msg = 'อีเมลนี้ถูกใช้งานแล้ว';
-            }
-            setLocalError(msg);
+            setLocalError(getFriendlyErrorMessage(err));
             setIsSubmitting(false);
         }
     };
@@ -168,7 +177,7 @@ export default function LoginPage() {
         const action = user ? linkGoogleAccount() : signInWithGoogle();
         action.catch((err: any) => {
             setIsSubmitting(false);
-            setLocalError(err.message || 'การเชื่อมต่อ Google ล้มเหลว');
+            setLocalError(getFriendlyErrorMessage(err));
         });
     };
 
