@@ -20,5 +20,9 @@
 - **Utility:** `src/utils/stringUtils.ts` (มี `safeSplit` ที่ต้องใช้เสมอ)
 - **Cast Engine:** `src/services/CastService.ts` (หัวใจของการ Sync ระหว่างอุปกรณ์)
 
+## 4. บันทึกคำสั่งพิเศษ (Special Shorthands & Shortcuts)
+- **`skill open design`**: เมื่อผู้ใช้เรียกใช้งานคำสั่งนี้ ให้ดำเนินการอัปเกรด/ปรับดีไซน์ของ Component หรือหน้าเพจนั้นๆ ให้สอดคล้องกับมาตรฐาน **Open Design Core Directives (Zero Shadows, Border-Based Separation, Flat Highlights, Denser Layouts)** และหลักเกณฑ์ใน `pure-flat-design.md` ทันทีโดยไม่ต้องอธิบายทฤษฎีซ้ำ
+
 ---
 **เป้าหมายถัดไป:** พร้อมสลับไปทำโปรเจกต์อื่น หรือเริ่มลุย Phase 1 ของร้านค้า (Native Player)
+
