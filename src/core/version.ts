@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.78";
+export const SYSTEM_VERSION = "5.5.79";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
 
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
 
 export const CHANGELOGS = [
+    {
+        version: "v5.5.79 (Automated YouTube Music Playlists Sync)",
+        date: "17 พ.ค. 2569",
+        changes: [
+            "FEAT: Implemented 100% automated, hands-free charts sync using YouTube Music's official playlists (e.g. Thailand Top 100, New T-Pop, Trending) as a primary background pipeline.",
+            "UX: Bypassed all manual effort and Spotify/JOOX developer lockdowns, giving admins the best of both worlds—automatic background playlist syncing or custom visual editing overrides.",
+            "FEAT: Embedded custom YouTube Playlist ID input fields directly in the Integrations tab of the Admin panel."
+        ],
+        recent_updates: "Automated YouTube Music Playlists Sync"
+    },
     {
         version: "v5.5.78 (Visual Charts Manager UI)",
         date: "17 พ.ค. 2569",

@@ -751,6 +751,90 @@ export default function AdminConfigPage() {
                                         ></textarea>
                                         <p className="text-xs text-gray-400 mt-1">ใสหลายคีย์ได้ ระบบจะวนใช้ให้อัตโนมัติ</p>
                                     </div>
+
+                                    {/* YouTube Music Charts Playlists */}
+                                    <div className="border-t pt-4 space-y-4">
+                                        <h4 className="font-bold text-sm text-gray-700">ชาร์ตเพลงอัตโนมัติ (YouTube Music Playlists)</h4>
+                                        <p className="text-xs text-gray-400 font-medium">ใส่ ID ของ YouTube Playlist เพื่อดึงเพลงฮิตอัตโนมัติ (เว้นว่างไว้เพื่อใช้ค่าเริ่มต้นของระบบ)</p>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="form-control">
+                                                <label className="label text-xs font-bold text-gray-500 uppercase pb-1">Top 100 Playlist ID</label>
+                                                <input
+                                                    type="text"
+                                                    className="input input-bordered input-sm w-full font-mono text-xs rounded-lg"
+                                                    placeholder="เช่น PLRhRrJscB-C7OA83mRjBr9RHdw1jNk2Aa"
+                                                    value={localConfig.integrations?.youtubeCharts?.top100 ?? ''}
+                                                    onChange={(e) => setLocalConfig({
+                                                        ...localConfig,
+                                                        integrations: {
+                                                            ...localConfig.integrations!,
+                                                            youtubeCharts: {
+                                                                ...(localConfig.integrations?.youtubeCharts || {}),
+                                                                top100: e.target.value.trim()
+                                                            }
+                                                        }
+                                                    })}
+                                                />
+                                            </div>
+                                            <div className="form-control">
+                                                <label className="label text-xs font-bold text-gray-500 uppercase pb-1">เพลงใหม่ Playlist ID</label>
+                                                <input
+                                                    type="text"
+                                                    className="input input-bordered input-sm w-full font-mono text-xs rounded-lg"
+                                                    placeholder="เช่น PLRhRrJscB-C6x26E-R2xZPrsV8m-WnslU"
+                                                    value={localConfig.integrations?.youtubeCharts?.newSongs ?? ''}
+                                                    onChange={(e) => setLocalConfig({
+                                                        ...localConfig,
+                                                        integrations: {
+                                                            ...localConfig.integrations!,
+                                                            youtubeCharts: {
+                                                                ...(localConfig.integrations?.youtubeCharts || {}),
+                                                                newSongs: e.target.value.trim()
+                                                            }
+                                                        }
+                                                    })}
+                                                />
+                                            </div>
+                                            <div className="form-control">
+                                                <label className="label text-xs font-bold text-gray-500 uppercase pb-1">เพลงมาแรง Playlist ID</label>
+                                                <input
+                                                    type="text"
+                                                    className="input input-bordered input-sm w-full font-mono text-xs rounded-lg"
+                                                    placeholder="เช่น PLRhRrJscB-C4T4pT8Vw9w9p4pS8g0N_5d"
+                                                    value={localConfig.integrations?.youtubeCharts?.trending ?? ''}
+                                                    onChange={(e) => setLocalConfig({
+                                                        ...localConfig,
+                                                        integrations: {
+                                                            ...localConfig.integrations!,
+                                                            youtubeCharts: {
+                                                                ...(localConfig.integrations?.youtubeCharts || {}),
+                                                                trending: e.target.value.trim()
+                                                            }
+                                                        }
+                                                    })}
+                                                />
+                                            </div>
+                                            <div className="form-control">
+                                                <label className="label text-xs font-bold text-gray-500 uppercase pb-1">ฮิตตลอดกาล Playlist ID</label>
+                                                <input
+                                                    type="text"
+                                                    className="input input-bordered input-sm w-full font-mono text-xs rounded-lg"
+                                                    placeholder="เช่น PLMC9KNkIncKvYin_USF1qoIQ7dfyOPAKr"
+                                                    value={localConfig.integrations?.youtubeCharts?.evergreen ?? ''}
+                                                    onChange={(e) => setLocalConfig({
+                                                        ...localConfig,
+                                                        integrations: {
+                                                            ...localConfig.integrations!,
+                                                            youtubeCharts: {
+                                                                ...(localConfig.integrations?.youtubeCharts || {}),
+                                                                evergreen: e.target.value.trim()
+                                                            }
+                                                        }
+                                                    })}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">

@@ -45,6 +45,23 @@ export default async function handler(
       { id: 57, name: "THTOP100 2024" }
     ];
 
+    let youtubeKeys: string[] = [];
+    let youtubeChartsConfig: any = null;
+
+    if (adminFirestore) {
+      try {
+        const configDoc = await adminFirestore.collection('settings').doc('default').get();
+        if (configDoc.exists) {
+          const configData = configDoc.data();
+          youtubeKeys = configData?.integrations?.youtube?.apiKeys || [];
+          youtubeChartsConfig = configData?.integrations?.youtubeCharts || null;
+          debugLog(`[SETTINGS] Loaded ${youtubeKeys.length} YouTube API Keys.`);
+        }
+      } catch (err: any) {
+        debugLog(`❌ Failed to read settings config: ${err.message}`);
+      }
+    }
+
     if (adminFirestore && !force) {
       try {
         console.log("🔍 Checking Firestore cache for JOOX charts...");
@@ -219,7 +236,75 @@ export default async function handler(
       }
     }
 
-    // 2. Fallback to Spotify Curated Playlists
+    // 2. Fallback to YouTube Music Playlists (Automated Sync)
+    if (totalSongs === 0 && youtubeKeys.length > 0) {
+      try {
+        debugLog("⚠️ JOOX & Firestore cache empty, attempting YouTube Music playlists automated sync...");
+        
+        const fetchYouTubePlaylist = async (playlistId: string, apiKey: string) => {
+          try {
+             const axios = (await import("axios")).default;
+             const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=20&playlistId=${playlistId}&key=${apiKey}`;
+             const response = await axios.get(url);
+             const items = response.data.items || [];
+             
+             return items
+                .map((item: any) => {
+                   const snippet = item.snippet || {};
+                   const title = snippet.title || "";
+                   const channelTitle = snippet.videoOwnerChannelTitle || snippet.channelTitle || "";
+                   const videoId = snippet.resourceId?.videoId || "";
+                   const coverImageURL = snippet.thumbnails?.high?.url || snippet.thumbnails?.medium?.url || snippet.thumbnails?.default?.url || "";
+                   
+                   const artistName = channelTitle.replace(/ - Topic$/i, "").replace(/Official$/i, "").trim() || "Unknown Artist";
+                   
+                   return {
+                      id: videoId, // DIRECT VIDEO ID! Plays instantly!
+                      title: title.replace(/Official MV/i, "").replace(/\[.*?\]/g, "").replace(/\(.*?\)/g, "").trim(),
+                      artist_name: artistName,
+                      coverImageURL: coverImageURL
+                   };
+                })
+                .filter((item: any) => item.id && item.title);
+          } catch (err: any) {
+             debugLog(`[YOUTUBE PLAYLIST] Error fetching ${playlistId}: ${err.message}`);
+             return null;
+          }
+        };
+
+        const playlistMappings = [
+          { id: 42, name: "Thailand Top 100", playlistId: youtubeChartsConfig?.top100 || "PLRhRrJscB-C7OA83mRjBr9RHdw1jNk2Aa" },
+          { id: 128, name: "อันดับเพลงใหม่", playlistId: youtubeChartsConfig?.newSongs || "PLRhRrJscB-C6x26E-R2xZPrsV8m-WnslU" },
+          { id: 133, name: "อันดับเพลงมาแรง", playlistId: youtubeChartsConfig?.trending || "PLRhRrJscB-C4T4pT8Vw9w9p4pS8g0N_5d" },
+          { id: 57, name: "THTOP100 2024", playlistId: youtubeChartsConfig?.evergreen || "PLMC9KNkIncKvYin_USF1qoIQ7dfyOPAKr" }
+        ];
+
+        const apiKey = youtubeKeys[0];
+        const ytResults = await Promise.all(playlistMappings.map(async (chart) => {
+           debugLog(`[YOUTUBE PLAYLIST] Syncing ${chart.name} (${chart.playlistId})...`);
+           const singles = await fetchYouTubePlaylist(chart.playlistId, apiKey);
+           if (singles && singles.length > 0) {
+              return {
+                 id: chart.id,
+                 name: chart.name,
+                 singles: singles
+              };
+           }
+           return null;
+        }));
+
+        const validYtCharts = ytResults.filter(c => c !== null && c.singles.length > 0);
+        if (validYtCharts.length > 0) {
+           finalCharts = validYtCharts;
+           totalSongs = finalCharts.reduce((sum, c) => sum + (c.singles?.length || 0), 0);
+           debugLog(`✅ YouTube Music Playlists Sync Successful! Loaded ${totalSongs} live songs across ${finalCharts.length} charts.`);
+        }
+      } catch (ytErr: any) {
+        debugLog(`❌ YouTube Music Playlists sync failed: ${ytErr.message}`);
+      }
+    }
+
+    // 3. Fallback to Spotify Curated Playlists
     if (totalSongs === 0) {
       try {
         debugLog("⚠️ JOOX & Firestore cache empty, attempting Spotify curated playlists fallback...");
