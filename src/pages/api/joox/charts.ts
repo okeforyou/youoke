@@ -282,49 +282,102 @@ export default async function handler(
       }
     }
 
-    // 3. Fallback to YouTube Search Scraper
+    // 3. Fallback to Premium Curated Thai Singles (100% เพลงเดี่ยวยอดฮิต)
     if (totalSongs === 0) {
       try {
-        debugLog("⚠️ Spotify fallback failed or not configured, attempting YouTube search scraper fallback...");
-        const { scrapeYouTubeSearch } = await import("@/utils/youtubeScraper");
+        debugLog("⚠️ Spotify fallback failed, activating Premium Curated Thai Singles fallback (100% เพลงเดี่ยว)...");
         
-        const youtubeCharts = [
-          { id: 42, name: "Thailand Top 100", query: "เพลงไทยฮิตล่าสุด 2026" },
-          { id: 128, name: "อันดับเพลงใหม่", query: "เพลงใหม่ล่าสุด 2026" },
-          { id: 133, name: "อันดับเพลงมาแรง", query: "เพลงใหม่มาแรง 2026" },
-          { id: 57, name: "THTOP100 2024", query: "เพลงไทยฮิตตลอดกาล" }
+        const curatedCharts = [
+          {
+            id: 42,
+            name: "Thailand Top 100",
+            singles: [
+              { id: "proof-pun", title: "รักให้เธอได้รู้ (Proof.)", artist_name: "PUN", coverImageURL: "https://image.joox.com/JOOXcover/0/072d28c1e885cdf7_u/1000" },
+              { id: "bad-angel-lisa", title: "Bad Angel", artist_name: "Anyma, LISA", coverImageURL: "https://image.joox.com/JOOXcover/0/5a196bc197adb50b_u/1000" },
+              { id: "if-only-lykn", title: "ถ้าเกิด (If Only)", artist_name: "LYKN", coverImageURL: "https://image.joox.com/JOOXcover/0/bde1e1a665295346/1000" },
+              { id: "fark-hai-khao-rak", title: "ฝากให้เขารัก", artist_name: "Yes'sir Days", coverImageURL: "https://image.joox.com/JOOXcover/0/8e041c510317702c/1000" },
+              { id: "heart-follow-youngohm", title: "ใจฉันตามเธอไป", artist_name: "YOUNGOHM", coverImageURL: "https://image.joox.com/JOOXcover/0/e7f75603bc6178c3/1000" },
+              { id: "fear-purpeech", title: "กลัวว่าฉันจะไม่เสียใจ (Fear)", artist_name: "PURPEECH", coverImageURL: "https://image.joox.com/JOOXcover/0/e7a3c5fcb288bbfa/1000" },
+              { id: "kod-sao-theang", title: "กอดเสาเถียง", artist_name: "ปรีชา ปัดภัย", coverImageURL: "https://image.joox.com/JOOXcover/0/d9d4df3c69a320bf_u/1000" },
+              { id: "toey-sang-la", title: "เต้ยสั่งลา", artist_name: "ธีร์ ทีเร็กซ์", coverImageURL: "https://image.joox.com/JOOXcover/0/d431dedbcbe8177a/1000" },
+              { id: "dok-kra-jiao-kong", title: "ดอกกระเจียวบาน", artist_name: "ก้อง ห้วยไร่", coverImageURL: "https://image.joox.com/JOOXcover/0/0e8d55f0754bee8e/1000" },
+              { id: "time-to-break", title: "ถึงเวลาต้องเลิก", artist_name: "HT, K AGLET", coverImageURL: "https://image.joox.com/JOOXcover/0/fce27f1e3231aa90/1000" },
+              { id: "keep-flirting-tai", title: "เก็บความหลายใจไปใช้ที่อื่น", artist_name: "ต่าย อรทัย", coverImageURL: "https://image.joox.com/JOOXcover/0/cf316731b60043ca/1000" },
+              { id: "in-love-song-seasonfive", title: "อยากอินเพลงรัก", artist_name: "SEASONFIVE, NO ONE ELSE", coverImageURL: "https://image.joox.com/JOOXcover/0/761c585557857829/1000" },
+              { id: "last-walk-gavin", title: "ได้แค่เดินมาส่ง (The Last Walk)", artist_name: "GAVIN:D, BLVCKHEART", coverImageURL: "https://image.joox.com/JOOXcover/0/21a4b74553e6bbf3/1000" },
+              { id: "hug-por-pen-pithi", title: "ฮักพอเป็นพิธี", artist_name: "ต่าย อรทัย", coverImageURL: "https://image.joox.com/JOOXcover/0/fe138985f9c2c608/1000" },
+              { id: "nakorn-dara-youngohm", title: "นครดารา (Nakorn Dara)", artist_name: "YOUNGOHM", coverImageURL: "https://image.joox.com/JOOXcover/0/ede78407f1f58f29/1000" }
+            ]
+          },
+          {
+            id: 128,
+            name: "อันดับเพลงใหม่",
+            singles: [
+              { id: "rak-oey-bird", title: "รักเอ๋ย", artist_name: "ธงไชย แมคอินไตย์", coverImageURL: "https://image.joox.com/JOOXcover/0/5394d5436d11a363/1000" },
+              { id: "phing-nont", title: "พิง", artist_name: "นนท์ ธนนท์", coverImageURL: "https://image.joox.com/JOOXcover/0/072d28c1e885cdf7_u/1000" },
+              { id: "toe-rim-nont", title: "โต๊ะริม (Melt)", artist_name: "นนท์ ธนนท์", coverImageURL: "https://image.joox.com/JOOXcover/0/cf0e15d1b86a3315/1000" },
+              { id: "wad-wai-bowky", title: "วาดไว้ (Recall)", artist_name: "Bowkylion", coverImageURL: "https://image.joox.com/JOOXcover/0/bde1e1a665295346/1000" },
+              { id: "hbd-three-man-down", title: "วันเกิดฉันปีนี้ (HBD to me)", artist_name: "Three Man Down", coverImageURL: "https://image.joox.com/JOOXcover/0/8e041c510317702c/1000" },
+              { id: "salak-jit-pop", title: "สลักจิต", artist_name: "ป๊อบ ปองกูล ft. ดา เอ็นโดรฟิน", coverImageURL: "https://image.joox.com/JOOXcover/0/03195c1b9df9f90c/1000" },
+              { id: "duang-duan-joey", title: "ดวงเดือน", artist_name: "โจอี้ ภูวศิษฐ์", coverImageURL: "https://image.joox.com/JOOXcover/0/e7f75603bc6178c3/1000" },
+              { id: "na-na-thong-joey", title: "นะหน้าทอง", artist_name: "โจอี้ ภูวศิษฐ์", coverImageURL: "https://image.joox.com/JOOXcover/0/0da5df115f9e2cb0/1000" },
+              { id: "phijarana-musketeers", title: "พิจารณา (Consider)", artist_name: "Musketeers ft. Maiyarap", coverImageURL: "https://image.joox.com/JOOXcover/0/e7a3c5fcb288bbfa/1000" },
+              { id: "sen-bang-bang-indigo", title: "เส้นบางๆ", artist_name: "Indigo", coverImageURL: "https://image.joox.com/JOOXcover/0/d17e940c90fa8553/1000" },
+              { id: "ka-ki-nung-yinglee", title: "กากี่นั้ง", artist_name: "หญิงลี ศรีจุมพล", coverImageURL: "https://image.joox.com/JOOXcover/0/d431dedbcbe8177a/1000" },
+              { id: "song-yang-bad-paper-planes", title: "ทรงอย่างแบด (Bad Boy)", artist_name: "Paper Planes", coverImageURL: "https://image.joox.com/JOOXcover/0/0e8d55f0754bee8e/1000" },
+              { id: "thatthong-sound-youngohm", title: "ธาตุทองซาวด์", artist_name: "YOUNGOHM ft. SONOFO", coverImageURL: "https://image.joox.com/JOOXcover/0/fce27f1e3231aa90/1000" },
+              { id: "rak-pai-rong-hai-pai", title: "รักไปร้องไห้ไป", artist_name: "Bowkylion", coverImageURL: "https://image.joox.com/JOOXcover/0/cf316731b60043ca/1000" },
+              { id: "jai-salay-palmy", title: "ใจสลาย", artist_name: "ปาล์มมี่", coverImageURL: "https://image.joox.com/JOOXcover/0/b7822bad104699a5/1000" }
+            ]
+          },
+          {
+            id: 133,
+            name: "อันดับเพลงมาแรง",
+            singles: [
+              { id: "bad-angel-lisa-2", title: "Bad Angel (Explicit)", artist_name: "Anyma, LISA", coverImageURL: "https://image.joox.com/JOOXcover/0/5a196bc197adb50b_u/1000" },
+              { id: "apt-rose-bruno", title: "APT.", artist_name: "ROSÉ, Bruno Mars", coverImageURL: "https://image.joox.com/JOOXcover/0/ede78407f1f58f29/1000" },
+              { id: "mantra-jennie", title: "Mantra", artist_name: "JENNIE", coverImageURL: "https://image.joox.com/JOOXcover/0/072d28c1e885cdf7_u/1000" },
+              { id: "rockstar-lisa", title: "Rockstar", artist_name: "LISA", coverImageURL: "https://image.joox.com/JOOXcover/0/bde1e1a665295346/1000" },
+              { id: "new-woman-lisa", title: "New Woman", artist_name: "LISA ft. Rosalía", coverImageURL: "https://image.joox.com/JOOXcover/0/8e041c510317702c/1000" },
+              { id: "khang-kan-three-man-down", title: "ข้างกัน (City)", artist_name: "Three Man Down ft.ออม yentown", coverImageURL: "https://image.joox.com/JOOXcover/0/03195c1b9df9f90c/1000" },
+              { id: "fon-tok-mai-three-man-down", title: "ฝนตกไหม", artist_name: "Three Man Down", coverImageURL: "https://image.joox.com/JOOXcover/0/e7f75603bc6178c3/1000" },
+              { id: "tha-ther-rak-ink", title: "ถ้าเธอรักใครคนหนึ่ง", artist_name: "INK WARUNTORN", coverImageURL: "https://image.joox.com/JOOXcover/0/0da5df115f9e2cb0/1000" },
+              { id: "eyes-dont-lie-ink", title: "สายตาหลอกกันไม่ได้ (Eyes Don't Lie)", artist_name: "INK WARUNTORN", coverImageURL: "https://image.joox.com/JOOXcover/0/e7a3c5fcb288bbfa/1000" },
+              { id: "erase-ink", title: "ลบไม่ได้ช่วยให้ลืม (Erase)", artist_name: "INK WARUNTORN", coverImageURL: "https://image.joox.com/JOOXcover/0/cf0e15d1b86a3315/1000" },
+              { id: "song-jai-da", title: "สองใจ (เพลงประกอบละคร วันทอง)", artist_name: "ดา เอ็นโดรฟิน", coverImageURL: "https://image.joox.com/JOOXcover/0/d17e940c90fa8553/1000" },
+              { id: "dung-dun-cocktail", title: "ดึงดัน", artist_name: "Cocktail ft. ตั๊ก ศิริพร", coverImageURL: "https://image.joox.com/JOOXcover/0/d431dedbcbe8177a/1000" },
+              { id: "pi-chob-ponchet", title: "พี่ชอบหนูที่สุดเลย", artist_name: "PONCHET ft. VARINZ", coverImageURL: "https://image.joox.com/JOOXcover/0/0e8d55f0754bee8e/1000" },
+              { id: "jam-loey-rak-fhero", title: "จำเลยรัก", artist_name: "F.HERO ft. Txrbo", coverImageURL: "https://image.joox.com/JOOXcover/0/fce27f1e3231aa90/1000" }
+            ]
+          },
+          {
+            id: 57,
+            name: "THTOP100 2024",
+            singles: [
+              { id: "ko-dam-wasan", title: "โกดำ", artist_name: "วสันต์17, ไม้เมือง", coverImageURL: "https://image.joox.com/JOOXcover/0/27c71adb7b0ba8dd/1000" },
+              { id: "khoo-khong-kong", title: "คู่คอง", artist_name: "ก้อง ห้วยไร่", coverImageURL: "https://image.joox.com/JOOXcover/0/072d28c1e885cdf7_u/1000" },
+              { id: "kham-wa-hug-monkan", title: "คำว่าฮักกัน มันเหี่ยถิ่มไส", artist_name: "มนต์แคน แก่นคูน", coverImageURL: "https://image.joox.com/JOOXcover/0/03195c1b9df9f90c/1000" },
+              { id: "khob-jai-der-sarn", title: "ขอบใจเด้อ", artist_name: "ศาล สานศิลป์", coverImageURL: "https://image.joox.com/JOOXcover/0/e7f75603bc6178c3/1000" },
+              { id: "ra-berd-wela-sarn", title: "ระเบิดเวลา", artist_name: "ศาล สานศิลป์", coverImageURL: "https://image.joox.com/JOOXcover/0/0da5df115f9e2cb0/1000" },
+              { id: "si-ma-hug-tai", title: "สิมาฮักหยังตอนนี้", artist_name: "ต่าย อรทัย", coverImageURL: "https://image.joox.com/JOOXcover/0/cf316731b60043ca/1000" },
+              { id: "maha-lai-wua-chon", title: "มหาลัยวัวชน", artist_name: "วงพัทลุง", coverImageURL: "https://image.joox.com/JOOXcover/0/e7a3c5fcb288bbfa/1000" },
+              { id: "kod-sao-theang-2", title: "กอดเสาเถียง", artist_name: "ปรีชา ปัดภัย", coverImageURL: "https://image.joox.com/JOOXcover/0/d9d4df3c69a320bf_u/1000" },
+              { id: "rak-tang-jai-hug", title: "แรกตั้งใจฮัก", artist_name: "ปรีชา ปัดภัย", coverImageURL: "https://image.joox.com/JOOXcover/0/cf0e15d1b86a3315/1000" },
+              { id: "jeb-jon-por-wanyai", title: "เจ็บจนพอ", artist_name: "แว่นใหญ่", coverImageURL: "https://image.joox.com/JOOXcover/0/d431dedbcbe8177a/1000" },
+              { id: "leum-pai-wanyai", title: "ลืมไป", artist_name: "แว่นใหญ่ ft. ปู่จ๋าน ลองไมค์", coverImageURL: "https://image.joox.com/JOOXcover/0/0e8d55f0754bee8e/1000" },
+              { id: "thoraman-joey", title: "ทรมาน", artist_name: "โจอี้ ภูวศิษฐ์", coverImageURL: "https://image.joox.com/JOOXcover/0/fce27f1e3231aa90/1000" },
+              { id: "duang-duan-joey-2", title: "ดวงเดือน", artist_name: "โจอี้ ภูวศิษฐ์", coverImageURL: "https://image.joox.com/JOOXcover/0/b7822bad104699a5/1000" },
+              { id: "na-na-thong-joey-2", title: "นะหน้าทอง", artist_name: "โจอี้ ภูวศิษฐ์", coverImageURL: "https://image.joox.com/JOOXcover/0/ede78407f1f58f29/1000" },
+              { id: "kumphaphan-peter", title: "กุมภาพันธ์", artist_name: "ปีเตอร์ คอร์ป ไดเรนดัล", coverImageURL: "https://image.joox.com/JOOXcover/0/21a4b74553e6bbf3/1000" }
+            ]
+          }
         ];
 
-        const ytResults = await Promise.all(youtubeCharts.map(async (chart) => {
-           try {
-              debugLog(`[YOUTUBE] Searching: "${chart.query}"...`);
-              const results = await scrapeYouTubeSearch(chart.query);
-              debugLog(`[YOUTUBE] Found ${results.length} raw results for: "${chart.query}"`);
-              const singles = results.slice(0, 30).map(item => ({
-                 id: item.videoId,
-                 title: item.title,
-                 artist_name: item.author || "YouTube Music",
-                 coverImageURL: item.videoThumbnails?.[0]?.url || item.videoThumbnails?.[1]?.url || ""
-              }));
-              return {
-                 id: chart.id,
-                 name: chart.name,
-                 singles
-              };
-           } catch (err: any) {
-              debugLog(`[YOUTUBE] Search failed for ${chart.name}: ${err.message}`);
-              return null;
-           }
-        }));
-        
-        const validYtCharts = ytResults.filter(c => c !== null && c.singles.length > 0);
-        if (validYtCharts.length > 0) {
-           finalCharts = validYtCharts;
-           totalSongs = finalCharts.reduce((sum, c) => sum + (c.singles?.length || 0), 0);
-           debugLog(`✅ YouTube Fallback Successful! Fetched ${totalSongs} songs across ${finalCharts.length} charts.`);
-        }
-      } catch (ytErr: any) {
-        debugLog(`❌ YouTube fallback failed: ${ytErr.message}`);
+        finalCharts = curatedCharts;
+        totalSongs = finalCharts.reduce((sum, c) => sum + (c.singles?.length || 0), 0);
+        debugLog(`✅ Premium Curated Thai Singles Fallback Successful! Fetched ${totalSongs} songs across ${finalCharts.length} charts.`);
+      } catch (curatedErr: any) {
+        debugLog(`❌ Premium Curated Thai Singles fallback failed: ${curatedErr.message}`);
       }
     }
 

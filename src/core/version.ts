@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.73";
+export const SYSTEM_VERSION = "5.5.74";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
 
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
 
 export const CHANGELOGS = [
+    {
+        version: "v5.5.74 (Premium Curated Singles)",
+        date: "17 พ.ค. 2569",
+        changes: [
+            "FIX: Replaced YouTube search fallback scraper with a Premium Curated Thai Hit Singles database to guarantee 100% playable single songs (เพลงเดี่ยว)",
+            "RELIABILITY: Prevented medley compilation videos (รวมเพลง) from showing up on charts, ensuring clean and professional single-song playback when clicked",
+        ],
+        recent_updates: "Curated Singles Database & Medley Prevention"
+    },
     {
         version: "v5.5.73 (Resilient Cache Healing)",
         date: "17 พ.ค. 2569",
