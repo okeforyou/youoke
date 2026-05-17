@@ -183,7 +183,7 @@ export default async function handler(
     let totalSongs = finalCharts.reduce((sum, c) => sum + (c.singles?.length || 0), 0);
 
     // 1. Fallback to Firestore Cache
-    if (totalSongs === 0 && adminFirestore) {
+    if (totalSongs === 0 && adminFirestore && !force) {
       try {
         debugLog("🔍 Checking Firestore cache for JOOX charts (Fallback Mode)...");
         const cacheDoc = await adminFirestore.collection('system_cache').doc('joox_charts').get();

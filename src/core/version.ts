@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.74";
+export const SYSTEM_VERSION = "5.5.75";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
 
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
 
 export const CHANGELOGS = [
+    {
+        version: "v5.5.75 (Cache Bypass Force)",
+        date: "17 พ.ค. 2569",
+        changes: [
+            "FIX: Added force query-param check to the fallback cache layer to enable true cache bypass and force new curated song data writes",
+            "RELIABILITY: Overwrote old medley compilation caches in Firestore with 100% individual single songs (เพลงเดี่ยว)",
+        ],
+        recent_updates: "Cache Bypass & Database Cleansing"
+    },
     {
         version: "v5.5.74 (Premium Curated Singles)",
         date: "17 พ.ค. 2569",
