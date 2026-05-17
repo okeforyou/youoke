@@ -35,9 +35,30 @@ export default function AdminConfigPage() {
     const [saving, setSaving] = useState(false);
     const [initializing, setInitializing] = useState(false);
     const [uploading, setUploading] = useState(false);
-    const [activeTab, setActiveTab] = useState<'system' | 'features' | 'player' | 'ui' | 'login' | 'integrations' | 'payment' | 'marketing' | 'tv' | 'membership'>('system');
+    const [activeTab, setActiveTab] = useState<'system' | 'features' | 'player' | 'ui' | 'login' | 'integrations' | 'payment' | 'marketing' | 'tv' | 'membership' | 'charts'>('system');
     const [toast, setToast] = useState('');
     const router = useRouter();
+
+    // Song Charts State
+    const [chartsData, setChartsData] = useState<any[]>([]);
+    const [selectedChartIdx, setSelectedChartIdx] = useState<number>(0);
+    const [loadingCharts, setLoadingCharts] = useState(false);
+
+    useEffect(() => {
+        if (activeTab === 'charts' && db) {
+            setLoadingCharts(true);
+            const { getDoc, doc } = require('firebase/firestore');
+            getDoc(doc(db, 'system_cache', 'joox_charts')).then((snap: any) => {
+                if (snap.exists()) {
+                    setChartsData(snap.data().charts || []);
+                }
+            }).catch((err: any) => {
+                console.error("Failed to load charts:", err);
+            }).finally(() => {
+                setLoadingCharts(false);
+            });
+        }
+    }, [activeTab]);
 
     // Login Content State (Local)
     const [loginTitle, setLoginTitle] = useState("");
@@ -85,6 +106,20 @@ export default function AdminConfigPage() {
     const handleSave = async () => {
         setSaving(true);
         try {
+            if (activeTab === 'charts') {
+                if (!db) throw new Error("Firestore not initialized");
+                const { doc, setDoc } = require('firebase/firestore');
+                const totalSongs = chartsData.reduce((sum, c) => sum + (c.singles?.length || 0), 0);
+                await setDoc(doc(db, 'system_cache', 'joox_charts'), {
+                    updatedAt: new Date().toISOString(),
+                    charts: chartsData,
+                    totalSongs
+                });
+                setToast('อัปเดตชาร์ตเพลงในฐานข้อมูลสำเร็จ!');
+                setTimeout(() => setToast(''), 3000);
+                return;
+            }
+
             // Merge login content back into config before saving
             const configToSave = {
                 ...localConfig,
@@ -158,6 +193,7 @@ export default function AdminConfigPage() {
         { id: 'payment', label: 'การชำระเงิน', icon: BanknotesIcon, desc: 'เลขบัญชี, PromptPay' },
         { id: 'tv', label: 'Smart TV', icon: TvIcon, desc: 'ข้อความประกาศ, พื้นหลัง, โควต้า' },
         { id: 'membership', label: 'โควต้า & สมาชิก', icon: UserGroupIcon, desc: 'จำกัดจำนวนเพลง Guest/Free' },
+        { id: 'charts', label: 'จัดการชาร์ตเพลง', icon: MusicalNoteIcon, desc: 'แก้ไขรายชื่อเพลงฮิตติดชาร์ต' },
     ];
 
     return (
@@ -1107,6 +1143,168 @@ export default function AdminConfigPage() {
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        )}
+
+                        {/* ==================== CHARTS TAB ==================== */}
+                        {activeTab === 'charts' && (
+                            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                {loadingCharts ? (
+                                    <div className="flex items-center justify-center p-12 bg-white rounded-2xl border border-gray-100 shadow-sm">
+                                        <span className="loading loading-spinner loading-md text-primary mr-2"></span>
+                                        <span className="text-gray-500 font-medium">กำลังโหลดรายชื่อชาร์ตเพลงจากฐานข้อมูล...</span>
+                                    </div>
+                                ) : chartsData.length === 0 ? (
+                                    <div className="bg-white p-12 rounded-2xl border border-gray-100 shadow-sm text-center">
+                                        <p className="text-gray-500 font-medium">ไม่พบชาร์ตเพลงในฐานข้อมูล Firestore</p>
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col md:flex-row gap-6">
+                                        {/* Chart Category Tabs */}
+                                        <div className="w-full md:w-64 shrink-0 flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-x-visible pb-2 md:pb-0">
+                                            {chartsData.map((chart, idx) => (
+                                                <button
+                                                    key={chart.id}
+                                                    type="button"
+                                                    onClick={() => setSelectedChartIdx(idx)}
+                                                    className={cn(
+                                                        "px-4 py-3 rounded-xl font-bold text-sm text-left whitespace-nowrap transition-all border w-full flex items-center justify-between",
+                                                        selectedChartIdx === idx
+                                                            ? "bg-primary/10 border-primary text-primary"
+                                                            : "bg-white hover:bg-gray-50 border-gray-100 text-gray-700"
+                                                    )}
+                                                >
+                                                    <span>{chart.name}</span>
+                                                    <span className="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full font-bold ml-2">
+                                                        {chart.singles?.length || 0}
+                                                    </span>
+                                                </button>
+                                            ))}
+                                        </div>
+
+                                        {/* Song Editor List */}
+                                        <div className="flex-1 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                                            <div className="flex justify-between items-center border-b pb-4 mb-4">
+                                                <div>
+                                                    <h3 className="font-black text-gray-900 text-base">
+                                                        {chartsData[selectedChartIdx]?.name}
+                                                    </h3>
+                                                    <p className="text-xs text-gray-400 font-medium">แก้ไขเพลงทั้งหมดในหมวดหมู่นี้</p>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const newCharts = [...chartsData];
+                                                        const currentChart = newCharts[selectedChartIdx];
+                                                        const newSingles = [
+                                                            ...(currentChart.singles || []),
+                                                            {
+                                                                id: Math.random().toString(36).substring(7),
+                                                                title: "เพลงใหม่",
+                                                                artist_name: "นักร้อง",
+                                                                coverImageURL: "https://image.joox.com/JOOXcover/0/072d28c1e885cdf7_u/1000"
+                                                            }
+                                                        ];
+                                                        newCharts[selectedChartIdx] = { ...currentChart, singles: newSingles };
+                                                        setChartsData(newCharts);
+                                                    }}
+                                                    className="btn btn-primary btn-sm text-white gap-2 rounded-xl"
+                                                >
+                                                    <Plus className="w-4 h-4" /> เพิ่มเพลงใหม่
+                                                </button>
+                                            </div>
+
+                                            <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                                                {(chartsData[selectedChartIdx]?.singles || []).map((song: any, songIdx: number) => (
+                                                    <div
+                                                        key={songIdx}
+                                                        className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 bg-gray-50/50 hover:bg-gray-50 transition-colors"
+                                                    >
+                                                        {/* Thumbnail */}
+                                                        <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 border bg-white flex items-center justify-center">
+                                                            {song.coverImageURL ? (
+                                                                <img
+                                                                    src={song.coverImageURL}
+                                                                    alt={song.title}
+                                                                    className="w-full h-full object-cover"
+                                                                    onError={(e) => {
+                                                                        e.currentTarget.src = "https://image.joox.com/JOOXcover/0/072d28c1e885cdf7_u/1000";
+                                                                    }}
+                                                                />
+                                                            ) : (
+                                                                <MusicalNoteIcon className="w-6 h-6 text-gray-300" />
+                                                            )}
+                                                        </div>
+
+                                                        {/* Editable Inputs */}
+                                                        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                            <div className="form-control w-full">
+                                                                <input
+                                                                    type="text"
+                                                                    className="input input-bordered input-sm font-bold w-full rounded-lg"
+                                                                    placeholder="ชื่อเพลง"
+                                                                    value={song.title || ""}
+                                                                    onChange={(e) => {
+                                                                        const newCharts = [...chartsData];
+                                                                        newCharts[selectedChartIdx].singles[songIdx].title = e.target.value;
+                                                                        setChartsData(newCharts);
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                            <div className="form-control w-full">
+                                                                <input
+                                                                    type="text"
+                                                                    className="input input-bordered input-sm w-full rounded-lg text-gray-600"
+                                                                    placeholder="ศิลปิน"
+                                                                    value={song.artist_name || ""}
+                                                                    onChange={(e) => {
+                                                                        const newCharts = [...chartsData];
+                                                                        newCharts[selectedChartIdx].singles[songIdx].artist_name = e.target.value;
+                                                                        setChartsData(newCharts);
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Cover URL Field */}
+                                                        <div className="hidden lg:block w-48 form-control">
+                                                            <input
+                                                                type="text"
+                                                                className="input input-bordered input-xs w-full text-[10px] font-mono rounded-lg"
+                                                                placeholder="รูปหน้าปก URL"
+                                                                value={song.coverImageURL || ""}
+                                                                onChange={(e) => {
+                                                                    const newCharts = [...chartsData];
+                                                                    newCharts[selectedChartIdx].singles[songIdx].coverImageURL = e.target.value;
+                                                                    setChartsData(newCharts);
+                                                                }}
+                                                            />
+                                                        </div>
+
+                                                        {/* Delete Button */}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                const newCharts = [...chartsData];
+                                                                newCharts[selectedChartIdx].singles = newCharts[selectedChartIdx].singles.filter((_: any, i: number) => i !== songIdx);
+                                                                setChartsData(newCharts);
+                                                            }}
+                                                            className="btn btn-ghost btn-sm btn-square text-red-500 hover:bg-red-50 rounded-lg shrink-0"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                ))}
+
+                                                {(chartsData[selectedChartIdx]?.singles || []).length === 0 && (
+                                                    <div className="text-center py-12 text-gray-400 text-sm italic bg-gray-50 rounded-xl border border-dashed">
+                                                        ยังไม่มีเพลงในชาร์ตนี้ กดปุ่มด้านบนเพื่อเพิ่มเพลงแรก!
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
 

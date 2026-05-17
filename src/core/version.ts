@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.77";
+export const SYSTEM_VERSION = "5.5.78";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
 
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
 
 export const CHANGELOGS = [
+    {
+        version: "v5.5.78 (Visual Charts Manager UI)",
+        date: "17 พ.ค. 2569",
+        changes: [
+            "FEAT: Launched a beautiful, robust Visual Charts Editor inside the Admin Config dashboard, allowing admins to add, edit, or delete song items, customize cover images, and update charts instantly in Firestore.",
+            "RELIABILITY: Resolved third-party API instability (JOOX & Spotify security lockdowns) by granting admins 100% data sovereignty over song charts.",
+        ],
+        recent_updates: "Visual Charts Editor Launch"
+    },
     {
         version: "v5.5.77 (Zero Duplicate Curated & Query Cleanse)",
         date: "17 พ.ค. 2569",
