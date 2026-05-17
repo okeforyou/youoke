@@ -242,7 +242,59 @@ export default async function handler(
         debugLog("⚠️ JOOX & Firestore cache empty, attempting YouTube Music playlists automated sync...");
         
         const fetchYouTubePlaylist = async (playlistId: string) => {
-          // A. Try API Key if available
+          // A. Try using youtubei.js (Innertube) - 100% anonymous & supports system playlists!
+          try {
+             debugLog(`[YOUTUBE PLAYLIST] Trying Innertube fetch for ${playlistId}...`);
+             const { Innertube } = await import("youtubei.js");
+             const youtube = await Innertube.create({
+                region: 'TH',
+                language: 'th'
+             });
+             
+             let playlist: any;
+             try {
+                playlist = await youtube.music.getPlaylist(playlistId);
+             } catch (musicErr) {
+                debugLog(`[YOUTUBE PLAYLIST] youtubei.js YTM playlist fetch failed, trying YouTube Main API...`);
+                playlist = await youtube.getPlaylist(playlistId);
+             }
+             
+             if (playlist && (playlist.contents || playlist.videos)) {
+                const rawItems = playlist.contents || playlist.videos || [];
+                const tracks = rawItems
+                   .map((v: any) => {
+                      const videoId = v.id || v.videoId || "";
+                      let title = v.title?.toString() || "";
+                      let artistName = (v.author?.name || v.author || v.short_byline_text?.toString() || "Unknown Artist")?.toString();
+                      const coverImageURL = v.thumbnails?.[0]?.url || "";
+                      
+                      title = title
+                         .replace(/Official MV/i, "")
+                         .replace(/\[.*?\]/g, "")
+                         .replace(/\(.*?\)/g, "")
+                         .trim();
+                         
+                      artistName = artistName.replace(/ - Topic$/i, "").replace(/Official$/i, "").trim();
+                      
+                      return {
+                         id: videoId,
+                         title: title,
+                         artist_name: artistName,
+                         coverImageURL: coverImageURL
+                      };
+                   })
+                   .filter((song: any) => song.id && song.title);
+                   
+                if (tracks.length > 0) {
+                   debugLog(`[YOUTUBE PLAYLIST] youtubei.js successfully fetched ${tracks.length} items for ${playlistId}.`);
+                   return tracks.slice(0, 20); // Keep max 20 songs per chart for speed and performance
+                }
+             }
+          } catch (innerErr: any) {
+             debugLog(`[YOUTUBE PLAYLIST] youtubei.js failed for ${playlistId}: ${innerErr.message}, falling back to XML RSS/API...`);
+          }
+
+          // B. Try API Key if available
           if (youtubeKeys && youtubeKeys.length > 0) {
              try {
                 const apiKey = youtubeKeys[0];
@@ -269,11 +321,11 @@ export default async function handler(
                    }).filter((item: any) => item.id && item.title);
                 }
              } catch (apiErr: any) {
-                debugLog(`[YOUTUBE PLAYLIST] API Key fetch failed: ${apiErr.message}, falling back to anonymous RSS...`);
+                debugLog(`[YOUTUBE PLAYLIST] API Key fetch failed for ${playlistId}: ${apiErr.message}, falling back to anonymous RSS...`);
              }
           }
           
-          // B. Try anonymous RSS feed scraper (no developer key or quota required!)
+          // C. Try anonymous RSS feed scraper (no developer key or quota required!)
           try {
              const axios = (await import("axios")).default;
              const url = `https://www.youtube.com/feeds/videos.xml?playlist_id=${playlistId}`;
@@ -320,7 +372,7 @@ export default async function handler(
                 }).filter((song: any) => song.id && song.title);
              }
           } catch (rssErr: any) {
-             debugLog(`[YOUTUBE PLAYLIST] RSS fetch failed: ${rssErr.message}`);
+             debugLog(`[YOUTUBE PLAYLIST] RSS fetch failed for ${playlistId}: ${rssErr.message}`);
           }
           
           return null;

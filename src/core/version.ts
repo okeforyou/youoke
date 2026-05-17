@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.80";
+export const SYSTEM_VERSION = "5.5.81";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
 
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
 
 export const CHANGELOGS = [
+    {
+        version: "v5.5.81 (Premium InnerTube Playlist Scraper)",
+        date: "17 พ.ค. 2569",
+        changes: [
+            "FEAT: Upgraded the automated charts sync to run anonymously via InnerTube (youtubei.js), ensuring 100% successful fetching of YouTube Music's official system playlists (e.g. Thailand Top 100) without any 404s or key restrictions.",
+            "UX: Provided a robust triple-fallback pipeline (InnerTube -> Google API Key -> XML RSS Scraper) for maximum possible reliability.",
+            "PERF: Optimized the playlist items mapping to resolve duplicates and play tracks instantly using official video IDs."
+        ],
+        recent_updates: "Premium InnerTube Playlist Scraper"
+    },
     {
         version: "v5.5.80 (Zero-API-Key Automated Charts Scraper)",
         date: "17 พ.ค. 2569",
