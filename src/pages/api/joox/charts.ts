@@ -3,20 +3,23 @@ import { adminFirestore } from "@/firebase-admin";
 import fs from "fs";
 import path from "path";
 
-function debugLog(message: string) {
-  try {
-    const logPath = path.join(process.cwd(), "charts_debug_log.txt");
-    const timestamp = new Date().toISOString();
-    fs.appendFileSync(logPath, `[${timestamp}] ${message}\n`);
-  } catch (e) {
-    // Fail silently to prevent API crash
-  }
-}
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  const traces: string[] = [];
+  const debugLog = (message: string) => {
+    try {
+      const logPath = path.join(process.cwd(), "charts_debug_log.txt");
+      const timestamp = new Date().toISOString();
+      fs.appendFileSync(logPath, `[${timestamp}] ${message}\n`);
+    } catch (e) {
+      // Fail silently (expected on Vercel serverless read-only filesystem)
+    }
+    traces.push(message);
+    console.log(message);
+  };
+
   debugLog(`[START] API Handler Invoked. Query: ${JSON.stringify(req.query)}, Method: ${req.method}`);
   // Allow manual seeding if JOOX blocks Vercel IPs
   if (req.method === 'POST') {
@@ -343,10 +346,11 @@ export default async function handler(
     res.status(200).json({ 
         status: "success", 
         charts: finalCharts,
-        debug: { totalSongs, chartCount: finalCharts.length, forceUsed: force }
+        debug: { totalSongs, chartCount: finalCharts.length, forceUsed: force },
+        traces
     });
   } catch (error: any) {
     console.error("Error fetching JOOX charts:", error);
-    res.status(500).json({ status: "error", message: error.message });
+    res.status(500).json({ status: "error", message: error.message, traces });
   }
 }
