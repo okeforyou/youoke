@@ -74,13 +74,13 @@ export default async function handler(
             // Validate that charts actually have singles
             const hasSingles = data.charts.some((c: any) => Array.isArray(c.singles) && c.singles.length > 0);
             
-            // If cache is less than 24 hours old and has valid data, return it.
-            if (cacheAge < 24 * 60 * 60 * 1000 && hasSingles) {
+            // If cache is less than 7 days old and has valid data, return it.
+            if (cacheAge < 7 * 24 * 60 * 60 * 1000 && hasSingles) {
               console.log("⚡ Serving JOOX charts from Firestore Cache (Last updated:", data.updatedAt, ")");
               res.setHeader("Cache-Control", "public, s-maxage=2592000, stale-while-revalidate=86400");
               return res.status(200).json({ status: "success", charts: data.charts });
             } else {
-              console.log("⚠️ Cache is stale or empty of singles, fetching fresh data from JOOX...");
+              console.log("⚠️ Cache is stale (older than 7 days) or empty, fetching fresh charts from YouTube Music...");
             }
           }
         }

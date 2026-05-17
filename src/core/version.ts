@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.83";
+export const SYSTEM_VERSION = "5.5.84";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
 
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
 
 export const CHANGELOGS = [
+    {
+        version: "v5.5.84 (Smart Weekly Firestore Caching Strategy)",
+        date: "17 พ.ค. 2569",
+        changes: [
+            "OPTIMIZATION: Extended the Firestore song cache validity to 7 days (1 week) up from 24 hours, guaranteeing ultra-fast loads (under 100ms) for home page visitors.",
+            "UX: Protected the background scraping pipeline against rate-limiting and quota usage by only updating from YouTube Music weekly.",
+            "FEAT: Preserved manual immediate override so admins can still instantly force-update charts at any time by calling '?force=true'."
+        ],
+        recent_updates: "Smart Weekly Firestore Caching Strategy"
+    },
     {
         version: "v5.5.83 (Sequential Playlist Sync & Resilient Artist Mapping)",
         date: "17 พ.ค. 2569",
