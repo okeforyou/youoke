@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.82";
+export const SYSTEM_VERSION = "5.5.83";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
 
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
 
 export const CHANGELOGS = [
+    {
+        version: "v5.5.83 (Sequential Playlist Sync & Resilient Artist Mapping)",
+        date: "17 พ.ค. 2569",
+        changes: [
+            "FEAT: Overhauled playlist mapping from Promise.all to sequential (serial) loops with polite delay, completely eliminating concurrent InnerTube connection and session collisions.",
+            "FEAT: Implemented resilient multi-strategy artist name parsing to handle official YouTube Music playlist items without ever returning 'Unknown Artist'.",
+            "UX: Normalized all thumbnail cover image URLs by stripping tracking query parameters for clean, consistent UI presentation."
+        ],
+        recent_updates: "Sequential Playlist Sync & Resilient Artist Mapping"
+    },
     {
         version: "v5.5.82 (Shared Session InnerTube Client Optimization)",
         date: "17 พ.ค. 2569",

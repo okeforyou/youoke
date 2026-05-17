@@ -275,8 +275,21 @@ export default async function handler(
                       .map((v: any) => {
                          const videoId = v.id || v.videoId || "";
                          let title = v.title?.toString() || "";
-                         let artistName = (v.author?.name || v.author || v.short_byline_text?.toString() || "Unknown Artist")?.toString();
-                         const coverImageURL = v.thumbnails?.[0]?.url || "";
+                         
+                         // Resilient artist name mapping (supporting YTM .artists, .author, and short_byline_text)
+                         let artistName = "Unknown Artist";
+                         if (v.artists && Array.isArray(v.artists) && v.artists.length > 0) {
+                            artistName = v.artists.map((art: any) => art.name || art.toString()).join(", ");
+                         } else if (v.author) {
+                            artistName = typeof v.author === 'string' ? v.author : (v.author.name || v.author.toString() || "Unknown Artist");
+                         } else if (v.short_byline_text) {
+                            artistName = v.short_byline_text.toString();
+                         }
+                         
+                         // Normalize thumbnail to high-fidelity clean URL
+                         const coverImageURL = v.thumbnails?.[0]?.url 
+                            ? v.thumbnails[0].url.split('?')[0] 
+                            : `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
                          
                          title = title
                             .replace(/Official MV/i, "")
@@ -396,18 +409,21 @@ export default async function handler(
           { id: 57, name: "THTOP100 2024", playlistId: youtubeChartsConfig?.evergreen || "PLMC9KNkIncKvYin_USF1qoIQ7dfyOPAKr" }
         ];
 
-        const ytResults = await Promise.all(playlistMappings.map(async (chart) => {
+        // Fetch playlists strictly sequentially to avoid concurrent InnerTube rate limits or session collisions
+        const ytResults = [];
+        for (const chart of playlistMappings) {
            debugLog(`[YOUTUBE PLAYLIST] Syncing ${chart.name} (${chart.playlistId})...`);
            const singles = await fetchYouTubePlaylist(chart.playlistId);
            if (singles && singles.length > 0) {
-              return {
+              ytResults.push({
                  id: chart.id,
                  name: chart.name,
                  singles: singles
-              };
+              });
            }
-           return null;
-        }));
+           // 300ms polite delay to preserve session health
+           await new Promise(resolve => setTimeout(resolve, 300));
+        }
 
         const validYtCharts = ytResults.filter(c => c !== null && c.singles.length > 0);
         if (validYtCharts.length > 0) {
