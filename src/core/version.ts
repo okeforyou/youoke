@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.71";
+export const SYSTEM_VERSION = "5.5.72";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
 
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
 
 export const CHANGELOGS = [
+    {
+        version: "v5.5.72 (Diagnostic Song Charts)",
+        date: "17 พ.ค. 2569",
+        changes: [
+            "DIAGNOSTICS: Injected Flight Recorder Trace system in /api/joox/charts to track server-side Spotify/YouTube API failures",
+            "RELIABILITY: Hardened cascading fallback layers with real-time error logging to local files",
+        ],
+        recent_updates: "Diagnostic Song Charts & Trace System"
+    },
     {
         version: "v5.5.71 (Fail-Safe Song Charts)",
         date: "17 พ.ค. 2569",

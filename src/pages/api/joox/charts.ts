@@ -1,10 +1,23 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { adminFirestore } from "@/firebase-admin";
+import fs from "fs";
+import path from "path";
+
+function debugLog(message: string) {
+  try {
+    const logPath = path.join(process.cwd(), "charts_debug_log.txt");
+    const timestamp = new Date().toISOString();
+    fs.appendFileSync(logPath, `[${timestamp}] ${message}\n`);
+  } catch (e) {
+    // Fail silently to prevent API crash
+  }
+}
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  debugLog(`[START] API Handler Invoked. Query: ${JSON.stringify(req.query)}, Method: ${req.method}`);
   // Allow manual seeding if JOOX blocks Vercel IPs
   if (req.method === 'POST') {
     const { charts, secret } = req.body;
@@ -20,6 +33,7 @@ export default async function handler(
 
   try {
     const force = req.query.force === 'true';
+    debugLog(`[CONFIG] force = ${force}, adminFirestore exists = ${!!adminFirestore}`);
 
     const allowedCharts = [
       { id: 42, name: "Thailand Top 100" },
@@ -168,14 +182,15 @@ export default async function handler(
     // 1. Fallback to Firestore Cache
     if (totalSongs === 0 && adminFirestore) {
       try {
-        console.log("🔍 Checking Firestore cache for JOOX charts (Fallback Mode)...");
+        debugLog("🔍 Checking Firestore cache for JOOX charts (Fallback Mode)...");
         const cacheDoc = await adminFirestore.collection('system_cache').doc('joox_charts').get();
         if (cacheDoc.exists) {
           const data = cacheDoc.data();
           if (data && data.charts && data.charts.length > 0) {
             const cacheTotalSongs = data.charts.reduce((sum: number, c: any) => sum + (c.singles?.length || 0), 0);
+            debugLog(`[CACHE FALLBACK] Found cache doc. cacheTotalSongs = ${cacheTotalSongs}`);
             if (cacheTotalSongs > 0) {
-              console.log("⚡ Serving JOOX charts from Firestore Cache as fallback!");
+              debugLog("⚡ Serving JOOX charts from Firestore Cache as fallback!");
               res.setHeader("Cache-Control", "no-store");
               return res.status(200).json({ 
                   status: "success", 
@@ -185,18 +200,24 @@ export default async function handler(
               });
             }
           }
+        } else {
+          debugLog("[CACHE FALLBACK] No joox_charts document exists in Firestore");
         }
-      } catch (err) {
-        console.error("❌ Failed to read Firestore cache fallback:", err);
+      } catch (err: any) {
+        debugLog(`❌ Failed to read Firestore cache fallback: ${err.message}`);
       }
     }
 
     // 2. Fallback to Spotify Curated Playlists
     if (totalSongs === 0) {
       try {
-        console.log("⚠️ JOOX & Firestore cache empty, attempting Spotify curated playlists fallback...");
+        debugLog("⚠️ JOOX & Firestore cache empty, attempting Spotify curated playlists fallback...");
         const { getAccessToken } = await import("@/modules/spotify-theme/services/auth");
-        const accessToken = await getAccessToken().catch(() => null);
+        const accessToken = await getAccessToken().catch((err: any) => {
+          debugLog(`[SPOTIFY] getAccessToken caught error: ${err.message}`);
+          return null;
+        });
+        debugLog(`[SPOTIFY] accessToken exists = ${!!accessToken}`);
         if (accessToken) {
           const axios = (await import("axios")).default;
           const spotifyCharts = [
@@ -208,6 +229,7 @@ export default async function handler(
 
           const spotifyResults = await Promise.all(spotifyCharts.map(async (chart) => {
              try {
+                debugLog(`[SPOTIFY] Fetching playlist ${chart.name} (${chart.playlistId})...`);
                 const response = await axios.get(`https://api.spotify.com/v1/playlists/${chart.playlistId}/tracks`, {
                    headers: { Authorization: `Bearer ${accessToken}` }
                 });
@@ -225,13 +247,14 @@ export default async function handler(
                    })
                    .slice(0, 30);
                 
+                debugLog(`[SPOTIFY] Playlist ${chart.name} parsed successfully with ${singles.length} songs.`);
                 return {
                    id: chart.id,
                    name: chart.name,
                    singles
                 };
              } catch (err: any) {
-                console.error(`Spotify fetch failed for ${chart.name}:`, err.message);
+                debugLog(`[SPOTIFY] Fetch failed for ${chart.name}: ${err.message}`);
                 return null;
              }
           }));
@@ -240,18 +263,18 @@ export default async function handler(
           if (validSpotifyCharts.length > 0) {
              finalCharts = validSpotifyCharts;
              totalSongs = finalCharts.reduce((sum, c) => sum + (c.singles?.length || 0), 0);
-             console.log(`✅ Spotify Fallback Successful! Fetched ${totalSongs} songs across ${finalCharts.length} charts.`);
+             debugLog(`✅ Spotify Fallback Successful! Fetched ${totalSongs} songs across ${finalCharts.length} charts.`);
           }
         }
       } catch (spotifyErr: any) {
-        console.error("❌ Spotify fallback failed:", spotifyErr.message);
+        debugLog(`❌ Spotify fallback failed: ${spotifyErr.message}`);
       }
     }
 
     // 3. Fallback to YouTube Search Scraper
     if (totalSongs === 0) {
       try {
-        console.log("⚠️ Spotify fallback failed or not configured, attempting YouTube search scraper fallback...");
+        debugLog("⚠️ Spotify fallback failed or not configured, attempting YouTube search scraper fallback...");
         const { scrapeYouTubeSearch } = await import("@/utils/youtubeScraper");
         
         const youtubeCharts = [
@@ -263,7 +286,9 @@ export default async function handler(
 
         const ytResults = await Promise.all(youtubeCharts.map(async (chart) => {
            try {
+              debugLog(`[YOUTUBE] Searching: "${chart.query}"...`);
               const results = await scrapeYouTubeSearch(chart.query);
+              debugLog(`[YOUTUBE] Found ${results.length} raw results for: "${chart.query}"`);
               const singles = results.slice(0, 30).map(item => ({
                  id: item.videoId,
                  title: item.title,
@@ -276,7 +301,7 @@ export default async function handler(
                  singles
               };
            } catch (err: any) {
-              console.error(`YouTube fetch failed for ${chart.name}:`, err.message);
+              debugLog(`[YOUTUBE] Search failed for ${chart.name}: ${err.message}`);
               return null;
            }
         }));
@@ -285,12 +310,14 @@ export default async function handler(
         if (validYtCharts.length > 0) {
            finalCharts = validYtCharts;
            totalSongs = finalCharts.reduce((sum, c) => sum + (c.singles?.length || 0), 0);
-           console.log(`✅ YouTube Fallback Successful! Fetched ${totalSongs} songs across ${finalCharts.length} charts.`);
+           debugLog(`✅ YouTube Fallback Successful! Fetched ${totalSongs} songs across ${finalCharts.length} charts.`);
         }
       } catch (ytErr: any) {
-        console.error("❌ YouTube fallback failed:", ytErr.message);
+        debugLog(`❌ YouTube fallback failed: ${ytErr.message}`);
       }
     }
+
+    debugLog(`[FINAL] totalSongs = ${totalSongs}, finalCharts count = ${finalCharts.length}`);
 
     if (totalSongs > 0) {
       if (adminFirestore) {
@@ -300,9 +327,9 @@ export default async function handler(
             updatedAt: new Date().toISOString(),
             charts: finalCharts
           });
-          console.log("✅ Cached new JOOX charts to Firestore");
+          debugLog("✅ Cached new JOOX charts to Firestore");
         } catch (err: any) {
-          console.error("Failed to cache to Firestore:", err.message);
+          debugLog(`❌ Failed to cache to Firestore: ${err.message}`);
         }
       }
     }
