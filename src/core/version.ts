@@ -1,15 +1,25 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.85";
+export const SYSTEM_VERSION = "5.5.86";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
-
+ 
 export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA 
     ? `#${process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA.slice(0, 7)}` 
     : "";
-
+ 
 export const CHANGELOGS = [
+    {
+        version: "v5.5.86 (Dynamic Chart Selection & Auto-Eviction of Empty Categories)",
+        date: "17 พ.ค. 2569",
+        changes: [
+            "FEAT: Implemented dynamic category filtering in the song charts tab, automatically hiding/evicting any chart categories that have no active songs in Firestore.",
+            "UX: Overhauled the charts dashboard to automatically select the first valid non-empty category upon load, entirely eliminating the blank initial state.",
+            "DESIGN: Cleaned up the first category label from 'ฮิตติดชาร์ต อันดับ 1' to 'Thailand Top 100' to accurately reflect the playlist content and improve aesthetic premium feel."
+        ],
+        recent_updates: "Dynamic Chart Selection & Auto-Eviction of Empty Categories"
+    },
     {
         version: "v5.5.85 (Integrated Background Cron Sync Orchestrator)",
         date: "17 พ.ค. 2569",

@@ -11,7 +11,7 @@ const CHART_CATEGORIES = [
   {
     id: "top100",
     jooxId: 42,
-    title: "ฮิตติดชาร์ต อันดับ 1",
+    title: "Thailand Top 100",
     gradient: "from-amber-500 to-orange-600",
     Icon: Trophy
   },
@@ -49,17 +49,37 @@ export default function ListHitsGrid({ onClick: onPlay }: { onClick?: (hit: Sing
     staleTime: 1000 * 60 * 5, // 5 minutes (reduced from 1h to avoid medley caching)
   });
 
+  // Dynamically filter categories based on actual available songs in the database
+  const activeCategories = useMemo(() => {
+    if (!hitsData?.charts) return CHART_CATEGORIES;
+    
+    return CHART_CATEGORIES.filter(cat => {
+      const jooxChart = hitsData.charts.find((c: any) => c.id === cat.jooxId);
+      return jooxChart && Array.isArray(jooxChart.singles) && jooxChart.singles.length > 0;
+    });
+  }, [hitsData]);
+
+  // Automatically select the first category that has data to prevent a blank state
+  useEffect(() => {
+    if (activeCategories.length > 0) {
+      const exists = activeCategories.some(c => c.id === selectedChart);
+      if (!exists) {
+        setSelectedChart(activeCategories[0].id);
+      }
+    }
+  }, [activeCategories, selectedChart]);
+
   const chartItems = useMemo(() => {
     if (!hitsData?.charts || !selectedChart) return [];
     
-    const category = CHART_CATEGORIES.find(c => c.id === selectedChart);
+    const category = activeCategories.find(c => c.id === selectedChart);
     if (!category) return [];
 
     const jooxChart = hitsData.charts.find((c: any) => c.id === category.jooxId);
     return jooxChart?.singles || [];
-  }, [hitsData, selectedChart]);
+  }, [hitsData, selectedChart, activeCategories]);
 
-  const activeChart = CHART_CATEGORIES.find(c => c.id === selectedChart);
+  const activeChart = activeCategories.find(c => c.id === selectedChart);
 
   useEffect(() => {
     if (selectedChart && songListRef.current) {
@@ -95,7 +115,7 @@ export default function ListHitsGrid({ onClick: onPlay }: { onClick?: (hit: Sing
 
       {/* Category Selection Grid - Optimized for Mobile Overlapping */}
       <div className="grid grid-cols-2 min-[440px]:grid-cols-3 sm:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-4 px-3 md:px-4 mb-8">
-        {CHART_CATEGORIES.map((cat) => {
+        {activeCategories.map((cat) => {
           const Icon = cat.Icon;
           const isActive = selectedChart === cat.id;
           return (
