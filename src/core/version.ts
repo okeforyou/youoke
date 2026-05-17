@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.75";
+export const SYSTEM_VERSION = "5.5.76";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
 
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
 
 export const CHANGELOGS = [
+    {
+        version: "v5.5.76 (Anti-Medley Double Shield)",
+        date: "17 พ.ค. 2569",
+        changes: [
+            "FIX: Reduced React Query staleTime for jooxCharts from 24h/1h to 5 minutes to bypass old medley list caches on client browsers",
+            "RELIABILITY: Implemented automatic compilation and medley filter in SidebarPlayer's search resolver to strictly guarantee single song (เพลงเดี่ยว) playback",
+        ],
+        recent_updates: "Client Cache Eviction & Search Resolver Shielding"
+    },
     {
         version: "v5.5.75 (Cache Bypass Force)",
         date: "17 พ.ค. 2569",

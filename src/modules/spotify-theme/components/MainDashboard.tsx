@@ -167,8 +167,8 @@ export default function MainDashboard({ showTab = true, mode = 'default' }: { sh
   const { data: hitsData, isLoading } = useQuery({
     queryKey: ["jooxCharts"],
     queryFn: getJooxCharts,
-    staleTime: 1000 * 60 * 60 * 24,
-    gcTime: 1000 * 60 * 60 * 48,
+    staleTime: 1000 * 60 * 5, // 5 minutes (reduced from 24h to avoid medley caching)
+    gcTime: 1000 * 60 * 15,
   });
 
   const { data: artists, isLoading: isLoadArtists } = useQuery({

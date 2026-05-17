@@ -212,8 +212,19 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
 
                 const results = await getSearchResult({ q: query, page: 0 });
                 if (results && results.length > 0) {
-                    const firstHit = results[0];
-                    console.log("✅ Resolved:", firstHit.title, firstHit.videoId);
+                    // 🛡️ Compilation/Medley Filter Strategy: Avoid playing compiled tracks/mixes
+                    const compilationKeywords = [
+                        "รวมเพลง", "ฟังยาว", "longplay", "non-stop", "nonstop", "รวมฮิต",
+                        "เมดเล่ย์", "เมดเลย์", "2 ชม", "3 ชม", "ชั่วโมง", "hour", "full album",
+                        "รวมอัลบั้ม", "เพลงฟังต่อเนื่อง", "เพลงเพราะๆฟังต่อเนื่อง", "playlist", "เพลย์ลิสต์"
+                    ];
+
+                    const firstHit = results.find((item: any) => {
+                        const titleLower = (item.title || "").toLowerCase();
+                        return !compilationKeywords.some(keyword => titleLower.includes(keyword));
+                    }) || results[0];
+
+                    console.log("✅ Resolved (Single Filter Applied):", firstHit.title, firstHit.videoId);
 
                     // ✅ RESOLVE & SYNC: Update the store so UniversalPlayer can mount the YouTube IFrame
                     const playerStore = usePlayerStore.getState();

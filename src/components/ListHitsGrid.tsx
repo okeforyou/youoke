@@ -46,7 +46,7 @@ export default function ListHitsGrid({ onClick: onPlay }: { onClick?: (hit: Sing
   const { data: hitsData, isLoading } = useQuery({
     queryKey: ["jooxCharts"],
     queryFn: getJooxCharts,
-    staleTime: 1000 * 60 * 60, // 1 hour
+    staleTime: 1000 * 60 * 5, // 5 minutes (reduced from 1h to avoid medley caching)
   });
 
   const chartItems = useMemo(() => {
