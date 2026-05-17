@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.81";
+export const SYSTEM_VERSION = "5.5.82";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
 
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
 
 export const CHANGELOGS = [
+    {
+        version: "v5.5.82 (Shared Session InnerTube Client Optimization)",
+        date: "17 พ.ค. 2569",
+        changes: [
+            "PERF: Refactored the InnerTube client to initialize a single, shared session rather than creating multiple separate connections concurrently.",
+            "RELIABILITY: Resolved parallel race conditions and rate-limits, ensuring all 4 charts (Thailand Top 100, New Songs, Trending, Evergreen) fetch successfully and concurrently without any failures."
+        ],
+        recent_updates: "Shared Session InnerTube Client Optimization"
+    },
     {
         version: "v5.5.81 (Premium InnerTube Playlist Scraper)",
         date: "17 พ.ค. 2569",

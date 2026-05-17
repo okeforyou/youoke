@@ -241,57 +241,68 @@ export default async function handler(
       try {
         debugLog("⚠️ JOOX & Firestore cache empty, attempting YouTube Music playlists automated sync...");
         
+        // Initialize InnerTube ONCE for all playlist fetches
+        let sharedYoutube: any = null;
+        try {
+           debugLog("[YOUTUBE PLAYLIST] Initializing shared Innertube client session...");
+           const { Innertube } = await import("youtubei.js");
+           sharedYoutube = await Innertube.create({
+              region: 'TH',
+              language: 'th'
+           });
+           debugLog("✅ Shared InnerTube client initialized successfully.");
+        } catch (innerInitErr: any) {
+           debugLog(`❌ Shared InnerTube client initialization failed: ${innerInitErr.message}`);
+        }
+        
         const fetchYouTubePlaylist = async (playlistId: string) => {
           // A. Try using youtubei.js (Innertube) - 100% anonymous & supports system playlists!
-          try {
-             debugLog(`[YOUTUBE PLAYLIST] Trying Innertube fetch for ${playlistId}...`);
-             const { Innertube } = await import("youtubei.js");
-             const youtube = await Innertube.create({
-                region: 'TH',
-                language: 'th'
-             });
-             
-             let playlist: any;
+          if (sharedYoutube) {
              try {
-                playlist = await youtube.music.getPlaylist(playlistId);
-             } catch (musicErr) {
-                debugLog(`[YOUTUBE PLAYLIST] youtubei.js YTM playlist fetch failed, trying YouTube Main API...`);
-                playlist = await youtube.getPlaylist(playlistId);
-             }
-             
-             if (playlist && (playlist.contents || playlist.videos)) {
-                const rawItems = playlist.contents || playlist.videos || [];
-                const tracks = rawItems
-                   .map((v: any) => {
-                      const videoId = v.id || v.videoId || "";
-                      let title = v.title?.toString() || "";
-                      let artistName = (v.author?.name || v.author || v.short_byline_text?.toString() || "Unknown Artist")?.toString();
-                      const coverImageURL = v.thumbnails?.[0]?.url || "";
-                      
-                      title = title
-                         .replace(/Official MV/i, "")
-                         .replace(/\[.*?\]/g, "")
-                         .replace(/\(.*?\)/g, "")
-                         .trim();
-                         
-                      artistName = artistName.replace(/ - Topic$/i, "").replace(/Official$/i, "").trim();
-                      
-                      return {
-                         id: videoId,
-                         title: title,
-                         artist_name: artistName,
-                         coverImageURL: coverImageURL
-                      };
-                   })
-                   .filter((song: any) => song.id && song.title);
-                   
-                if (tracks.length > 0) {
-                   debugLog(`[YOUTUBE PLAYLIST] youtubei.js successfully fetched ${tracks.length} items for ${playlistId}.`);
-                   return tracks.slice(0, 20); // Keep max 20 songs per chart for speed and performance
+                debugLog(`[YOUTUBE PLAYLIST] Trying Innertube fetch for ${playlistId}...`);
+                
+                let playlist: any;
+                try {
+                   playlist = await sharedYoutube.music.getPlaylist(playlistId);
+                } catch (musicErr: any) {
+                   debugLog(`[YOUTUBE PLAYLIST] youtubei.js YTM playlist fetch failed for ${playlistId} (${musicErr.message}), trying YouTube Main API...`);
+                   playlist = await sharedYoutube.getPlaylist(playlistId);
                 }
+                
+                if (playlist && (playlist.contents || playlist.videos)) {
+                   const rawItems = playlist.contents || playlist.videos || [];
+                   const tracks = rawItems
+                      .map((v: any) => {
+                         const videoId = v.id || v.videoId || "";
+                         let title = v.title?.toString() || "";
+                         let artistName = (v.author?.name || v.author || v.short_byline_text?.toString() || "Unknown Artist")?.toString();
+                         const coverImageURL = v.thumbnails?.[0]?.url || "";
+                         
+                         title = title
+                            .replace(/Official MV/i, "")
+                            .replace(/\[.*?\]/g, "")
+                            .replace(/\(.*?\)/g, "")
+                            .trim();
+                            
+                         artistName = artistName.replace(/ - Topic$/i, "").replace(/Official$/i, "").trim();
+                         
+                         return {
+                            id: videoId,
+                            title: title,
+                            artist_name: artistName,
+                            coverImageURL: coverImageURL
+                         };
+                      })
+                      .filter((song: any) => song.id && song.title);
+                      
+                   if (tracks.length > 0) {
+                      debugLog(`[YOUTUBE PLAYLIST] youtubei.js successfully fetched ${tracks.length} items for ${playlistId}.`);
+                      return tracks.slice(0, 20); // Keep max 20 songs per chart for speed and performance
+                   }
+                }
+             } catch (innerErr: any) {
+                debugLog(`[YOUTUBE PLAYLIST] youtubei.js failed for ${playlistId}: ${innerErr.message}, falling back to XML RSS/API...`);
              }
-          } catch (innerErr: any) {
-             debugLog(`[YOUTUBE PLAYLIST] youtubei.js failed for ${playlistId}: ${innerErr.message}, falling back to XML RSS/API...`);
           }
 
           // B. Try API Key if available
