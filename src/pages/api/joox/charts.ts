@@ -594,6 +594,10 @@ export default async function handler(
         finalCharts = syncedCharts;
         totalSongs = finalCharts.reduce((sum, c) => sum + (c.singles?.length || 0), 0);
         debugLog(`✅ Unified Charts Sync Successful! Loaded ${totalSongs} total songs across ${finalCharts.length} active charts.`);
+      } catch (ytErr: any) {
+         debugLog(`❌ Resilient charts sync failed: ${ytErr.message}`);
+      }
+    }
 
     debugLog(`[FINAL] totalSongs = ${totalSongs}, finalCharts count = ${finalCharts.length}`);
 
