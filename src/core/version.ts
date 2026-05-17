@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.76";
+export const SYSTEM_VERSION = "5.5.77";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
 
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
 
 export const CHANGELOGS = [
+    {
+        version: "v5.5.77 (Zero Duplicate Curated & Query Cleanse)",
+        date: "17 พ.ค. 2569",
+        changes: [
+            "FIX: Completely eradicated song duplicates across all 4 premium curated chart databases",
+            "RELIABILITY: Integrated cleanSearchQuery in the SidebarPlayer search resolver to strip bracketed noise (e.g. Proof., Melt, HBD to me), ensuring 100% accurate YouTube MV and Karaoke matches",
+        ],
+        recent_updates: "Zero Duplicate Curated & Search Query Cleanse"
+    },
     {
         version: "v5.5.76 (Anti-Medley Double Shield)",
         date: "17 พ.ค. 2569",

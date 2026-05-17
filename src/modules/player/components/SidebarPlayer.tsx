@@ -204,11 +204,12 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
 
         const performSearch = async () => {
             try {
-                const query = currentSource.replace('search:', '');
-                console.log("🕵️ Resolving Search Query:", query);
-
+                const rawQuery = currentSource.replace('search:', '');
+                
                 // Dynamic Import to avoid cyclic if possible, or just standard import
-                const { getSearchResult } = await import('../../../utils/api');
+                const { getSearchResult, cleanSearchQuery } = await import('../../../utils/api');
+                const query = cleanSearchQuery(rawQuery);
+                console.log("🕵️ Resolving Search Query (Cleaned):", query);
 
                 const results = await getSearchResult({ q: query, page: 0 });
                 if (results && results.length > 0) {
