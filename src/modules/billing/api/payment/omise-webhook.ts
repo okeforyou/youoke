@@ -3,12 +3,16 @@ import { adminFirestore as adminDb } from "@/firebase-admin";
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 
 /**
+ * DEPRECATED: Omise is no longer used. Replaced by LINE manual bank transfer workflow.
  * Omise Webhook Handler
  * 
  * NOTE: You must add this URL to Omise Dashboard -> Events -> Webhooks
  * URL: https://your-domain.com/api/payment/omise-webhook
  */
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    // DEPRECATED: Early exit if accidentally hit
+    return res.status(404).json({ error: 'Omise integration is deprecated' });
+
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }

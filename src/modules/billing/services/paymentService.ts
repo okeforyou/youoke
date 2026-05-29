@@ -56,7 +56,7 @@ export async function approvePayment(
   let pkgName = "Premium Package";
 
   if (pkgSnap.exists()) {
-    durationDays = pkgSnap.data().durationDays || 30;
+    durationDays = pkgSnap.data().durationDays ?? 30;
     pkgName = pkgSnap.data().name || pkgName;
   }
 

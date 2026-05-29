@@ -183,7 +183,7 @@ export const AdminService = {
         let membershipType = 'monthly';
 
         const lowPkgId = packageId.toLowerCase();
-        if (lowPkgId.includes('year')) {
+        if (lowPkgId.includes('year') || lowPkgId.includes('รายปี') || lowPkgId.includes('ปี')) {
             durationDays = 365;
             membershipType = 'yearly';
         } else if (lowPkgId.includes('life') || lowPkgId.includes('perman') || lowPkgId.includes('ถาวร')) {
@@ -529,14 +529,32 @@ export const AdminService = {
         // 🛡️ v4.10.140: Fetch current user to preserve Admin roles
         const userRef = doc(db, "users", uid);
         const currentSnap = await getDoc(userRef);
-        const currentRole = currentSnap.exists() ? currentSnap.data()?.role : 'user';
+        const currentData = currentSnap.exists() ? currentSnap.data() : null;
+        const currentRole = currentData?.role || 'user';
+        const currentTier = currentData?.tier || 'free';
+        const currentType = currentData?.membership?.type || 'free';
         const finalRole = (currentRole === 'admin' || currentRole === 'owner') ? currentRole : 'premium';
+
+        // 🛡️ Auto-Heal Type and Tier based on Dates
+        let newType = currentType;
+        let newTier = currentTier;
+        
+        if (expiresAt === null) {
+            newType = 'lifetime';
+            newTier = 'lifetime';
+        } else if (expiresAt > new Date() && (currentTier === 'free' || currentType === 'free')) {
+            // If they have a future expiry date but are stuck in 'free', heal them to 'yearly' as a safe premium tier
+            newType = 'yearly';
+            newTier = 'yearly';
+        }
 
         const updates: any = {
             'membership.startedAt': startedAt,
             'membership.expiresAt': expiresAt,
             'membership.status': 'active', // Ensure status is active when dates are set
+            'membership.type': newType,    // Auto-healed type
             'isPremium': true,             // Mark as premium
+            'tier': newTier,               // Auto-healed tier
             'role': finalRole,             // v4.10.140: Preserve Admin role
             'updatedAt': new Date()
         };
@@ -549,14 +567,15 @@ export const AdminService = {
             const rtdbUserRef = ref(realtimeDb, `users/${uid}/subscription`);
             await update(rtdbUserRef, {
                 status: 'active',
+                plan: newType,                 // Sync auto-healed plan
                 startDate: startedAt ? startedAt.toISOString() : null,
                 endDate: expiresAt ? expiresAt.toISOString() : null
             });
-            
-            // Also update top-level role/tier in RTDB
-            const rtdbMainRef = ref(realtimeDb, `users/${uid}`);
-            await update(rtdbMainRef, {
-                role: finalRole, // v4.10.140: Preserve Admin role
+            // Update root user tier/role
+            await update(ref(realtimeDb, `users/${uid}`), {
+                role: finalRole,
+                tier: newTier,                 // Sync auto-healed tier
+                isPremium: true,
                 updatedAt: rtdbServerTimestamp()
             });
         }

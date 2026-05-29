@@ -380,12 +380,20 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                             };
                                             // Update Firestore and RTDB immediately
                                             const { updateDoc } = await import('firebase/firestore');
-                                            updateDoc(userRef, { membership }).catch(e => console.error('Firestore expiry sync failed', e));
+                                            updateDoc(userRef, { 
+                                                membership,
+                                                isPremium: false,
+                                                tier: 'free',
+                                                role: 'user'
+                                            }).catch(e => console.error('Firestore expiry sync failed', e));
 
                                             if (realtimeDb) {
-                                                rtdbUpdate(ref(realtimeDb, `users/${firebaseUser.uid}/subscription`), {
-                                                    status: 'expired',
-                                                    plan: 'free'
+                                                // Also update top-level role and tier in RTDB
+                                                rtdbUpdate(ref(realtimeDb, `users/${firebaseUser.uid}`), {
+                                                    role: 'user',
+                                                    tier: 'free',
+                                                    'subscription/status': 'expired',
+                                                    'subscription/plan': 'free'
                                                 }).catch(e => console.error('RTDB expiry sync failed', e));
                                             }
 

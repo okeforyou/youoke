@@ -26,7 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         if (pkgSnap.exists) {
             const pkgData = pkgSnap.data();
-            durationDays = pkgData?.durationDays || 30;
+            durationDays = pkgData?.durationDays ?? 30;
             pkgName = pkgData?.name || pkgName;
             planId = pkgData?.planId || 'monthly';
         }

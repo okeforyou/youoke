@@ -155,9 +155,10 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
             
             // 🛡️ v4.9.98: Auto-Segmentation Logic
             let segmentType = 'free';
-            if (packageId.includes('month')) segmentType = 'monthly';
-            if (packageId.includes('year')) segmentType = 'yearly';
-            if (packageId === 'lifetime') segmentType = 'lifetime';
+            const lowPkgId = packageId.toLowerCase();
+            if (lowPkgId.includes('month') || lowPkgId.includes('เดือน')) segmentType = 'monthly';
+            if (lowPkgId.includes('year') || lowPkgId.includes('ปี') || lowPkgId.includes('รายปี')) segmentType = 'yearly';
+            if (lowPkgId === 'lifetime' || lowPkgId.includes('life') || lowPkgId.includes('ถาวร')) segmentType = 'lifetime';
             
             await AdminService.updateMembershipType(user.uid, segmentType);
 

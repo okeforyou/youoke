@@ -4,7 +4,13 @@ import { adminFirestore } from "@/firebase-admin";
 
 const OMISE_SECRET_KEY = process.env.OMISE_SECRET_KEY || '';
 
+/**
+ * DEPRECATED: Omise is no longer used. Replaced by LINE manual bank transfer workflow.
+ */
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    // DEPRECATED: Early exit
+    return res.status(404).json({ error: 'Omise integration is deprecated' });
+
     if (req.method !== 'GET') {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
