@@ -1,0 +1,56 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "🚀 AI Protocol: Dashboard",
+      "type": "shell",
+      "command": "./ai-protocol.sh dashboard",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "clear": true
+      }
+    },
+    {
+      "label": "🛡️ AI Protocol: Check Security",
+      "type": "shell",
+      "command": "./ai-protocol.sh check",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "🧹 AI Protocol: Clean (New Session)",
+      "type": "shell",
+      "command": "./ai-protocol.sh clean",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "🤝 AI Protocol: Handoff",
+      "type": "shell",
+      "command": "./ai-protocol.sh handoff",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "🗄️ AI Protocol: Prune Archive",
+      "type": "shell",
+      "command": "./ai-protocol.sh prune",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    }
+  ]
+}
