@@ -83,6 +83,23 @@ export async function approvePayment(
   const userRef = doc(db, USERS_COLLECTION, userId);
   const userSnap = await getDoc(userRef); // Get user data to extract lineUserId
 
+  let maxDailySongs = 100; // ค่าเริ่มต้นหากเกิดข้อผิดพลาด
+  try {
+      const sysSnap = await getDoc(doc(db, "settings", "default"));
+      if (sysSnap.exists()) {
+          const sysConfig = sysSnap.data();
+          maxDailySongs = sysConfig?.membership?.[membershipType]?.max_daily_songs || 100;
+      }
+  } catch (e) {
+      console.warn("⚠️ Failed to fetch quota config during web approval:", e);
+  }
+
+  const quotaData = {
+      daily_limit: maxDailySongs,
+      used: 0,
+      last_reset: new Date().toISOString()
+  };
+
   const membershipData = {
     type: membershipType,
     status: 'active',
@@ -97,6 +114,7 @@ export async function approvePayment(
     isPremium: true,
     role: 'premium',
     tier: membershipType,
+    quota: quotaData,
     updatedAt: serverTimestamp()
   });
 
@@ -107,6 +125,9 @@ export async function approvePayment(
       await update(rtdbUserRef, {
         role: 'premium',
         tier: membershipType,
+        'quota/daily_limit': maxDailySongs,
+        'quota/used': 0,
+        'quota/last_reset': quotaData.last_reset,
         subscription: {
           plan: membershipType,
           status: 'active',

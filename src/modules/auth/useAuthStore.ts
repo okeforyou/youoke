@@ -374,28 +374,14 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                             membership.status = 'active'; // Force active
                                             membership.type = 'lifetime'; // Force lifetime view
                                         } else {
-                                            console.warn('⚠️ Membership Expired! Downgrading to Free...');
+                                            console.warn('⚠️ Membership Expired! Downgrading to Free (In-Memory Only)...');
                                             membership = {
                                                 ...EXPIRED_MEMBERSHIP
                                             };
-                                            // Update Firestore and RTDB immediately
-                                            const { updateDoc } = await import('firebase/firestore');
-                                            updateDoc(userRef, { 
-                                                membership,
-                                                isPremium: false,
-                                                tier: 'free',
-                                                role: 'user'
-                                            }).catch(e => console.error('Firestore expiry sync failed', e));
-
-                                            if (realtimeDb) {
-                                                // Also update top-level role and tier in RTDB
-                                                rtdbUpdate(ref(realtimeDb, `users/${firebaseUser.uid}`), {
-                                                    role: 'user',
-                                                    tier: 'free',
-                                                    'subscription/status': 'expired',
-                                                    'subscription/plan': 'free'
-                                                }).catch(e => console.error('RTDB expiry sync failed', e));
-                                            }
+                                            // ปรับแก้เฉพาะ State ในหน่วยความจำบราวเซอร์ (ไม่เขียนทับฐานข้อมูลหลัก)
+                                            userData.isPremium = false;
+                                            userData.tier = 'free';
+                                            userData.role = 'user';
 
                                             // Show Alert for recently expired users
                                             set({ showExpiryAlert: true });

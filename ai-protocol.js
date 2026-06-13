@@ -11,7 +11,7 @@ const crypto = require('crypto');
 // If you are an AI Agent adding a new feature or fixing a bug in this file,
 // you MUST increment the PROTOCOL_VERSION below AND the version in package.json.
 // ============================================================================
-const PROTOCOL_VERSION = "1.1.13";
+const PROTOCOL_VERSION = "1.1.15";
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -317,10 +317,12 @@ function init() {
   const statePath = path.join(targetDir, '.ai/STATE.md');
   const reflectionsPath = path.join(targetDir, '.ai/REFLECTIONS.md');
   const decisionsPath = path.join(targetDir, '.ai/DECISIONS.md');
+  const memoryPath = path.join(targetDir, '.ai/MEMORY.md');
 
   const stateTemplate = path.join(targetDir, '.ai/templates/STATE.template.md');
   const reflectionsTemplate = path.join(targetDir, '.ai/templates/REFLECTIONS.template.md');
   const decisionsTemplate = path.join(targetDir, '.ai/templates/DECISIONS.template.md');
+  const memoryTemplate = path.join(targetDir, '.ai/templates/MEMORY.template.md');
 
   if (!fs.existsSync(statePath) && fs.existsSync(stateTemplate)) {
     fs.copyFileSync(stateTemplate, statePath);
@@ -333,6 +335,10 @@ function init() {
   if (!fs.existsSync(decisionsPath) && fs.existsSync(decisionsTemplate)) {
     fs.copyFileSync(decisionsTemplate, decisionsPath);
     log('green', '✅ Instantiated .ai/DECISIONS.md from template.');
+  }
+  if (!fs.existsSync(memoryPath) && fs.existsSync(memoryTemplate)) {
+    fs.copyFileSync(memoryTemplate, memoryPath);
+    log('green', '✅ Instantiated .ai/MEMORY.md from template.');
   }
 
   log('green', '🎉 AI Protocol initialization complete!');
@@ -401,6 +407,48 @@ async function check() {
     } else {
       log('green', `✅ REFLECTIONS.md has ${entries} entries.`);
     }
+  }
+
+  // 4. Check if code changes are staged without memory updates (Save Game check)
+  if (fs.existsSync(gitPath)) {
+    try {
+      const stagedFilesOutput = execSync('git diff --cached --name-only', { cwd: projectRoot, encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] }).trim();
+      if (stagedFilesOutput) {
+        const stagedFiles = stagedFilesOutput.split(/\r?\n/).map(f => f.trim());
+        const hasCodeChanges = stagedFiles.some(f => {
+          return !f.startsWith('.ai/') && 
+                 !f.startsWith('.') && 
+                 f !== 'package.json' && 
+                 f !== 'package-lock.json' && 
+                 !f.endsWith('.md');
+        });
+        const hasMemoryUpdate = stagedFiles.some(f => f === '.ai/MEMORY.md' || f === '.ai/STATE.md');
+        
+        if (hasCodeChanges && !hasMemoryUpdate) {
+          log('red', '❌ Compliance Danger: You have staged code changes but did not update .ai/MEMORY.md or .ai/STATE.md!');
+          log('red', '   AI must always Save Game before committing. Please update and stage memory files.');
+          hasError = true;
+        } else if (hasCodeChanges && hasMemoryUpdate) {
+          log('green', '✅ Staged code changes are safely accompanied by memory updates.');
+        }
+      }
+    } catch (e) {
+      // Ignore git errors
+    }
+  }
+
+  // 5. Check Knowledge Graph Staleness
+  const graphPath = path.join(projectRoot, '.understand-anything/knowledge-graph.json');
+  if (fs.existsSync(graphPath) && fs.existsSync(gitPath)) {
+    try {
+      const stagedFilesOutput = execSync('git diff --cached --name-only', { cwd: projectRoot, encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] }).trim();
+      if (stagedFilesOutput) {
+        const stagedCount = stagedFilesOutput.split(/\r?\n/).filter(f => f.trim() !== '').length;
+        if (stagedCount > 10) {
+          log('yellow', `⚠️ Warning: You have staged ${stagedCount} files. Since you are using Understand-Anything, it is recommended to run '/understand' to update your Knowledge Graph.`);
+        }
+      }
+    } catch (e) {}
   }
 
   if (!hasError) {
@@ -511,14 +559,13 @@ echo "🤖 Running AI Protocol Check..."
 ${hookLine}
 
 if [ $? -ne 0 ]; then
-  echo "❌ AI Protocol Check Failed. Please fix the warnings."
-  # Uncomment the next line to block commits if check fails
-  # exit 1
+  echo "❌ AI Protocol Check Failed. Please fix compliance warnings before committing."
+  exit 1
 fi
 exit 0
 `;
     atomicWriteSync(hookPath, hookContent, { mode: 0o755 });
-    log('green', '✅ Pre-commit hook installed successfully! (Currently non-blocking)');
+    log('green', '✅ Pre-commit hook installed successfully! (Blocking Mode)');
   }
 }
 
@@ -567,6 +614,18 @@ function handoff() {
     }
   }
 
+  const graphPath = path.join(projectRoot, '.understand-anything/knowledge-graph.json');
+  let graphContext = '*(Knowledge Graph not installed)*';
+  if (fs.existsSync(graphPath)) {
+    try {
+      const graphData = JSON.parse(fs.readFileSync(graphPath, 'utf8'));
+      const nodeCount = graphData.nodes ? graphData.nodes.length : 0;
+      graphContext = `Knowledge Graph is ACTIVE (${nodeCount} nodes).\n💡 AI Agent: You MUST read .understand-anything/knowledge-graph.json to understand the architectural layers before planning changes.`;
+    } catch (e) {
+      graphContext = 'Knowledge Graph is ACTIVE (but failed to parse JSON).';
+    }
+  }
+
   const dateStr = new Date().toLocaleString();
 
   const handoffPrompt = `# 📌 Project Context & Handover (Generated: ${dateStr})
@@ -588,7 +647,12 @@ ${recentReflections}
 ${decisionsContent}
 \`\`\`
 
-## 4. Uncommitted Changes (Git Status)
+## 4. Knowledge Graph Status
+\`\`\`text
+${graphContext}
+\`\`\`
+
+## 5. Uncommitted Changes (Git Status)
 \`\`\`text
 ${gitStatus || 'No uncommitted changes.'}
 \`\`\`
@@ -820,6 +884,24 @@ async function authMcp() {
   }
 }
 
+async function installGraph() {
+  log('blue', '🚀 Installing Understand-Anything Knowledge Graph...');
+  try {
+    execSync('curl -fsSL https://raw.githubusercontent.com/Egonex-AI/Understand-Anything/main/install.sh | bash -s -- antigravity', { stdio: 'inherit' });
+    log('green', '✅ Understand-Anything installed successfully!');
+    log('cyan', '👉 To generate the graph, type `/understand` in your AI chat.');
+  } catch (error) {
+    log('red', `❌ Installation failed: ${error.message}`);
+  }
+}
+
+async function scan() {
+  log('blue', '🧠 Knowledge Graph Scan');
+  log('reset', 'The Knowledge Graph is generated by your AI IDE (Antigravity/Cursor/Claude Code).');
+  log('green', '👉 To start the scan, simply type `/understand` in your AI chat window.');
+  log('cyan', '👉 To view the dashboard, type `/understand-dashboard`.');
+}
+
 function globalInstall() {
   log('cyan', '🌍 Installing AI Protocol Globally...');
   if (!fs.existsSync(path.join(projectRoot, 'package.json'))) {
@@ -848,6 +930,8 @@ function help() {
   log('reset', `  install-hook Install git pre-commit hook`);
   log('reset', `  install-mcp  Install NotebookLM MCP Server for Deep Research`);
   log('reset', `  auth-mcp     Launch browser to authenticate NotebookLM MCP`);
+  log('reset', `  install-graph Install Understand-Anything Knowledge Graph`);
+  log('reset', `  scan         Show instructions to scan the project graph`);
   log('reset', `  update       Update AI Protocol to the latest version`);
   log('reset', `  global-install Make ai-protocol available as a global command`);
 }
@@ -863,6 +947,8 @@ async function run() {
     case 'install-hook': await installHook(); break;
     case 'install-mcp': await installMcp(); break;
     case 'auth-mcp': await authMcp(); break;
+    case 'install-graph': await installGraph(); break;
+    case 'scan': await scan(); break;
     case 'update': await update(); break;
     case 'global-install': await globalInstall(); break;
     default: help(); break;

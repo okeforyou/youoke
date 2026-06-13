@@ -535,28 +535,64 @@ export const AdminService = {
         const currentType = currentData?.membership?.type || 'free';
         const finalRole = (currentRole === 'admin' || currentRole === 'owner') ? currentRole : 'premium';
 
+        // ปัดเศษเวลาหมดอายุ
+        let finalExpiresAt = expiresAt;
+        if (finalExpiresAt) {
+            finalExpiresAt = new Date(finalExpiresAt);
+            finalExpiresAt.setHours(23, 59, 59, 999);
+        }
+
         // 🛡️ Auto-Heal Type and Tier based on Dates
         let newType = currentType;
         let newTier = currentTier;
+        let quotaUpdate: any = {};
         
-        if (expiresAt === null) {
+        if (finalExpiresAt === null) {
             newType = 'lifetime';
             newTier = 'lifetime';
-        } else if (expiresAt > new Date() && (currentTier === 'free' || currentType === 'free')) {
-            // If they have a future expiry date but are stuck in 'free', heal them to 'yearly' as a safe premium tier
-            newType = 'yearly';
-            newTier = 'yearly';
+        } else if (finalExpiresAt > new Date() && (currentTier === 'free' || currentType === 'free')) {
+            // คำนวณช่วงวันเพื่อจำแนกประเภทแพ็กเกจจริง
+            const diffDays = Math.ceil((finalExpiresAt.getTime() - (startedAt ? startedAt.getTime() : new Date().getTime())) / (1000 * 60 * 60 * 24));
+            if (diffDays > 300) {
+                newType = 'yearly';
+                newTier = 'yearly';
+            } else if (diffDays <= 3) {
+                newType = 'day_pass';
+                newTier = 'day_pass';
+            } else {
+                newType = 'monthly';
+                newTier = 'monthly';
+            }
+            
+            // ดึงโควต้าของแพ็กเกจที่เหมาะสม
+            let maxDailySongs = 100;
+            try {
+                const sysSnap = await getDoc(doc(db, "settings", "default"));
+                if (sysSnap.exists()) {
+                    const sysConfig = sysSnap.data();
+                    maxDailySongs = sysConfig?.membership?.[newTier]?.max_daily_songs || 100;
+                }
+            } catch (e) {
+                console.warn("⚠️ Failed to fetch quota during admin heal:", e);
+            }
+            
+            quotaUpdate = {
+                'quota.daily_limit': maxDailySongs,
+                'quota.used': 0,
+                'quota.last_reset': new Date().toISOString()
+            };
         }
 
         const updates: any = {
             'membership.startedAt': startedAt,
-            'membership.expiresAt': expiresAt,
+            'membership.expiresAt': finalExpiresAt,
             'membership.status': 'active', // Ensure status is active when dates are set
             'membership.type': newType,    // Auto-healed type
             'isPremium': true,             // Mark as premium
             'tier': newTier,               // Auto-healed tier
             'role': finalRole,             // v4.10.140: Preserve Admin role
-            'updatedAt': new Date()
+            'updatedAt': new Date(),
+            ...quotaUpdate
         };
 
         // 1. Update Firestore
@@ -569,15 +605,21 @@ export const AdminService = {
                 status: 'active',
                 plan: newType,                 // Sync auto-healed plan
                 startDate: startedAt ? startedAt.toISOString() : null,
-                endDate: expiresAt ? expiresAt.toISOString() : null
+                endDate: finalExpiresAt ? finalExpiresAt.toISOString() : null
             });
             // Update root user tier/role
-            await update(ref(realtimeDb, `users/${uid}`), {
+            const rootUpdates: any = {
                 role: finalRole,
                 tier: newTier,                 // Sync auto-healed tier
                 isPremium: true,
                 updatedAt: rtdbServerTimestamp()
-            });
+            };
+            if (Object.keys(quotaUpdate).length > 0) {
+                rootUpdates['quota/daily_limit'] = quotaUpdate['quota.daily_limit'];
+                rootUpdates['quota/used'] = quotaUpdate['quota.used'];
+                rootUpdates['quota/last_reset'] = quotaUpdate['quota.last_reset'];
+            }
+            await update(ref(realtimeDb, `users/${uid}`), rootUpdates);
         }
     },
 

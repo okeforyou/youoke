@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.87";
+export const SYSTEM_VERSION = "5.5.88";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "v5.5.88 (Stable Membership Framework)",
+        date: "13 มิ.ย. 2569",
+        changes: [
+            "FIX: ปิดการเขียนทับฐานข้อมูลลดระดับเป็น Free จากหน้าบ้าน (useAuthStore) ใช้เพียง State in-memory",
+            "FEATURE: อนุมัติพรีเมียมจากหลังบ้านจะซิงค์ Quota สำหรับการร้องเพลงไปยัง Firestore และ RTDB ทันที",
+            "RELIABILITY: ปัดเศษวันหมดอายุเมื่อเพิ่มวันจากแอดมินให้เป็นสิ้นวัน (23:59:59.999) พร้อมคำนวณและแจก Quota ตามแพ็กเกจให้ถูกต้อง"
+        ],
+        recent_updates: "Membership Drops Prevention & Admin Approval Quota Alignment"
+    },
     {
         version: "v5.5.87 (Resilient Per-Chart Dynamic Fallback Orchestration)",
         date: "17 พ.ค. 2569",
