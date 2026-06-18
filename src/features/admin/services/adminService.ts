@@ -11,6 +11,8 @@ import {
     getDoc,
     limit,
     getCountFromServer, // Import getCountFromServer
+    getAggregateFromServer,
+    sum
 } from "firebase/firestore";
 import {
     ref,
@@ -82,8 +84,8 @@ export const AdminService = {
                 collection(db, "users"),
                 where("membership.status", "==", "active")
             );
-            const activeSnapshot = await withTimeout(getDocs(activeSubsQuery));
-            const activeSubs = activeSnapshot.size;
+            const activeSnapshot = await withTimeout(getCountFromServer(activeSubsQuery));
+            const activeSubs = activeSnapshot.data().count;
             console.log("📊 AdminService: Got Active Subs:", activeSubs);
 
             // 3. Revenue
@@ -92,14 +94,13 @@ export const AdminService = {
                 collection(db, "payment_proofs"),
                 where("status", "==", "approved")
             );
-            const paymentsSnapshot = await withTimeout(getDocs(paymentsQuery));
-            let revenue = 0;
-            let approvedPayments = 0;
-            paymentsSnapshot.forEach(doc => {
-                const data = doc.data();
-                if (data.amount) revenue += Number(data.amount);
-                approvedPayments++;
-            });
+            const paymentsSnapshot = await withTimeout(getAggregateFromServer(paymentsQuery, {
+                revenue: sum('amount')
+            }));
+            const approvedPaymentsSnap = await withTimeout(getCountFromServer(paymentsQuery));
+            
+            const revenue = paymentsSnapshot.data().revenue || 0;
+            const approvedPayments = approvedPaymentsSnap.data().count;
             console.log("📊 AdminService: Got Revenue:", revenue);
 
             // 4. Detailed Payment Counts (Extra counts for Dashboard)

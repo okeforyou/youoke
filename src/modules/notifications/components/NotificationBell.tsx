@@ -26,10 +26,14 @@ export const NotificationBell: React.FC = () => {
       }
     }
 
-    const timer = setTimeout(() => {
-      const q = query(collection(db, 'announcements'), orderBy('createdAt', 'desc'), limit(20));
-      
-      const updateCount = (data: any[]) => {
+    const fetchAnnouncements = async () => {
+      try {
+        const q = query(collection(db, 'announcements'), orderBy('createdAt', 'desc'), limit(20));
+        const snapshot = await getDocs(q);
+        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        setAnnouncements(data);
+
         const freshStored = localStorage.getItem('youoke_read_ids');
         let currentReadIds: string[] = [];
         try {
@@ -39,26 +43,34 @@ export const NotificationBell: React.FC = () => {
 
         const unreadItems = data.filter(item => !currentReadIds.includes(item.id));
         setUnreadCount(unreadItems.length);
-      };
+      } catch (err) {
+        console.error('❌ [NotifBell]:', err);
+      }
+    };
 
-      const unsub = onSnapshot(q, (snapshot) => {
-        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setAnnouncements(data);
-        updateCount(data);
-      }, (err) => console.error('❌ [NotifBell]:', err));
+    const timer = setTimeout(() => {
+      fetchAnnouncements();
 
       // 🛡️ v4.1.9 Cross-component Sync
       const handleSync = () => {
-        updateCount(announcements);
+        const freshStored = localStorage.getItem('youoke_read_ids');
+        let currentReadIds: string[] = [];
+        try {
+          currentReadIds = freshStored ? JSON.parse(freshStored) : [];
+        } catch (e) {}
+        
+        setAnnouncements(prev => {
+          const unreadItems = prev.filter(item => !currentReadIds.includes(item.id));
+          setUnreadCount(unreadItems.length);
+          return prev;
+        });
       };
       window.addEventListener('youoke_notifications_updated', handleSync);
 
       return () => {
-        unsub();
         window.removeEventListener('youoke_notifications_updated', handleSync);
       };
     }, 2000);
-
 
     return () => clearTimeout(timer);
   }, [user?.uid]);

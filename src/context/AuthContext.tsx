@@ -79,21 +79,10 @@ export const AuthContextProvider = ({
   const signInWithGoogle = storeGoogleSignIn;
   const loading = isLoading;
 
-  // force refresh the token every 10 minutes
+  // Removed periodic ID token refresh to drastically reduce Firestore Document Reads quota.
+  // Firebase SDK automatically refreshes tokens 5 minutes before they expire (every 55 minutes).
   useEffect(() => {
-    if (typeof window === 'undefined' || !auth) return;
-
-    const handle = setInterval(async () => {
-      if (auth) {
-        const currentUser = auth.currentUser;
-        if (currentUser) {
-          console.log('🔄 [AuthContext] Periodic ID Token Refresh...');
-          await currentUser.getIdToken(true);
-        }
-      }
-    }, 10 * 60 * 1000);
-
-    return () => clearInterval(handle);
+    // Left intentionally empty to preserve effect structure if needed
   }, []);
 
   return (

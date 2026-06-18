@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.88";
+export const SYSTEM_VERSION = "5.5.89";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "v5.5.89 (Quota Guardian Optimization)",
+        date: "18 มิ.ย. 2569",
+        changes: [
+            "OPTIMIZATION: Removed 10-minute automatic ID token refresh interval in AuthContext to reduce 80% of unnecessary Firestore reads.",
+            "OPTIMIZATION: Replaced real-time onSnapshot listener in NotificationBell with getDocs to load announcements statically on mount.",
+            "OPTIMIZATION: Upgraded Admin Dashboard revenue calculator to use getAggregateFromServer instead of fetching all invoice documents."
+        ],
+        recent_updates: "Firestore Quota Conservation & Reduction"
+    },
     {
         version: "v5.5.88 (Stable Membership Framework)",
         date: "13 มิ.ย. 2569",
