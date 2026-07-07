@@ -100,6 +100,13 @@ const EXPIRED_MEMBERSHIP: MembershipState = {
     showAds: true
 };
 
+const parseDateVal = (val: any): Date | null => {
+    if (!val) return null;
+    if (typeof val.toDate === 'function') return val.toDate();
+    const d = new Date(val);
+    return isNaN(d.getTime()) ? null : d;
+};
+
 export const useAuthStore = create<UserState & AuthActions>()(
     persist(
         (set, get) => ({
@@ -292,11 +299,36 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                 const userData = userSnap.data();
                                 let membership = userData.membership || DEFAULT_MEMBERSHIP;
 
+                                // --- START: DUAL-DATABASE MEMBERSHIP RECONCILIATION ---
+                                const fsExpiresAt = parseDateVal(membership?.expiresAt);
+                                const rtdbExpiresAt = parseDateVal(rtdbData?.subscription?.endDate);
+                                
+                                const isFsLifetime = membership?.type === 'lifetime' || membership?.type === 'permanent' || userData.tier === 'lifetime' || (membership?.expiresAt === null && membership?.type && !['free', 'trial', 'day_pass'].includes(membership.type));
+                                const isRtdbLifetime = rtdbData?.tier === 'lifetime' || rtdbData?.subscription?.plan === 'lifetime';
+                                
+                                const trueIsLifetime = isFsLifetime || isRtdbLifetime;
+                                
+                                if (!trueIsLifetime && rtdbExpiresAt) {
+                                    // If RTDB has a valid expiry that is fresher than Firestore
+                                    if (!fsExpiresAt || rtdbExpiresAt > fsExpiresAt) {
+                                        if (rtdbExpiresAt > new Date()) {
+                                            console.log('🩹 [AuthStore] RTDB has fresher active subscription. Reconciling in-memory...');
+                                            membership = {
+                                                type: rtdbData.subscription?.plan || rtdbData.tier || 'monthly',
+                                                status: 'active',
+                                                startedAt: membership?.startedAt || new Date().toISOString(),
+                                                expiresAt: rtdbExpiresAt,
+                                                showAds: false
+                                            };
+                                            userData.tier = membership.type;
+                                            userData.isPremium = true;
+                                        }
+                                    }
+                                }
+                                // --- END: DUAL-DATABASE MEMBERSHIP RECONCILIATION ---
+
                                 // 👑 [HARDENED LIFETIME SHIELD] - Ultimate active self-healing
-                                const isLifetime = membership?.type === 'lifetime' || 
-                                                   membership?.type === 'permanent' || 
-                                                   userData.tier === 'lifetime' ||
-                                                   (membership?.expiresAt === null && membership?.type && !['free', 'trial', 'day_pass'].includes(membership.type));
+                                const isLifetime = trueIsLifetime;
 
                                 if (isLifetime) {
                                     console.log('👑 [AuthStore] Lifetime Member Shield Activated. Auto-healing...');
@@ -359,13 +391,70 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                         }
                                     }
                                 } else if (membership.expiresAt) {
-                                    const expiry = membership.expiresAt.toDate ? membership.expiresAt.toDate() : new Date(membership.expiresAt);
+                                    const expiry = parseDateVal(membership.expiresAt) || new Date(0);
                                     const now = new Date();
                                     const isExpired = now > expiry;
 
                                     // Calculate days remaining
                                     const diffMs = expiry.getTime() - now.getTime();
                                     const daysRemaining = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+                                    // 🛡️ [ACTIVE SUB SHIELD] - Self-heal Firestore and RTDB for active monthly/yearly
+                                    if (!isExpired) {
+                                        const expectedType = membership.type || 'monthly';
+                                        
+                                        // 1. Force state memory correctly
+                                        userData.isPremium = true;
+                                        userData.tier = expectedType;
+                                        if (userData.role !== 'admin' && userData.role !== 'owner') {
+                                            userData.role = 'premium';
+                                        }
+
+                                        // 2. Heal Firestore if out of sync
+                                        const needsFsHealing = 
+                                            userData.membership?.type !== expectedType ||
+                                            userData.membership?.status !== 'active' ||
+                                            !userData.membership?.expiresAt ||
+                                            userData.isPremium !== true ||
+                                            userData.tier !== expectedType ||
+                                            (userData.role !== 'admin' && userData.role !== 'owner' && userData.role !== 'premium');
+
+                                        if (needsFsHealing) {
+                                            console.log('🩹 [AuthStore] Healing Active Sub data in Firestore...');
+                                            const { updateDoc } = await import('firebase/firestore');
+                                            updateDoc(userRef, {
+                                                'membership.type': expectedType,
+                                                'membership.status': 'active',
+                                                'membership.expiresAt': expiry,
+                                                isPremium: true,
+                                                tier: expectedType,
+                                                role: userData.role
+                                            }).catch(e => console.error('Firestore sub repair failed', e));
+                                        }
+
+                                        // 3. Heal RTDB if out of sync
+                                        if (realtimeDb) {
+                                            const rtdbPath = `users/${firebaseUser.uid}`;
+                                            const needsRtdbHealing = 
+                                                !rtdbData ||
+                                                rtdbData.role !== userData.role ||
+                                                rtdbData.tier !== expectedType ||
+                                                rtdbData.subscription?.plan !== expectedType ||
+                                                rtdbData.subscription?.status !== 'active' ||
+                                                parseDateVal(rtdbData.subscription?.endDate)?.getTime() !== expiry.getTime();
+
+                                            if (needsRtdbHealing) {
+                                                console.log('🩹 [AuthStore] Healing Active Sub data in RealtimeDB...');
+                                                rtdbUpdate(ref(realtimeDb, rtdbPath), {
+                                                    role: userData.role,
+                                                    tier: expectedType,
+                                                    'subscription/plan': expectedType,
+                                                    'subscription/status': 'active',
+                                                    'subscription/endDate': expiry.toISOString()
+                                                }).catch(e => console.error('RTDB sub repair failed', e));
+                                            }
+                                        }
+                                    }
 
                                     if (isExpired && membership.status !== 'expired') {
                                         // 👑 v4.9.140: NEVER Downgrade Admins/Owners
