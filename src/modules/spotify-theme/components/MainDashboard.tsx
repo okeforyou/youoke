@@ -108,24 +108,21 @@ export default function MainDashboard({ showTab = true, mode = 'default' }: { sh
     status: "success",
   } as GetTopArtists);
 
-  const [artistOverrides, setArtistOverrides] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    const fetchOverrides = async () => {
-      if (!db) return;
-      try {
-        const snapshot = await getDocs(collection(db, "artist_images"));
-        const data: Record<string, string> = {};
-        snapshot.forEach(doc => {
-          data[doc.id] = doc.data().imageUrl;
-        });
-        setArtistOverrides(data);
-      } catch (err) {
-        console.warn("Failed to fetch artist overrides:", err);
-      }
-    };
-    fetchOverrides();
-  }, []);
+  // Artist Overrides (Cached via React Query to save Firestore Quota)
+  const { data: artistOverrides = {} } = useQuery({
+    queryKey: ["artist_images_overrides"],
+    queryFn: async () => {
+      if (!db) return {};
+      const snapshot = await getDocs(collection(db, "artist_images"));
+      const data: Record<string, string> = {};
+      snapshot.forEach(doc => {
+        data[doc.id] = doc.data().imageUrl;
+      });
+      return data;
+    },
+    staleTime: 1000 * 60 * 60 * 24, // 24 hours
+    gcTime: 1000 * 60 * 60 * 24,
+  });
 
   const playlistRef = useRef<HTMLDivElement>(null);
   const songlistRef = useRef<HTMLDivElement>(null);

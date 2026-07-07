@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.89";
+export const SYSTEM_VERSION = "5.5.90";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "v5.5.90 (Firestore Quota Cache Shield)",
+        date: "7 ก.ค. 2569",
+        changes: [
+            "FIX: Replaced useEffect with useQuery (24h staleTime) in MainDashboard for fetching artist_images to prevent Firestore Quota Exceeded (RESOURCE_EXHAUSTED).",
+            "UX: Solved the infinite skeleton loading issue caused by quota exhaustion.",
+            "STABILITY: Maintained Dual-Database Sync for Auth to prevent premium drops."
+        ],
+        recent_updates: "MainDashboard Quota Reduction & Cache Shield"
+    },
     {
         version: "v5.5.89 (Quota Guardian Optimization)",
         date: "18 มิ.ย. 2569",
