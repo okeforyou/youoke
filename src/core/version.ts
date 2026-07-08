@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.90";
+export const SYSTEM_VERSION = "5.5.91";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "v5.5.91 (Vocal Separation PoC)",
+        date: "8 ก.ค. 2569",
+        changes: [
+            "FEATURE: Added Python script for Demucs vocal separation (scripts/vocal-separation).",
+            "UI: Added Karaoke UI Proof of Concept for vocal volume control (/poc-karaoke)."
+        ],
+        recent_updates: "Vocal Separation PoC & Mixer UI"
+    },
     {
         version: "v5.5.90 (Firestore Quota Cache Shield)",
         date: "7 ก.ค. 2569",
