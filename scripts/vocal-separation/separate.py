@@ -45,7 +45,7 @@ def separate_audio(input_file, output_dir):
     print("This may take a few minutes depending on your computer's performance...")
     
     cmd = [
-        "python3", "-m", "demucs",
+        sys.executable, "-m", "demucs",
         "-n", "htdemucs_ft",
         "--two-stems=vocals",
         "-o", output_dir,
