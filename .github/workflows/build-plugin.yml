@@ -51,7 +51,7 @@ jobs:
 
       - name: Install Node Dependencies
         working-directory: youoke-plugin
-        run: npm ci
+        run: npm install
 
       - name: Build and Publish Electron App
         working-directory: youoke-plugin
