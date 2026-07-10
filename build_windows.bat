@@ -5,7 +5,7 @@ echo ==============================================
 echo.
 
 echo 1. Installing Python dependencies...
-pip install -r requirements.txt
+pip install -r scripts\local-bridge\requirements.txt
 pip install pyinstaller
 
 echo.
