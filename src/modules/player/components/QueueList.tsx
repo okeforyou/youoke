@@ -93,6 +93,20 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay, onSave
                     <p className="text-[11px] text-gray-500 dark:text-zinc-500 truncate font-medium">
                         {video.author}
                     </p>
+                    {/* AI Status Badge */}
+                    {video.sourceType === 'youoke_ai' && video.aiStatus && (
+                        <div className="mt-1 flex items-center">
+                            {video.aiStatus === 'pending' && <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-yellow-100 text-yellow-700 border border-yellow-200">รอคิวแยกเสียง</span>}
+                            {video.aiStatus === 'processing' && (
+                                <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-blue-100 text-blue-700 border border-blue-200 flex items-center gap-1">
+                                    <span className="w-2 h-2 rounded-full border-2 border-blue-500 border-t-transparent animate-spin"></span>
+                                    กำลังแยกเสียงร้องด้วย AI...
+                                </span>
+                            )}
+                            {video.aiStatus === 'ready' && <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-green-100 text-green-700 border border-green-200">✨ แยกเสียงร้องสำเร็จ</span>}
+                            {video.aiStatus === 'error' && <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-red-100 text-red-700 border border-red-200">❌ ล้มเหลว (ลองใหม่)</span>}
+                        </div>
+                    )}
                 </div>
 
                 {/* Remove Button */}
