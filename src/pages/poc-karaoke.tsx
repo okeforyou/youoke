@@ -78,7 +78,11 @@ export default function PocKaraoke() {
     if (isPlaying) {
       interval = setInterval(() => {
         if (!ytPlayerRef.current || !instrumentalRef.current || !vocalRef.current) return;
-        const ytTime = ytPlayerRef.current.getCurrentTime() || 0;
+        const state = ytPlayerRef.current.getPlayerState();
+        if (state !== 1) return; // Only sync if actually playing
+        
+        const ytTime = ytPlayerRef.current.getCurrentTime();
+        if (typeof ytTime !== 'number' || ytTime === 0 && duration > 0) return; // Prevent bad sync at 0
         
         if (Math.abs(instrumentalRef.current.currentTime - ytTime) > 0.3) {
           instrumentalRef.current.currentTime = ytTime;
@@ -91,15 +95,17 @@ export default function PocKaraoke() {
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [isPlaying]);
+  }, [isPlaying, duration]);
 
   // Ultimate Sync
   useEffect(() => {
     if (!vocalRef.current || !instrumentalRef.current || !ytPlayerRef.current) return;
     if (isPlaying) {
-      const ytTime = ytPlayerRef.current.getCurrentTime() || 0;
-      if (Math.abs(vocalRef.current.currentTime - ytTime) > 0.3) vocalRef.current.currentTime = ytTime;
-      if (Math.abs(instrumentalRef.current.currentTime - ytTime) > 0.3) instrumentalRef.current.currentTime = ytTime;
+      const ytTime = ytPlayerRef.current.getCurrentTime();
+      if (typeof ytTime === 'number' && ytTime > 0) {
+        if (Math.abs(vocalRef.current.currentTime - ytTime) > 0.3) vocalRef.current.currentTime = ytTime;
+        if (Math.abs(instrumentalRef.current.currentTime - ytTime) > 0.3) instrumentalRef.current.currentTime = ytTime;
+      }
       vocalRef.current.play().catch(e=>console.error(e));
       instrumentalRef.current.play().catch(e=>console.error(e));
     } else {
@@ -111,14 +117,12 @@ export default function PocKaraoke() {
   const handlePlayPause = () => {
     if (!isLoaded || !ytPlayerRef.current) return;
     const state = ytPlayerRef.current.getPlayerState();
-    if (state === 1 || state === 3) {
+    if (state === 1 || state === 3) { // Playing or Buffering
       ytPlayerRef.current.pauseVideo();
-      if (vocalRef.current) vocalRef.current.pause();
-      if (instrumentalRef.current) instrumentalRef.current.pause();
+      // Let onStateChange handle audio pausing
     } else {
       ytPlayerRef.current.playVideo();
-      if (vocalRef.current) vocalRef.current.play().catch(()=>{});
-      if (instrumentalRef.current) instrumentalRef.current.play().catch(()=>{});
+      // Let onStateChange handle audio playing
     }
   };
 
@@ -403,6 +407,8 @@ export default function PocKaraoke() {
                 } else if (e.data === 0) { // ENDED
                   setIsPlaying(false);
                   handleNext();
+                } else if (e.data === 3) { // BUFFERING
+                  setIsPlaying(false);
                 }
               }}
             />
