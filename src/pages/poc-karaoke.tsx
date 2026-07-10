@@ -38,6 +38,10 @@ export default function PocKaraoke() {
   const [duration, setDuration] = useState(0);
 
   const [volumes, setVolumes] = useState({ vocals: 100, instrumental: 100 });
+  const [trackStates, setTrackStates] = useState({
+    vocals: { muted: false, solo: false },
+    instrumental: { muted: false, solo: false }
+  });
 
   const instrumentalRef = useRef<HTMLAudioElement | null>(null);
   const vocalRef = useRef<HTMLAudioElement | null>(null);
@@ -69,11 +73,32 @@ export default function PocKaraoke() {
     }
   };
 
+  const toggleMute = (type: 'vocals' | 'instrumental') => {
+    setTrackStates(prev => ({ ...prev, [type]: { ...prev[type], muted: !prev[type].muted } }));
+  };
+
+  const toggleSolo = (type: 'vocals' | 'instrumental') => {
+    setTrackStates(prev => {
+      const newSolo = !prev[type].solo;
+      return { 
+        vocals: { ...prev.vocals, solo: type === 'vocals' ? newSolo : false },
+        instrumental: { ...prev.instrumental, solo: type === 'instrumental' ? newSolo : false }
+      };
+    });
+  };
+
+  const getEffectiveVolume = useCallback((type: 'vocals' | 'instrumental') => {
+    const isAnySolo = trackStates.vocals.solo || trackStates.instrumental.solo;
+    if (isAnySolo && !trackStates[type].solo) return 0;
+    if (trackStates[type].muted) return 0;
+    return volumes[type];
+  }, [trackStates, volumes]);
+
   // Resilient Volume Sync
   useEffect(() => {
-    if (vocalRef.current) vocalRef.current.volume = volumes.vocals / 100;
-    if (instrumentalRef.current) instrumentalRef.current.volume = volumes.instrumental / 100;
-  }, [volumes.vocals, volumes.instrumental]);
+    if (vocalRef.current) vocalRef.current.volume = getEffectiveVolume('vocals') / 100;
+    if (instrumentalRef.current) instrumentalRef.current.volume = getEffectiveVolume('instrumental') / 100;
+  }, [getEffectiveVolume]);
 
   // Sync Interval (Slave to YT Time to avoid drift)
   useEffect(() => {
@@ -422,7 +447,7 @@ export default function PocKaraoke() {
                   src={readyAudioId ? `http://127.0.0.1:5050/files/${readyAudioId}/vocals.m4a` : ""} 
                   preload="auto" 
                   onLoadedData={(e) => {
-                    e.currentTarget.volume = volumes.vocals / 100;
+                    e.currentTarget.volume = getEffectiveVolume('vocals') / 100;
                     if (isPlaying) e.currentTarget.play().catch(()=>{});
                     setVocLoaded(true);
                   }} 
@@ -432,7 +457,7 @@ export default function PocKaraoke() {
                   src={readyAudioId ? `http://127.0.0.1:5050/files/${readyAudioId}/no_vocals.m4a` : ""} 
                   preload="auto" 
                   onLoadedData={(e) => {
-                    e.currentTarget.volume = volumes.instrumental / 100;
+                    e.currentTarget.volume = getEffectiveVolume('instrumental') / 100;
                     if (isPlaying) e.currentTarget.play().catch(()=>{});
                     setInstLoaded(true);
                   }} 
@@ -484,21 +509,78 @@ export default function PocKaraoke() {
               <button onClick={toggleCC} className={`px-3 py-1 rounded-full border transition-colors ${showCC ? 'bg-blue-500 border-blue-500 text-white' : 'bg-transparent border-slate-300 text-slate-500 hover:bg-slate-100'}`}>CC</button>
             </div>
 
-            <div className="bg-slate-50 dark:bg-zinc-950 rounded-2xl p-6 border border-slate-100 dark:border-zinc-800 space-y-6">
-              <div className="flex items-center gap-2 mb-2"><h3 className="font-black text-xs tracking-wider text-slate-400 uppercase">Audio Mixer</h3></div>
-              <div>
-                <div className="flex justify-between text-sm mb-3">
-                  <span className="font-bold text-pink-500">🎤 เสียงร้อง (Vocals)</span>
-                  <span className="text-slate-500 border px-2 py-0.5 rounded text-xs">{volumes.vocals}%</span>
-                </div>
-                <input type="range" min="0" max="100" value={volumes.vocals} onChange={(e) => handleVolumeChange('vocals', parseInt(e.target.value))} className="w-full h-2 accent-pink-500" />
+            <div className="bg-[#101014] rounded-2xl p-6 border border-[#2A2A35] shadow-2xl relative overflow-hidden">
+              {/* Fake Waveform Background */}
+              <div className="absolute top-0 left-0 right-0 h-16 opacity-20 pointer-events-none flex items-center justify-center gap-[2px] px-4">
+                {Array.from({length: 80}).map((_, i) => (
+                  <div key={i} className="w-1 bg-[#00E5FF] rounded-full" style={{ height: `${Math.random() * 40 + 10}px` }}></div>
+                ))}
               </div>
-              <div>
-                <div className="flex justify-between text-sm mb-3">
-                  <span className="font-bold text-blue-500">🎸 ดนตรี (Instrumental)</span>
-                  <span className="text-slate-400 border px-2 py-0.5 rounded text-xs">{volumes.instrumental}%</span>
+
+              <div className="relative z-10 flex flex-col gap-4">
+                {/* Vocals Track */}
+                <div className="flex items-center gap-4 bg-[#1C1C24] p-4 rounded-xl border border-[#2A2A35]">
+                  <div className="flex gap-1">
+                    <button 
+                      onClick={() => toggleMute('vocals')}
+                      className={`w-8 h-8 rounded flex items-center justify-center text-xs font-bold transition-colors ${trackStates.vocals.muted ? 'bg-red-500/20 text-red-500 border border-red-500/50' : 'bg-[#2A2A35] text-gray-400 hover:text-white'}`}
+                    >
+                      M
+                    </button>
+                    <button 
+                      onClick={() => toggleSolo('vocals')}
+                      className={`w-8 h-8 rounded flex items-center justify-center text-xs font-bold transition-colors ${trackStates.vocals.solo ? 'bg-yellow-500/20 text-yellow-500 border border-yellow-500/50' : 'bg-[#2A2A35] text-gray-400 hover:text-white'}`}
+                    >
+                      S
+                    </button>
+                  </div>
+                  <div className="text-gray-400 flex-shrink-0 w-8 flex justify-center">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
+                  </div>
+                  <div className="flex-1 relative flex items-center">
+                    <input 
+                      type="range" 
+                      min="0" max="100" 
+                      value={volumes.vocals} 
+                      onChange={(e) => handleVolumeChange('vocals', parseInt(e.target.value))} 
+                      className="w-full h-1 bg-[#2A2A35] rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-black [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#00E5FF] [&::-webkit-slider-thumb]:shadow-[0_0_10px_rgba(0,229,255,0.5)]"
+                    />
+                    <div className="absolute left-0 h-1 bg-[#00E5FF] rounded-full pointer-events-none" style={{ width: `${volumes.vocals}%` }}></div>
+                  </div>
+                  <div className="text-xs font-mono text-gray-500 w-8 text-right">{volumes.vocals}</div>
                 </div>
-                <input type="range" min="0" max="100" value={volumes.instrumental} onChange={(e) => handleVolumeChange('instrumental', parseInt(e.target.value))} className="w-full h-2 accent-blue-500" />
+
+                {/* Instrumental Track */}
+                <div className="flex items-center gap-4 bg-[#1C1C24] p-4 rounded-xl border border-[#2A2A35]">
+                  <div className="flex gap-1">
+                    <button 
+                      onClick={() => toggleMute('instrumental')}
+                      className={`w-8 h-8 rounded flex items-center justify-center text-xs font-bold transition-colors ${trackStates.instrumental.muted ? 'bg-red-500/20 text-red-500 border border-red-500/50' : 'bg-[#2A2A35] text-gray-400 hover:text-white'}`}
+                    >
+                      M
+                    </button>
+                    <button 
+                      onClick={() => toggleSolo('instrumental')}
+                      className={`w-8 h-8 rounded flex items-center justify-center text-xs font-bold transition-colors ${trackStates.instrumental.solo ? 'bg-yellow-500/20 text-yellow-500 border border-yellow-500/50' : 'bg-[#2A2A35] text-gray-400 hover:text-white'}`}
+                    >
+                      S
+                    </button>
+                  </div>
+                  <div className="text-gray-400 flex-shrink-0 w-8 flex justify-center">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" /></svg>
+                  </div>
+                  <div className="flex-1 relative flex items-center">
+                    <input 
+                      type="range" 
+                      min="0" max="100" 
+                      value={volumes.instrumental} 
+                      onChange={(e) => handleVolumeChange('instrumental', parseInt(e.target.value))} 
+                      className="w-full h-1 bg-[#2A2A35] rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-black [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#00E5FF] [&::-webkit-slider-thumb]:shadow-[0_0_10px_rgba(0,229,255,0.5)]"
+                    />
+                    <div className="absolute left-0 h-1 bg-[#00E5FF] rounded-full pointer-events-none" style={{ width: `${volumes.instrumental}%` }}></div>
+                  </div>
+                  <div className="text-xs font-mono text-gray-500 w-8 text-right">{volumes.instrumental}</div>
+                </div>
               </div>
             </div>
           </div>
