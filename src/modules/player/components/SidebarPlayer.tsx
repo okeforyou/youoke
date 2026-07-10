@@ -17,6 +17,7 @@ import { QuotaIndicator } from "./QuotaIndicator";
 // Hooks
 import { usePlayerLifecycle } from "../hooks/usePlayerLifecycle";
 import { usePlayerSync } from "../hooks/usePlayerSync";
+import { useAiProcessor } from "../../../hooks/useAiProcessor";
 import { useCast } from "../../../plugins/cast/context/CastContext";
 
 import { Tv, Radio, Monitor, Power, PlayCircle } from 'lucide-react';
@@ -52,6 +53,9 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
     const controlsTimerRef = useRef<NodeJS.Timeout | null>(null);
     const [showMiniControls, setShowMiniControls] = useState(false);
     const cast = useCast();
+
+    // Start background AI processing loop
+    useAiProcessor();
 
     const handlePlayPause = () => {
         if (cast.isConnected) {

@@ -396,6 +396,22 @@ export const usePlayerStore = create<PlayerStore>()(
                 return updates;
             }),
 
+            updateQueueItem: (uuid, itemUpdates) => set((state) => {
+                const newQueue = state.queue.map(item => 
+                    item.uuid === uuid ? { ...item, ...itemUpdates } : item
+                );
+                
+                const updates: any = { queue: newQueue };
+                
+                // If the updated item is the currently playing one, update currentVideo too
+                if (state.currentVideo && state.currentVideo.uuid === uuid) {
+                    updates.currentVideo = { ...state.currentVideo, ...itemUpdates };
+                }
+                
+                broadcast(updates);
+                return updates;
+            }),
+
             reorderQueue: (newQueue, newIndex) => {
                 const updates: any = { queue: newQueue };
                 if (newIndex !== undefined) {
@@ -617,7 +633,6 @@ export const usePlayerStore = create<PlayerStore>()(
             storage: createJSONStorage(() => localStorage),
             partialize: (state) => ({
                 volume: state.volume,
-                layoutMode: state.layoutMode,
                 // Persist Queue & Playback State
                 queue: state.queue,
                 currentIndex: state.currentIndex,
@@ -629,6 +644,11 @@ export const usePlayerStore = create<PlayerStore>()(
                 activeIndex: state.activeIndex,
                 repeatMode: state.repeatMode,
                 searchHistory: state.searchHistory,
+            }),
+            merge: (persistedState: any, currentState) => ({
+                ...currentState,
+                ...persistedState,
+                layoutMode: 'split'
             }),
         }
     )
