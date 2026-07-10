@@ -59,7 +59,6 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
     const buttonRef = useRef<HTMLButtonElement>(null);
 
     const isAnyCastOn = (castMode !== 'none' && castMode !== undefined) || isConnected;
-    const isAiReady = currentVideo?.sourceType === 'youoke_ai' && currentVideo?.aiStatus === 'ready';
 
     // Click outside to close mixer popover
     useEffect(() => {
@@ -128,19 +127,23 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
         },
     ];
 
-    // Conditionally insert Vocal Control if AI source
-    if (isAiReady) {
-        controlItems.push({
-            id: 'vocal',
-            icon: trackStates.vocals.muted ? MicOff : Mic,
-            label: "เสียงร้อง",
-            onClick: () => {
-                toggleMixerMute('vocals');
-            },
-            active: !trackStates.vocals.muted,
-            color: "text-primary"
-        });
-    }
+    // Insert Vocal Control
+    controlItems.push({
+        id: 'vocal',
+        icon: trackStates.vocals.muted ? MicOff : Mic,
+        label: "เสียงร้อง",
+        onClick: () => {
+            toggleMixerMute('vocals');
+        },
+        onContextMenu: (e: React.MouseEvent) => {
+            e.preventDefault();
+            setShowVocalMixer(!showVocalMixer);
+        },
+        buttonRef: buttonRef,
+        active: !trackStates.vocals.muted,
+        color: trackStates.vocals.muted ? "text-red-500" : "text-primary",
+        hasMixer: true
+    });
 
     controlItems.push(
         {
