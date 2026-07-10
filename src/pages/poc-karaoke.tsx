@@ -60,17 +60,20 @@ export default function PocKaraoke() {
     }
   }, [currentVideoId, isDragging]);
 
-  // Audio mix
   const handleVolumeChange = (type: 'vocals' | 'instrumental', value: number) => {
     try {
       const safeValue = Number(value) || 0;
       setVolumes(prev => ({ ...prev, [type]: safeValue }));
-      if (type === 'vocals' && vocalRef.current) vocalRef.current.volume = safeValue / 100;
-      if (type === 'instrumental' && instrumentalRef.current) instrumentalRef.current.volume = safeValue / 100;
     } catch (e) {
       console.error(e);
     }
   };
+
+  // Resilient Volume Sync
+  useEffect(() => {
+    if (vocalRef.current) vocalRef.current.volume = volumes.vocals / 100;
+    if (instrumentalRef.current) instrumentalRef.current.volume = volumes.instrumental / 100;
+  }, [volumes.vocals, volumes.instrumental]);
 
   // Sync Interval (Slave to YT Time to avoid drift)
   useEffect(() => {
