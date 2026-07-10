@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.92";
+export const SYSTEM_VERSION = "5.5.93";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -11,17 +11,17 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
  
 export const CHANGELOGS = [
     {
-        version: "v5.5.92 (Local Bridge POC)",
-        date: "9 ก.ค. 2569",
+        version: "v5.5.93 (Desktop Helper Plugin)",
+        date: "10 ก.ค. 2569",
         changes: [
-            "FEATURE: Added Local Bridge API (FastAPI) to handle Demucs vocal separation natively.",
-            "PERFORMANCE: Added fast M4A conversion for separated stems to optimize network transfer and storage.",
-            "FIX: Updated Demucs script to support two-stems extraction properly."
+            "FEATURE: Built Electron Desktop Plugin with Auto-Updater pointing to okeforyou/youoke",
+            "PERFORMANCE: Packaged Python backend into standalone binary via PyInstaller (215MB total installer size)",
+            "CHORE: Configured .gitignore for local plugin built assets to prevent repository bloat"
         ],
-        recent_updates: "Local AI Bridge API for Vocal Separation"
+        recent_updates: "Desktop Plugin for Local AI Vocal Separation"
     },
     {
-        version: "v5.5.91 (Vocal Separation PoC)",
+        version: "v5.5.92 (Local Bridge POC)",
         date: "8 ก.ค. 2569",
         changes: [
             "FEATURE: Added Python script for Demucs vocal separation (scripts/vocal-separation).",

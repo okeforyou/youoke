@@ -1,0 +1,49 @@
+{
+  "name": "youoke-plugin",
+  "version": "1.0.0",
+  "description": "Local AI Bridge for YouOke",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win"
+  },
+  "build": {
+    "appId": "com.okeforyou.plugin",
+    "productName": "YouOke Plugin",
+    "mac": {
+      "category": "public.app-category.music"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "extraResources": [
+      {
+        "from": "bin",
+        "to": "bin",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "okeforyou",
+        "repo": "youoke"
+      }
+    ]
+  },
+  "keywords": [],
+  "author": "YouOke",
+  "license": "ISC",
+  "dependencies": {
+    "electron-updater": "^6.8.9"
+  },
+  "devDependencies": {
+    "electron": "^43.1.0",
+    "electron-builder": "^26.15.3"
+  }
+}
