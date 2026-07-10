@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.97";
+export const SYSTEM_VERSION = "5.5.98";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "v5.5.98 (Fix SidebarControls ReferenceError)",
+        date: "10 ก.ค. 2569",
+        changes: [
+            "FIX: Removed unused isAiReady reference in SidebarControls that caused build failures."
+        ],
+        recent_updates: "SidebarControls Hotfix"
+    },
     {
         version: "v5.5.97 (Show Vocal Button for All Videos)",
         date: "10 ก.ค. 2569",
