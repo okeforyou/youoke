@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.95";
+export const SYSTEM_VERSION = "5.5.96";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,17 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "v5.5.96 (Vocal Separation UI Redesign)",
+        date: "10 ก.ค. 2569",
+        changes: [
+            "UI: Removed bulky AudioMixer from QueueList for a cleaner interface.",
+            "UX: Integrated native AI Vocal Controls directly into SidebarPlayer controls.",
+            "FEATURE: Added minimal popover slider for vocal volume adjustments.",
+            "RELIABILITY: Vocal controls only appear when AI separation is fully ready."
+        ],
+        recent_updates: "Redesigned AI Vocal Separation Interface"
+    },
     {
         version: "v5.5.95 (Vocal Separation Integration & UI Fix)",
         date: "10 ก.ค. 2569",

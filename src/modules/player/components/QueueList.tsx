@@ -4,7 +4,6 @@ import { usePlayerStore } from "../stores/usePlayerStore";
 import { useUIStore } from "../../../stores/useUIStore";
 import Image from 'next/image';
 import clsx from 'clsx';
-import { AudioMixer } from "./AudioMixer";
 import {
     DndContext,
     closestCenter,
@@ -219,12 +218,7 @@ export function QueueList() {
             {/* Content Area */}
             <div className="flex-1 overflow-y-auto pt-2 pb-24 lg:pb-6 relative z-10 bg-white dark:bg-zinc-950 transition-colors">
                 
-                {/* Audio Mixer (Only visible when AI source is playing) */}
-                {currentVideo?.sourceType === 'youoke_ai' && (
-                    <div className="px-4 mb-4">
-                        <AudioMixer />
-                    </div>
-                )}
+                {/* Audio Mixer has been moved to SidebarControls for a unified player experience */}
 
                 {queueItems.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center p-8 text-gray-400 min-h-[300px]">

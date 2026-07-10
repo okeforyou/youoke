@@ -76,3 +76,5 @@ test_*.py
 youoke-plugin/node_modules/
 youoke-plugin/dist/
 youoke-plugin/bin/
+scripts/local-bridge/build/
+scripts/local-bridge/dist/
