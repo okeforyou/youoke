@@ -617,7 +617,6 @@ export const usePlayerStore = create<PlayerStore>()(
             storage: createJSONStorage(() => localStorage),
             partialize: (state) => ({
                 volume: state.volume,
-                layoutMode: state.layoutMode,
                 // Persist Queue & Playback State
                 queue: state.queue,
                 currentIndex: state.currentIndex,
