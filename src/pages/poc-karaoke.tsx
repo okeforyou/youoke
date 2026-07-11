@@ -197,9 +197,12 @@ export default function PocKaraoke() {
   // NEW QUEUE & SEARCH SYSTEM
   // -----------------------------------------
   
+  const [backendError, setBackendError] = useState('');
+
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
     setIsSearching(true);
+    setBackendError('');
     try {
       const res = await fetch(`http://127.0.0.1:5050/search?q=${encodeURIComponent(searchQuery)}`);
       const data = await res.json();
@@ -208,7 +211,8 @@ export default function PocKaraoke() {
       }
     } catch (e) {
       console.error(e);
-      alert("ไม่สามารถเชื่อมต่อระบบค้นหาได้ กรุณาตรวจสอบว่า Backend (server.py) รันอยู่");
+      setBackendError("ไม่สามารถเชื่อมต่อ YouOke Plugin ได้ กรุณาเปิดแอปบนเครื่องของคุณก่อนค้นหา");
+      setSearchResults([]);
     }
     setIsSearching(false);
   };
@@ -632,6 +636,16 @@ export default function PocKaraoke() {
                     <h2 className="text-xl font-black text-black dark:text-white tracking-tight">POC AI Vocal Search Results</h2>
                     <p className="text-sm text-gray-500 mt-1">Search for a song above to separate vocals and instrumentals locally.</p>
                 </div>
+
+                {backendError && (
+                    <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl flex items-start gap-3 text-red-600 dark:text-red-400">
+                        <X className="w-5 h-5 shrink-0 mt-0.5" />
+                        <div>
+                            <h4 className="font-bold text-sm">ข้อผิดพลาดในการเชื่อมต่อ</h4>
+                            <p className="text-xs mt-1">{backendError}</p>
+                        </div>
+                    </div>
+                )}
                 
                 {searchResults.length > 0 ? (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
