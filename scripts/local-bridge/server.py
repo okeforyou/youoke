@@ -8,8 +8,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from youtubesearchpython import VideosSearch
-
 app = FastAPI()
 
 app.add_middleware(
@@ -114,10 +112,23 @@ def separate(req: SeparateRequest):
     yt_url = f"https://www.youtube.com/watch?v={vid}"
     
     try:
-        from pytubefix import YouTube
-        yt = YouTube(yt_url)
-        ys = yt.streams.get_audio_only()
-        ys.download(output_path=song_dir, filename=f"{vid}.m4a")
+        import yt_dlp
+        ydl_opts = {
+            'format': 'm4a/bestaudio/best',
+            'outtmpl': os.path.join(song_dir, f"{vid}.%(ext)s"),
+            'quiet': True,
+        }
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([yt_url])
+        
+        # yt-dlp might download as .webm if m4a is not available, so we should ensure it's converted to m4a
+        # But we actually pass it to convert_audio(..., fmt="wav") later anyway.
+        # Let's just find whatever file was downloaded
+        downloaded_files = [f for f in os.listdir(song_dir) if f.startswith(vid) and f != "vocals.m4a" and f != "no_vocals.m4a"]
+        if not downloaded_files:
+            raise Exception("File not found after download.")
+        m4a_path = os.path.join(song_dir, downloaded_files[0])
+        
     except Exception as e:
         progress_store[vid] = {"status": "error", "percent": 0, "message": "ดาวน์โหลดล้มเหลว"}
         raise HTTPException(status_code=500, detail=f"Download failed: {str(e)}")
