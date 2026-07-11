@@ -111,6 +111,12 @@ app.whenReady().then(() => {
   tray.setContextMenu(contextMenu);
 
   // Auto updater config
+  // Point to our Vercel API proxy so it can securely access private GitHub releases!
+  autoUpdater.setFeedURL({
+    provider: 'generic',
+    url: 'https://play.okeforyou.com/api/updates'
+  });
+
   autoUpdater.on('update-available', () => {
     dialog.showMessageBox({
       type: 'info',
