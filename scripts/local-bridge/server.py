@@ -143,16 +143,12 @@ def separate(req: SeparateRequest):
     # 3. Run Demucs
     progress_store[vid] = {"status": "separating", "percent": 25, "message": "AI กำลังแยกเสียงร้องและดนตรี (อาจใช้เวลา 2-3 นาที)..."}
     try:
-        # Popen to capture stdout/stderr in real-time for progress
-        process = subprocess.Popen([
-            sys.executable, "-m", "demucs.separate", 
-            "-n", "htdemucs_ft", 
-            "--shifts=0",
-            "-d", device,
-            "--two-stems=vocals", 
-            "-o", song_dir, 
-            wav_path
-        ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True)
+        if getattr(sys, 'frozen', False):
+            cmd = [sys.executable, "demucs_worker", "-n", "htdemucs_ft", "--shifts=0", "-d", device, "--two-stems=vocals", "-o", song_dir, wav_path]
+        else:
+            cmd = [sys.executable, "-m", "demucs.separate", "-n", "htdemucs_ft", "--shifts=0", "-d", device, "--two-stems=vocals", "-o", song_dir, wav_path]
+
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True)
         
         buffer = ""
         while True:
@@ -205,5 +201,11 @@ def separate(req: SeparateRequest):
 app.mount("/files", StaticFiles(directory=CACHE_DIR), name="files")
 
 if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == "demucs_worker":
+        from demucs.separate import main
+        sys.argv = ["demucs"] + sys.argv[2:]
+        main()
+        sys.exit(0)
+
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=5050)
