@@ -1,7 +1,7 @@
 {
   "name": "youoke-plugin",
-  "version": "1.0.7",
-  "description": "Local AI Bridge for YouOke",
+  "version": "1.0.8",
+  "description": "YouOke AI Vocal Separator Desktop Plugin",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
