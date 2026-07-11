@@ -69,6 +69,7 @@ function App({ Component, pageProps }: AppProps) {
     }
 
     // v5.5.56: Force unregister old Service Workers to fix stale cache / TypeError issues
+    // v5.5.100: Use sessionStorage to prevent infinite reload loop
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then((registrations) => {
         if (registrations.length > 0) {
@@ -78,11 +79,17 @@ function App({ Component, pageProps }: AppProps) {
               caches.keys().then((keyList) => {
                 return Promise.all(keyList.map((key) => caches.delete(key)));
               }).then(() => {
-                console.log('Caches cleared. Reloading...');
-                window.location.reload();
+                console.log('Caches cleared.');
+                if (!sessionStorage.getItem('sw_cleared')) {
+                  sessionStorage.setItem('sw_cleared', 'true');
+                  window.location.reload();
+                }
               });
             } else {
-              window.location.reload();
+              if (!sessionStorage.getItem('sw_cleared')) {
+                sessionStorage.setItem('sw_cleared', 'true');
+                window.location.reload();
+              }
             }
           });
         }
