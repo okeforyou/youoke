@@ -256,17 +256,17 @@ export default function PocKaraoke() {
   const handleDownloadPlugin = async () => {
     try {
       const isWin = navigator.userAgent.toLowerCase().includes('win');
-      const ext = isWin ? '.exe' : '.dmg';
+      // For private repo, we hardcode the latest release asset URLs so it downloads instantly for authenticated users
+      const version = "1.0.5";
+      let downloadUrl = "";
       
-      const res = await fetch('https://api.github.com/repos/okeforyou/youoke/releases/latest');
-      const data = await res.json();
-      
-      const asset = data.assets?.find((a: any) => a.browser_download_url.endsWith(ext));
-      if (asset) {
-        window.open(asset.browser_download_url, '_blank');
+      if (isWin) {
+        downloadUrl = `https://github.com/okeforyou/youoke/releases/download/v${version}/YouOke-Plugin-Setup-${version}.exe`;
       } else {
-        window.open('https://github.com/okeforyou/youoke/releases/latest', '_blank');
+        downloadUrl = `https://github.com/okeforyou/youoke/releases/download/v${version}/YouOke-Plugin-${version}-arm64.dmg`;
       }
+      
+      window.location.href = downloadUrl;
     } catch (e) {
       window.open('https://github.com/okeforyou/youoke/releases/latest', '_blank');
     }
