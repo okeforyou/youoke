@@ -1,6 +1,6 @@
 {
   "name": "youoke-plugin",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Local AI Bridge for YouOke",
   "main": "main.js",
   "scripts": {
@@ -38,7 +38,8 @@
       {
         "provider": "github",
         "owner": "okeforyou",
-        "repo": "youoke"
+        "repo": "youoke",
+        "releaseType": "release"
       }
     ]
   },
