@@ -4,6 +4,7 @@ import YouTube from 'react-youtube';
 import clsx from 'clsx';
 import { Search, X, Mic, Music, Mic2, Smartphone, Play, Pause, SkipForward, RotateCcw, Volume2, VolumeX, ChevronUp, Maximize, ListMusic, Trash2, Menu } from 'lucide-react';
 import { Sidebar } from '../components/navigation/Sidebar';
+import Modal, { ModalHandler } from '../components/Modal';
 import { DebounceInput } from 'react-debounce-input';
 
 interface QueueItem {
@@ -200,6 +201,8 @@ export default function PocKaraoke() {
   const [backendError, setBackendError] = useState('');
   const retryRef = useRef(0);
   
+  const launchModalRef = useRef<ModalHandler>(null);
+
   const handleSearch = async (isRetry: boolean | React.MouseEvent = false) => {
     const isAutoRetry = typeof isRetry === 'boolean' ? isRetry : false;
     
@@ -219,25 +222,35 @@ export default function PocKaraoke() {
       }
     } catch (e) {
       console.error(e);
-      
-      if (retryRef.current < 2) {
-        // Auto-launch the app seamlessly!
-        if (retryRef.current === 0) {
-            window.location.href = "youoke://start";
-        }
-        retryRef.current += 1;
-        setBackendError(`กำลังปลุก YouOke Plugin... (พยายามครั้งที่ ${retryRef.current}/2) กรุณากด "Open" หากหน้าจอแจ้งเตือน`);
-        
-        // Auto-retry after 3.5 seconds to give the app time to start
-        setTimeout(() => {
-            handleSearch(true);
-        }, 3500);
-      } else {
+      if (!isAutoRetry) {
+        // First failure: show modal instead of jumping straight to protocol
         setBackendError("ไม่สามารถเชื่อมต่อ YouOke Plugin ได้ กรุณาเปิดแอปบนเครื่องด้วยตัวเอง หรือดาวน์โหลดแอปใหม่");
+        launchModalRef.current?.open();
+      } else {
+        if (retryRef.current < 2) {
+          retryRef.current += 1;
+          setBackendError(`กำลังปลุก YouOke Plugin... (พยายามครั้งที่ ${retryRef.current}/2)`);
+          setTimeout(() => {
+              handleSearch(true);
+          }, 3500);
+        } else {
+          setBackendError("ไม่สามารถเชื่อมต่อ YouOke Plugin ได้ กรุณาเปิดแอปบนเครื่องด้วยตัวเอง หรือดาวน์โหลดแอปใหม่");
+        }
       }
       setSearchResults([]);
     }
     setIsSearching(false);
+  };
+
+  const handleLaunchPlugin = () => {
+    window.location.href = "youoke://start";
+    retryRef.current = 0; // Reset retries
+    launchModalRef.current?.close();
+    // Start retrying in 3.5s
+    setBackendError("กำลังปลุก YouOke Plugin... กรุณากด 'Open' หากหน้าจอแจ้งเตือน");
+    setTimeout(() => {
+        handleSearch(true);
+    }, 3500);
   };
 
   const extractVideoId = (url: string) => {
@@ -663,10 +676,16 @@ export default function PocKaraoke() {
                 {backendError && (
                     <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl flex items-start gap-3 text-red-600 dark:text-red-400">
                         <X className="w-5 h-5 shrink-0 mt-0.5" />
-                        <div>
+                        <div className="flex-1">
                             <h4 className="font-bold text-sm">ข้อผิดพลาดในการเชื่อมต่อ</h4>
                             <p className="text-xs mt-1">{backendError}</p>
                         </div>
+                        <button 
+                          onClick={() => launchModalRef.current?.open()}
+                          className="px-3 py-1.5 text-xs font-bold bg-white dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-red-900 transition-colors"
+                        >
+                          ตั้งค่า
+                        </button>
                     </div>
                 )}
                 
@@ -721,6 +740,38 @@ export default function PocKaraoke() {
             />
         </div>
       )}
+
+      <Modal 
+        ref={launchModalRef}
+        body={
+          <div className="p-6 text-center text-gray-700 dark:text-gray-300">
+            <div className="w-16 h-16 bg-pink-100 dark:bg-pink-900/30 text-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Music className="w-8 h-8" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">จำเป็นต้องใช้ YouOke Plugin</h3>
+            <p className="text-sm leading-relaxed">ระบบแยกเสียงด้วย AI ขั้นสูง จำเป็นต้องใช้พลังประมวลผลจากเครื่องของคุณผ่านตัวแอป YouOke Plugin (Desktop) เพื่อให้สามารถแยกเสียงร้องได้อย่างสมบูรณ์แบบและไร้ขีดจำกัด</p>
+            <p className="text-sm mt-4 font-semibold text-gray-900 dark:text-white">หากคุณติดตั้งแอปไว้แล้ว กรุณากดปุ่มด้านล่าง</p>
+          </div>
+        }
+        footer={
+          <div className="flex flex-col gap-3">
+            <button 
+              onClick={handleLaunchPlugin}
+              className="w-full py-3.5 bg-pink-500 hover:bg-pink-600 text-white rounded-xl font-bold transition-colors shadow-sm"
+            >
+              เปิด YouOke Plugin
+            </button>
+            <a 
+              href="https://github.com/okeforyou/youoke/releases" 
+              target="_blank" rel="noreferrer"
+              className="w-full py-3 bg-gray-100 hover:bg-gray-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-gray-900 dark:text-white rounded-xl font-bold transition-colors text-center"
+              onClick={() => launchModalRef.current?.close()}
+            >
+              ยังไม่มีแอป? ดาวน์โหลดที่นี่
+            </a>
+          </div>
+        }
+      />
     </div>
   );
 }
