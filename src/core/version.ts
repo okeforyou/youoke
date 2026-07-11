@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.98";
+export const SYSTEM_VERSION = "5.5.99";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "v5.5.99 (Temporarily Disable Vocal Separation)",
+        date: "11 ก.ค. 2569",
+        changes: [
+            "UI: Temporarily removed the vocal mute (เสียงร้อง) button from the player controls.",
+            "FIX: Removed the 'ล้มเหลว' (Failed) badge for AI-processed songs from the Queue list."
+        ],
+        recent_updates: "Temporarily disabled AI vocal separation UI"
+    },
     {
         version: "v5.5.98 (Fix SidebarControls ReferenceError)",
         date: "10 ก.ค. 2569",

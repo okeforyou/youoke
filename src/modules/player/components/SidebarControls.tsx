@@ -44,9 +44,6 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
 
     const {
         trackStates,
-        volumes,
-        setVolume,
-        toggleMute: toggleMixerMute
     } = useMixerStore();
 
     const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
@@ -54,33 +51,9 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
     const cast = useCast();
     const { isConnected, isRecovering } = cast;
 
-    const [showVocalMixer, setShowVocalMixer] = useState(false);
-    const mixerRef = useRef<HTMLDivElement>(null);
-    const buttonRef = useRef<HTMLButtonElement>(null);
-
     const isAnyCastOn = (castMode !== 'none' && castMode !== undefined) || isConnected;
 
-    // Click outside to close mixer popover
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-            if (
-                showVocalMixer &&
-                mixerRef.current &&
-                !mixerRef.current.contains(event.target as Node) &&
-                buttonRef.current &&
-                !buttonRef.current.contains(event.target as Node)
-            ) {
-                setShowVocalMixer(false);
-            }
-        };
 
-        document.addEventListener("mousedown", handleClickOutside);
-        document.addEventListener("touchstart", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-            document.removeEventListener("touchstart", handleClickOutside);
-        };
-    }, [showVocalMixer]);
 
     // Build control items dynamically
     const controlItems = [
@@ -127,23 +100,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
         },
     ];
 
-    // Insert Vocal Control
-    controlItems.push({
-        id: 'vocal',
-        icon: trackStates.vocals.muted ? MicOff : Mic,
-        label: "เสียงร้อง",
-        onClick: () => {
-            toggleMixerMute('vocals');
-        },
-        onContextMenu: (e: React.MouseEvent) => {
-            e.preventDefault();
-            setShowVocalMixer(!showVocalMixer);
-        },
-        buttonRef: buttonRef,
-        active: !trackStates.vocals.muted,
-        color: trackStates.vocals.muted ? "text-red-500" : "text-primary",
-        hasMixer: true
-    });
+
 
     controlItems.push(
         {
@@ -188,54 +145,15 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             {/* Glass Background matching Footer */}
             <div className="absolute inset-0 bg-[#f4f4f5]/95 dark:bg-zinc-900/95 backdrop-blur-xl border-b border-gray-200/50 dark:border-zinc-800/50 transition-colors" />
 
-            {/* Vocal Mixer Popover */}
-            <div
-                ref={mixerRef}
-                className={clsx(
-                    "absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-[180px] bg-white dark:bg-zinc-900 border border-gray-200/50 dark:border-zinc-800/50 rounded-2xl shadow-xl backdrop-blur-xl transition-all duration-300 origin-bottom z-50",
-                    showVocalMixer ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 translate-y-2 pointer-events-none"
-                )}
-            >
-                <div className="p-4 flex flex-col gap-3">
-                    <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-widest">ระดับเสียงร้อง</span>
-                        <span className="text-xs font-black text-primary">{Math.round(volumes.vocals)}%</span>
-                    </div>
-                    <div className="relative h-6 flex items-center group/slider">
-                        <input
-                            type="range"
-                            min="0"
-                            max="100"
-                            value={volumes.vocals}
-                            onChange={(e) => setVolume('vocals', parseInt(e.target.value))}
-                            className="w-full h-1.5 bg-gray-200 dark:bg-zinc-800 rounded-full appearance-none cursor-pointer outline-none transition-all group-hover/slider:h-2"
-                            style={{
-                                backgroundImage: `linear-gradient(to right, #ef4444 ${volumes.vocals}%, transparent ${volumes.vocals}%)`
-                            }}
-                        />
-                    </div>
-                </div>
-                {/* Arrow down */}
-                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white dark:bg-zinc-900 border-b border-r border-gray-200/50 dark:border-zinc-800/50 rotate-45" />
-            </div>
+
 
             {/* Horizontal Controls Row - Full Width with depth */}
             <div className="relative flex items-center justify-between px-2 h-[56px]">
                 {controlItems.map((item, index) => (
                     <button
                         key={item.id}
-                        ref={item.id === 'vocal' ? buttonRef : null}
                         onClick={(e) => {
                             item.onClick();
-                            // Only toggle popover on long press or specific target? 
-                            // Actually, let's toggle popover if they click the label/container vs just the icon if we wanted,
-                            // but standard simple UX: clicking the button toggles MUTE. We need a way to open the popover.
-                        }}
-                        onContextMenu={(e) => {
-                            if (item.id === 'vocal') {
-                                e.preventDefault();
-                                setShowVocalMixer(!showVocalMixer);
-                            }
                         }}
                         className="flex flex-col items-center justify-center flex-1 h-full active:scale-95 transition-all duration-200 group relative"
                     >
@@ -248,17 +166,6 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                 strokeWidth={item.active ? 2.2 : 1.5}
                                 className={clsx("transition-transform duration-300", item.active && "scale-105")}
                             />
-                            {item.id === 'vocal' && (
-                                <div 
-                                    className="p-0.5 rounded-full hover:bg-black/10 dark:hover:bg-white/10"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setShowVocalMixer(!showVocalMixer);
-                                    }}
-                                >
-                                    <ChevronUp size={12} className={clsx("transition-transform", showVocalMixer && "rotate-180")} />
-                                </div>
-                            )}
                             {/* v5.5.6: Unified Status Dot for Cast Modes */}
                             {(item.label === "CAST" || item.label === "ยกเลิก" || item.label === "กำลังเชื่อมต่อ...") && (
                                 <>
@@ -269,7 +176,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                     ) : null}
                                 </>
                             )}
-                            {item.active && item.label !== "ยกเลิก" && item.label !== "กำลังเชื่อมต่อ..." && item.label !== "CAST" && item.id !== 'vocal' && (
+                            {item.active && item.label !== "ยกเลิก" && item.label !== "กำลังเชื่อมต่อ..." && item.label !== "CAST" && (
                                 <div className="absolute inset-0 bg-primary/5 blur-md -z-10" />
                             )}
                         </div>
@@ -277,7 +184,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                             "text-[10px] font-medium uppercase tracking-wide transition-colors duration-200 mt-0.5",
                             (item.label === "CAST" || item.label === "ยกเลิก" || item.label === "กำลังเชื่อมต่อ...") 
                                 ? (isAnyCastOn ? "text-primary" : "text-black/60 dark:text-zinc-400")
-                                : (item.active && item.id !== 'vocal' ? "text-primary" : "text-black/60 dark:text-zinc-400")
+                                : (item.active ? "text-primary" : "text-black/60 dark:text-zinc-400")
                         )}>
                             {item.label === "ยกเลิก" || item.label === "กำลังเชื่อมต่อ..." ? "CAST" : item.label}
                         </span>
