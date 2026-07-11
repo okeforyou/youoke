@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Head from 'next/head';
 import YouTube from 'react-youtube';
 import clsx from 'clsx';
-import { Search, X, Mic, Music, Mic2, Smartphone, Play, Pause, SkipForward, RotateCcw, Volume2, VolumeX, ChevronUp, Maximize, ListMusic, Trash2, Menu } from 'lucide-react';
+import { Search, X, Mic, Music, Mic2, Smartphone, Play, Pause, SkipForward, RotateCcw, Volume2, VolumeX, ChevronUp, Maximize, ListMusic, Trash2, Menu, SlidersHorizontal } from 'lucide-react';
 import { Sidebar } from '../components/navigation/Sidebar';
 import Modal, { ModalHandler } from '../components/Modal';
 import { DebounceInput } from 'react-debounce-input';
@@ -325,7 +325,8 @@ export default function PocKaraoke() {
         if (res.ok && (data.status === "success" || data.status === "cached")) {
           setQueue(prev => prev.map(q => q.id === pendingItem.id ? { ...q, status: 'ready', message: 'พร้อมเล่น!', percent: 100 } : q));
         } else {
-          setQueue(prev => prev.map(q => q.id === pendingItem.id ? { ...q, status: 'error', message: 'เกิดข้อผิดพลาด' } : q));
+          console.error("Separation failed:", data);
+          setQueue(prev => prev.map(q => q.id === pendingItem.id ? { ...q, status: 'error', message: data.message || data.error || 'เกิดข้อผิดพลาดในการแยกเสียง' } : q));
         }
       } catch (e) {
         isPolling = false;
@@ -542,23 +543,44 @@ export default function PocKaraoke() {
                                 </div>
 
                                 {/* Right: Mixers */}
-                                <div className="flex items-center justify-end gap-3 w-1/3 relative">
-                                    <button onClick={() => setIsMuted(!isMuted)} className="text-gray-400 hover:text-black dark:hover:text-white transition-colors">
+                                <div className="flex items-center justify-end gap-2 w-1/3 relative pr-2">
+                                    <button onClick={() => setIsMuted(!isMuted)} className="text-gray-400 hover:text-black dark:hover:text-white transition-colors mr-2">
                                         {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
                                     </button>
                                     
+                                    {/* Quick Toggles */}
+                                    <button 
+                                        onClick={() => toggleMute('vocals')}
+                                        className={clsx(
+                                            "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all",
+                                            !trackStates.vocals.muted ? "bg-primary text-white shadow-sm" : "bg-gray-100 dark:bg-zinc-800 text-gray-500 hover:bg-gray-200"
+                                        )}
+                                    >
+                                        <Mic2 size={12} className={!trackStates.vocals.muted ? "text-white" : "text-gray-400"} />
+                                        เสียงร้อง
+                                    </button>
+                                    <button 
+                                        onClick={() => toggleMute('instrumental')}
+                                        className={clsx(
+                                            "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all",
+                                            !trackStates.instrumental.muted ? "bg-blue-500 text-white shadow-sm" : "bg-gray-100 dark:bg-zinc-800 text-gray-500 hover:bg-gray-200"
+                                        )}
+                                    >
+                                        <Music size={12} className={!trackStates.instrumental.muted ? "text-white" : "text-gray-400"} />
+                                        ดนตรี
+                                    </button>
+                                    
                                     {/* VOCAL MIXER TOGGLE */}
-                                    <div className="relative">
+                                    <div className="relative ml-1">
                                         <button 
                                             ref={vocalBtnRef}
                                             onClick={() => setShowVocalMixer(!showVocalMixer)}
                                             className={clsx(
-                                                "flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded border transition-colors",
-                                                showVocalMixer || trackStates.vocals.muted ? "bg-primary/10 text-primary border-primary/20" : "text-gray-500 border-gray-200 dark:border-zinc-800"
+                                                "flex items-center justify-center w-7 h-7 rounded-lg transition-colors",
+                                                showVocalMixer ? "bg-gray-200 dark:bg-zinc-700 text-black dark:text-white" : "text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800"
                                             )}
                                         >
-                                            <Mic2 size={14} />
-                                            เสียงร้อง
+                                            <SlidersHorizontal size={14} />
                                         </button>
 
                                         {/* Vocal Mixer Popover */}
