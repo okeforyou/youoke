@@ -68,6 +68,27 @@ function App({ Component, pageProps }: AppProps) {
         document.documentElement.classList.remove('dark');
     }
 
+    // v5.5.56: Force unregister old Service Workers to fix stale cache / TypeError issues
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        if (registrations.length > 0) {
+          console.log('Unregistering old service workers...');
+          Promise.all(registrations.map(r => r.unregister())).then(() => {
+            if ('caches' in window) {
+              caches.keys().then((keyList) => {
+                return Promise.all(keyList.map((key) => caches.delete(key)));
+              }).then(() => {
+                console.log('Caches cleared. Reloading...');
+                window.location.reload();
+              });
+            } else {
+              window.location.reload();
+            }
+          });
+        }
+      });
+    }
+
     return () => unsub();
   }, [initializeAuth]);
 

@@ -661,7 +661,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
                             // Optimized Fullscreen Transition
                             layoutMode === 'fullscreen'
-                                ? "fixed inset-0 w-screen h-[100dvh] border-none bg-black shadow-none ring-0 origin-top-right transition-all duration-300"
+                                ? "fixed inset-0 w-full h-full border-none bg-black shadow-none ring-0 origin-top-right transition-all duration-300"
                                 : [
                                     // Mobile Logic (Inline block at top)
                                     "max-lg:w-full max-lg:opacity-100 max-lg:h-auto max-lg:pointer-events-auto shadow-md",
@@ -673,7 +673,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         )}>
                         <div className={clsx(
                             "relative w-full flex flex-col transition-all duration-500 bg-black",
-                            layoutMode === 'fullscreen' ? "h-[100dvh]" : "h-full"
+                            layoutMode === 'fullscreen' ? "h-full" : "h-full"
                         )}>
                             <div className={clsx(
                                 "w-full bg-black shrink-0 relative overflow-hidden transition-all duration-500",

@@ -1,0 +1,3 @@
+[2026-07-11T03:22:05.645Z] [START] API Handler Invoked. Query: {}, Method: GET
+[2026-07-11T03:22:05.646Z] [CONFIG] force = false, adminFirestore exists = true
+[2026-07-11T03:22:05.999Z] [SETTINGS] Loaded 0 YouTube API Keys.

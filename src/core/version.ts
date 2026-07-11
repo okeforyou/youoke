@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.99";
+export const SYSTEM_VERSION = "5.5.100";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "v5.5.100 (Service Worker Cache & WebOS Fullscreen Fix)",
+        date: "11 ก.ค. 2569",
+        changes: [
+            "FIX: Force unregister old Service Workers in _app.tsx to permanently fix stale cache issues causing g.split error.",
+            "FIX: Adjusted fullscreen container classes to w-full h-full to resolve LG WebOS TV half-screen display bugs."
+        ],
+        recent_updates: "Service Worker Caching Fix & WebOS Layout"
+    },
     {
         version: "v5.5.99 (Temporarily Disable Vocal Separation)",
         date: "11 ก.ค. 2569",
