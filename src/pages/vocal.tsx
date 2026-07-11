@@ -253,6 +253,26 @@ export default function PocKaraoke() {
     }, 3500);
   };
 
+  const handleDownloadPlugin = async () => {
+    try {
+      const isWin = navigator.userAgent.toLowerCase().includes('win');
+      const ext = isWin ? '.exe' : '.dmg';
+      
+      const res = await fetch('https://api.github.com/repos/okeforyou/youoke/releases/latest');
+      const data = await res.json();
+      
+      const asset = data.assets?.find((a: any) => a.browser_download_url.endsWith(ext));
+      if (asset) {
+        window.open(asset.browser_download_url, '_blank');
+      } else {
+        window.open('https://github.com/okeforyou/youoke/releases/latest', '_blank');
+      }
+    } catch (e) {
+      window.open('https://github.com/okeforyou/youoke/releases/latest', '_blank');
+    }
+    launchModalRef.current?.close();
+  };
+
   const extractVideoId = (url: string) => {
     const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&]{11})/);
     return match ? match[1] : null;
@@ -783,14 +803,12 @@ export default function PocKaraoke() {
             >
               เปิด YouOke Plugin
             </button>
-            <a 
-              href="https://github.com/okeforyou/youoke/releases" 
-              target="_blank" rel="noreferrer"
+            <button 
+              onClick={handleDownloadPlugin}
               className="w-full py-3 bg-gray-100 hover:bg-gray-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-gray-900 dark:text-white rounded-xl font-bold transition-colors text-center"
-              onClick={() => launchModalRef.current?.close()}
             >
               ยังไม่มีแอป? ดาวน์โหลดที่นี่
-            </a>
+            </button>
           </div>
         }
       />
