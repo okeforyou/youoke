@@ -199,13 +199,15 @@ export default function PocKaraoke() {
   
   const [backendError, setBackendError] = useState('');
   const retryRef = useRef(0);
-
-  const handleSearch = async (isRetry = false) => {
+  
+  const handleSearch = async (isRetry: boolean | React.MouseEvent = false) => {
+    const isAutoRetry = typeof isRetry === 'boolean' ? isRetry : false;
+    
     if (!searchQuery.trim()) return;
-    if (!isRetry) retryRef.current = 0; // Reset on new manual search
+    if (!isAutoRetry) retryRef.current = 0; // Reset on new manual search
     
     setIsSearching(true);
-    setBackendError(isRetry ? 'กำลังเชื่อมต่อกับ YouOke Plugin...' : '');
+    setBackendError(isAutoRetry ? 'กำลังเชื่อมต่อกับ YouOke Plugin...' : '');
     
     try {
       const res = await fetch(`http://127.0.0.1:5050/search?q=${encodeURIComponent(searchQuery)}`);
