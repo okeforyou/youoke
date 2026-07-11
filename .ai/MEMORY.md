@@ -15,6 +15,7 @@
 - **Important Notes:** [Any critical context the AI should not forget across sessions, e.g., "We have 126 RAG files processed"]
 
 ## 📝 Recent Context (Last Session)
-- **Quota Exceeded Fix (v5.5.90):** Modified `MainDashboard.tsx` to cache `artist_images` via `useQuery` (24h stale time) to stop it from fetching the entire collection repeatedly and draining Firestore Quotas.
-- **Membership Sync (v5.5.88):** Added Dual-Database Sync logic in `useAuthStore.ts` (Firestore + RTDB) and a "Lifetime Shield" to prevent user downgrade to free tier.
-- **Pending Tasks:** Monitor if quota drains stop, and prepare for any consultation the user wants to do in the next session.
+- **Vocal Separation & YouOke Plugin (v1.0.5):** We created a local AI bridge Desktop app (using PyInstaller, FastAPI, and `yt-dlp` for download, `demucs` for AI separation). This allows the frontend to send separation requests locally without server costs.
+- **Vocal UI (`src/pages/vocal.tsx`):** We built a dedicated page for testing the vocal separation queue. It detects OS (Mac/Win) and directly downloads the `v1.0.5` plugin binary from GitHub Releases for authenticated users. We also added "Vocals" and "Instrumental" quick-mute toggles on the player bar.
+- **Plugin Release Rule:** Remember that any code changes in the `youoke-plugin/` directory or `scripts/local-bridge/` require bumping the version in `youoke-plugin/package.json` and triggering a GitHub Release (`gh release create v<VERSION> --target <BRANCH>`) to let GitHub Actions compile the new installer.
+- **Pending Tasks:** The user is starting a new session to focus on fixing bugs/issues reported by customers on the main code.
