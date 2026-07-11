@@ -70,6 +70,21 @@ app.whenReady().then(() => {
   // We don't want a dock icon on macOS for a tray-only app
   if (app.dock) app.dock.hide();
 
+  // Register custom protocol for seamless web launch
+  if (process.defaultApp) {
+    if (process.argv.length >= 2) {
+      app.setAsDefaultProtocolClient('youoke', process.execPath, [path.resolve(process.argv[1])]);
+    }
+  } else {
+    app.setAsDefaultProtocolClient('youoke');
+  }
+
+  // Set Auto-Start on Boot so it's always ready
+  app.setLoginItemSettings({
+    openAtLogin: true,
+    openAsHidden: true
+  });
+
   // Create an empty native image for the tray icon MVP (or use a real icon later)
   // Electron requires some image for the tray
   const iconPath = path.join(__dirname, 'assets', 'iconTemplate.png');

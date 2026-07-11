@@ -198,20 +198,41 @@ export default function PocKaraoke() {
   // -----------------------------------------
   
   const [backendError, setBackendError] = useState('');
+  const retryRef = useRef(0);
 
-  const handleSearch = async () => {
+  const handleSearch = async (isRetry = false) => {
     if (!searchQuery.trim()) return;
+    if (!isRetry) retryRef.current = 0; // Reset on new manual search
+    
     setIsSearching(true);
-    setBackendError('');
+    setBackendError(isRetry ? 'กำลังเชื่อมต่อกับ YouOke Plugin...' : '');
+    
     try {
       const res = await fetch(`http://127.0.0.1:5050/search?q=${encodeURIComponent(searchQuery)}`);
       const data = await res.json();
       if (data.status === "success") {
         setSearchResults(data.results);
+        setBackendError(''); // Clear error on success
+        retryRef.current = 0; // Reset retries
       }
     } catch (e) {
       console.error(e);
-      setBackendError("ไม่สามารถเชื่อมต่อ YouOke Plugin ได้ กรุณาเปิดแอปบนเครื่องของคุณก่อนค้นหา");
+      
+      if (retryRef.current < 2) {
+        // Auto-launch the app seamlessly!
+        if (retryRef.current === 0) {
+            window.location.href = "youoke://start";
+        }
+        retryRef.current += 1;
+        setBackendError(`กำลังปลุก YouOke Plugin... (พยายามครั้งที่ ${retryRef.current}/2) กรุณากด "Open" หากหน้าจอแจ้งเตือน`);
+        
+        // Auto-retry after 3.5 seconds to give the app time to start
+        setTimeout(() => {
+            handleSearch(true);
+        }, 3500);
+      } else {
+        setBackendError("ไม่สามารถเชื่อมต่อ YouOke Plugin ได้ กรุณาเปิดแอปบนเครื่องด้วยตัวเอง หรือดาวน์โหลดแอปใหม่");
+      }
       setSearchResults([]);
     }
     setIsSearching(false);

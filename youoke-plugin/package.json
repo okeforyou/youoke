@@ -19,6 +19,12 @@
     "win": {
       "target": "nsis"
     },
+    "protocols": {
+      "name": "YouOke Protocol",
+      "schemes": [
+        "youoke"
+      ]
+    },
     "extraResources": [
       {
         "from": "bin",
