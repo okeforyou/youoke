@@ -1,4 +1,4 @@
-export type SourceType = 'youtube' | 'midi' | 'vcd' | 'search';
+export type SourceType = 'youtube' | 'midi' | 'vcd' | 'search' | 'youoke_ai';
 
 export interface MediaPlayerAdapter {
     id: string; // 'youtube' | 'local' | 'midi'
@@ -16,6 +16,7 @@ export interface MediaPlayerAdapter {
 export interface Video {
     id: string; // Unified ID (maps to youtubeId or filehash)
     sourceType: SourceType;
+    aiStatus?: 'pending' | 'processing' | 'ready' | 'error';
 
     // Metadata
     title: string;
@@ -107,6 +108,7 @@ export interface PlayerStore extends PlayerState {
     // Queue Actions
     addToQueue: (video: Video | Video[], options?: boolean | { autoPlay?: boolean, skipQuota?: boolean }) => void; // Updated signature
     removeFromQueue: (uuid: string) => void;
+    updateQueueItem: (uuid: string, updates: Partial<QueueItem>) => void; // New action for updating status
     reorderQueue: (newQueue: QueueItem[], newIndex?: number) => void;
     setCurrentIndex: (index: number) => void;
     playNext: () => void;

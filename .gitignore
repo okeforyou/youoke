@@ -63,3 +63,18 @@ bemusic/
 
 # Design Agency Mockups
 mockup dashboard/
+
+# YouOke Local Bridge & Plugin
+venv_vocal/
+dist/
+youoke-server.spec
+separated_output/
+*.m4a
+*.wav
+*.mp3
+test_*.py
+youoke-plugin/node_modules/
+youoke-plugin/dist/
+youoke-plugin/bin/
+scripts/local-bridge/build/
+scripts/local-bridge/dist/

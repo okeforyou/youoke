@@ -1,0 +1,198 @@
+import os
+import subprocess
+import shutil
+import sys
+import torch
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
+from youtubesearchpython import VideosSearch
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "https://play.okeforyou.com"],
+    allow_origin_regex=r"https://.*\.vercel\.app",
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+class SeparateRequest(BaseModel):
+    video_id: str
+
+CACHE_DIR = os.path.expanduser("~/Library/Application Support/YouOke/Cache")
+os.makedirs(CACHE_DIR, exist_ok=True)
+
+@app.get("/health")
+def health():
+    return {"status": "ok", "message": "YouOke Local AI Bridge is running."}
+
+@app.get("/search")
+def search_youtube(q: str, limit: int = 5):
+    try:
+        import yt_dlp
+        ydl_opts = {"extract_flat": True, "quiet": True}
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(f"ytsearch{limit}:{q}", download=False)
+            results = []
+            for entry in info.get("entries", []):
+                # Convert duration from seconds to string format for frontend if needed, but it's just display
+                duration_sec = int(entry.get("duration") or 0)
+                if duration_sec:
+                    m, s = divmod(duration_sec, 60)
+                    h, m = divmod(m, 60)
+                    duration_str = f"{h}:{m:02d}:{s:02d}" if h else f"{m}:{s:02d}"
+                else:
+                    duration_str = ""
+                    
+                results.append({
+                    "id": entry.get("id"),
+                    "title": entry.get("title"),
+                    "thumbnails": [{"url": f"https://img.youtube.com/vi/{entry.get('id')}/mqdefault.jpg"}],
+                    "channel": {"name": entry.get("uploader", "YouTube")},
+                    "duration": duration_str,
+                    "viewCount": {"short": str(entry.get("view_count", ""))}
+                })
+        return {"status": "success", "results": results}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
+
+def convert_audio(input_path, output_path, fmt="wav"):
+    # Try ffmpeg first (cross-platform)
+    try:
+        if fmt == "wav":
+            subprocess.run(["ffmpeg", "-y", "-i", input_path, output_path], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        elif fmt == "m4a":
+            subprocess.run(["ffmpeg", "-y", "-i", input_path, "-c:a", "aac", "-b:a", "128k", output_path], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return
+    except FileNotFoundError:
+        # ffmpeg not found, fallback to afconvert (macOS only)
+        try:
+            if fmt == "wav":
+                subprocess.run(["afconvert", "-f", "WAVE", "-d", "LEI16", input_path, output_path], check=True)
+            elif fmt == "m4a":
+                subprocess.run(["afconvert", "-f", "m4af", "-d", "aac", "-b", "128000", input_path, output_path], check=True)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Audio conversion failed (afconvert): {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"FFmpeg conversion failed: {str(e)}")
+
+import re
+
+progress_store = {}
+
+@app.get("/progress/{video_id}")
+def get_progress(video_id: str):
+    if video_id in progress_store:
+        return progress_store[video_id]
+    return {"status": "unknown", "percent": 0, "message": "รอคิว..."}
+
+@app.post("/separate")
+def separate(req: SeparateRequest):
+    vid = req.video_id
+    song_dir = os.path.join(CACHE_DIR, vid)
+    
+    progress_store[vid] = {"status": "starting", "percent": 0, "message": "กำลังตรวจสอบข้อมูล..."}
+    
+    # Check if already cached
+    vocal_m4a = os.path.join(song_dir, "vocals.m4a")
+    no_vocal_m4a = os.path.join(song_dir, "no_vocals.m4a")
+    
+    if os.path.exists(vocal_m4a) and os.path.exists(no_vocal_m4a):
+        progress_store[vid] = {"status": "success", "percent": 100, "message": "ดึงข้อมูลจากแคชสำเร็จ!"}
+        return {"status": "cached", "video_id": vid}
+        
+    os.makedirs(song_dir, exist_ok=True)
+    
+    # 1. Download with pytubefix
+    progress_store[vid] = {"status": "downloading", "percent": 10, "message": "กำลังดาวน์โหลดวิดีโอจาก YouTube..."}
+    m4a_path = os.path.join(song_dir, f"{vid}.m4a")
+    yt_url = f"https://www.youtube.com/watch?v={vid}"
+    
+    try:
+        from pytubefix import YouTube
+        yt = YouTube(yt_url)
+        ys = yt.streams.get_audio_only()
+        ys.download(output_path=song_dir, filename=f"{vid}.m4a")
+    except Exception as e:
+        progress_store[vid] = {"status": "error", "percent": 0, "message": "ดาวน์โหลดล้มเหลว"}
+        raise HTTPException(status_code=500, detail=f"Download failed: {str(e)}")
+        
+    # 2. Convert to WAV for demucs
+    progress_store[vid] = {"status": "converting", "percent": 20, "message": "เตรียมไฟล์สำหรับ AI..."}
+    wav_path = os.path.join(song_dir, f"{vid}.wav")
+    convert_audio(m4a_path, wav_path, fmt="wav")
+        
+    device = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
+
+    # 3. Run Demucs
+    progress_store[vid] = {"status": "separating", "percent": 25, "message": "AI กำลังแยกเสียงร้องและดนตรี (อาจใช้เวลา 2-3 นาที)..."}
+    try:
+        # Popen to capture stdout/stderr in real-time for progress
+        process = subprocess.Popen([
+            sys.executable, "-m", "demucs.separate", 
+            "-n", "htdemucs_ft", 
+            "--shifts=0",
+            "-d", device,
+            "--two-stems=vocals", 
+            "-o", song_dir, 
+            wav_path
+        ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True)
+        
+        buffer = ""
+        while True:
+            char = process.stdout.read(1)
+            if not char:
+                break
+            if char == '\r' or char == '\n':
+                match = re.search(r'(\d+)%', buffer)
+                if match:
+                    demucs_pct = int(match.group(1))
+                    overall_pct = 25 + int(demucs_pct * 0.70) # Demucs takes up 70% of total progress (25% to 95%)
+                    progress_store[vid] = {"status": "separating", "percent": overall_pct, "message": f"AI กำลังแยกเสียงร้องและดนตรี... {demucs_pct}%"}
+                buffer = ""
+            else:
+                buffer += char
+                
+        process.wait()
+        if process.returncode != 0:
+            raise subprocess.CalledProcessError(process.returncode, process.args)
+            
+    except subprocess.CalledProcessError:
+        progress_store[vid] = {"status": "error", "percent": 0, "message": "การแยกเสียงล้มเหลว"}
+        raise HTTPException(status_code=500, detail="Demucs separation failed.")
+        
+    demucs_out_dir = os.path.join(song_dir, "htdemucs_ft", vid)
+    vocal_wav = os.path.join(demucs_out_dir, "vocals.wav")
+    no_vocal_wav = os.path.join(demucs_out_dir, "no_vocals.wav")
+    
+    if not os.path.exists(vocal_wav) or not os.path.exists(no_vocal_wav):
+        progress_store[vid] = {"status": "error", "percent": 0, "message": "ไม่พบไฟล์ผลลัพธ์"}
+        raise HTTPException(status_code=500, detail="Demucs output files not found.")
+        
+    # 4. Convert back to M4A to save space
+    progress_store[vid] = {"status": "compressing", "percent": 95, "message": "กำลังบีบอัดไฟล์ขั้นสุดท้าย..."}
+    convert_audio(vocal_wav, vocal_m4a, fmt="m4a")
+    convert_audio(no_vocal_wav, no_vocal_m4a, fmt="m4a")
+        
+    # Cleanup temporary files (WAV is huge)
+    try:
+        os.remove(m4a_path)
+        os.remove(wav_path)
+        shutil.rmtree(os.path.join(song_dir, "htdemucs_ft"))
+    except:
+        pass # ignore cleanup errors
+        
+    progress_store[vid] = {"status": "success", "percent": 100, "message": "เสร็จสมบูรณ์!"}
+    return {"status": "success", "video_id": vid}
+
+# Mount cache directory for robust static file serving with range request support
+app.mount("/files", StaticFiles(directory=CACHE_DIR), name="files")
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=5050)

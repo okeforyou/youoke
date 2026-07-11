@@ -1,11 +1,11 @@
-import React from "react";
-import { Play, Pause, SkipForward, RotateCcw, Volume2, VolumeX, Maximize, Cast } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import { Play, Pause, SkipForward, RotateCcw, Volume2, VolumeX, Maximize, Cast, Mic, MicOff, ChevronUp } from "lucide-react";
 import { usePlayerStore } from "../stores/usePlayerStore";
+import { useMixerStore } from "../stores/useMixerStore";
 import { useShallow } from "zustand/react/shallow";
 import { useUIStore } from "../../../stores/useUIStore";
 import { useCast } from "../../../plugins/cast/context/CastContext";
 import clsx from 'clsx';
-import { SYSTEM_VERSION } from "@/core/version";
 
 interface SidebarControlsProps {
     castMode?: string;
@@ -42,6 +42,10 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
         }))
     );
 
+    const {
+        trackStates,
+    } = useMixerStore();
+
     const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
     const { setCastModalOpen } = useUIStore();
     const cast = useCast();
@@ -49,8 +53,12 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
 
     const isAnyCastOn = (castMode !== 'none' && castMode !== undefined) || isConnected;
 
+
+
+    // Build control items dynamically
     const controlItems = [
         {
+            id: 'play',
             icon: isPlaying ? Pause : Play,
             label: "เล่น/หยุด",
             onClick: () => {
@@ -64,6 +72,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             color: "text-primary"
         },
         {
+            id: 'repeat',
             icon: RotateCcw,
             label: "ร้องซ้ำ",
             onClick: () => {
@@ -77,6 +86,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             color: "text-primary"
         },
         {
+            id: 'next',
             icon: SkipForward,
             label: "เพลงถัดไป",
             onClick: () => {
@@ -88,7 +98,13 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             },
             color: "text-primary"
         },
+    ];
+
+
+
+    controlItems.push(
         {
+            id: 'volume',
             icon: isMuted ? VolumeX : Volume2,
             label: isMuted ? "เปิดเสียง" : "ปิดเสียง",
             onClick: () => {
@@ -102,12 +118,14 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             color: "text-primary"
         },
         {
+            id: 'fullscreen',
             icon: Maximize,
             label: "เต็มจอ",
             onClick: triggerFullscreen,
             color: "text-primary"
         },
         {
+            id: 'cast',
             icon: Cast,
             label: isRecovering ? "กำลังเชื่อมต่อ..." : (isAnyCastOn ? "ยกเลิก" : "CAST"),
             onClick: () => {
@@ -120,23 +138,27 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             // v5.5.6: Neutral color for icon, state moved to the dot indicator
             color: "text-black dark:text-zinc-200"
         }
-    ];
+    );
 
     return (
         <div className="shrink-0 select-none relative shadow-sm">
             {/* Glass Background matching Footer */}
             <div className="absolute inset-0 bg-[#f4f4f5]/95 dark:bg-zinc-900/95 backdrop-blur-xl border-b border-gray-200/50 dark:border-zinc-800/50 transition-colors" />
 
+
+
             {/* Horizontal Controls Row - Full Width with depth */}
             <div className="relative flex items-center justify-between px-2 h-[56px]">
                 {controlItems.map((item, index) => (
                     <button
-                        key={index}
-                        onClick={item.onClick}
-                        className="flex flex-col items-center justify-center flex-1 h-full active:scale-95 transition-all duration-200 group"
+                        key={item.id}
+                        onClick={(e) => {
+                            item.onClick();
+                        }}
+                        className="flex flex-col items-center justify-center flex-1 h-full active:scale-95 transition-all duration-200 group relative"
                     >
                         <div className={clsx(
-                            "p-1 rounded-xl transition-all duration-300 relative",
+                            "p-1 rounded-xl transition-all duration-300 relative flex items-center justify-center gap-0.5",
                             item.active ? "text-primary bg-primary/10" : "text-black dark:text-zinc-400 group-hover:text-black dark:group-hover:text-white"
                         )}>
                             <item.icon
@@ -180,3 +202,4 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
         </div>
     );
 };
+

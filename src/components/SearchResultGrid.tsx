@@ -13,6 +13,7 @@ import { RecommendedVideo, SearchResult } from "../types/invidious";
 import { getSearchResult, getSkeletonItems, getVideoInfo } from "../utils/api";
 import SearchResultHorizontalCard from "./SearchResultHorizontalCard";
 import AddToPlaylistModal from "./AddToPlaylistModal";
+import { Sparkles } from "lucide-react";
 
 export default function SearchResultGrid({
   onClick = () => { },
@@ -97,6 +98,20 @@ export default function SearchResultGrid({
     setSelectedVideoForPlaylist(video);
   };
 
+  const handleExtractVocals = (e: React.MouseEvent, video: SearchResult | RecommendedVideo) => {
+    e.stopPropagation();
+    usePlayerStore.getState().addToQueue({
+      id: video.videoId,
+      videoId: video.videoId,
+      title: video.title,
+      author: video.author || 'Unknown',
+      thumbnail: video.videoThumbnails?.[0]?.url,
+      sourceType: 'youoke_ai',
+      aiStatus: 'pending'
+    });
+    // Optional: add a toast here
+  };
+
   return (
     <>
       {/* Header with Grid/List Toggle */}
@@ -168,6 +183,7 @@ export default function SearchResultGrid({
                     video={rcm}
                     onClick={() => { }} // Handle click on wrapper
                     onAddToPlaylist={(e) => handleAddToPlaylist(e, rcm)}
+                    onExtractVocals={!isKaraoke ? (e) => handleExtractVocals(e, rcm) : undefined}
                   />
                 </div>
               </Fragment>
@@ -230,6 +246,17 @@ export default function SearchResultGrid({
                       >
                         <ListPlus className="w-4 h-4" />
                       </button>
+
+                      {/* Extract Vocals Button for Grid (AI) */}
+                      {!isKaraoke && (
+                        <button
+                          onClick={(e) => handleExtractVocals(e, rcm)}
+                          className="absolute right-9 top-2 w-7 h-7 flex items-center justify-center rounded-full bg-pink-50 dark:bg-pink-900/20 text-pink-500 hover:bg-pink-500 hover:text-white transition-colors hover:shadow-md z-10"
+                          title="แยกเสียงร้องด้วย AI"
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

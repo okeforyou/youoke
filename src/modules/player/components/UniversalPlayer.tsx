@@ -5,6 +5,7 @@ import { MidiCanvasRenderer } from './MidiCanvasRenderer';
 import { useMidiEngine } from '@/context/MidiEngineContext';
 import { playerService } from '../services/playerService';
 import { YouTubeAdapter } from '../adapters/YouTubeAdapter';
+import { useMixerStore } from '../stores/useMixerStore';
 
 interface UniversalPlayerProps {
     onEnded?: () => void;
@@ -28,6 +29,13 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
     const currentSource = usePlayerStore(state => state.currentSource);
     const { setCurrentTime, setDuration } = usePlayerStore();
     const videoRef = useRef<HTMLVideoElement>(null);
+
+    // AI Audio Mixer Refs
+    const vocalRef = useRef<HTMLAudioElement>(null);
+    const instrumentalRef = useRef<HTMLAudioElement>(null);
+    const ytPlayerRef = useRef<any>(null);
+
+    const getEffectiveVolume = useMixerStore(state => state.getEffectiveVolume);
 
     // MIDI Engine Hooks
     const { playMidi, stop: stopMidi, isReady: isMidiReady, isPlaying: isMidiPlaying, synth } = useMidiEngine();
@@ -91,6 +99,56 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
         }
     }, [midiTime, currentVideo, isMidiPlaying]);
 
+    // --- AI AUDIO SYNC (YouOke AI) ---
+    // Resilient Volume Sync
+    useEffect(() => {
+        if (vocalRef.current) vocalRef.current.volume = getEffectiveVolume('vocals') / 100;
+        if (instrumentalRef.current) instrumentalRef.current.volume = getEffectiveVolume('instrumental') / 100;
+    }, [getEffectiveVolume]);
+
+    // Ultimate Sync Loop (Slaved to YT)
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (currentVideo?.sourceType === 'youoke_ai' && isPlaying) {
+            interval = setInterval(() => {
+                if (!ytPlayerRef.current || !instrumentalRef.current || !vocalRef.current) return;
+                const state = ytPlayerRef.current.getPlayerState();
+                if (state !== 1) return; // Only sync if playing
+                
+                const ytTime = ytPlayerRef.current.getCurrentTime();
+                if (typeof ytTime !== 'number' || ytTime === 0) return;
+                
+                if (Math.abs(instrumentalRef.current.currentTime - ytTime) > 0.3) {
+                    instrumentalRef.current.currentTime = ytTime;
+                }
+                if (Math.abs(vocalRef.current.currentTime - ytTime) > 0.3) {
+                    vocalRef.current.currentTime = ytTime;
+                }
+                if (instrumentalRef.current.paused) instrumentalRef.current.play().catch(e => console.error(e));
+                if (vocalRef.current.paused) vocalRef.current.play().catch(e => console.error(e));
+            }, 1000);
+        }
+        return () => { if (interval) clearInterval(interval); };
+    }, [isPlaying, currentVideo?.sourceType]);
+
+    // Handle Play/Pause
+    useEffect(() => {
+        if (currentVideo?.sourceType === 'youoke_ai' && currentVideo?.aiStatus === 'ready') {
+            if (isPlaying) {
+                const ytTime = ytPlayerRef.current?.getCurrentTime();
+                if (typeof ytTime === 'number' && ytTime > 0) {
+                    if (vocalRef.current && Math.abs(vocalRef.current.currentTime - ytTime) > 0.3) vocalRef.current.currentTime = ytTime;
+                    if (instrumentalRef.current && Math.abs(instrumentalRef.current.currentTime - ytTime) > 0.3) instrumentalRef.current.currentTime = ytTime;
+                }
+                vocalRef.current?.play().catch(e => console.error(e));
+                instrumentalRef.current?.play().catch(e => console.error(e));
+            } else {
+                vocalRef.current?.pause();
+                instrumentalRef.current?.pause();
+            }
+        }
+    }, [isPlaying, currentVideo?.sourceType, currentVideo?.aiStatus]);
+
     // --- RENDERERS ---
 
     // 1. MIDI
@@ -153,6 +211,11 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
     };
 
     const handleYouTubeReady = (event: any) => {
+        ytPlayerRef.current = event.target;
+        if (currentVideo?.sourceType === 'youoke_ai' && currentVideo?.aiStatus === 'ready') {
+            event.target.mute();
+        }
+
         // Register adapter if needed
         const adapter = playerService.getAdapter();
         if (adapter instanceof YouTubeAdapter) {
@@ -162,30 +225,66 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
     };
 
     const handleYouTubeStateChange = (event: any) => {
+        if (currentVideo?.sourceType === 'youoke_ai' && currentVideo?.aiStatus === 'ready' && (event.data === 1 || event.data === 3)) {
+            event.target.mute(); // Force mute if AI mode
+        }
         // Handle state changes if needed
         if (onStateChange) onStateChange(event);
     };
 
     // Use currentSource as videoId for standard React-YouTube management
     // Default sourceType to 'youtube' if not set (backward compat for old Firestore data)
-    const effectiveSourceType = currentVideo?.sourceType || 'youtube';
-    const activeVideoId = (effectiveSourceType === 'youtube' && currentSource && !currentSource.startsWith('search:'))
+    const isAiReady = currentVideo?.sourceType === 'youoke_ai' && currentVideo?.aiStatus === 'ready';
+    const effectiveSourceType = isAiReady ? 'youoke_ai' : (currentVideo?.sourceType === 'youoke_ai' ? 'youtube' : (currentVideo?.sourceType || 'youtube'));
+    
+    const activeVideoId = ((effectiveSourceType === 'youtube' || effectiveSourceType === 'youoke_ai') && currentSource && !currentSource.startsWith('search:'))
         ? currentSource
         : undefined;
+
+    // React to aiStatus becoming ready while playing
+    useEffect(() => {
+        if (isAiReady && ytPlayerRef.current) {
+            ytPlayerRef.current.mute();
+        }
+    }, [isAiReady]);
 
     return (
         <div className={`relative w-full h-full ${className} youtube-player-wrapper`}>
             {activeVideoId ? (
-                <YouTube
-                    key={activeVideoId}
-                    videoId={activeVideoId}
-                    opts={opts}
-                    className="w-full h-full"
-                    iframeClassName="w-full h-full"
-                    onReady={handleYouTubeReady}
-                    onStateChange={handleYouTubeStateChange}
-                    onEnd={onEnded}
-                />
+                <>
+                    <YouTube
+                        key={activeVideoId}
+                        videoId={activeVideoId}
+                        opts={opts}
+                        className="w-full h-full"
+                        iframeClassName="w-full h-full pointer-events-none"
+                        onReady={handleYouTubeReady}
+                        onStateChange={handleYouTubeStateChange}
+                        onEnd={onEnded}
+                    />
+                    {effectiveSourceType === 'youoke_ai' && (
+                        <>
+                            <audio
+                                ref={vocalRef}
+                                src={`http://127.0.0.1:5050/files/${activeVideoId}/vocals.m4a`}
+                                preload="auto"
+                                onLoadedData={(e) => {
+                                    e.currentTarget.volume = getEffectiveVolume('vocals') / 100;
+                                    if (isPlaying) e.currentTarget.play().catch(() => {});
+                                }}
+                            />
+                            <audio
+                                ref={instrumentalRef}
+                                src={`http://127.0.0.1:5050/files/${activeVideoId}/no_vocals.m4a`}
+                                preload="auto"
+                                onLoadedData={(e) => {
+                                    e.currentTarget.volume = getEffectiveVolume('instrumental') / 100;
+                                    if (isPlaying) e.currentTarget.play().catch(() => {});
+                                }}
+                            />
+                        </>
+                    )}
+                </>
             ) : (
                 <div className="w-full h-full bg-black flex items-center justify-center">
                     <div className="flex flex-col items-center gap-4 opacity-20">

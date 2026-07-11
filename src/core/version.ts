@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.90";
+export const SYSTEM_VERSION = "5.5.99";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,81 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "v5.5.99 (Temporarily Disable Vocal Separation)",
+        date: "11 ก.ค. 2569",
+        changes: [
+            "UI: Temporarily removed the vocal mute (เสียงร้อง) button from the player controls.",
+            "FIX: Removed the 'ล้มเหลว' (Failed) badge for AI-processed songs from the Queue list."
+        ],
+        recent_updates: "Temporarily disabled AI vocal separation UI"
+    },
+    {
+        version: "v5.5.98 (Fix SidebarControls ReferenceError)",
+        date: "10 ก.ค. 2569",
+        changes: [
+            "FIX: Removed unused isAiReady reference in SidebarControls that caused build failures."
+        ],
+        recent_updates: "SidebarControls Hotfix"
+    },
+    {
+        version: "v5.5.97 (Show Vocal Button for All Videos)",
+        date: "10 ก.ค. 2569",
+        changes: [
+            "UI: Removed isAiReady condition from SidebarControls to allow vocal button to show for all videos.",
+            "FIX: Ensure users can test the vocal removal UI on standard YouTube videos."
+        ],
+        recent_updates: "Vocal Button Visibility Fix"
+    },
+    {
+        version: "v5.5.96 (Vocal Separation UI Redesign)",
+        date: "10 ก.ค. 2569",
+        changes: [
+            "UI: Removed bulky AudioMixer from QueueList for a cleaner interface.",
+            "UX: Integrated native AI Vocal Controls directly into SidebarPlayer controls.",
+            "FEATURE: Added minimal popover slider for vocal volume adjustments.",
+            "RELIABILITY: Vocal controls only appear when AI separation is fully ready."
+        ],
+        recent_updates: "Redesigned AI Vocal Separation Interface"
+    },
+    {
+        version: "v5.5.95 (Vocal Separation Integration & UI Fix)",
+        date: "10 ก.ค. 2569",
+        changes: [
+            "FEATURE: Integrated AI Vocal Separation to the main application.",
+            "FIX: Cleared old `layoutMode` from localStorage causing unintended fullscreen bugs.",
+            "UI: Added AudioMixer to QueueList and ✨ button to SearchResult items."
+        ],
+        recent_updates: "Main App AI Vocal Integration & Layout Fix"
+    },
+    {
+        version: "v5.5.94 (Automated Plugin Builder)",
+        date: "10 ก.ค. 2569",
+        changes: [
+            "FEATURE: Integrated GitHub Actions pipeline to automatically build Windows (.exe) and macOS (.dmg) installers on GitHub servers.",
+            "PERFORMANCE: Offloaded heavy PyInstaller/Electron builds from local machines to Cloud CI/CD."
+        ],
+        recent_updates: "GitHub Actions Auto-Builder for Plugin"
+    },
+    {
+        version: "v5.5.93 (Desktop Helper Plugin)",
+        date: "10 ก.ค. 2569",
+        changes: [
+            "FEATURE: Built Electron Desktop Plugin with Auto-Updater pointing to okeforyou/youoke",
+            "PERFORMANCE: Packaged Python backend into standalone binary via PyInstaller (215MB total installer size)",
+            "CHORE: Configured .gitignore for local plugin built assets to prevent repository bloat"
+        ],
+        recent_updates: "Desktop Plugin for Local AI Vocal Separation"
+    },
+    {
+        version: "v5.5.92 (Local Bridge POC)",
+        date: "8 ก.ค. 2569",
+        changes: [
+            "FEATURE: Added Python script for Demucs vocal separation (scripts/vocal-separation).",
+            "UI: Added Karaoke UI Proof of Concept for vocal volume control (/poc-karaoke)."
+        ],
+        recent_updates: "Vocal Separation PoC & Mixer UI"
+    },
     {
         version: "v5.5.90 (Firestore Quota Cache Shield)",
         date: "7 ก.ค. 2569",

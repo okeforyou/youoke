@@ -1,12 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Play, ListPlus } from "lucide-react";
+import { Play, ListPlus, Sparkles } from "lucide-react";
 import { SearchResult, RecommendedVideo } from "../types/invidious";
 
 interface SearchResultHorizontalCardProps {
   video: SearchResult | RecommendedVideo;
   onClick: () => void;
   onAddToPlaylist?: (e: any) => void;
+  onExtractVocals?: (e: any) => void;
 }
 
 /**
@@ -16,7 +17,8 @@ interface SearchResultHorizontalCardProps {
 export default function SearchResultHorizontalCard({
   video,
   onClick,
-  onAddToPlaylist
+  onAddToPlaylist,
+  onExtractVocals
 }: SearchResultHorizontalCardProps) {
   return (
     <div
@@ -47,10 +49,24 @@ export default function SearchResultHorizontalCard({
 
         {/* Video Info - Right Side */}
         <div className="col-span-2 flex flex-col py-2 px-3 justify-center overflow-hidden relative">
-          <h2 className="font-semibold text-sm leading-tight line-clamp-2 text-gray-900 dark:text-zinc-200 pr-6">
+          <h2 className="font-semibold text-sm leading-tight line-clamp-2 text-gray-900 dark:text-zinc-200 pr-16">
             {video.title}
           </h2>
           {/* Removed author/uploader info */}
+
+          {/* Extract Vocals Button (AI) */}
+          {onExtractVocals && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onExtractVocals(e);
+              }}
+              className="absolute right-10 top-1/2 -translate-y-1/2 p-2 hover:bg-pink-100 dark:hover:bg-pink-900/30 rounded-full text-pink-500 dark:text-pink-400 transition"
+              title="แยกเสียงร้องด้วย AI"
+            >
+              <Sparkles className="w-4 h-4" />
+            </button>
+          )}
 
           {/* Add to Playlist Button */}
           {onAddToPlaylist && (
