@@ -28,8 +28,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const releaseData = await releaseRes.json();
     
-    // 2. Find the correct asset (.exe for Windows, .dmg for Mac)
-    const ext = os === 'win' ? '.exe' : '.dmg';
+    // 2. Find the correct asset (.exe for Windows, .pkg for Mac)
+    const ext = os === 'win' ? '.exe' : '.pkg';
     const asset = releaseData.assets?.find((a: any) => a.name.endsWith(ext));
     
     if (!asset) {
