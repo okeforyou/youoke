@@ -795,9 +795,11 @@ export default function PocKaraoke() {
                 </h4>
                 {downloadOS === 'mac' ? (
                   <ul className="list-disc pl-5 space-y-2">
-                    <li>รอจนกว่าไฟล์ <strong>.pkg</strong> จะดาวน์โหลดเสร็จ</li>
-                    <li><strong>สำคัญ:</strong> ให้ <u>คลิกขวา</u> ที่ไฟล์แล้วเลือก <strong>Open (เปิด)</strong> เพื่อเริ่มการติดตั้ง (อย่าดับเบิ้ลคลิก)</li>
-                    <li>ทำตามขั้นตอนบนหน้าจอจนเสร็จสิ้น</li>
+                    <li>รอจนกว่าไฟล์ <strong>.dmg</strong> จะดาวน์โหลดเสร็จและเปิดไฟล์ขึ้นมา</li>
+                    <li>ลากไอคอนแอป <strong>YouOke Plugin</strong> ลงในโฟลเดอร์ <strong>Applications</strong></li>
+                    <li>เปิดแอป หากขึ้นว่า <span className="text-red-500">แอปชำรุด (Damaged)</span> หรือไม่ทราบผู้พัฒนา ให้กด <strong>Done (เสร็จสิ้น)</strong></li>
+                    <li>ไปที่ <strong>System Settings (การตั้งค่าระบบ)</strong> {'>'} <strong>Privacy & Security (ความเป็นส่วนตัวและความปลอดภัย)</strong></li>
+                    <li>เลื่อนลงมาหาหัวข้อ Security แล้วกดปุ่ม <strong>Open Anyway (เปิดต่อไป)</strong></li>
                   </ul>
                 ) : (
                   <ul className="list-disc pl-5 space-y-2">
