@@ -202,6 +202,8 @@ export default function PocKaraoke() {
   const retryRef = useRef(0);
   
   const launchModalRef = useRef<ModalHandler>(null);
+  const [showInstallGuide, setShowInstallGuide] = useState(false);
+  const [downloadOS, setDownloadOS] = useState<'win' | 'mac' | null>(null);
 
   const handleSearch = async (isRetry: boolean | React.MouseEvent = false) => {
     const isAutoRetry = typeof isRetry === 'boolean' ? isRetry : false;
@@ -256,12 +258,15 @@ export default function PocKaraoke() {
   const handleDownloadPlugin = async () => {
     try {
       const isWin = navigator.userAgent.toLowerCase().includes('win');
-      // Request download from our backend API which uses GITHUB_TOKEN to bypass private repo restrictions
-      window.location.href = isWin ? '/api/download-plugin?os=win' : '/api/download-plugin?os=mac';
+      setDownloadOS(isWin ? 'win' : 'mac');
+      setShowInstallGuide(true);
+      
+      setTimeout(() => {
+        window.location.href = isWin ? '/api/download-plugin?os=win' : '/api/download-plugin?os=mac';
+      }, 1500);
     } catch (e) {
       window.open('https://github.com/okeforyou/youoke/releases/latest', '_blank');
     }
-    launchModalRef.current?.close();
   };
 
   const extractVideoId = (url: string) => {
@@ -777,30 +782,75 @@ export default function PocKaraoke() {
       <Modal 
         ref={launchModalRef}
         body={
-          <div className="p-6 text-center text-gray-700 dark:text-gray-300">
-            <div className="w-16 h-16 bg-pink-100 dark:bg-pink-900/30 text-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Music className="w-8 h-8" />
+          showInstallGuide ? (
+            <div className="p-6 text-left text-gray-700 dark:text-gray-300">
+              <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Smartphone className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 text-center">กำลังดาวน์โหลด YouOke Plugin...</h3>
+              
+              <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4 mb-4 text-sm">
+                <h4 className="font-bold text-gray-900 dark:text-white mb-2">
+                  {downloadOS === 'mac' ? '🍎 วิธีติดตั้งสำหรับ Mac' : '🪟 วิธีติดตั้งสำหรับ Windows'}
+                </h4>
+                {downloadOS === 'mac' ? (
+                  <ul className="list-disc pl-5 space-y-2">
+                    <li>รอจนกว่าไฟล์ <strong>.pkg</strong> จะดาวน์โหลดเสร็จ</li>
+                    <li><strong>สำคัญ:</strong> ให้ <u>คลิกขวา</u> ที่ไฟล์แล้วเลือก <strong>Open (เปิด)</strong> เพื่อเริ่มการติดตั้ง (อย่าดับเบิ้ลคลิก)</li>
+                    <li>ทำตามขั้นตอนบนหน้าจอจนเสร็จสิ้น</li>
+                  </ul>
+                ) : (
+                  <ul className="list-disc pl-5 space-y-2">
+                    <li>รอจนกว่าไฟล์ <strong>.exe</strong> จะดาวน์โหลดเสร็จ</li>
+                    <li>เปิดไฟล์ติดตั้ง หากขึ้นหน้าต่างแจ้งเตือนสีฟ้า (Windows Protect)</li>
+                    <li>คลิกที่ <strong>More info (ข้อมูลเพิ่มเติม)</strong> จากนั้นกด <strong>Run anyway (เรียกใช้ต่อไป)</strong></li>
+                  </ul>
+                )}
+              </div>
+              <p className="text-xs text-center text-gray-500">
+                เมื่อติดตั้งเสร็จแล้ว YouOke Plugin จะเชื่อมต่อกับเว็บไซต์โดยอัตโนมัติ
+              </p>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">จำเป็นต้องใช้ YouOke Plugin</h3>
-            <p className="text-sm leading-relaxed">ระบบแยกเสียงด้วย AI ขั้นสูง จำเป็นต้องใช้พลังประมวลผลจากเครื่องของคุณผ่านตัวแอป YouOke Plugin (Desktop) เพื่อให้สามารถแยกเสียงร้องได้อย่างสมบูรณ์แบบและไร้ขีดจำกัด</p>
-            <p className="text-sm mt-4 font-semibold text-gray-900 dark:text-white">หากคุณติดตั้งแอปไว้แล้ว กรุณากดปุ่มด้านล่าง</p>
-          </div>
+          ) : (
+            <div className="p-6 text-center text-gray-700 dark:text-gray-300">
+              <div className="w-16 h-16 bg-pink-100 dark:bg-pink-900/30 text-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Music className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">จำเป็นต้องใช้ YouOke Plugin</h3>
+              <p className="text-sm leading-relaxed">ระบบแยกเสียงด้วย AI ขั้นสูง จำเป็นต้องใช้พลังประมวลผลจากเครื่องของคุณผ่านตัวแอป YouOke Plugin (Desktop) เพื่อให้สามารถแยกเสียงร้องได้อย่างสมบูรณ์แบบและไร้ขีดจำกัด</p>
+              <p className="text-sm mt-4 font-semibold text-gray-900 dark:text-white">หากคุณติดตั้งแอปไว้แล้ว กรุณากดปุ่มด้านล่าง</p>
+            </div>
+          )
         }
         footer={
-          <div className="flex flex-col gap-3">
+          showInstallGuide ? (
             <button 
-              onClick={handleLaunchPlugin}
-              className="w-full py-3.5 bg-pink-500 hover:bg-pink-600 text-white rounded-xl font-bold transition-colors shadow-sm"
+              onClick={() => {
+                setShowInstallGuide(false);
+                launchModalRef.current?.close();
+                setBackendError("กำลังปลุก YouOke Plugin... (ระบบจะพยายามเชื่อมต่ออัตโนมัติ)");
+                setTimeout(() => handleSearch(true), 5000);
+              }}
+              className="w-full py-3.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-bold transition-colors shadow-sm"
             >
-              เปิด YouOke Plugin
+              เข้าใจแล้ว ปิดหน้าต่างนี้
             </button>
-            <button 
-              onClick={handleDownloadPlugin}
-              className="w-full py-3 bg-gray-100 hover:bg-gray-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-gray-900 dark:text-white rounded-xl font-bold transition-colors text-center"
-            >
-              ยังไม่มีแอป? ดาวน์โหลดที่นี่
-            </button>
-          </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              <button 
+                onClick={handleLaunchPlugin}
+                className="w-full py-3.5 bg-pink-500 hover:bg-pink-600 text-white rounded-xl font-bold transition-colors shadow-sm"
+              >
+                เปิด YouOke Plugin
+              </button>
+              <button 
+                onClick={handleDownloadPlugin}
+                className="w-full py-3 bg-gray-100 hover:bg-gray-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-gray-900 dark:text-white rounded-xl font-bold transition-colors text-center"
+              >
+                ยังไม่มีแอป? ดาวน์โหลดที่นี่
+              </button>
+            </div>
+          )
         }
       />
     </div>
