@@ -342,7 +342,7 @@ export default function PocKaraoke() {
           setQueue(prev => prev.map(q => q.id === pendingItem.id ? { ...q, status: 'ready', message: 'พร้อมเล่น!', percent: 100 } : q));
         } else {
           console.error("Separation failed:", data);
-          setQueue(prev => prev.map(q => q.id === pendingItem.id ? { ...q, status: 'error', message: data.message || data.error || 'เกิดข้อผิดพลาดในการแยกเสียง' } : q));
+          setQueue(prev => prev.map(q => q.id === pendingItem.id ? { ...q, status: 'error', message: data.detail || data.message || data.error || 'เกิดข้อผิดพลาดในการแยกเสียง' } : q));
         }
       } catch (e) {
         isPolling = false;
