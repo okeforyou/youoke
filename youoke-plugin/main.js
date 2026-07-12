@@ -64,13 +64,18 @@ function startServer() {
     }
     const logFile = path.join(logDir, 'server.log');
     console.log(`Logging server output to: ${logFile}`);
-    const logStream = fs.createWriteStream(logFile, { flags: 'a' });
-
-    // Write a separator line to log file
-    logStream.write(`\n\n--- SERVER START: ${new Date().toISOString()} ---\n\n`);
+    
+    let logFd;
+    try {
+      logFd = fs.openSync(logFile, 'a');
+      fs.writeSync(logFd, `\n\n--- SERVER START: ${new Date().toISOString()} ---\n\n`);
+    } catch (e) {
+      console.error("Failed to open server log file:", e);
+      logFd = 'ignore';
+    }
 
     serverProcess = spawn(serverPath, [], {
-      stdio: ['ignore', logStream, logStream],
+      stdio: ['ignore', logFd, logFd],
       detached: false,
       env: { ...process.env, PYTHONUNBUFFERED: "1" } // Flush Python logs instantly
     });
