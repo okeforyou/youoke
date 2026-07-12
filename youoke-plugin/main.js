@@ -97,6 +97,7 @@ app.whenReady().then(() => {
   }
 
   tray = new Tray(icon);
+  tray.setTitle('🎙️');
   tray.setToolTip('YouOke Local AI Bridge');
 
   const contextMenu = Menu.buildFromTemplate([
