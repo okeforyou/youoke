@@ -797,9 +797,14 @@ export default function PocKaraoke() {
                   <ul className="list-disc pl-5 space-y-2">
                     <li>รอจนกว่าไฟล์ <strong>.dmg</strong> จะดาวน์โหลดเสร็จ และเปิดไฟล์ขึ้นมา</li>
                     <li>ลากไอคอนแอป <strong>YouOke Plugin</strong> ลงในโฟลเดอร์ <strong>Applications</strong></li>
-                    <li>เปิดแอปครั้งแรก: <strong>คลิกขวา (Right-click)</strong> ที่ไอคอนแอป → เลือก <strong>Open (เปิด)</strong></li>
-                    <li>จะมีหน้าต่างแจ้งเตือน ให้กดปุ่ม <strong>Open (เปิด)</strong> อีกครั้ง</li>
-                    <li>ครั้งต่อไปสามารถเปิดแอปได้ตามปกติ <br/><span className="text-xs text-gray-500">(สาเหตุที่ต้องคลิกขวาเปิดครั้งแรก เพื่อยืนยันกับ Mac ว่าเราเชื่อถือแอปนี้)</span></li>
+                    <li>เปิดแอป <strong>Terminal</strong> (พิมพ์ Terminal ใน Spotlight/Launchpad) แล้วพิมพ์คำสั่งนี้:</li>
+                    <li className="list-none">
+                      <code className="block bg-gray-900 text-green-400 p-2.5 rounded-lg text-xs font-mono mt-1 mb-1 select-all cursor-pointer" onClick={(e) => {navigator.clipboard.writeText('xattr -cr /Applications/YouOke\\ Plugin.app && open /Applications/YouOke\\ Plugin.app'); const el = e.currentTarget; el.style.outline='2px solid #22c55e'; setTimeout(()=>el.style.outline='',1000);}}>
+                        xattr -cr /Applications/YouOke\ Plugin.app && open /Applications/YouOke\ Plugin.app
+                      </code>
+                      <span className="text-xs text-gray-500">👆 คลิกเพื่อคัดลอก แล้ววางใน Terminal แล้วกด Enter</span>
+                    </li>
+                    <li>แอปจะเปิดขึ้นมาโดยอัตโนมัติ ครั้งต่อไปเปิดได้ตามปกติ</li>
                   </ul>
                 ) : (
                   <ul className="list-disc pl-5 space-y-2">
