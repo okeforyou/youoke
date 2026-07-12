@@ -75,13 +75,20 @@ def search_youtube(q: str, limit: int = 5):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
 
+def get_ffmpeg_path():
+    try:
+        import imageio_ffmpeg
+        return imageio_ffmpeg.get_ffmpeg_exe()
+    except:
+        return "ffmpeg"
+
 def convert_audio(input_path, output_path, fmt="wav"):
-    # Try ffmpeg first (cross-platform)
+    ffmpeg_exe = get_ffmpeg_path()
     try:
         if fmt == "wav":
-            subprocess.run(["ffmpeg", "-y", "-i", input_path, output_path], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run([ffmpeg_exe, "-y", "-i", input_path, output_path], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         elif fmt == "m4a":
-            subprocess.run(["ffmpeg", "-y", "-i", input_path, "-c:a", "aac", "-b:a", "128k", output_path], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run([ffmpeg_exe, "-y", "-i", input_path, "-c:a", "aac", "-b:a", "128k", output_path], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return
     except FileNotFoundError:
         # ffmpeg not found, fallback to afconvert (macOS only)
@@ -167,10 +174,12 @@ def separate(req: SeparateRequest):
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True)
         
         buffer = ""
+        full_log = ""
         while True:
             char = process.stdout.read(1)
             if not char:
                 break
+            full_log += char
             if char == '\r' or char == '\n':
                 match = re.search(r'(\d+)%', buffer)
                 if match:
@@ -183,11 +192,11 @@ def separate(req: SeparateRequest):
                 
         process.wait()
         if process.returncode != 0:
-            raise subprocess.CalledProcessError(process.returncode, process.args)
+            raise Exception(f"Exit code {process.returncode}. Log: {full_log[-1000:]}")
             
-    except subprocess.CalledProcessError:
+    except Exception as e:
         progress_store[vid] = {"status": "error", "percent": 0, "message": "การแยกเสียงล้มเหลว"}
-        raise HTTPException(status_code=500, detail="Demucs separation failed.")
+        raise HTTPException(status_code=500, detail=f"Demucs separation failed: {str(e)}")
         
     demucs_out_dir = os.path.join(song_dir, "htdemucs_ft", vid)
     vocal_wav = os.path.join(demucs_out_dir, "vocals.wav")
@@ -219,7 +228,6 @@ app.mount("/files", StaticFiles(directory=CACHE_DIR), name="files")
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "demucs_worker":
         import demucs.pretrained
-        demucs.pretrained._parse_remote_files = lambda *args, **kwargs: {}
         from demucs.separate import main
         sys.argv = ["demucs"] + sys.argv[2:]
         main()

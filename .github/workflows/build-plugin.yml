@@ -38,14 +38,14 @@ jobs:
       - name: Build Python Backend (macOS)
         if: matrix.os == 'macos-latest'
         run: |
-          pyinstaller --name youoke-server --onefile --collect-data demucs scripts/local-bridge/server.py
+          pyinstaller --name youoke-server --onefile --collect-data demucs --collect-binaries imageio_ffmpeg scripts/local-bridge/server.py
           mkdir -p youoke-plugin/bin
           cp dist/youoke-server youoke-plugin/bin/
 
       - name: Build Python Backend (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          pyinstaller --name youoke-server --onefile --collect-data demucs scripts\local-bridge\server.py
+          pyinstaller --name youoke-server --onefile --collect-data demucs --collect-binaries imageio_ffmpeg scripts\local-bridge\server.py
           mkdir youoke-plugin\bin
           copy dist\youoke-server.exe youoke-plugin\bin\
 
