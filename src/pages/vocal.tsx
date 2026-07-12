@@ -217,11 +217,14 @@ export default function PocKaraoke() {
     try {
       const res = await fetch(`http://127.0.0.1:5050/search?q=${encodeURIComponent(searchQuery)}`);
       const data = await res.json();
-      if (data.status === "success") {
+      if (data.status === 'success') {
         setSearchResults(data.results);
-        setBackendError(''); // Clear error on success
-        retryRef.current = 0; // Reset retries
+      } else {
+        console.error("Search failed:", data);
+        alert(data.message || 'เกิดข้อผิดพลาดในการค้นหา');
+        setSearchResults([]);
       }
+      retryRef.current = 0; // Reset retries
     } catch (e) {
       console.error(e);
       if (!isAutoRetry) {

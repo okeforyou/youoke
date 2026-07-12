@@ -73,7 +73,7 @@ def search_youtube(q: str, limit: int = 5):
                 })
         return {"status": "success", "results": results}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
+        return {"status": "error", "message": f"Search failed: {str(e)}"}
 
 def get_ffmpeg_path():
     try:
@@ -98,9 +98,9 @@ def convert_audio(input_path, output_path, fmt="wav"):
             elif fmt == "m4a":
                 subprocess.run(["afconvert", "-f", "m4af", "-d", "aac", "-b", "128000", input_path, output_path], check=True)
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Audio conversion failed (afconvert): {str(e)}")
+            raise Exception(f"Audio conversion failed (afconvert): {str(e)}")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"FFmpeg conversion failed: {str(e)}")
+        raise Exception(f"FFmpeg conversion failed: {str(e)}")
 
 import re
 
@@ -163,12 +163,16 @@ def separate(req: SeparateRequest):
         
     except Exception as e:
         progress_store[vid] = {"status": "error", "percent": 0, "message": "ดาวน์โหลดล้มเหลว"}
-        raise HTTPException(status_code=500, detail=f"Download failed: {str(e)}")
+        return {"status": "error", "message": f"Download failed: {str(e)}"}
         
     # 2. Convert to WAV for demucs
     progress_store[vid] = {"status": "converting", "percent": 20, "message": "เตรียมไฟล์สำหรับ AI..."}
-    wav_path = os.path.join(song_dir, f"{vid}.wav")
-    convert_audio(m4a_path, wav_path, fmt="wav")
+    try:
+        wav_path = os.path.join(song_dir, f"{vid}.wav")
+        convert_audio(m4a_path, wav_path, fmt="wav")
+    except Exception as e:
+        progress_store[vid] = {"status": "error", "percent": 0, "message": "แปลงไฟล์ล้มเหลว"}
+        return {"status": "error", "message": str(e)}
         
     device = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
 
@@ -205,7 +209,7 @@ def separate(req: SeparateRequest):
             
     except Exception as e:
         progress_store[vid] = {"status": "error", "percent": 0, "message": "การแยกเสียงล้มเหลว"}
-        raise HTTPException(status_code=500, detail=f"Demucs separation failed: {str(e)}")
+        return {"status": "error", "message": f"Demucs separation failed: {str(e)}"}
         
     demucs_out_dir = os.path.join(song_dir, "htdemucs_ft", vid)
     vocal_wav = os.path.join(demucs_out_dir, "vocals.wav")
@@ -213,7 +217,7 @@ def separate(req: SeparateRequest):
     
     if not os.path.exists(vocal_wav) or not os.path.exists(no_vocal_wav):
         progress_store[vid] = {"status": "error", "percent": 0, "message": "ไม่พบไฟล์ผลลัพธ์"}
-        raise HTTPException(status_code=500, detail="Demucs output files not found.")
+        return {"status": "error", "message": "Demucs output files not found."}
         
     # 4. Convert back to M4A to save space
     progress_store[vid] = {"status": "compressing", "percent": 95, "message": "กำลังบีบอัดไฟล์ขั้นสุดท้าย..."}
