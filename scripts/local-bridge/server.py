@@ -129,7 +129,16 @@ def separate(req: SeparateRequest):
         
     os.makedirs(song_dir, exist_ok=True)
     
-    # 1. Download with pytubefix
+    # Cleanup old temp files
+    for ext in ['webm', 'm4a', 'wav', 'mp4', 'mp3']:
+        temp_file = os.path.join(song_dir, f"{vid}.{ext}")
+        if os.path.exists(temp_file):
+            try:
+                os.remove(temp_file)
+            except:
+                pass
+
+    # 1. Download with yt-dlp
     progress_store[vid] = {"status": "downloading", "percent": 10, "message": "กำลังดาวน์โหลดวิดีโอจาก YouTube..."}
     m4a_path = os.path.join(song_dir, f"{vid}.m4a")
     yt_url = f"https://www.youtube.com/watch?v={vid}"
@@ -144,12 +153,12 @@ def separate(req: SeparateRequest):
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([yt_url])
         
-        # yt-dlp might download as .webm if m4a is not available, so we should ensure it's converted to m4a
-        # But we actually pass it to convert_audio(..., fmt="wav") later anyway.
-        # Let's just find whatever file was downloaded
-        downloaded_files = [f for f in os.listdir(song_dir) if f.startswith(vid) and f != "vocals.m4a" and f != "no_vocals.m4a"]
+        # yt-dlp might download as .webm if m4a is not available
+        downloaded_files = [f for f in os.listdir(song_dir) if f.startswith(vid) and f != "vocals.m4a" and f != "no_vocals.m4a" and not f.endswith(".wav")]
         if not downloaded_files:
             raise Exception("File not found after download.")
+        # Sort by modification time in case there are multiple (pick the newest)
+        downloaded_files.sort(key=lambda x: os.path.getmtime(os.path.join(song_dir, x)), reverse=True)
         m4a_path = os.path.join(song_dir, downloaded_files[0])
         
     except Exception as e:

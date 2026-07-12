@@ -5,3 +5,5 @@ yt-dlp>=2025.10.14
 demucs==4.0.1
 numpy<2
 imageio-ffmpeg
+torchcodec
+soundfile
