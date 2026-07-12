@@ -1,6 +1,6 @@
 const { app, Tray, Menu, dialog, nativeImage } = require('electron');
 const { autoUpdater } = require('electron-updater');
-const { spawn } = require('child_process');
+const { spawn, exec } = require('child_process');
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
@@ -24,6 +24,15 @@ function getServerExecutablePath() {
   return devPath;
 }
 
+function killExistingServer(callback) {
+  const isWin = process.platform === 'win32';
+  const killCmd = isWin ? 'taskkill /F /IM youoke-server.exe /T' : 'killall -9 youoke-server';
+  exec(killCmd, (err) => {
+    // Ignore errors, call the callback when done
+    callback();
+  });
+}
+
 function startServer() {
   if (serverProcess) {
     console.log("Server is already running.");
@@ -36,36 +45,40 @@ function startServer() {
     return;
   }
 
-  console.log(`Starting server: ${serverPath}`);
-  
-  // Make sure it's executable on Mac/Linux
-  if (process.platform !== 'win32') {
-    try {
-      fs.chmodSync(serverPath, 0o755);
-    } catch (e) {
-      console.error("Could not set executable permissions:", e);
+  // Kill any running zombies first
+  killExistingServer(() => {
+    console.log(`Starting server: ${serverPath}`);
+    
+    // Make sure it's executable on Mac/Linux
+    if (process.platform !== 'win32') {
+      try {
+        fs.chmodSync(serverPath, 0o755);
+      } catch (e) {
+        console.error("Could not set executable permissions:", e);
+      }
     }
-  }
 
-  const logDir = app.getPath('userData');
-  if (!fs.existsSync(logDir)) {
-    fs.mkdirSync(logDir, { recursive: true });
-  }
-  const logFile = path.join(logDir, 'server.log');
-  console.log(`Logging server output to: ${logFile}`);
-  const logStream = fs.createWriteStream(logFile, { flags: 'a' });
+    const logDir = app.getPath('userData');
+    if (!fs.existsSync(logDir)) {
+      fs.mkdirSync(logDir, { recursive: true });
+    }
+    const logFile = path.join(logDir, 'server.log');
+    console.log(`Logging server output to: ${logFile}`);
+    const logStream = fs.createWriteStream(logFile, { flags: 'a' });
 
-  // Write a separator line to log file
-  logStream.write(`\n\n--- SERVER START: ${new Date().toISOString()} ---\n\n`);
+    // Write a separator line to log file
+    logStream.write(`\n\n--- SERVER START: ${new Date().toISOString()} ---\n\n`);
 
-  serverProcess = spawn(serverPath, [], {
-    stdio: ['ignore', logStream, logStream],
-    detached: false
-  });
+    serverProcess = spawn(serverPath, [], {
+      stdio: ['ignore', logStream, logStream],
+      detached: false,
+      env: { ...process.env, PYTHONUNBUFFERED: "1" } // Flush Python logs instantly
+    });
 
-  serverProcess.on('close', (code) => {
-    console.log(`Server process exited with code ${code}`);
-    serverProcess = null;
+    serverProcess.on('close', (code) => {
+      console.log(`Server process exited with code ${code}`);
+      serverProcess = null;
+    });
   });
 }
 
