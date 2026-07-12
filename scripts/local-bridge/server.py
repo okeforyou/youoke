@@ -218,6 +218,8 @@ app.mount("/files", StaticFiles(directory=CACHE_DIR), name="files")
 
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "demucs_worker":
+        import demucs.pretrained
+        demucs.pretrained._parse_remote_files = lambda *args, **kwargs: {}
         from demucs.separate import main
         sys.argv = ["demucs"] + sys.argv[2:]
         main()
