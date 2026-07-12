@@ -114,7 +114,7 @@ app.whenReady().then(() => {
   // Point to our Vercel API proxy so it can securely access private GitHub releases!
   autoUpdater.setFeedURL({
     provider: 'generic',
-    url: 'https://play.okeforyou.com/api/updates'
+    url: 'https://youoke.vercel.app/api/updates'
   });
 
   autoUpdater.on('update-available', () => {
