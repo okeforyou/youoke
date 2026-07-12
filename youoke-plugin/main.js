@@ -47,8 +47,19 @@ function startServer() {
     }
   }
 
+  const logDir = app.getPath('userData');
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir, { recursive: true });
+  }
+  const logFile = path.join(logDir, 'server.log');
+  console.log(`Logging server output to: ${logFile}`);
+  const logStream = fs.createWriteStream(logFile, { flags: 'a' });
+
+  // Write a separator line to log file
+  logStream.write(`\n\n--- SERVER START: ${new Date().toISOString()} ---\n\n`);
+
   serverProcess = spawn(serverPath, [], {
-    stdio: 'ignore', // Do not show terminal output to keep it invisible
+    stdio: ['ignore', logStream, logStream],
     detached: false
   });
 
@@ -101,12 +112,12 @@ app.whenReady().then(() => {
   tray.setToolTip('YouOke Local AI Bridge');
 
   const contextMenu = Menu.buildFromTemplate([
-    { label: 'YouOke AI Plugin', enabled: false },
+    { label: 'ระบบจัดการ YouOke AI', enabled: false },
     { type: 'separator' },
-    { label: 'Restart Server', click: () => { stopServer(); setTimeout(startServer, 1000); } },
-    { label: 'Check for Updates', click: () => { autoUpdater.checkForUpdatesAndNotify(); } },
+    { label: 'รีสตาร์ทระบบ AI', click: () => { stopServer(); setTimeout(startServer, 1000); } },
+    { label: 'ตรวจสอบอัปเดต', click: () => { autoUpdater.checkForUpdatesAndNotify(); } },
     { type: 'separator' },
-    { label: 'Quit', click: () => { stopServer(); app.quit(); } }
+    { label: 'ปิดโปรแกรม', click: () => { stopServer(); app.quit(); } }
   ]);
   
   tray.setContextMenu(contextMenu);
@@ -121,17 +132,17 @@ app.whenReady().then(() => {
   autoUpdater.on('update-available', () => {
     dialog.showMessageBox({
       type: 'info',
-      title: 'Update Available',
-      message: 'A new version of YouOke AI Plugin is available. Downloading now...'
+      title: 'มีอัปเดตใหม่!',
+      message: 'ตรวจพบเวอร์ชันใหม่ล่าสุด กำลังดาวน์โหลดอัปเดตอยู่เบื้องหลัง...'
     });
   });
 
   autoUpdater.on('update-downloaded', () => {
     dialog.showMessageBox({
       type: 'info',
-      title: 'Update Ready',
-      message: 'Update downloaded. The plugin will restart to install the update.',
-      buttons: ['Restart Now', 'Later']
+      title: 'ดาวน์โหลดอัปเดตเสร็จสิ้น',
+      message: 'ระบบพร้อมสำหรับการอัปเดตแล้ว กรุณากด "รีสตาร์ทตอนนี้" เพื่อทำการติดตั้งอัตโนมัติ',
+      buttons: ['รีสตาร์ทตอนนี้', 'ไว้ทีหลัง']
     }).then((result) => {
       if (result.response === 0) {
         stopServer();
