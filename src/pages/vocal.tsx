@@ -473,8 +473,8 @@ export default function PocKaraoke() {
                 ) : (
                     <div className="flex-1 flex items-center justify-between bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-2xl px-4 py-2">
                         <div className="flex flex-col">
-                            <span className="text-sm font-bold text-blue-700 dark:text-blue-400">เข้าสู่ระบบเพื่อค้นหาเพลง</span>
-                            <span className="text-[10px] text-blue-600/70 dark:text-blue-400/70 leading-tight mt-0.5">เพื่อปกป้องลิขสิทธิ์ กรุณาเข้าสู่ระบบด้วย Google ของท่าน (Personal Use Only)</span>
+                            <span className="text-sm font-bold text-blue-700 dark:text-blue-400">กรุณาเข้าสู่ระบบเพื่อค้นหาเพลง</span>
+                            <span className="text-[10px] text-blue-600/70 dark:text-blue-400/70 leading-tight mt-0.5">โปรดเข้าสู่ระบบด้วยบัญชี Google เพื่อดึงข้อมูลและใช้งาน YouOke ในฐานะเครื่องเล่นสื่อส่วนบุคคลของคุณ</span>
                         </div>
                         <button
                             onClick={signInWithGoogle}
