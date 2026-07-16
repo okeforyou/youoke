@@ -114,22 +114,28 @@ app.whenReady().then(() => {
     openAsHidden: true
   });
 
-  // Create an empty native image for the tray icon MVP (or use a real icon later)
-  // Electron requires some image for the tray
-  const iconPath = path.join(__dirname, 'assets', 'iconTemplate.png');
+  // Use the actual YouOke icon for the tray
+  const iconPath = path.join(__dirname, 'assets', 'icon.png');
   let icon;
   if (fs.existsSync(iconPath)) {
     icon = nativeImage.createFromPath(iconPath);
+    // Resize icon for tray if it's too large (standard size is 16x16 or 24x24)
+    icon = icon.resize({ width: 20, height: 20 });
   } else {
     // Create a 16x16 transparent image if no icon exists
     icon = nativeImage.createEmpty();
   }
 
   tray = new Tray(icon);
-  tray.setTitle('🎙️');
+  // Remove the text title so it only shows the icon
+  tray.setTitle('');
   tray.setToolTip('YouOke Local AI Bridge');
 
+  const appVersion = app.getVersion();
+
   const contextMenu = Menu.buildFromTemplate([
+    { label: `YouOke Plugin v${appVersion}`, enabled: false },
+    { type: 'separator' },
     { label: 'ระบบจัดการ YouOke AI', enabled: false },
     { type: 'separator' },
     { label: 'รีสตาร์ทระบบ AI', click: () => { stopServer(); setTimeout(startServer, 1000); } },
