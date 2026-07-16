@@ -6,6 +6,7 @@ import { Search, X, Mic, Music, Mic2, Smartphone, Play, Pause, SkipForward, Rota
 import { Sidebar } from '../components/navigation/Sidebar';
 import Modal, { ModalHandler } from '../components/Modal';
 import { DebounceInput } from 'react-debounce-input';
+import { useAuthStore } from '@/modules/auth/useAuthStore';
 
 interface QueueItem {
   id: string;
@@ -26,6 +27,7 @@ interface SearchResult {
 }
 
 export default function PocKaraoke() {
+  const { user, signInWithGoogle } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -427,44 +429,62 @@ export default function PocKaraoke() {
         {/* Desktop Header Mimic */}
         <header className="hidden lg:flex h-20 items-center justify-between px-8 border-b border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-950 sticky top-0 z-20 transition-all">
             <div className="flex-1 max-w-2xl relative group flex gap-2">
-                <div className="relative flex-1">
-                    <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                        <Search className="h-5 w-5 text-gray-300 dark:text-zinc-600 group-focus-within:text-primary transition-colors" />
+                {user ? (
+                    <>
+                        <div className="relative flex-1">
+                            <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                                <Search className="h-5 w-5 text-gray-300 dark:text-zinc-600 group-focus-within:text-primary transition-colors" />
+                            </div>
+                            <DebounceInput
+                                minLength={2}
+                                debounceTimeout={300}
+                                placeholder="ค้นหาเพลง (POC Search Server)..."
+                                className="block w-full pl-14 pr-12 h-12 bg-gray-50/50 dark:bg-zinc-900/50 hover:bg-gray-100/50 dark:hover:bg-zinc-800/50 focus:bg-white dark:focus:bg-zinc-900 border border-gray-100 dark:border-zinc-800 focus:border-primary/20 rounded-2xl leading-5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-zinc-500 focus:outline-none transition-all shadow-sm font-medium"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onKeyDown={(e: any) => e.key === 'Enter' && handleSearch()}
+                            />
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 gap-1">
+                                {searchQuery && (
+                                    <button
+                                        onClick={() => setSearchQuery('')}
+                                        className="p-2 text-gray-300 dark:text-zinc-600 hover:text-red-500 transition-colors"
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                        <button 
+                          onClick={handleSearch}
+                          disabled={isSearching}
+                          className="px-6 py-2 h-12 rounded-2xl font-bold text-white shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-[0.98]"
+                        >
+                          {isSearching ? "..." : "ค้นหา"}
+                        </button>
+                        <button 
+                          onClick={addUrlToQueue}
+                          className="px-4 py-2 h-12 rounded-2xl font-bold text-slate-700 dark:text-zinc-300 bg-gray-50 dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
+                          title="เพิ่ม URL โดยตรง"
+                        >
+                          + URL
+                        </button>
+                    </>
+                ) : (
+                    <div className="flex-1 flex items-center justify-between bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-2xl px-4 py-2">
+                        <div className="flex flex-col">
+                            <span className="text-sm font-bold text-blue-700 dark:text-blue-400">เข้าสู่ระบบเพื่อค้นหาเพลง</span>
+                            <span className="text-[10px] text-blue-600/70 dark:text-blue-400/70 leading-tight mt-0.5">เพื่อปกป้องลิขสิทธิ์ กรุณาเข้าสู่ระบบด้วย Google ของท่าน (Personal Use Only)</span>
+                        </div>
+                        <button
+                            onClick={signInWithGoogle}
+                            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-900 hover:bg-gray-50 dark:hover:bg-zinc-800 text-sm font-bold text-gray-700 dark:text-zinc-300 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-sm transition-all"
+                        >
+                            <svg className="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" /><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" /><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" /><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" /></svg>
+                            Sign in with Google
+                        </button>
                     </div>
-                    <DebounceInput
-                        minLength={2}
-                        debounceTimeout={300}
-                        placeholder="ค้นหาเพลง (POC Search Server)..."
-                        className="block w-full pl-14 pr-12 h-12 bg-gray-50/50 dark:bg-zinc-900/50 hover:bg-gray-100/50 dark:hover:bg-zinc-800/50 focus:bg-white dark:focus:bg-zinc-900 border border-gray-100 dark:border-zinc-800 focus:border-primary/20 rounded-2xl leading-5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-zinc-500 focus:outline-none transition-all shadow-sm font-medium"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyDown={(e: any) => e.key === 'Enter' && handleSearch()}
-                    />
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 gap-1">
-                        {searchQuery && (
-                            <button
-                                onClick={() => setSearchQuery('')}
-                                className="p-2 text-gray-300 dark:text-zinc-600 hover:text-red-500 transition-colors"
-                            >
-                                <X className="h-4 w-4" />
-                            </button>
-                        )}
-                    </div>
-                </div>
-                <button 
-                  onClick={handleSearch}
-                  disabled={isSearching}
-                  className="px-6 py-2 h-12 rounded-2xl font-bold text-white shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-[0.98]"
-                >
-                  {isSearching ? "..." : "ค้นหา"}
-                </button>
-                <button 
-                  onClick={addUrlToQueue}
-                  className="px-4 py-2 h-12 rounded-2xl font-bold text-slate-700 dark:text-zinc-300 bg-gray-50 dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
-                  title="เพิ่ม URL โดยตรง"
-                >
-                  + URL
-                </button>
+                )}
             </div>
             
             <div className="flex items-center gap-6 ml-6">
