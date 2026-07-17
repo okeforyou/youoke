@@ -37,7 +37,8 @@ const firebaseConfig = {
   messagingSenderId: cleanEnv(process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID) ||
     cleanEnv(process.env.NEXT_PUBLIC_MESSAGING_SENDER_ID),
   appId: cleanEnv(process.env.NEXT_PUBLIC_FIREBASE_APP_ID) ||
-    cleanEnv(process.env.NEXT_PUBLIC_APP_ID),
+    cleanEnv(process.env.NEXT_PUBLIC_APP_ID) ||
+    '1:1234567890:web:dummy1234567890abcdef',
   databaseURL: databaseURL || 'https://playokeforyou-default-rtdb.asia-southeast1.firebasedatabase.app',
 };
 

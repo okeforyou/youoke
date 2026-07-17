@@ -255,13 +255,36 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
 
     return (
         <div className={`relative w-full h-full ${className} youtube-player-wrapper`}>
+            {/* AI Audio Elements */}
+            {isAiReady && activeVideoId && (
+                <div className="hidden">
+                    <audio 
+                        ref={vocalRef} 
+                        src={`http://127.0.0.1:5050/files/${activeVideoId}/vocals.m4a`} 
+                        preload="auto" 
+                        onLoadedData={(e) => {
+                            e.currentTarget.volume = getEffectiveVolume('vocals') / 100;
+                            if (isPlaying) e.currentTarget.play().catch(()=>{});
+                        }} 
+                    />
+                    <audio 
+                        ref={instrumentalRef} 
+                        src={`http://127.0.0.1:5050/files/${activeVideoId}/no_vocals.m4a`} 
+                        preload="auto" 
+                        onLoadedData={(e) => {
+                            e.currentTarget.volume = getEffectiveVolume('instrumental') / 100;
+                            if (isPlaying) e.currentTarget.play().catch(()=>{});
+                        }} 
+                    />
+                </div>
+            )}
             {activeVideoId ? (
                     <YouTube
                         key={activeVideoId}
                         videoId={activeVideoId}
                         opts={opts}
                         className="w-full h-full"
-                        iframeClassName="w-full h-full pointer-events-none"
+                        iframeClassName={`w-full h-full pointer-events-none ${isAiReady ? 'opacity-0' : ''}`}
                         onReady={handleYouTubeReady}
                         onStateChange={handleYouTubeStateChange}
                         onEnd={onEnded}

@@ -60,8 +60,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
     const currentAiJob = currentSource ? aiVocal.jobs[currentSource] : null;
     const isAiProcessing = currentVideo?.aiVocalRequested && currentAiJob?.status === 'processing';
 
-    const vocalRef = useRef<HTMLAudioElement>(null);
-    const instrumentalRef = useRef<HTMLAudioElement>(null);
+
 
     // Start background AI processing loop
     useAiProcessor();
@@ -413,60 +412,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
         }
     }, [currentVideo?.uuid]);
 
-    // --- AI VOCAL SYNC LOGIC ---
-    useEffect(() => {
-        let animationFrameId: number;
-        const syncAudio = () => {
-            if (!vocalRef.current || !instrumentalRef.current || !playerRef.current) return;
-            const target = playerRef.current;
-            if (typeof target.getCurrentTime === 'function') {
-                const ytTime = target.getCurrentTime();
-                if (isPlaying) {
-                    if (Math.abs(vocalRef.current.currentTime - ytTime) > 0.3) {
-                        vocalRef.current.currentTime = ytTime;
-                        instrumentalRef.current.currentTime = ytTime;
-                    }
-                    if (vocalRef.current.paused) vocalRef.current.play().catch(e => console.error("Vocal Play Error:", e));
-                    if (instrumentalRef.current.paused) instrumentalRef.current.play().catch(e => console.error("Inst Play Error:", e));
-                } else {
-                    vocalRef.current.pause();
-                    instrumentalRef.current.pause();
-                }
-            }
-            animationFrameId = requestAnimationFrame(syncAudio);
-        };
 
-        if (aiVocal.isActive && aiVocal.status === 'ready') {
-            animationFrameId = requestAnimationFrame(syncAudio);
-        } else {
-            if (vocalRef.current) vocalRef.current.pause();
-            if (instrumentalRef.current) instrumentalRef.current.pause();
-        }
-
-        return () => {
-            if (animationFrameId) cancelAnimationFrame(animationFrameId);
-        };
-    }, [aiVocal.isActive, aiVocal.status, isPlaying]);
-
-    // Apply Volumes & Mute/Solo
-    useEffect(() => {
-        if (!vocalRef.current || !instrumentalRef.current) return;
-        
-        const getEffectiveVolume = (type: 'vocals' | 'instrumental') => {
-            if (isMuted) return 0;
-            const state = aiVocal.trackStates[type];
-            if (state.muted) return 0;
-            
-            // Check if ANY track is soloed
-            const isAnySolo = aiVocal.trackStates.vocals.solo || aiVocal.trackStates.instrumental.solo;
-            if (isAnySolo && !state.solo) return 0;
-            
-            return aiVocal.volumes[type];
-        };
-
-        vocalRef.current.volume = getEffectiveVolume('vocals') / 100;
-        instrumentalRef.current.volume = getEffectiveVolume('instrumental') / 100;
-    }, [aiVocal.volumes, aiVocal.trackStates, isMuted]);
 
     // --- RENDER LOGIC ---
 
@@ -726,22 +672,6 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                     );
                 })()
             }
-
-            {/* AI VOCAL AUDIO ELEMENTS */}
-            {aiVocal.isActive && currentVideo?.videoId && (
-                <div className="hidden">
-                    <audio 
-                        ref={vocalRef} 
-                        src={`http://127.0.0.1:5050/files/${currentVideo.videoId}/vocals.m4a`} 
-                        preload="auto" 
-                    />
-                    <audio 
-                        ref={instrumentalRef} 
-                        src={`http://127.0.0.1:5050/files/${currentVideo.videoId}/instrumental.m4a`} 
-                        preload="auto" 
-                    />
-                </div>
-            )}
 
         </div >
     );
