@@ -83,6 +83,12 @@ export interface SystemConfig {
             apiKeys: string[];
             useApi: boolean;
         };
+        youtubeCharts?: {
+            top100?: string;
+            newSongs?: string;
+            trending?: string;
+            evergreen?: string;
+        };
         spotify: {
             clientId: string;
             clientSecret: string;

@@ -831,7 +831,7 @@ export default function AdminUsersPage() {
                     </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                    <button onClick={fetchUsers} className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl font-bold text-[11px] text-gray-600 hover:bg-white hover:border-indigo-200 transition-all">
+                    <button onClick={() => fetchUsers()} className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl font-bold text-[11px] text-gray-600 hover:bg-white hover:border-indigo-200 transition-all">
                         <RefreshCw className={cn("w-3.5 h-3.5", loading && "animate-spin")} />
                         รีเฟรช
                     </button>
