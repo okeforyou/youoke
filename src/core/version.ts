@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.100";
+export const SYSTEM_VERSION = "5.5.101";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "v5.5.101 (Vocal Separation UI Pure Flat Design)",
+        date: "17 ก.ค. 2569",
+        changes: [
+            "UI: Redesigned the Vocal and Instrumental mixer buttons in the Vocal Separation player.",
+            "DESIGN: Applied Pure Flat Design principles (removed shadows, added minimalist borders).",
+            "UX: Consolidated controls into a clean, single-line unified toggle layout."
+        ],
+        recent_updates: "Vocal Player UI Redesign (Pure Flat)"
+    },
     {
         version: "v5.5.100 (Service Worker Cache & WebOS Fullscreen Fix)",
         date: "11 ก.ค. 2569",

@@ -138,32 +138,43 @@ def separate(req: SeparateRequest):
             except:
                 pass
 
-    # 1. Download with yt-dlp
+    # 1. Download with pytubefix (bypasses YouTube SABR block), fallback to yt-dlp
     progress_store[vid] = {"status": "downloading", "percent": 10, "message": "กำลังดาวน์โหลดวิดีโอจาก YouTube..."}
     m4a_path = os.path.join(song_dir, f"{vid}.m4a")
     yt_url = f"https://www.youtube.com/watch?v={vid}"
     
+    download_success = False
     try:
-        import yt_dlp
-        ydl_opts = {
-            'format': 'm4a/bestaudio/best',
-            'outtmpl': os.path.join(song_dir, f"{vid}.%(ext)s"),
-            'quiet': True,
-        }
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([yt_url])
-        
-        # yt-dlp might download as .webm if m4a is not available
-        downloaded_files = [f for f in os.listdir(song_dir) if f.startswith(vid) and f != "vocals.m4a" and f != "no_vocals.m4a" and not f.endswith(".wav")]
-        if not downloaded_files:
-            raise Exception("File not found after download.")
-        # Sort by modification time in case there are multiple (pick the newest)
-        downloaded_files.sort(key=lambda x: os.path.getmtime(os.path.join(song_dir, x)), reverse=True)
-        m4a_path = os.path.join(song_dir, downloaded_files[0])
-        
-    except Exception as e:
-        progress_store[vid] = {"status": "error", "percent": 0, "message": "ดาวน์โหลดล้มเหลว"}
-        return {"status": "error", "message": f"Download failed: {str(e)}"}
+        from pytubefix import YouTube
+        yt = YouTube(yt_url)
+        stream = yt.streams.get_audio_only()
+        if stream:
+            stream.download(output_path=song_dir, filename=f"{vid}.m4a")
+            m4a_path = os.path.join(song_dir, f"{vid}.m4a")
+            download_success = True
+    except Exception as py_err:
+        print(f"pytubefix download failed: {py_err}, falling back to yt-dlp")
+
+    if not download_success:
+        try:
+            import yt_dlp
+            ydl_opts = {
+                'format': 'm4a/bestaudio/best',
+                'outtmpl': os.path.join(song_dir, f"{vid}.%(ext)s"),
+                'quiet': True,
+            }
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                ydl.download([yt_url])
+            
+            downloaded_files = [f for f in os.listdir(song_dir) if f.startswith(vid) and f != "vocals.m4a" and f != "no_vocals.m4a" and not f.endswith(".wav")]
+            if not downloaded_files:
+                raise Exception("File not found after download.")
+            downloaded_files.sort(key=lambda x: os.path.getmtime(os.path.join(song_dir, x)), reverse=True)
+            m4a_path = os.path.join(song_dir, downloaded_files[0])
+            
+        except Exception as e:
+            progress_store[vid] = {"status": "error", "percent": 0, "message": "ดาวน์โหลดล้มเหลว"}
+            return {"status": "error", "message": f"Download failed: {str(e)}"}
         
     # 2. Convert to WAV for demucs
     progress_store[vid] = {"status": "converting", "percent": 20, "message": "เตรียมไฟล์สำหรับ AI..."}
