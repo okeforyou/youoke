@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.102";
+export const SYSTEM_VERSION = "5.5.103";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "v5.5.103 (Vocal Player Control UI Standard Alignment)",
+        date: "17 ก.ค. 2569",
+        changes: [
+            "UI: Replaced the ad-hoc horizontal vocal player controls with the standard YouOke Player controls layout (vertical icon + label).",
+            "UX: Embedded the Vocal and Instrumental toggles directly into the player control strip, replacing the standard mute button.",
+            "UX: The mixer setting popover is now integrated smoothly as a control strip item."
+        ],
+        recent_updates: "Aligned Vocal Player Controls with Standard Layout"
+    },
     {
         version: "v5.5.102 (Vocal Player Layout Fix)",
         date: "17 ก.ค. 2569",
