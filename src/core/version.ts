@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.106";
+export const SYSTEM_VERSION = "5.5.107";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "v5.5.107 (Isolated AI Vocal Mode)",
+        date: "17 ก.ค. 2569",
+        changes: [
+            "UI: Migrated AI Vocal features completely into a standalone `/voice` page to isolate it from the core production app.",
+            "CORE: Hijacked the global `addToQueue` store function locally on `/voice` to intercept songs and send them directly to the local AI Python Server.",
+            "UI: Embeded `HomePageContent` cleanly into `/voice` to maintain identical robust search UX without sharing state."
+        ]
+    },
     {
         version: "v5.5.106 (AI Vocal Queue Integration)",
         date: "17 ก.ค. 2569",

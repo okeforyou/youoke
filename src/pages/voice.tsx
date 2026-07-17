@@ -7,6 +7,8 @@ import { Sidebar } from '../components/navigation/Sidebar';
 import Modal, { ModalHandler } from '../components/Modal';
 import { DebounceInput } from 'react-debounce-input';
 import { useAuthStore } from '@/modules/auth/useAuthStore';
+import { HomePageContent } from '../components/home/HomePageContent';
+import { usePlayerStore } from '../modules/player/stores/usePlayerStore';
 
 interface QueueItem {
   id: string;
@@ -28,12 +30,40 @@ interface SearchResult {
 
 export default function PocKaraoke() {
   const { user, signInWithGoogle } = useAuthStore();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
 
   const [queue, setQueue] = useState<QueueItem[]>([]);
   
+  // Hijack the global addToQueue ONLY for this page
+  useEffect(() => {
+    const originalAddToQueue = usePlayerStore.getState().addToQueue;
+    
+    usePlayerStore.setState({
+      addToQueue: (video: any) => {
+        const vid = video.videoId || video.id;
+        if (!vid) return;
+        
+        setQueue(prev => {
+          if (prev.some(q => q.id === vid)) return prev;
+          return [...prev, {
+            id: vid,
+            title: video.title || 'Unknown Song',
+            thumbnail: video.thumbnail || `https://i.ytimg.com/vi/${vid}/mqdefault.jpg`,
+            status: 'pending',
+            percent: 0,
+            message: 'รอดำเนินการ...'
+          }];
+        });
+        
+        // Optional: clear global search term if you want to reset search UI
+        // usePlayerStore.getState().setSearchTerm('');
+      }
+    });
+
+    return () => {
+      usePlayerStore.setState({ addToQueue: originalAddToQueue });
+    };
+  }, []);
+
   const [currentVideoId, setCurrentVideoId] = useState('');
   const [readyAudioId, setReadyAudioId] = useState('');
 
@@ -201,110 +231,9 @@ export default function PocKaraoke() {
   // -----------------------------------------
   
   const [backendError, setBackendError] = useState('');
-  const retryRef = useRef(0);
-  
   const launchModalRef = useRef<ModalHandler>(null);
   const [showInstallGuide, setShowInstallGuide] = useState(false);
   const [downloadOS, setDownloadOS] = useState<'win' | 'mac' | null>(null);
-
-  const handleSearch = async (isRetry: boolean | React.MouseEvent = false) => {
-    const isAutoRetry = typeof isRetry === 'boolean' ? isRetry : false;
-    
-    if (!searchQuery.trim()) return;
-    if (!isAutoRetry) retryRef.current = 0; // Reset on new manual search
-    
-    setIsSearching(true);
-    setBackendError(isAutoRetry ? 'กำลังเชื่อมต่อกับ YouOke Plugin...' : '');
-    
-    try {
-      const res = await fetch(`http://127.0.0.1:5050/search?q=${encodeURIComponent(searchQuery)}`);
-      const data = await res.json();
-      if (data.status === 'success') {
-        setSearchResults(data.results);
-      } else {
-        console.error("Search failed:", data);
-        alert(data.message || 'เกิดข้อผิดพลาดในการค้นหา');
-        setSearchResults([]);
-      }
-      retryRef.current = 0; // Reset retries
-    } catch (e) {
-      console.error(e);
-      if (!isAutoRetry) {
-        // First failure: show modal instead of jumping straight to protocol
-        setBackendError("ไม่สามารถเชื่อมต่อ YouOke Plugin ได้ กรุณาเปิดแอปบนเครื่องด้วยตัวเอง หรือดาวน์โหลดแอปใหม่");
-        launchModalRef.current?.open();
-      } else {
-        if (retryRef.current < 2) {
-          retryRef.current += 1;
-          setBackendError(`กำลังปลุก YouOke Plugin... (พยายามครั้งที่ ${retryRef.current}/2)`);
-          setTimeout(() => {
-              handleSearch(true);
-          }, 3500);
-        } else {
-          setBackendError("ไม่สามารถเชื่อมต่อ YouOke Plugin ได้ กรุณาเปิดแอปบนเครื่องด้วยตัวเอง หรือดาวน์โหลดแอปใหม่");
-        }
-      }
-      setSearchResults([]);
-    }
-    setIsSearching(false);
-  };
-
-  const handleLaunchPlugin = () => {
-    window.location.href = "youoke://start";
-    retryRef.current = 0; // Reset retries
-    launchModalRef.current?.close();
-    // Start retrying in 3.5s
-    setBackendError("กำลังปลุก YouOke Plugin... กรุณากด 'Open' หากหน้าจอแจ้งเตือน");
-    setTimeout(() => {
-        handleSearch(true);
-    }, 3500);
-  };
-
-  const handleDownloadPlugin = async () => {
-    try {
-      const isWin = navigator.userAgent.toLowerCase().includes('win');
-      setDownloadOS(isWin ? 'win' : 'mac');
-      setShowInstallGuide(true);
-      
-      setTimeout(() => {
-        window.location.href = isWin ? '/api/download-plugin?os=win' : '/api/download-plugin?os=mac';
-      }, 1500);
-    } catch (e) {
-      window.open('https://github.com/okeforyou/youoke/releases/latest', '_blank');
-    }
-  };
-
-  const extractVideoId = (url: string) => {
-    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&]{11})/);
-    return match ? match[1] : null;
-  };
-
-  const addToQueue = (item: SearchResult) => {
-    setQueue(prev => [...prev, {
-      id: item.id,
-      title: item.title,
-      thumbnail: item.thumbnails[0]?.url || '',
-      status: 'pending',
-      percent: 0,
-      message: 'รอดำเนินการ...'
-    }]);
-    setSearchResults([]);
-    setSearchQuery('');
-  };
-
-  const addUrlToQueue = () => {
-    const vid = extractVideoId(searchQuery);
-    if (!vid) return alert("URL ไม่ถูกต้อง กรุณาใส่ URL YouTube");
-    setQueue(prev => [...prev, {
-      id: vid,
-      title: "Unknown Song (URL)",
-      thumbnail: `https://img.youtube.com/vi/${vid}/mqdefault.jpg`,
-      status: 'pending',
-      percent: 0,
-      message: 'รอดำเนินการ...'
-    }]);
-    setSearchQuery('');
-  };
 
   const removeFromQueue = (id: string, idx: number) => {
     setQueue(prev => prev.filter((_, i) => i !== idx));
@@ -426,76 +355,34 @@ export default function PocKaraoke() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 relative bg-white dark:bg-zinc-950 transition-colors">
         
-        {/* Desktop Header Mimic */}
-        <header className="hidden lg:flex h-20 items-center justify-between px-8 border-b border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-950 sticky top-0 z-20 transition-all">
-            <div className="flex-1 max-w-2xl relative group flex gap-2">
-                {user ? (
-                    <>
-                        <div className="relative flex-1">
-                            <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-                                <Search className="h-5 w-5 text-gray-300 dark:text-zinc-600 group-focus-within:text-primary transition-colors" />
-                            </div>
-                            <DebounceInput
-                                minLength={2}
-                                debounceTimeout={300}
-                                placeholder="ค้นหาเพลง (POC Search Server)..."
-                                className="block w-full pl-14 pr-12 h-12 bg-gray-50/50 dark:bg-zinc-900/50 hover:bg-gray-100/50 dark:hover:bg-zinc-800/50 focus:bg-white dark:focus:bg-zinc-900 border border-gray-100 dark:border-zinc-800 focus:border-primary/20 rounded-2xl leading-5 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-zinc-500 focus:outline-none transition-all shadow-sm font-medium"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                onKeyDown={(e: any) => e.key === 'Enter' && handleSearch()}
-                            />
-                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 gap-1">
-                                {searchQuery && (
-                                    <button
-                                        onClick={() => setSearchQuery('')}
-                                        className="p-2 text-gray-300 dark:text-zinc-600 hover:text-red-500 transition-colors"
-                                    >
-                                        <X className="h-4 w-4" />
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                        <button 
-                          onClick={handleSearch}
-                          disabled={isSearching}
-                          className="px-6 py-2 h-12 rounded-2xl font-bold text-white shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-[0.98]"
-                        >
-                          {isSearching ? "..." : "ค้นหา"}
-                        </button>
-                        <button 
-                          onClick={addUrlToQueue}
-                          className="px-4 py-2 h-12 rounded-2xl font-bold text-slate-700 dark:text-zinc-300 bg-gray-50 dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
-                          title="เพิ่ม URL โดยตรง"
-                        >
-                          + URL
-                        </button>
-                    </>
-                ) : (
-                    <div className="flex-1 flex items-center justify-between bg-gray-50 dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl px-4 py-2">
-                        <div className="flex flex-col">
-                            <span className="text-sm font-bold text-slate-800 dark:text-zinc-200">ทดลองใช้งานระบบตัดเสียงร้อง AI ฟรี 1 วัน!</span>
-                            <span className="text-[10px] text-slate-500 dark:text-zinc-400 leading-tight mt-0.5">โปรดเข้าสู่ระบบเพื่อรับสิทธิ์และยืนยันการใช้งานแบบส่วนบุคคล (Personal Use)</span>
-                        </div>
-                        <button
-                            onClick={signInWithGoogle}
-                            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 text-sm font-bold text-slate-700 dark:text-zinc-300 border border-gray-200 dark:border-zinc-700 rounded-xl transition-colors shrink-0 whitespace-nowrap"
-                        >
-                            <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" /><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" /><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" /><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" /></svg>
-                            <span>Sign in with Google</span>
-                        </button>
+        {/* Main Interface: HomePageContent */}
+        <div className="flex-1 overflow-y-auto lg:pr-[420px] pb-24 lg:pb-0 relative z-10 w-full h-full custom-scrollbar">
+            {/* Top Navigation Wrapper for Search Box injection */}
+            <div className="sticky top-0 z-50 w-full px-4 pt-4 pb-2 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-lg border-b border-gray-100 dark:border-zinc-900 mb-4 flex items-center gap-4">
+                <div className="flex-1 relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Search className="h-5 w-5 text-gray-400 dark:text-zinc-500" />
                     </div>
-                )}
+                    <input
+                        type="text"
+                        placeholder="ค้นหาเพลง ศิลปิน (AI Vocal Mode)..."
+                        className="block w-full pl-12 pr-12 h-12 bg-gray-100/50 dark:bg-zinc-900/50 hover:bg-gray-100 dark:hover:bg-zinc-900 focus:bg-white dark:focus:bg-zinc-900 border border-transparent focus:border-primary/30 rounded-2xl text-sm font-medium transition-all shadow-sm focus:outline-none"
+                        onChange={(e) => usePlayerStore.getState().setSearchTerm(e.target.value)}
+                    />
+                </div>
+                {/* Fake Mode Switch */}
+                <div className="hidden md:flex relative items-center bg-gray-100/50 dark:bg-zinc-900/50 rounded-xl p-1 h-12 w-[180px]">
+                    <div className="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white dark:bg-zinc-800 rounded-lg shadow-sm left-[calc(50%+2px)]" />
+                    <button className="relative flex-1 flex items-center justify-center gap-1.5 h-full text-[11px] font-black uppercase text-gray-500"><Music className="w-3.5 h-3.5" /><span>เพลง</span></button>
+                    <button className="relative flex-1 flex items-center justify-center gap-1.5 h-full text-[11px] font-black uppercase text-primary"><Mic2 className="w-3.5 h-3.5" /><span>AI ร้อง</span></button>
+                </div>
             </div>
-            
-            <div className="flex items-center gap-6 ml-6">
-                 {/* Fake Mode Switch to look like main app */}
-                 <div className="relative flex items-center bg-gray-50 dark:bg-zinc-900 rounded-2xl p-1 h-11 w-[180px] border border-gray-100 dark:border-zinc-800 opacity-50 cursor-not-allowed">
-                    <div className="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white dark:bg-zinc-800 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.05)] left-[calc(50%+2px)]" />
-                    <button className="relative flex-1 flex items-center justify-center gap-1.5 h-full rounded-xl text-[11px] font-black tracking-tight uppercase transition-colors z-10 text-black dark:text-zinc-400"><Music className="w-3.5 h-3.5" /><span>เพลง</span></button>
-                    <button className="relative flex-1 flex items-center justify-center gap-1.5 h-full rounded-xl text-[11px] font-black tracking-tight uppercase transition-colors z-10 text-primary"><Mic2 className="w-3.5 h-3.5" /><span>คาราโอเกะ</span></button>
-                 </div>
+
+            <div className="px-4 pb-20">
+                <HomePageContent />
             </div>
-        </header>
+        </div>
+
 
         {/* Global Video Player Container (Right docked) */}
         <div id="global-video-player-container" className="lg:fixed lg:top-0 lg:w-[420px] lg:h-[300px] lg:right-0 bg-black z-[100] overflow-hidden lg:border-l lg:border-gray-200 lg:dark:border-zinc-800 shrink-0 origin-top-right transition-all duration-500">
@@ -748,52 +635,6 @@ export default function PocKaraoke() {
             </div>
         </div>
 
-        {/* Content Area (Search Results) - Push Right 420px on Desktop to avoid covering queue */}
-        <div className="flex-1 lg:mr-[420px] p-4 md:p-8 overflow-y-auto">
-             <div className="animate-in fade-in slide-in-from-bottom-2 duration-700">
-                <div className="mb-6">
-                    <h2 className="text-xl font-black text-black dark:text-white tracking-tight">POC AI Vocal Search Results</h2>
-                    <p className="text-sm text-gray-500 mt-1">Search for a song above to separate vocals and instrumentals locally.</p>
-                </div>
-
-                {backendError && (
-                    <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl flex items-start gap-3 text-red-600 dark:text-red-400">
-                        <X className="w-5 h-5 shrink-0 mt-0.5" />
-                        <div className="flex-1">
-                            <h4 className="font-bold text-sm">ข้อผิดพลาดในการเชื่อมต่อ</h4>
-                            <p className="text-xs mt-1">{backendError}</p>
-                        </div>
-                        <button 
-                          onClick={() => launchModalRef.current?.open()}
-                          className="px-3 py-1.5 text-xs font-bold bg-white dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-red-900 transition-colors"
-                        >
-                          ตั้งค่า
-                        </button>
-                    </div>
-                )}
-                
-                {searchResults.length > 0 ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                        {searchResults.map((item, idx) => (
-                            <div key={idx} className="group relative bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden shadow-sm border border-gray-100 dark:border-zinc-800 hover:shadow-md transition-all cursor-pointer" onClick={() => addToQueue(item)}>
-                                <div className="aspect-video relative overflow-hidden bg-gray-100 dark:bg-zinc-800">
-                                    <img src={item.thumbnails[0]?.url} alt="" className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500" />
-                                    <div className="absolute bottom-2 right-2 px-1.5 py-0.5 bg-black/80 backdrop-blur-md rounded text-[10px] font-bold text-white">{item.duration}</div>
-                                </div>
-                                <div className="p-3">
-                                    <h3 className="text-[13px] font-black text-black dark:text-white line-clamp-2 leading-snug group-hover:text-primary transition-colors">{item.title}</h3>
-                                    <p className="text-[11px] font-medium text-gray-500 mt-1 truncate">{item.channel?.name}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-gray-200 dark:border-zinc-800 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/50">
-                        <Mic2 className="w-12 h-12 text-gray-300 mb-3" />
-                        <span className="text-gray-400 font-bold text-sm">พิมพ์ค้นหาด้านบน เพื่อเพิ่มเพลงเข้า POC AI Queue</span>
-                    </div>
-                )}
-             </div>
         </div>
 
       </div>
