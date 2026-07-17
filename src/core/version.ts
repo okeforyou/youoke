@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.101";
+export const SYSTEM_VERSION = "5.5.102";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "v5.5.102 (Vocal Player Layout Fix)",
+        date: "17 ก.ค. 2569",
+        changes: [
+            "UI: Fixed an issue where the desktop player controls were hidden due to the container height being constrained to the video aspect ratio.",
+            "UI: Adjusted the queue layout position to accommodate the new player controls height."
+        ],
+        recent_updates: "Fixed hidden player controls"
+    },
     {
         version: "v5.5.101 (Vocal Separation UI Pure Flat Design)",
         date: "17 ก.ค. 2569",

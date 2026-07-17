@@ -498,7 +498,7 @@ export default function PocKaraoke() {
         </header>
 
         {/* Global Video Player Container (Right docked) */}
-        <div id="global-video-player-container" className="lg:fixed lg:top-0 lg:w-[420px] lg:h-[236px] lg:right-0 bg-black z-[100] overflow-hidden lg:border-l lg:border-gray-200 lg:dark:border-zinc-800 shrink-0 origin-top-right transition-all duration-500">
+        <div id="global-video-player-container" className="lg:fixed lg:top-0 lg:w-[420px] lg:h-[300px] lg:right-0 bg-black z-[100] overflow-hidden lg:border-l lg:border-gray-200 lg:dark:border-zinc-800 shrink-0 origin-top-right transition-all duration-500">
             <div className="relative w-full h-full flex flex-col transition-all duration-500 bg-black">
                 <div className="w-full bg-black shrink-0 relative overflow-hidden transition-all duration-500 aspect-video group">
                     
@@ -673,7 +673,7 @@ export default function PocKaraoke() {
         </div>
 
         {/* Desktop Queue Layout */}
-        <div className="hidden lg:block fixed right-0 top-[236px] bottom-0 w-[420px] bg-white dark:bg-zinc-950 border-l border-gray-100 dark:border-zinc-800 flex flex-col z-40">
+        <div className="hidden lg:block fixed right-0 top-[300px] bottom-0 w-[420px] bg-white dark:bg-zinc-950 border-l border-gray-100 dark:border-zinc-800 flex flex-col z-40">
              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 sticky top-0 shrink-0">
                 <div className="flex items-center gap-2">
                     <ListMusic size={14} className="text-primary" />
