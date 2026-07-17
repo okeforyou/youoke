@@ -32,6 +32,16 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
     const { setCurrentTime, setDuration } = usePlayerStore();
     const videoRef = useRef<HTMLVideoElement>(null);
 
+    // Use currentSource as videoId for standard React-YouTube management
+    // Default sourceType to 'youtube' if not set (backward compat for old Firestore data)
+    const activeVideoId = currentSource && !currentSource.startsWith('search:')
+        ? currentSource
+        : undefined;
+
+    // React to aiStatus becoming ready while playing
+    const aiJobStatus = useAIVocalStore(state => activeVideoId ? state.jobs[activeVideoId]?.status : undefined);
+    const isAiReady = currentVideo?.aiVocalRequested && activeVideoId && aiJobStatus === 'ready';
+
     // AI Audio Mixer Refs
     const vocalRef = useRef<HTMLAudioElement>(null);
     const instrumentalRef = useRef<HTMLAudioElement>(null);
@@ -123,7 +133,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
     // Ultimate Sync Loop (Slaved to YT)
     useEffect(() => {
         let interval: NodeJS.Timeout;
-        if (currentVideo?.sourceType === 'youoke_ai' && isPlaying) {
+        if (isAiReady && isPlaying) {
             interval = setInterval(() => {
                 if (!ytPlayerRef.current || !instrumentalRef.current || !vocalRef.current) return;
                 const state = ytPlayerRef.current.getPlayerState();
@@ -143,11 +153,11 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
             }, 1000);
         }
         return () => { if (interval) clearInterval(interval); };
-    }, [isPlaying, currentVideo?.sourceType]);
+    }, [isPlaying, isAiReady]);
 
     // Handle Play/Pause
     useEffect(() => {
-        if (currentVideo?.sourceType === 'youoke_ai' && currentVideo?.aiStatus === 'ready') {
+        if (isAiReady) {
             if (isPlaying) {
                 const ytTime = ytPlayerRef.current?.getCurrentTime();
                 if (typeof ytTime === 'number' && ytTime > 0) {
@@ -161,7 +171,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                 instrumentalRef.current?.pause();
             }
         }
-    }, [isPlaying, currentVideo?.sourceType, currentVideo?.aiStatus]);
+    }, [isPlaying, isAiReady]);
 
     // --- RENDERERS ---
 
@@ -250,16 +260,6 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
         if (onStateChange) onStateChange(event);
     };
 
-    // Use currentSource as videoId for standard React-YouTube management
-    // Default sourceType to 'youtube' if not set (backward compat for old Firestore data)
-    const activeVideoId = currentSource && !currentSource.startsWith('search:')
-        ? currentSource
-        : undefined;
-
-    // React to aiStatus becoming ready while playing
-    const aiVocalState = useAIVocalStore();
-    const isAiReady = currentVideo?.aiVocalRequested && activeVideoId && aiVocalState.jobs[activeVideoId]?.status === 'ready';
-
     useEffect(() => {
         if (isAiReady && ytPlayerRef.current) {
             ytPlayerRef.current.mute();
@@ -299,7 +299,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                         videoId={activeVideoId}
                         opts={opts}
                         className="w-full h-full"
-                        iframeClassName={`w-full h-full pointer-events-none ${isAiReady ? 'opacity-0' : ''}`}
+                        iframeClassName="w-full h-full pointer-events-none"
                         onReady={handleYouTubeReady}
                         onStateChange={handleYouTubeStateChange}
                         onEnd={onEnded}
