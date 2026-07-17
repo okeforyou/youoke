@@ -33,7 +33,7 @@ const ListHitsGrid = dynamic(() => import("../ListHitsGrid"), {
     ssr: false,
 });
 
-export const HomePageContent = memo(() => {
+export const HomePageContent = memo(({ onAddToQueue }: { onAddToQueue?: (video: any) => void }) => {
     // Only subscribe to activeIndex to prevent unnecessary re-renders
     const activeIndex = usePlayerStore(useShallow(state => state.activeIndex));
 
@@ -48,15 +48,17 @@ export const HomePageContent = memo(() => {
                 thumbnail: undefined,
             } as any;
             
-            // 🛡️ Global Store will handle the quota check inside addToQueue (v4.9.63)
-            usePlayerStore.getState().addToQueue(videoToAdd);
+            if (onAddToQueue) {
+                onAddToQueue(videoToAdd);
+            } else {
+                usePlayerStore.getState().addToQueue(videoToAdd);
+            }
         }} />;
         case 1: return <MusicProviderContainer showTab={false} />; // "หน้าแรก" -> Main Dashboard
         case 2: return <ListHitsGrid onClick={(hit: any) => {
             const artist = (hit.artist_name && hit.artist_name !== "Unknown Artist") ? hit.artist_name : "";
             const query = `${hit.title} ${artist}`.trim();
 
-            // v4.9.63: Direct playback from Chart with Quota Check
             const videoToAdd = {
                 id: hit.id || `chart-${Date.now()}`,
                 sourceType: 'youtube',
@@ -65,7 +67,11 @@ export const HomePageContent = memo(() => {
                 thumbnail: hit.thumbnail,
             } as any;
             
-            usePlayerStore.getState().addToQueue(videoToAdd);
+            if (onAddToQueue) {
+                onAddToQueue(videoToAdd);
+            } else {
+                usePlayerStore.getState().addToQueue(videoToAdd);
+            }
         }} />; // "ชาร์ตเพลง" -> Charts
         case 3: return <MusicProviderContainer showTab={false} mode="station" />; // "สถานีเพลง"
         case 4: return <ListPlaylistsGrid />; // "เพลย์ลิสต์" -> My Playlists
