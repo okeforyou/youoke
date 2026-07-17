@@ -45,6 +45,10 @@ os.makedirs(CACHE_DIR, exist_ok=True)
 def health():
     return {"status": "ok", "message": "YouOke Local AI Bridge is running."}
 
+@app.get("/config")
+def get_config():
+    return {"cache_dir": CACHE_DIR}
+
 @app.get("/search")
 def search_youtube(q: str, limit: int = 5):
     try:

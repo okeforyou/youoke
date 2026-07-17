@@ -32,6 +32,10 @@ const ListHitsGrid = dynamic(() => import("../ListHitsGrid"), {
     loading: () => <div className="grid grid-cols-5 gap-4 p-4">{[...Array(10)].map((_, i) => <div key={i} className="aspect-square bg-gray-100 dark:bg-zinc-900 rounded-2xl animate-pulse" />)}</div>,
     ssr: false,
 });
+const VocalDashboard = dynamic(() => import("../vocal/VocalDashboard").then(mod => mod.VocalDashboard), {
+    loading: () => <div className="h-full bg-gray-100 dark:bg-zinc-900 rounded-2xl animate-pulse m-4" />,
+    ssr: false,
+});
 
 export const HomePageContent = memo(() => {
     // Only subscribe to activeIndex to prevent unnecessary re-renders
@@ -69,6 +73,7 @@ export const HomePageContent = memo(() => {
         }} />; // "ชาร์ตเพลง" -> Charts
         case 3: return <MusicProviderContainer showTab={false} mode="station" />; // "สถานีเพลง"
         case 4: return <ListPlaylistsGrid />; // "เพลย์ลิสต์" -> My Playlists
+        case 5: return <VocalDashboard />; // "AI แยกเสียงร้อง" -> Vocal Dashboard
         default: return <MusicProviderContainer showTab={false} />;
     }
 });

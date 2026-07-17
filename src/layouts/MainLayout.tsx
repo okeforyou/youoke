@@ -32,7 +32,7 @@ import { db, realtimeDb } from '@/firebase';
 import { ref, push, set } from 'firebase/database';
 
 // Dynamic (Lazy) Imports for Heavy/hidden Components
-const ProfileDrawer = dynamic(() => import('../components/profile/ProfileDrawer'), { ssr: false });
+const GlobalSettingsModal = dynamic(() => import('../components/settings/GlobalSettingsModal'), { ssr: false });
 const ShareRoomModal = dynamic(() => import('../modules/party-system/components/ShareRoomModal').then(mod => mod.ShareRoomModal), { ssr: false });
 const CastModeSelector = dynamic(() => import('../plugins/cast/components/CastModeSelector').then(mod => mod.CastModeSelector), { ssr: false });
 const LimitReachedModal = dynamic(() => import('../modules/player/components/LimitReachedModal').then(mod => mod.LimitReachedModal), { ssr: false });
@@ -939,8 +939,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 </div>
             </div>
 
-            {/* Profile Drawer (Overlay) */}
-            <ProfileDrawer
+            {/* Settings Modal */}
+            <GlobalSettingsModal
                 isOpen={isProfileOpen}
                 onClose={() => setProfileOpen(false)}
             />

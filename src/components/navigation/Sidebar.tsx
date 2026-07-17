@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import clsx from 'clsx';
 import { SYSTEM_VERSION, COMMIT_ID } from '@/core/version';
-import { Home, Star, Flame, Library, MessageCircle, Shield, LogOut, Key, Grid, Lock, PlusCircle, ChevronLeft, Headphones, BarChart2 } from 'lucide-react';
+import { Home, Star, Flame, Library, MessageCircle, Shield, LogOut, Key, Grid, Lock, PlusCircle, ChevronLeft, Headphones, BarChart2, Sparkles } from 'lucide-react';
 import { safeSplit } from '@/utils/stringUtils';
 import { UserGroupIcon } from '@heroicons/react/24/outline'; // Import Heroicon for Party
 import { useSystem } from '../../core/container/SystemContext'; // DI Container
@@ -147,6 +147,27 @@ export const Sidebar = memo(() => {
                     <Library className={clsx("w-[22px] h-[22px]", (router.pathname === '/' && activeIndex === 4) ? "text-white" : "text-black dark:text-zinc-400")} /> 
                     <span className={clsx("transition-all duration-300 whitespace-nowrap", isSidebarCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100")}>
                         เพลย์ลิสต์
+                    </span>
+                </button>
+
+                <div className={clsx(
+                    "mb-2 mt-8 text-[11px] font-black text-black dark:text-zinc-400 uppercase tracking-wider transition-opacity duration-300",
+                    isSidebarCollapsed ? "opacity-0 h-0 overflow-hidden" : "px-4 opacity-100"
+                )}>
+                    AI FEATURES
+                </div>
+
+                <button onClick={() => handleNav(5, 'aivocal')} 
+                    className={clsx(
+                        "w-full flex items-center transition-all font-bold duration-300 text-sm",
+                        isSidebarCollapsed ? "justify-center p-3 rounded-xl" : "gap-3 px-4 py-3 rounded-2xl",
+                        (router.pathname === '/' && activeIndex === 5) ? "bg-primary text-white translate-x-1" : "text-black dark:text-zinc-400 hover:bg-gray-100/50 dark:hover:bg-zinc-900/50 hover:text-black dark:hover:text-white"
+                    )}
+                    title={isSidebarCollapsed ? "AI แยกเสียงร้อง" : ""}
+                >
+                    <Sparkles className={clsx("w-[22px] h-[22px]", (router.pathname === '/' && activeIndex === 5) ? "text-white" : "text-black dark:text-zinc-400")} /> 
+                    <span className={clsx("transition-all duration-300 whitespace-nowrap", isSidebarCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100")}>
+                        AI แยกเสียงร้อง
                     </span>
                 </button>
 
