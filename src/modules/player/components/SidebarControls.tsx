@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Play, Pause, SkipForward, RotateCcw, Volume2, VolumeX, Maximize, Cast, Mic, MicOff, ChevronUp } from "lucide-react";
+import { Play, Pause, SkipForward, RotateCcw, Volume2, VolumeX, Maximize, Cast, Mic, MicOff, ChevronUp, Mic2, Music, SlidersHorizontal } from "lucide-react";
 import { usePlayerStore } from "../stores/usePlayerStore";
 import { useMixerStore } from "../stores/useMixerStore";
 import { useShallow } from "zustand/react/shallow";
 import { useUIStore } from "../../../stores/useUIStore";
 import { useCast } from "../../../plugins/cast/context/CastContext";
 import clsx from 'clsx';
-import { AIVocalControls } from "./AIVocalControls";
+import { VocalMixerPopover } from "../../../pages/vocal"; // We will need to move this or copy it
+
 
 interface SidebarControlsProps {
     castMode?: string;
@@ -45,6 +46,10 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
 
     const {
         trackStates,
+        volumes,
+        toggleMute,
+        toggleSolo,
+        setVolume
     } = useMixerStore();
 
     const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
@@ -56,7 +61,33 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
 
 
 
-    // Build control items dynamically
+    const [showVocalMixer, setShowVocalMixer] = useState(false);
+    const vocalBtnRef = useRef<HTMLButtonElement>(null);
+    const mixerRef = useRef<HTMLDivElement>(null);
+
+    // Close mixer when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                mixerRef.current &&
+                !mixerRef.current.contains(event.target as Node) &&
+                vocalBtnRef.current &&
+                !vocalBtnRef.current.contains(event.target as Node)
+            ) {
+                setShowVocalMixer(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
+    const handleVolumeChange = (track: 'vocals' | 'instrumental', value: number) => {
+        setVolume(track, value);
+    };
+
+    // Build control items matching vocal.tsx exactly
     const controlItems = [
         {
             id: 'play',
@@ -70,7 +101,6 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                 }
             },
             active: isPlaying,
-            color: "text-primary"
         },
         {
             id: 'repeat',
@@ -78,18 +108,18 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             label: "ร้องซ้ำ",
             onClick: () => {
                 seekTo(0);
-                play(); // Explicitly play locally to re-orient lock
+                play();
                 if (isConnected) {
                     cast.seekTo(0);
                     cast.play();
                 }
             },
-            color: "text-primary"
+            active: false,
         },
         {
             id: 'next',
             icon: SkipForward,
-            label: "เพลงถัดไป",
+            label: "ถัดไป",
             onClick: () => {
                 if (isConnected) {
                     cast.next();
@@ -97,67 +127,49 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                     playNext();
                 }
             },
-            color: "text-primary"
-        },
-    ];
-
-
-
-    controlItems.push(
-        {
-            id: 'volume',
-            icon: isMuted ? VolumeX : Volume2,
-            label: isMuted ? "เปิดเสียง" : "ปิดเสียง",
-            onClick: () => {
-                const toggled = !isMuted;
-                setMuted(toggled);
-                if (isConnected) {
-                    cast.setMuted(toggled);
-                }
-            },
-            active: isMuted,
-            color: "text-primary"
+            active: false,
         },
         {
-            id: 'fullscreen',
-            icon: Maximize,
-            label: "เต็มจอ",
-            onClick: triggerFullscreen,
-            color: "text-primary"
+            id: 'vocals',
+            icon: Mic2,
+            label: "ร้อง",
+            onClick: () => toggleMute('vocals'),
+            active: !trackStates.vocals.muted,
+            activeColor: "text-primary bg-primary/10",
+            textColor: !trackStates.vocals.muted ? "text-primary" : "text-black/60 dark:text-zinc-400"
         },
         {
-            id: 'cast',
-            icon: Cast,
-            label: isRecovering ? "กำลังเชื่อมต่อ..." : (isAnyCastOn ? "ยกเลิก" : "CAST"),
-            onClick: () => {
-                if (castMode === 'google' && !isConnected) {
-                    useUIStore.getState().setCastMode('none');
-                }
-                setCastModalOpen(true);
-            },
-            active: isAnyCastOn,
-            // v5.5.6: Neutral color for icon, state moved to the dot indicator
-            color: "text-black dark:text-zinc-200"
+            id: 'instrumental',
+            icon: Music,
+            label: "ดนตรี",
+            onClick: () => toggleMute('instrumental'),
+            active: !trackStates.instrumental.muted,
+            activeColor: "text-blue-500 bg-blue-500/10",
+            textColor: !trackStates.instrumental.muted ? "text-blue-500" : "text-black/60 dark:text-zinc-400"
+        },
+        {
+            id: 'mixer',
+            icon: SlidersHorizontal,
+            label: "มิกเซอร์",
+            onClick: () => setShowVocalMixer(!showVocalMixer),
+            active: showVocalMixer,
+            activeColor: "text-black dark:text-white bg-gray-100 dark:bg-zinc-800",
+            textColor: showVocalMixer ? "text-black dark:text-white" : "text-black/60 dark:text-zinc-400",
+            ref: vocalBtnRef
         }
-    );
+    ];
 
     return (
         <div className="shrink-0 select-none relative shadow-sm">
             {/* Glass Background matching Footer */}
             <div className="absolute inset-0 bg-[#f4f4f5]/95 dark:bg-zinc-900/95 backdrop-blur-xl border-b border-gray-200/50 dark:border-zinc-800/50 transition-colors" />
 
-
-
             {/* Horizontal Controls Row - Full Width with depth */}
             <div className="relative flex items-center justify-between px-2 h-[56px]">
-                {/* AI Vocal Button - Inserted at the beginning or alongside other controls */}
-                <div className="flex-1 flex justify-center items-center h-full border-r border-gray-200/30 dark:border-zinc-800/30">
-                    <AIVocalControls mobile={true} />
-                </div>
-                
                 {controlItems.map((item, index) => (
                     <button
                         key={item.id}
+                        ref={item.ref as any}
                         onClick={(e) => {
                             item.onClick();
                         }}
@@ -165,34 +177,24 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                     >
                         <div className={clsx(
                             "p-1 rounded-xl transition-all duration-300 relative flex items-center justify-center gap-0.5",
-                            item.active ? "text-primary bg-primary/10" : "text-black dark:text-zinc-400 group-hover:text-black dark:group-hover:text-white"
+                            item.active 
+                                ? (item.activeColor || "text-primary bg-primary/10") 
+                                : "text-black dark:text-zinc-400 group-hover:text-black dark:group-hover:text-white"
                         )}>
                             <item.icon
                                 size={20}
                                 strokeWidth={item.active ? 2.2 : 1.5}
                                 className={clsx("transition-transform duration-300", item.active && "scale-105")}
                             />
-                            {/* v5.5.6: Unified Status Dot for Cast Modes */}
-                            {(item.label === "CAST" || item.label === "ยกเลิก" || item.label === "กำลังเชื่อมต่อ...") && (
-                                <>
-                                    {isRecovering ? (
-                                        <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-orange-500 rounded-full animate-pulse border-2 border-white dark:border-zinc-950 shadow-sm"></span>
-                                    ) : isAnyCastOn ? (
-                                        <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white dark:border-zinc-950 shadow-sm"></span>
-                                    ) : null}
-                                </>
-                            )}
-                            {item.active && item.label !== "ยกเลิก" && item.label !== "กำลังเชื่อมต่อ..." && item.label !== "CAST" && (
+                            {item.active && item.id !== 'mixer' && item.id !== 'vocals' && item.id !== 'instrumental' && (
                                 <div className="absolute inset-0 bg-primary/5 blur-md -z-10" />
                             )}
                         </div>
                         <span className={clsx(
                             "text-[10px] font-medium uppercase tracking-wide transition-colors duration-200 mt-0.5",
-                            (item.label === "CAST" || item.label === "ยกเลิก" || item.label === "กำลังเชื่อมต่อ...") 
-                                ? (isAnyCastOn ? "text-primary" : "text-black/60 dark:text-zinc-400")
-                                : (item.active ? "text-primary" : "text-black/60 dark:text-zinc-400")
+                            item.textColor || (item.active ? "text-primary" : "text-black/60 dark:text-zinc-400")
                         )}>
-                            {item.label === "ยกเลิก" || item.label === "กำลังเชื่อมต่อ..." ? "CAST" : item.label}
+                            {item.label}
                         </span>
                     </button>
                 ))}
@@ -205,6 +207,39 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                     style={{ width: `${progressPercent}%` }}
                 />
             </div>
+            
+            {/* Flat Mixer Popover */}
+            {showVocalMixer && (
+                <div ref={mixerRef} className="absolute bottom-[60px] right-2 mb-2 w-72 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 z-50 animate-in fade-in zoom-in-95 duration-200 shadow-xl">
+                    <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-5">AI Volume Mixer</h4>
+                    
+                    {/* Vocals */}
+                    <div className="mb-5">
+                        <div className="flex justify-between text-xs font-bold mb-2 text-black dark:text-white">
+                            <span>เสียงร้อง (Vocals)</span>
+                            <span className="text-primary">{volumes.vocals}%</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <button onClick={() => toggleMute('vocals')} className={clsx("w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black transition-colors border", trackStates.vocals.muted ? "bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-800" : "bg-white dark:bg-zinc-800 text-gray-400 border-gray-100 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-700")}>M</button>
+                            <button onClick={() => toggleSolo('vocals')} className={clsx("w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black transition-colors border", trackStates.vocals.solo ? "bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 border-yellow-200 dark:border-yellow-800" : "bg-white dark:bg-zinc-800 text-gray-400 border-gray-100 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-700")}>S</button>
+                            <input type="range" min="0" max="100" value={volumes.vocals} onChange={(e) => handleVolumeChange('vocals', parseInt(e.target.value))} className="flex-1 h-1.5 bg-gray-100 dark:bg-zinc-800 rounded-full appearance-none accent-primary" />
+                        </div>
+                    </div>
+
+                    {/* Instrumental */}
+                    <div>
+                        <div className="flex justify-between text-xs font-bold mb-2 text-black dark:text-white">
+                            <span>ดนตรี (Instrumental)</span>
+                            <span className="text-blue-500">{volumes.instrumental}%</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <button onClick={() => toggleMute('instrumental')} className={clsx("w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black transition-colors border", trackStates.instrumental.muted ? "bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-800" : "bg-white dark:bg-zinc-800 text-gray-400 border-gray-100 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-700")}>M</button>
+                            <button onClick={() => toggleSolo('instrumental')} className={clsx("w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black transition-colors border", trackStates.instrumental.solo ? "bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 border-yellow-200 dark:border-yellow-800" : "bg-white dark:bg-zinc-800 text-gray-400 border-gray-100 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-700")}>S</button>
+                            <input type="range" min="0" max="100" value={volumes.instrumental} onChange={(e) => handleVolumeChange('instrumental', parseInt(e.target.value))} className="flex-1 h-1.5 bg-gray-100 dark:bg-zinc-800 rounded-full appearance-none accent-blue-500" />
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -12,8 +12,8 @@ export function QueueList() {
 
     // v5.3.99: Guard against stale currentIndex during queue transitions (display-only fix)
     const safeCurrentIndex = Math.min(currentIndex, Math.max(0, queue.length - 1));
-    const queueItems = queue.slice(safeCurrentIndex + 1);
-    const remainingCount = queueItems.length;
+    const queueItems = queue.slice(safeCurrentIndex); // Show current and upcoming
+    const remainingCount = queue.length - safeCurrentIndex;
 
     // We also need access to jobs to show progress
     const jobs = useAIVocalStore(state => state.jobs);
@@ -74,13 +74,19 @@ export function QueueList() {
                     </div>
                 ) : (
                     queueItems.map((video, index) => {
-                        const actualIndex = safeCurrentIndex + 1 + index;
+                        const actualIndex = safeCurrentIndex + index;
+                        const isCurrent = actualIndex === currentIndex;
                         const aiJob = jobs[video.videoId || video.id];
                         
                         return (
                             <div 
                                 key={video.uuid} 
-                                className="group flex items-center p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 hover:border-gray-200 dark:hover:border-zinc-700 transition-all cursor-pointer hover:scale-[1.01]"
+                                className={clsx(
+                                    "group flex items-center p-3 rounded-2xl border transition-all cursor-pointer hover:scale-[1.01]",
+                                    isCurrent 
+                                        ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 ring-1 ring-blue-500"
+                                        : "bg-white dark:bg-zinc-900 border-gray-100 dark:border-zinc-800 hover:border-gray-200 dark:hover:border-zinc-700"
+                                )}
                                 onClick={() => setCurrentIndex(actualIndex)}
                             >
                                 {/* Thumbnail */}
@@ -142,10 +148,18 @@ export function QueueList() {
                                     )}
                                 </div>
 
-                                {/* Actions */}
-                                <div className="flex items-center justify-end shrink-0 pl-2">
-                                    {aiJob?.status === 'ready' && <span className="mr-2 px-1.5 py-0.5 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[9px] font-bold rounded uppercase">Ready</span>}
-                                    {aiJob?.status === 'error' && <span className="mr-2 px-1.5 py-0.5 bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-[9px] font-bold rounded uppercase">Error</span>}
+                                {/* Actions / Status */}
+                                <div className="flex flex-col items-end justify-center shrink-0 pl-2 space-y-2">
+                                    {isCurrent && (
+                                        <div className="px-2 py-1 rounded bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 text-[9px] font-black tracking-wider uppercase flex items-center gap-1 shadow-sm">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>
+                                            PLAYING
+                                        </div>
+                                    )}
+                                    <div className="flex items-center gap-2">
+                                        {aiJob?.status === 'ready' && <span className="px-1.5 py-0.5 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[9px] font-bold rounded uppercase">Ready</span>}
+                                        {aiJob?.status === 'error' && <span className="px-1.5 py-0.5 bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-[9px] font-bold rounded uppercase">Error</span>}
+
                                     
                                     <button
                                         onClick={(e) => {
