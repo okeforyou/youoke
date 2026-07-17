@@ -3,7 +3,11 @@ import { Mic2, Loader2, Sparkles, Volume2, VolumeX } from 'lucide-react';
 import { useAIVocalStore } from '../../../stores/useAIVocalStore';
 import { usePlayerStore } from '../stores/usePlayerStore';
 
-export const AIVocalControls = () => {
+interface AIVocalControlsProps {
+    mobile?: boolean;
+}
+
+export const AIVocalControls = ({ mobile }: AIVocalControlsProps) => {
     const aiVocal = useAIVocalStore();
     const isKaraoke = usePlayerStore(state => state.isKaraoke);
     const currentVideo = usePlayerStore(state => state.currentVideo);

@@ -6,6 +6,7 @@ import { useShallow } from "zustand/react/shallow";
 import { useUIStore } from "../../../stores/useUIStore";
 import { useCast } from "../../../plugins/cast/context/CastContext";
 import clsx from 'clsx';
+import { AIVocalControls } from "./AIVocalControls";
 
 interface SidebarControlsProps {
     castMode?: string;
@@ -149,6 +150,11 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
 
             {/* Horizontal Controls Row - Full Width with depth */}
             <div className="relative flex items-center justify-between px-2 h-[56px]">
+                {/* AI Vocal Button - Inserted at the beginning or alongside other controls */}
+                <div className="flex-1 flex justify-center items-center h-full border-r border-gray-200/30 dark:border-zinc-800/30">
+                    <AIVocalControls mobile={true} />
+                </div>
+                
                 {controlItems.map((item, index) => (
                     <button
                         key={item.id}
