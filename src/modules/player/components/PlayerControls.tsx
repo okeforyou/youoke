@@ -5,6 +5,7 @@ import { usePlayerStore } from "../stores/usePlayerStore";
 import { useUIStore } from "../../../stores/useUIStore";
 import { MarqueeText } from "../../../components/MarqueeText";
 import { AudioOutputSwitcher } from "./AudioOutputSwitcher";
+import { AIVocalControls } from "./AIVocalControls";
 import { useCast } from "../../../plugins/cast/context/CastContext";
 
 export const PlayerControls = () => {
@@ -315,7 +316,8 @@ export const PlayerControls = () => {
                         </div>
                     </div>
 
-
+                    {/* AI Vocal ✨ (Visible on all breakpoints) */}
+                    <AIVocalControls />
 
                     {/* Queue Toggle: ALWAYS Visible */}
                     <button

@@ -10,6 +10,7 @@ import { YouTubeAdapter } from "../adapters/YouTubeAdapter";
 import { useSystemConfig } from "../../../hooks/useSystemConfig";
 import { useUIStore } from "../../../stores/useUIStore";
 import { safeSplit } from '@/utils/stringUtils';
+import { useAIVocalStore } from '../../../stores/useAIVocalStore';
 
 import { useShallow } from 'zustand/react/shallow';
 import { QuotaIndicator } from "./QuotaIndicator";
@@ -53,6 +54,11 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
     const controlsTimerRef = useRef<NodeJS.Timeout | null>(null);
     const [showMiniControls, setShowMiniControls] = useState(false);
     const cast = useCast();
+
+    // AI Vocal Store
+    const aiVocal = useAIVocalStore();
+    const vocalRef = useRef<HTMLAudioElement>(null);
+    const instrumentalRef = useRef<HTMLAudioElement>(null);
 
     // Start background AI processing loop
     useAiProcessor();
@@ -302,6 +308,9 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
     useEffect(() => {
         if (!playerRef.current || !currentSource) return;
 
+        // Reset AI Vocal state when changing song
+        useAIVocalStore.getState().reset();
+
         const target = playerRef.current;
         // 🛡️ CRITICAL SAFETY: Ensure the player's internal iframe/element still exists
         if (typeof target.getIframe === 'function' && !target.getIframe()) {
@@ -323,10 +332,10 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
             return;
         }
 
-        const shouldMute = castMode === 'smarttv' || castMode === 'webmonitor' || isMuted;
+        const shouldMute = castMode === 'smarttv' || castMode === 'webmonitor' || isMuted || (aiVocal.isActive && aiVocal.status === 'ready');
 
         if (shouldMute) {
-            console.log(`🔇 SidebarPlayer: Muting (Reason: ${isMuted ? 'Manual' : 'Casting'})`);
+            console.log(`🔇 SidebarPlayer: Muting (Reason: ${isMuted ? 'Manual' : (aiVocal.isActive ? 'AI Vocal' : 'Casting')})`);
             if (typeof target.mute === 'function') target.mute();
         } else {
             console.log('🔊 SidebarPlayer: Unmuting');
@@ -400,6 +409,61 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
             return () => clearTimeout(timer);
         }
     }, [currentVideo?.uuid]);
+
+    // --- AI VOCAL SYNC LOGIC ---
+    useEffect(() => {
+        let animationFrameId: number;
+        const syncAudio = () => {
+            if (!vocalRef.current || !instrumentalRef.current || !playerRef.current) return;
+            const target = playerRef.current;
+            if (typeof target.getCurrentTime === 'function') {
+                const ytTime = target.getCurrentTime();
+                if (isPlaying) {
+                    if (Math.abs(vocalRef.current.currentTime - ytTime) > 0.3) {
+                        vocalRef.current.currentTime = ytTime;
+                        instrumentalRef.current.currentTime = ytTime;
+                    }
+                    if (vocalRef.current.paused) vocalRef.current.play().catch(e => console.error("Vocal Play Error:", e));
+                    if (instrumentalRef.current.paused) instrumentalRef.current.play().catch(e => console.error("Inst Play Error:", e));
+                } else {
+                    vocalRef.current.pause();
+                    instrumentalRef.current.pause();
+                }
+            }
+            animationFrameId = requestAnimationFrame(syncAudio);
+        };
+
+        if (aiVocal.isActive && aiVocal.status === 'ready') {
+            animationFrameId = requestAnimationFrame(syncAudio);
+        } else {
+            if (vocalRef.current) vocalRef.current.pause();
+            if (instrumentalRef.current) instrumentalRef.current.pause();
+        }
+
+        return () => {
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        };
+    }, [aiVocal.isActive, aiVocal.status, isPlaying]);
+
+    // Apply Volumes & Mute/Solo
+    useEffect(() => {
+        if (!vocalRef.current || !instrumentalRef.current) return;
+        
+        const getEffectiveVolume = (type: 'vocals' | 'instrumental') => {
+            if (isMuted) return 0;
+            const state = aiVocal.trackStates[type];
+            if (state.muted) return 0;
+            
+            // Check if ANY track is soloed
+            const isAnySolo = aiVocal.trackStates.vocals.solo || aiVocal.trackStates.instrumental.solo;
+            if (isAnySolo && !state.solo) return 0;
+            
+            return aiVocal.volumes[type];
+        };
+
+        vocalRef.current.volume = getEffectiveVolume('vocals') / 100;
+        instrumentalRef.current.volume = getEffectiveVolume('instrumental') / 100;
+    }, [aiVocal.volumes, aiVocal.trackStates, isMuted]);
 
     // --- RENDER LOGIC ---
 
@@ -630,6 +694,22 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                     );
                 })()
             }
+
+            {/* AI VOCAL AUDIO ELEMENTS */}
+            {aiVocal.isActive && currentVideo?.videoId && (
+                <div className="hidden">
+                    <audio 
+                        ref={vocalRef} 
+                        src={`http://127.0.0.1:5050/files/${currentVideo.videoId}/vocals.m4a`} 
+                        preload="auto" 
+                    />
+                    <audio 
+                        ref={instrumentalRef} 
+                        src={`http://127.0.0.1:5050/files/${currentVideo.videoId}/instrumental.m4a`} 
+                        preload="auto" 
+                    />
+                </div>
+            )}
 
         </div >
     );
