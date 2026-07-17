@@ -11,6 +11,12 @@ export const AIVocalControls = ({ mobile }: AIVocalControlsProps) => {
     const aiVocal = useAIVocalStore();
     const isKaraoke = usePlayerStore(state => state.isKaraoke);
     const currentVideo = usePlayerStore(state => state.currentVideo);
+    
+    // Get job status for current video
+    const currentVideoId = currentVideo?.videoId || currentVideo?.id;
+    const currentJob = currentVideoId ? aiVocal.jobs[currentVideoId] : null;
+    const isActive = !!currentVideo?.aiVocalRequested;
+
     const [showSlider, setShowSlider] = useState(false);
     const popoverRef = useRef<HTMLDivElement>(null);
 
@@ -30,17 +36,22 @@ export const AIVocalControls = ({ mobile }: AIVocalControlsProps) => {
     if (!currentVideo) return null;
 
     const handleToggle = async () => {
-        if (!aiVocal.isActive) {
-            // Start Processing
-            await aiVocal.processAudio(currentVideo.videoId);
-        } else if (aiVocal.status === 'ready') {
+        if (!isActive) {
+            // Usually triggered from queue now, but if somehow they click it here:
+            if (currentVideoId) {
+                await aiVocal.processAudio(currentVideoId);
+                usePlayerStore.getState().updateQueueItem(currentVideo!.uuid, { aiVocalRequested: true });
+            }
+        } else if (currentJob?.status === 'ready') {
             // Toggle Slider
             setShowSlider(!showSlider);
         }
     };
 
     const handleTurnOff = () => {
-        aiVocal.reset();
+        if (currentVideo) {
+            usePlayerStore.getState().updateQueueItem(currentVideo.uuid, { aiVocalRequested: false });
+        }
         setShowSlider(false);
     };
 
@@ -50,18 +61,18 @@ export const AIVocalControls = ({ mobile }: AIVocalControlsProps) => {
                 onClick={handleToggle}
                 className={`
                     flex items-center justify-center p-2 rounded-full transition-all relative
-                    ${aiVocal.isActive 
-                        ? (aiVocal.status === 'ready' ? 'bg-primary/10 text-primary hover:bg-primary/20' : 'text-primary') 
+                    ${isActive 
+                        ? (currentJob?.status === 'ready' ? 'bg-primary/10 text-primary hover:bg-primary/20' : 'text-primary') 
                         : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}
                 `}
-                title={aiVocal.isActive ? (aiVocal.status === 'ready' ? "ปรับเสียงร้อง (AI)" : aiVocal.message) : "แยกเสียงร้องด้วย AI"}
+                title={isActive ? (currentJob?.status === 'ready' ? "ปรับเสียงร้อง (AI)" : currentJob?.message) : "แยกเสียงร้องด้วย AI"}
             >
-                {aiVocal.status === 'processing' || aiVocal.status === 'loading' ? (
+                {isActive && (currentJob?.status === 'processing' || !currentJob) ? (
                     <Loader2 size={18} className="animate-spin" />
                 ) : (
                     <>
                         <Mic2 size={18} />
-                        {!aiVocal.isActive && (
+                        {!isActive && (
                             <Sparkles size={10} className="absolute top-1 right-1 text-yellow-500" />
                         )}
                     </>
@@ -69,15 +80,15 @@ export const AIVocalControls = ({ mobile }: AIVocalControlsProps) => {
             </button>
 
             {/* AI Processing Status Toast (only shows when processing) */}
-            {aiVocal.isActive && aiVocal.status === 'processing' && (
+            {isActive && currentJob?.status === 'processing' && (
                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 whitespace-nowrap bg-black/80 backdrop-blur-md text-white text-[10px] px-3 py-1.5 rounded-full font-bold flex items-center gap-2 shadow-lg z-50">
                     <Loader2 size={12} className="animate-spin" />
-                    {aiVocal.message || "กำลังประมวลผล..."} {Math.round(aiVocal.progress)}%
+                    {currentJob.message || "กำลังประมวลผล..."} {Math.round(currentJob.progress)}%
                 </div>
             )}
 
             {/* Vocal Volume Slider Popover */}
-            {showSlider && aiVocal.status === 'ready' && (
+            {showSlider && isActive && currentJob?.status === 'ready' && (
                 <div className="absolute bottom-full right-1/2 translate-x-1/2 mb-3 bg-white/95 backdrop-blur-xl border border-gray-200 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] rounded-2xl p-4 w-[240px] z-50 animate-in fade-in zoom-in-95 duration-200">
                     
                     <div className="flex items-center justify-between mb-4">

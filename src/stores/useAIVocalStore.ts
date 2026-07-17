@@ -1,10 +1,17 @@
 import { create } from 'zustand';
 
-interface AIVocalState {
-    isActive: boolean;
+interface AIVocalJob {
     status: 'idle' | 'processing' | 'ready' | 'error';
     progress: number;
     message: string;
+}
+
+interface AIVocalState {
+    isActive: boolean; // Is the currently playing song using AI Vocal?
+    currentVideoId: string | null;
+    
+    // Background jobs
+    jobs: Record<string, AIVocalJob>;
     
     // Mixing states
     volumes: { vocals: number, instrumental: number };
@@ -22,13 +29,13 @@ interface AIVocalState {
     // API Actions
     processAudio: (videoId: string) => Promise<void>;
     reset: () => void;
+    setCurrentVideoId: (id: string | null) => void;
 }
 
 export const useAIVocalStore = create<AIVocalState>((set, get) => ({
     isActive: false,
-    status: 'idle',
-    progress: 0,
-    message: '',
+    currentVideoId: null,
+    jobs: {},
 
     volumes: { vocals: 100, instrumental: 100 },
     trackStates: {
@@ -37,6 +44,7 @@ export const useAIVocalStore = create<AIVocalState>((set, get) => ({
     },
 
     setIsActive: (active) => set({ isActive: active }),
+    setCurrentVideoId: (id) => set({ currentVideoId: id }),
 
     setVolume: (type, val) => set((state) => ({
         volumes: { ...state.volumes, [type]: val }
@@ -61,9 +69,8 @@ export const useAIVocalStore = create<AIVocalState>((set, get) => ({
 
     reset: () => set({
         isActive: false,
-        status: 'idle',
-        progress: 0,
-        message: '',
+        currentVideoId: null,
+        // We don't reset jobs here so background tasks can continue
         volumes: { vocals: 100, instrumental: 100 },
         trackStates: {
             vocals: { muted: false, solo: false },
@@ -72,7 +79,13 @@ export const useAIVocalStore = create<AIVocalState>((set, get) => ({
     }),
 
     processAudio: async (videoId: string) => {
-        set({ status: 'processing', progress: 0, message: 'กำลังเตรียมการ...', isActive: true });
+        // Init job
+        set((state) => ({
+            jobs: {
+                ...state.jobs,
+                [videoId]: { status: 'processing', progress: 0, message: 'กำลังเตรียมการ...' }
+            }
+        }));
         
         let isPolling = true;
 
@@ -82,7 +95,12 @@ export const useAIVocalStore = create<AIVocalState>((set, get) => ({
                     const res = await fetch(`http://127.0.0.1:5050/progress/${videoId}`);
                     if (res.ok) {
                         const data = await res.json();
-                        set({ message: data.message, progress: data.percent || 0 });
+                        set((state) => ({
+                            jobs: {
+                                ...state.jobs,
+                                [videoId]: { ...state.jobs[videoId], message: data.message, progress: data.percent || 0 }
+                            }
+                        }));
                     }
                 } catch (e) {
                     console.warn("Polling error:", e);
@@ -105,13 +123,28 @@ export const useAIVocalStore = create<AIVocalState>((set, get) => ({
             const data = await res.json();
             
             if (res.ok && (data.status === "success" || data.status === "cached")) {
-                set({ status: 'ready', message: 'พร้อมเล่น!', progress: 100 });
+                set((state) => ({
+                    jobs: {
+                        ...state.jobs,
+                        [videoId]: { ...state.jobs[videoId], status: 'ready', message: 'พร้อมเล่น!', progress: 100 }
+                    }
+                }));
             } else {
-                set({ status: 'error', message: data.detail || data.message || 'เกิดข้อผิดพลาดในการแยกเสียง' });
+                set((state) => ({
+                    jobs: {
+                        ...state.jobs,
+                        [videoId]: { ...state.jobs[videoId], status: 'error', message: data.detail || data.message || 'เกิดข้อผิดพลาดในการแยกเสียง' }
+                    }
+                }));
             }
         } catch (e) {
             isPolling = false;
-            set({ status: 'error', message: 'เชื่อมต่อ YouOke Plugin ไม่สำเร็จ' });
+            set((state) => ({
+                jobs: {
+                    ...state.jobs,
+                    [videoId]: { ...state.jobs[videoId], status: 'error', message: 'เชื่อมต่อ YouOke Plugin ไม่สำเร็จ' }
+                }
+            }));
         }
     }
 }));

@@ -106,8 +106,8 @@ export default function SearchResultGrid({
       title: video.title,
       author: video.author || 'Unknown',
       thumbnail: video.videoThumbnails?.[0]?.url,
-      sourceType: 'youoke_ai',
-      aiStatus: 'pending'
+      sourceType: 'youtube', // Keep standard source type
+      aiVocalRequested: true // Flag for AI Vocal processing
     });
     // Optional: add a toast here
   };

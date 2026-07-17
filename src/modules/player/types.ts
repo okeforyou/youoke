@@ -37,6 +37,7 @@ export interface Video {
 
 export interface QueueItem extends Video {
     uuid: string; // Unique ID for queue manipulation (handling duplicates)
+    aiVocalRequested?: boolean; // Flag to auto-trigger AI Vocal processing when played
 }
 
 // ... keep existing interfaces

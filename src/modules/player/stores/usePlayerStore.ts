@@ -2,15 +2,13 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { safeSplit } from '@/utils/stringUtils';
 import { PlayerState, Video, QueueItem, PlayerStore } from '../types';
-// Enhance type definition inline if not editing types file, or assume it's merged.
-// Actually I need to verify where PlayerStore is defined.
-// Assuming it's in types.ts, I should edit that too.
 // But for now, I'll just add the implementation.
 // Wait, TS will complain. checking types file location.
 import { generateUUID, broadcast, bc } from '../utils';
 
 import { useUIStore } from '../../../stores/useUIStore';
 import { useAuthStore } from '@/modules/auth/useAuthStore';
+import { useAIVocalStore } from '../../../stores/useAIVocalStore';
 
 let lastTimeSync = 0;
 
@@ -332,6 +330,18 @@ export const usePlayerStore = create<PlayerStore>()(
                 console.log(`🏗️ Store Action: addToQueue (${videos.length} items)`);
 
                 const newItems: QueueItem[] = videos.map(v => ({ ...v, uuid: generateUUID() }));
+                
+                // 🤖 Trigger background AI processing for any AI Vocal requests
+                const aiVocalStore = useAIVocalStore.getState();
+                newItems.forEach(item => {
+                    if (item.aiVocalRequested) {
+                        const vidId = item.videoId || item.id;
+                        if (vidId && !aiVocalStore.jobs[vidId]) {
+                            aiVocalStore.processAudio(vidId).catch(console.error);
+                        }
+                    }
+                });
+
                 let newQueue;
                 let updates: Partial<PlayerStore> = {};
 
@@ -463,6 +473,16 @@ export const usePlayerStore = create<PlayerStore>()(
                 }
 
                 console.log(`▶️ Store: Switching Index to ${index}. Source: ${source}`);
+
+                // 🤖 Trigger AI Vocal if requested
+                const aiVocalStore = useAIVocalStore.getState();
+                if (video.aiVocalRequested && source) {
+                    console.log(`🎤 AI Vocal requested for ${source}, starting processing...`);
+                    aiVocalStore.processAudio(source).catch(console.error);
+                } else if (aiVocalStore.isActive) {
+                    console.log(`🎤 AI Vocal not requested, resetting...`);
+                    aiVocalStore.reset();
+                }
 
                 const updates = {
                     currentIndex: index,

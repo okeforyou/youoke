@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.105";
+export const SYSTEM_VERSION = "5.5.106";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,17 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "v5.5.106 (AI Vocal Queue Integration)",
+        date: "17 ก.ค. 2569",
+        changes: [
+            "UI: Integrated AI Vocal Extraction UI directly into the main QueueList with live progress tracking.",
+            "UX: Removed `youoke_ai` source type constraint, allowing users to toggle AI vocal extraction via an `aiVocalRequested` flag on any song.",
+            "UI: Added an elegant AI processing overlay in SidebarPlayer that smoothly transitions to the separated audio once complete.",
+            "CLEANUP: Removed Tokcat dependency entirely."
+        ],
+        recent_updates: "AI Vocal Queue Integration & Cleanup"
+    },
     {
         version: "v5.5.105 (AI Vocal Dashboard & Settings Integration)",
         date: "17 ก.ค. 2569",

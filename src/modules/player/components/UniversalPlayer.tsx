@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import YouTube from 'react-youtube';
+import { useAIVocalStore } from '../../../stores/useAIVocalStore';
 import { usePlayerStore } from '../stores/usePlayerStore';
 import { MidiCanvasRenderer } from './MidiCanvasRenderer';
 import { useMidiEngine } from '@/context/MidiEngineContext';
@@ -212,7 +213,9 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
 
     const handleYouTubeReady = (event: any) => {
         ytPlayerRef.current = event.target;
-        if (currentVideo?.sourceType === 'youoke_ai' && currentVideo?.aiStatus === 'ready') {
+        const aiVocal = useAIVocalStore.getState();
+        const jobId = currentVideo?.videoId || currentVideo?.id;
+        if (currentVideo?.aiVocalRequested && jobId && aiVocal.jobs[jobId]?.status === 'ready') {
             event.target.mute();
         }
 
@@ -225,7 +228,9 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
     };
 
     const handleYouTubeStateChange = (event: any) => {
-        if (currentVideo?.sourceType === 'youoke_ai' && currentVideo?.aiStatus === 'ready' && (event.data === 1 || event.data === 3)) {
+        const aiVocal = useAIVocalStore.getState();
+        const jobId = currentVideo?.videoId || currentVideo?.id;
+        if (currentVideo?.aiVocalRequested && jobId && aiVocal.jobs[jobId]?.status === 'ready' && (event.data === 1 || event.data === 3)) {
             event.target.mute(); // Force mute if AI mode
         }
         // Handle state changes if needed
@@ -234,14 +239,14 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
 
     // Use currentSource as videoId for standard React-YouTube management
     // Default sourceType to 'youtube' if not set (backward compat for old Firestore data)
-    const isAiReady = currentVideo?.sourceType === 'youoke_ai' && currentVideo?.aiStatus === 'ready';
-    const effectiveSourceType = isAiReady ? 'youoke_ai' : (currentVideo?.sourceType === 'youoke_ai' ? 'youtube' : (currentVideo?.sourceType || 'youtube'));
-    
-    const activeVideoId = ((effectiveSourceType === 'youtube' || effectiveSourceType === 'youoke_ai') && currentSource && !currentSource.startsWith('search:'))
+    const activeVideoId = currentSource && !currentSource.startsWith('search:')
         ? currentSource
         : undefined;
 
     // React to aiStatus becoming ready while playing
+    const aiVocalState = useAIVocalStore();
+    const isAiReady = currentVideo?.aiVocalRequested && activeVideoId && aiVocalState.jobs[activeVideoId]?.status === 'ready';
+
     useEffect(() => {
         if (isAiReady && ytPlayerRef.current) {
             ytPlayerRef.current.mute();
@@ -262,29 +267,6 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                         onStateChange={handleYouTubeStateChange}
                         onEnd={onEnded}
                     />
-                    {effectiveSourceType === 'youoke_ai' && (
-                        <>
-                            <audio
-                                ref={vocalRef}
-                                src={`http://127.0.0.1:5050/files/${activeVideoId}/vocals.m4a`}
-                                preload="auto"
-                                onLoadedData={(e) => {
-                                    e.currentTarget.volume = getEffectiveVolume('vocals') / 100;
-                                    if (isPlaying) e.currentTarget.play().catch(() => {});
-                                }}
-                            />
-                            <audio
-                                ref={instrumentalRef}
-                                src={`http://127.0.0.1:5050/files/${activeVideoId}/no_vocals.m4a`}
-                                preload="auto"
-                                onLoadedData={(e) => {
-                                    e.currentTarget.volume = getEffectiveVolume('instrumental') / 100;
-                                    if (isPlaying) e.currentTarget.play().catch(() => {});
-                                }}
-                            />
-                        </>
-                    )}
-                </>
             ) : (
                 <div className="w-full h-full bg-black flex items-center justify-center">
                     <div className="flex flex-col items-center gap-4 opacity-20">

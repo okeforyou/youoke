@@ -1,9 +1,11 @@
 import React from "react";
 import { ListMusic, Trash2, Menu, ChevronDown } from "lucide-react";
 import { usePlayerStore } from "../stores/usePlayerStore";
+import { useAIVocalStore } from "../../../stores/useAIVocalStore";
 import { useUIStore } from "../../../stores/useUIStore";
 import Image from 'next/image';
 import clsx from 'clsx';
+import { Sparkles, Loader2 } from 'lucide-react';
 import {
     DndContext,
     closestCenter,
@@ -43,6 +45,9 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay, onSave
         transform: CSS.Transform.toString(transform),
         opacity: isDragging ? 0.5 : 1,
     };
+
+    // AI Job status
+    const aiJob = useAIVocalStore(state => state.jobs[video.videoId || video.id]);
 
     return (
         <div
@@ -86,13 +91,44 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay, onSave
 
                 {/* Info */}
                 <div className="flex-1 min-w-0 py-3 cursor-pointer" onClick={() => onPlay(actualIndex)}>
-                    <h4 className="text-[14px] font-black text-black dark:text-white line-clamp-1 leading-snug mb-0.5">
+                    <h4 className="text-[14px] font-black text-black dark:text-white line-clamp-1 leading-snug mb-0.5 flex items-center gap-2">
                         {video.title}
+                        {video.aiVocalRequested && (
+                            <span className="shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-500">
+                                <Sparkles className="w-3 h-3" />
+                            </span>
+                        )}
                     </h4>
                     <p className="text-[11px] text-gray-500 dark:text-zinc-500 truncate font-medium">
                         {video.author}
                     </p>
-
+                    
+                    {/* AI Processing Progress */}
+                    {video.aiVocalRequested && aiJob && (
+                        <div className="mt-1.5 flex flex-col gap-1 pr-2">
+                            <div className="flex items-center justify-between text-[10px] font-bold">
+                                <span className={
+                                    aiJob.status === 'error' ? 'text-red-500' :
+                                    aiJob.status === 'ready' ? 'text-green-500' :
+                                    'text-pink-500'
+                                }>
+                                    {aiJob.status === 'processing' && <Loader2 className="w-3 h-3 inline mr-1 animate-spin" />}
+                                    {aiJob.message || (aiJob.status === 'processing' ? 'กำลังแยกเสียง...' : '')}
+                                </span>
+                                {aiJob.status === 'processing' && (
+                                    <span className="text-gray-400">{aiJob.progress.toFixed(0)}%</span>
+                                )}
+                            </div>
+                            {aiJob.status === 'processing' && (
+                                <div className="w-full bg-gray-100 dark:bg-zinc-700 h-1 rounded-full overflow-hidden">
+                                    <div 
+                                        className="bg-pink-500 h-full transition-all duration-500 ease-out"
+                                        style={{ width: `${aiJob.progress}%` }}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* Remove Button */}

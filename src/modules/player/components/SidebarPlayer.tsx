@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Maximize2, Minimize2, X, Play, Pause, Music, User } from 'lucide-react'; // Player V2.8.0 Vanish
+import { Maximize2, Minimize2, X, Play, Pause, Music, User, Sparkles, Loader2 } from 'lucide-react'; // Player V2.8.0 Vanish
 import Image from "next/image";
 import { LockClosedIcon } from "@heroicons/react/24/solid";
 import { UniversalPlayer } from "./UniversalPlayer";
@@ -57,6 +57,9 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
 
     // AI Vocal Store
     const aiVocal = useAIVocalStore();
+    const currentAiJob = currentSource ? aiVocal.jobs[currentSource] : null;
+    const isAiProcessing = currentVideo?.aiVocalRequested && currentAiJob?.status === 'processing';
+
     const vocalRef = useRef<HTMLAudioElement>(null);
     const instrumentalRef = useRef<HTMLAudioElement>(null);
 
@@ -560,6 +563,35 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
 
 
             {/* Casting Overlays REMOVED (Phase 6) */}
+
+            {/* 🤖 AI Processing Overlay (While playing but still separating) */}
+            {isAiProcessing && (
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40">
+                    <div className="flex flex-col items-center gap-2 px-5 py-3 bg-black/80 backdrop-blur-md rounded-2xl border border-pink-500/30 shadow-lg shadow-pink-500/20">
+                        <div className="flex items-center gap-2 text-pink-500">
+                            <Sparkles className="w-4 h-4 animate-pulse" />
+                            <span className="text-[12px] font-bold tracking-wide uppercase">
+                                ระบบกำลังแยกเสียงร้อง
+                            </span>
+                            <Loader2 className="w-4 h-4 animate-spin ml-1" />
+                        </div>
+                        
+                        {/* Progress Bar */}
+                        <div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden mt-1">
+                            <div 
+                                className="h-full bg-gradient-to-r from-pink-600 to-pink-400 transition-all duration-500 ease-out relative"
+                                style={{ width: `${currentAiJob.progress}%` }}
+                            >
+                                <div className="absolute inset-0 bg-white/20 animate-pulse" />
+                            </div>
+                        </div>
+                        <div className="w-full flex justify-between text-[10px] text-zinc-400 font-bold px-1">
+                            <span>กำลังประมวลผล AI</span>
+                            <span>{currentAiJob.progress.toFixed(0)}%</span>
+                        </div>
+                    </div>
+                </div>
+            )}
 
 
             {/* Overlay (Waiting) */}
