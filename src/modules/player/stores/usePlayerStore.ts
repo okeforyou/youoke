@@ -318,6 +318,11 @@ export const usePlayerStore = create<PlayerStore>()(
                         dailyLimit = 5; // Default for guests if config not available
                     }
 
+                    // Development / Preview Bypass
+                    if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname.includes('vercel.app'))) {
+                        dailyLimit = -1; // Unlimited for preview deployments
+                    }
+
                     // If limit reached, block adding and show modal
                     if (dailyLimit !== -1 && currentUsed >= dailyLimit && dailyLimit > 0) {
                         console.warn("🚫 Global Gatekeeper: Daily limit reached on Host. Blocking addition.");

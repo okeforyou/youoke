@@ -82,24 +82,22 @@ export function QueueList() {
                             <div 
                                 key={video.uuid} 
                                 className={clsx(
-                                    "group flex items-center p-3 rounded-2xl border transition-all cursor-pointer hover:scale-[1.01]",
+                                    "group flex items-center p-3 rounded-2xl border transition-all cursor-pointer",
                                     isCurrent 
                                         ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 ring-1 ring-blue-500"
-                                        : "bg-white dark:bg-zinc-900 border-gray-100 dark:border-zinc-800 hover:border-gray-200 dark:hover:border-zinc-700"
+                                        : "bg-white dark:bg-zinc-900 border-gray-100 dark:border-zinc-800 hover:border-gray-200 dark:hover:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800/50"
                                 )}
                                 onClick={() => setCurrentIndex(actualIndex)}
                             >
                                 {/* Thumbnail */}
-                                <div className="w-24 h-16 rounded-lg overflow-hidden shrink-0 relative bg-black">
-                                    <Image
+                                <div className="w-24 h-16 rounded-lg overflow-hidden shrink-0 relative bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5">
+                                    <img
                                         src={video.thumbnail || `https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`}
                                         alt={video.title}
-                                        fill
-                                        className="object-cover opacity-90 group-hover:opacity-100 transition-opacity"
-                                        unoptimized
+                                        className="object-cover w-full h-full opacity-90 group-hover:opacity-100 transition-opacity"
                                         onError={(e) => {
                                             const target = e.target as HTMLImageElement;
-                                            if (target) {
+                                            if (!target.src.includes('icon-cover.png')) {
                                                 target.src = '/icon-cover.png';
                                             }
                                         }}

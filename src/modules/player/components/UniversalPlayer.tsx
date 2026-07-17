@@ -7,6 +7,7 @@ import { useMidiEngine } from '@/context/MidiEngineContext';
 import { playerService } from '../services/playerService';
 import { YouTubeAdapter } from '../adapters/YouTubeAdapter';
 import { useMixerStore } from '../stores/useMixerStore';
+import { useShallow } from 'zustand/react/shallow';
 
 interface UniversalPlayerProps {
     onEnded?: () => void;
@@ -36,7 +37,13 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
     const instrumentalRef = useRef<HTMLAudioElement>(null);
     const ytPlayerRef = useRef<any>(null);
 
-    const getEffectiveVolume = useMixerStore(state => state.getEffectiveVolume);
+    const { trackStates, volumes } = useMixerStore(
+        useShallow(state => ({
+            trackStates: state.trackStates,
+            volumes: state.volumes
+        }))
+    );
+    const isMuted = usePlayerStore(state => state.isMuted);
 
     // MIDI Engine Hooks
     const { playMidi, stop: stopMidi, isReady: isMidiReady, isPlaying: isMidiPlaying, synth } = useMidiEngine();
@@ -103,9 +110,15 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
     // --- AI AUDIO SYNC (YouOke AI) ---
     // Resilient Volume Sync
     useEffect(() => {
-        if (vocalRef.current) vocalRef.current.volume = getEffectiveVolume('vocals') / 100;
-        if (instrumentalRef.current) instrumentalRef.current.volume = getEffectiveVolume('instrumental') / 100;
-    }, [getEffectiveVolume]);
+        if (vocalRef.current) {
+            vocalRef.current.volume = volumes.vocals / 100;
+            vocalRef.current.muted = trackStates.vocals.muted || trackStates.instrumental.solo || isMuted;
+        }
+        if (instrumentalRef.current) {
+            instrumentalRef.current.volume = volumes.instrumental / 100;
+            instrumentalRef.current.muted = trackStates.instrumental.muted || trackStates.vocals.solo || isMuted;
+        }
+    }, [volumes, trackStates, isMuted]);
 
     // Ultimate Sync Loop (Slaved to YT)
     useEffect(() => {
@@ -263,7 +276,8 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                         src={`http://127.0.0.1:5050/files/${activeVideoId}/vocals.m4a`} 
                         preload="auto" 
                         onLoadedData={(e) => {
-                            e.currentTarget.volume = getEffectiveVolume('vocals') / 100;
+                            e.currentTarget.volume = volumes.vocals / 100;
+                            e.currentTarget.muted = trackStates.vocals.muted || trackStates.instrumental.solo || isMuted;
                             if (isPlaying) e.currentTarget.play().catch(()=>{});
                         }} 
                     />
@@ -272,7 +286,8 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                         src={`http://127.0.0.1:5050/files/${activeVideoId}/no_vocals.m4a`} 
                         preload="auto" 
                         onLoadedData={(e) => {
-                            e.currentTarget.volume = getEffectiveVolume('instrumental') / 100;
+                            e.currentTarget.volume = volumes.instrumental / 100;
+                            e.currentTarget.muted = trackStates.instrumental.muted || trackStates.vocals.solo || isMuted;
                             if (isPlaying) e.currentTarget.play().catch(()=>{});
                         }} 
                     />
