@@ -161,6 +161,27 @@ export function QueueList() {
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
+                                                if (!video.aiVocalRequested) {
+                                                    usePlayerStore.getState().updateQueueItem(video.uuid, { aiVocalRequested: true });
+                                                    const vidId = video.videoId || video.id;
+                                                    useAIVocalStore.getState().processAudio(vidId).catch(console.error);
+                                                }
+                                            }}
+                                            className={clsx(
+                                                "w-8 h-8 flex items-center justify-center rounded-full transition-all flex-shrink-0",
+                                                video.aiVocalRequested || aiJob?.status === 'ready'
+                                                    ? "bg-pink-100 text-pink-500 dark:bg-pink-900/20"
+                                                    : "text-gray-400 dark:text-zinc-500 hover:text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-500/10"
+                                            )}
+                                            title="แยกเสียงร้องด้วย AI"
+                                            disabled={video.aiVocalRequested}
+                                        >
+                                            <Sparkles className="w-4 h-4" />
+                                        </button>
+
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
                                                 removeFromQueue(video.uuid);
                                             }}
                                             className="w-8 h-8 flex items-center justify-center text-gray-400 dark:text-zinc-500 hover:text-red-500 dark:hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-all flex-shrink-0"

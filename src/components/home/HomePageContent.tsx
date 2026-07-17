@@ -46,7 +46,6 @@ export const HomePageContent = memo(() => {
                 title: video.title,
                 author: video.author,
                 thumbnail: undefined,
-                aiVocalRequested: true, // Default all songs to request AI vocals
             } as any;
             
             // 🛡️ Global Store will handle the quota check inside addToQueue (v4.9.63)
@@ -64,7 +63,6 @@ export const HomePageContent = memo(() => {
                 title: hit.title,
                 author: artist,
                 thumbnail: hit.thumbnail,
-                aiVocalRequested: true, // Default all songs to request AI vocals
             } as any;
             
             usePlayerStore.getState().addToQueue(videoToAdd);
