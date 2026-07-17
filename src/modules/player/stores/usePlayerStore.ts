@@ -459,6 +459,11 @@ export const usePlayerStore = create<PlayerStore>()(
                     dailyLimit = 5; // Default guess
                 }
 
+                // Development / Preview Bypass
+                if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname.includes('vercel.app'))) {
+                    dailyLimit = -1; // Unlimited for preview deployments
+                }
+
                 if (dailyLimit !== -1 && currentUsed >= dailyLimit && dailyLimit > 0) {
                     useUIStore.getState().setLimitModalOpen(true);
                     return { isPlaying: false };

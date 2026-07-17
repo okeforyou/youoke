@@ -6,6 +6,7 @@ import { useShallow } from "zustand/react/shallow";
 import { useUIStore } from "../../../stores/useUIStore";
 import { useCast } from "../../../plugins/cast/context/CastContext";
 import clsx from 'clsx';
+import { useAIVocalStore } from '../../../stores/useAIVocalStore';
 import { VocalMixerPopover } from "../../../pages/vocal"; // We will need to move this or copy it
 
 
@@ -58,6 +59,10 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
     const { isConnected, isRecovering } = cast;
 
     const isAnyCastOn = (castMode !== 'none' && castMode !== undefined) || isConnected;
+
+    const aiVocalStore = useAIVocalStore();
+    const activeVideoId = currentVideo?.videoId || currentVideo?.id;
+    const isAiReady = currentVideo?.aiVocalRequested && activeVideoId && aiVocalStore.jobs[activeVideoId]?.status === 'ready';
 
 
 
@@ -133,28 +138,37 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             id: 'vocals',
             icon: Mic2,
             label: "ร้อง",
-            onClick: () => toggleMute('vocals'),
-            active: !trackStates.vocals.muted,
+            onClick: () => {
+                if (isAiReady) toggleMute('vocals');
+            },
+            active: isAiReady && !trackStates.vocals.muted,
             activeColor: "text-primary bg-primary/10",
-            textColor: !trackStates.vocals.muted ? "text-primary" : "text-black/60 dark:text-zinc-400"
+            textColor: isAiReady ? (!trackStates.vocals.muted ? "text-primary" : "text-black/60 dark:text-zinc-400") : "text-gray-300 dark:text-zinc-600",
+            disabled: !isAiReady
         },
         {
             id: 'instrumental',
             icon: Music,
             label: "ดนตรี",
-            onClick: () => toggleMute('instrumental'),
-            active: !trackStates.instrumental.muted,
+            onClick: () => {
+                if (isAiReady) toggleMute('instrumental');
+            },
+            active: isAiReady && !trackStates.instrumental.muted,
             activeColor: "text-blue-500 bg-blue-500/10",
-            textColor: !trackStates.instrumental.muted ? "text-blue-500" : "text-black/60 dark:text-zinc-400"
+            textColor: isAiReady ? (!trackStates.instrumental.muted ? "text-blue-500" : "text-black/60 dark:text-zinc-400") : "text-gray-300 dark:text-zinc-600",
+            disabled: !isAiReady
         },
         {
             id: 'mixer',
             icon: SlidersHorizontal,
             label: "มิกเซอร์",
-            onClick: () => setShowVocalMixer(!showVocalMixer),
+            onClick: () => {
+                if (isAiReady) setShowVocalMixer(!showVocalMixer);
+            },
             active: showVocalMixer,
             activeColor: "text-black dark:text-white bg-gray-100 dark:bg-zinc-800",
-            textColor: showVocalMixer ? "text-black dark:text-white" : "text-black/60 dark:text-zinc-400",
+            textColor: isAiReady ? (showVocalMixer ? "text-black dark:text-white" : "text-black/60 dark:text-zinc-400") : "text-gray-300 dark:text-zinc-600",
+            disabled: !isAiReady,
             ref: vocalBtnRef
         }
     ];
@@ -171,9 +185,14 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                         key={item.id}
                         ref={item.ref as any}
                         onClick={(e) => {
+                            if (item.disabled) return;
                             item.onClick();
                         }}
-                        className="flex flex-col items-center justify-center flex-1 h-full active:scale-95 transition-all duration-200 group relative"
+                        disabled={item.disabled}
+                        className={clsx(
+                            "flex flex-col items-center justify-center flex-1 h-full transition-all duration-200 group relative",
+                            item.disabled ? "opacity-50 cursor-not-allowed" : "active:scale-95 cursor-pointer"
+                        )}
                     >
                         <div className={clsx(
                             "p-1 rounded-xl transition-all duration-300 relative flex items-center justify-center gap-0.5",
