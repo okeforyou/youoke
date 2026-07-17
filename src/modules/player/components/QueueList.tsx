@@ -159,18 +159,18 @@ export function QueueList() {
                                     <div className="flex items-center gap-2">
                                         {aiJob?.status === 'ready' && <span className="px-1.5 py-0.5 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[9px] font-bold rounded uppercase">Ready</span>}
                                         {aiJob?.status === 'error' && <span className="px-1.5 py-0.5 bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-[9px] font-bold rounded uppercase">Error</span>}
-
-                                    
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            removeFromQueue(video.uuid);
-                                        }}
-                                        className="w-8 h-8 flex items-center justify-center text-gray-400 dark:text-zinc-500 hover:text-red-500 dark:hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-all flex-shrink-0"
-                                        title="ลบออกจากคิว"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
+                                        
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                removeFromQueue(video.uuid);
+                                            }}
+                                            className="w-8 h-8 flex items-center justify-center text-gray-400 dark:text-zinc-500 hover:text-red-500 dark:hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-all flex-shrink-0"
+                                            title="ลบออกจากคิว"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         );
