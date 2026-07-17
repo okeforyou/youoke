@@ -192,7 +192,8 @@ export default function YouTubeDashboard() {
                 title: item.title,
                 author: item.subtitle || 'YouTube',
                 sourceType: 'youtube',
-                thumbnail: item.thumbnail
+                thumbnail: item.thumbnail,
+                aiVocalRequested: true
             } as any);
         }
     };

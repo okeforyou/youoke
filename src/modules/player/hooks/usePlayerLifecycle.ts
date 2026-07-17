@@ -93,6 +93,11 @@ export const usePlayerLifecycle = (currentSource: string | null, showDjOverlay: 
             currentCount = parseInt(localStorage.getItem(storageKey) || '0');
         }
 
+        // Development / Preview Bypass
+        if (typeof window !== 'undefined' && window.location.hostname !== 'play.okeforyou.com') {
+            limit = -1; // Unlimited for preview deployments and local testing
+        }
+
         setDailyCount(currentCount);
 
         console.log(`📊 Quota Check: [${userRole}] ${currentCount} / ${limit === -1 ? 'Unlimited' : limit}`);

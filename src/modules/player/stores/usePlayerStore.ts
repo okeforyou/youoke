@@ -319,8 +319,8 @@ export const usePlayerStore = create<PlayerStore>()(
                     }
 
                     // Development / Preview Bypass
-                    if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname.includes('vercel.app'))) {
-                        dailyLimit = -1; // Unlimited for preview deployments
+                    if (typeof window !== 'undefined' && window.location.hostname !== 'play.okeforyou.com') {
+                        dailyLimit = -1; // Unlimited for preview deployments and local testing
                     }
 
                     // If limit reached, block adding and show modal
@@ -460,8 +460,8 @@ export const usePlayerStore = create<PlayerStore>()(
                 }
 
                 // Development / Preview Bypass
-                if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname.includes('vercel.app'))) {
-                    dailyLimit = -1; // Unlimited for preview deployments
+                if (typeof window !== 'undefined' && window.location.hostname !== 'play.okeforyou.com') {
+                    dailyLimit = -1; // Unlimited for preview deployments and local testing
                 }
 
                 if (dailyLimit !== -1 && currentUsed >= dailyLimit && dailyLimit > 0) {

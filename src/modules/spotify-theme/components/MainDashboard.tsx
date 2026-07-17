@@ -610,6 +610,7 @@ export default function MainDashboard({ showTab = true, mode = 'default' }: { sh
                                         title: video.title,
                                         author: video.author,
                                         thumbnail: undefined,
+                                        aiVocalRequested: true,
                                     } as any;
                                     
                                     // 🛡️ v4.9.74: Simple Login Check - If not logged in, block station access.
