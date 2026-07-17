@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.103";
+export const SYSTEM_VERSION = "5.5.104";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "v5.5.104 (AI Cache Cleanup Bug Fix)",
+        date: "17 ก.ค. 2569",
+        changes: [
+            "FIX: Resolved an issue in youoke-server where temporary WAV files and Demucs processing folders were not deleted if an earlier cleanup step failed, causing excessive disk space usage (up to 500MB+ per song)."
+        ],
+        recent_updates: "Fixed AI Server massive disk space usage issue"
+    },
     {
         version: "v5.5.103 (Vocal Player Control UI Standard Alignment)",
         date: "17 ก.ค. 2569",

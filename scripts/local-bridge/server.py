@@ -236,12 +236,19 @@ def separate(req: SeparateRequest):
     convert_audio(no_vocal_wav, no_vocal_m4a, fmt="m4a")
         
     # Cleanup temporary files (WAV is huge)
+    for tmp_file in [m4a_path, wav_path]:
+        try:
+            if os.path.exists(tmp_file):
+                os.remove(tmp_file)
+        except Exception as e:
+            print(f"Failed to remove {tmp_file}: {e}")
+            
     try:
-        os.remove(m4a_path)
-        os.remove(wav_path)
-        shutil.rmtree(os.path.join(song_dir, "htdemucs_ft"))
-    except:
-        pass # ignore cleanup errors
+        demucs_dir = os.path.join(song_dir, "htdemucs_ft")
+        if os.path.exists(demucs_dir):
+            shutil.rmtree(demucs_dir)
+    except Exception as e:
+        print(f"Failed to remove demucs dir: {e}")
         
     progress_store[vid] = {"status": "success", "percent": 100, "message": "เสร็จสมบูรณ์!"}
     return {"status": "success", "video_id": vid}
