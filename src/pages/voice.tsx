@@ -94,24 +94,32 @@ export default function PocKaraoke() {
   // Click outside to close mixer popover
   useEffect(() => {
       const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-          if (
-              showVocalMixer &&
-              mixerRef.current &&
-              !mixerRef.current.contains(event.target as Node) &&
-              vocalBtnRef.current &&
-              !vocalBtnRef.current.contains(event.target as Node)
-          ) {
+          if (mixerRef.current && !mixerRef.current.contains(event.target as Node) && vocalBtnRef.current && !vocalBtnRef.current.contains(event.target as Node)) {
               setShowVocalMixer(false);
           }
       };
-
-      document.addEventListener("mousedown", handleClickOutside);
-      document.addEventListener("touchstart", handleClickOutside);
+      if (showVocalMixer) {
+          document.addEventListener("mousedown", handleClickOutside);
+          document.addEventListener("touchstart", handleClickOutside);
+      }
       return () => {
           document.removeEventListener("mousedown", handleClickOutside);
           document.removeEventListener("touchstart", handleClickOutside);
       };
   }, [showVocalMixer]);
+
+  const handleLaunchPlugin = () => {
+    window.location.href = "youoke://open";
+  };
+
+  const handleDownloadPlugin = () => {
+    setShowInstallGuide(true);
+    if (downloadOS === 'mac') {
+        window.open('https://github.com/okeforyou/youoke-ai-plugin/releases/download/v1.0.0/YouOke-Plugin-Mac.dmg', '_blank');
+    } else {
+        window.open('https://github.com/okeforyou/youoke-ai-plugin/releases/download/v1.0.0/YouOke-Plugin-Windows.exe', '_blank');
+    }
+  };
 
   // Auto next logic when song ends
   useEffect(() => {
@@ -634,11 +642,7 @@ export default function PocKaraoke() {
                 )}
             </div>
         </div>
-
         </div>
-
-      </div>
-
       {/* Hidden Audio Elements */}
       {readyAudioId && (
         <div className="hidden">
@@ -721,8 +725,6 @@ export default function PocKaraoke() {
               onClick={() => {
                 setShowInstallGuide(false);
                 launchModalRef.current?.close();
-                setBackendError("กำลังปลุก YouOke Plugin... (ระบบจะพยายามเชื่อมต่ออัตโนมัติ)");
-                setTimeout(() => handleSearch(true), 5000);
               }}
               className="w-full py-3.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-bold transition-colors shadow-sm"
             >
