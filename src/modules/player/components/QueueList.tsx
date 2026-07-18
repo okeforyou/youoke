@@ -145,42 +145,40 @@ export function QueueList() {
                                         </div>
                                     )}
                                     <div className="flex items-center gap-1">
-                                        {!isKaraoke && (
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    if (!aiJob || aiJob.status === 'error' || !video.aiVocalRequested) {
-                                                        if (!video.aiVocalRequested) {
-                                                            usePlayerStore.getState().updateQueueItem(video.uuid, { aiVocalRequested: true });
-                                                        }
-                                                        const vidId = video.videoId || video.id;
-                                                        useAIVocalStore.getState().processAudio(vidId).catch(console.error);
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (!aiJob || aiJob.status === 'error' || !video.aiVocalRequested) {
+                                                    if (!video.aiVocalRequested) {
+                                                        usePlayerStore.getState().updateQueueItem(video.uuid, { aiVocalRequested: true });
                                                     }
-                                                }}
-                                                disabled={aiJob?.status === 'processing' || aiJob?.status === 'ready'}
-                                                className={clsx(
-                                                    "w-8 h-8 flex items-center justify-center rounded-full transition-all flex-shrink-0",
-                                                    aiJob?.status === 'ready'
-                                                        ? "bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400 cursor-default"
-                                                        : aiJob?.status === 'processing'
-                                                            ? "text-pink-400 cursor-wait"
-                                                            : "text-gray-400 dark:text-zinc-500 hover:text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-500/10"
-                                                )}
-                                                title={
-                                                    aiJob?.status === 'ready' ? "แยกเสียงร้องสำเร็จพร้อมใช้งาน" : 
-                                                    aiJob?.status === 'processing' ? "กำลังแยกเสียง..." : 
-                                                    "สั่งแยกเสียงร้องด้วย AI"
+                                                    const vidId = video.videoId || video.id;
+                                                    useAIVocalStore.getState().processAudio(vidId).catch(console.error);
                                                 }
-                                            >
-                                                {aiJob?.status === 'ready' ? (
-                                                    <MicVocal className="w-4 h-4" />
-                                                ) : aiJob?.status === 'processing' ? (
-                                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                                ) : (
-                                                    <Wand2 className="w-4 h-4" />
-                                                )}
-                                            </button>
-                                        )}
+                                            }}
+                                            disabled={aiJob?.status === 'processing' || aiJob?.status === 'ready'}
+                                            className={clsx(
+                                                "w-8 h-8 flex items-center justify-center rounded-full transition-all flex-shrink-0",
+                                                aiJob?.status === 'ready'
+                                                    ? "bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400 cursor-default"
+                                                    : aiJob?.status === 'processing'
+                                                        ? "text-pink-400 cursor-wait"
+                                                        : "text-gray-400 dark:text-zinc-500 hover:text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-500/10"
+                                            )}
+                                            title={
+                                                aiJob?.status === 'ready' ? "แยกเสียงร้องสำเร็จพร้อมใช้งาน" : 
+                                                aiJob?.status === 'processing' ? "กำลังแยกเสียง..." : 
+                                                "สั่งแยกเสียงร้องด้วย AI"
+                                            }
+                                        >
+                                            {aiJob?.status === 'ready' ? (
+                                                <MicVocal className="w-4 h-4" />
+                                            ) : aiJob?.status === 'processing' ? (
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                            ) : (
+                                                <Wand2 className="w-4 h-4" />
+                                            )}
+                                        </button>
 
                                         <button
                                             onClick={(e) => {
