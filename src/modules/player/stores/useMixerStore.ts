@@ -32,7 +32,14 @@ export const useMixerStore = create<MixerState>()(
             setVolume: (type, value) => {
                 const safeValue = Math.max(0, Math.min(100, Number(value) || 0));
                 set((state) => ({
-                    volumes: { ...state.volumes, [type]: safeValue }
+                    volumes: { ...state.volumes, [type]: safeValue },
+                    trackStates: {
+                        ...state.trackStates,
+                        [type]: {
+                            ...state.trackStates[type],
+                            muted: safeValue === 0 ? true : (state.trackStates[type].muted && safeValue > 0 ? false : state.trackStates[type].muted)
+                        }
+                    }
                 }));
             },
             toggleMute: (type) => set((state) => ({
