@@ -135,21 +135,26 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
         let interval: NodeJS.Timeout;
         if (isAiReady && isPlaying) {
             interval = setInterval(() => {
-                if (!ytPlayerRef.current || !instrumentalRef.current || !vocalRef.current) return;
-                const state = ytPlayerRef.current.getPlayerState();
-                if (state !== 1) return; // Only sync if playing
+                if (!ytPlayerRef.current || typeof ytPlayerRef.current.getIframe !== 'function' || !ytPlayerRef.current.getIframe() || !instrumentalRef.current || !vocalRef.current) return;
                 
-                const ytTime = ytPlayerRef.current.getCurrentTime();
-                if (typeof ytTime !== 'number' || ytTime === 0) return;
-                
-                if (Math.abs(instrumentalRef.current.currentTime - ytTime) > 0.3) {
-                    instrumentalRef.current.currentTime = ytTime;
+                try {
+                    const state = ytPlayerRef.current.getPlayerState();
+                    if (state !== 1) return; // Only sync if playing
+                    
+                    const ytTime = ytPlayerRef.current.getCurrentTime();
+                    if (typeof ytTime !== 'number' || ytTime === 0) return;
+                    
+                    if (Math.abs(instrumentalRef.current.currentTime - ytTime) > 0.3) {
+                        instrumentalRef.current.currentTime = ytTime;
+                    }
+                    if (Math.abs(vocalRef.current.currentTime - ytTime) > 0.3) {
+                        vocalRef.current.currentTime = ytTime;
+                    }
+                    if (instrumentalRef.current.paused) instrumentalRef.current.play().catch(e => console.error(e));
+                    if (vocalRef.current.paused) vocalRef.current.play().catch(e => console.error(e));
+                } catch (e) {
+                    console.warn("YT Sync error:", e);
                 }
-                if (Math.abs(vocalRef.current.currentTime - ytTime) > 0.3) {
-                    vocalRef.current.currentTime = ytTime;
-                }
-                if (instrumentalRef.current.paused) instrumentalRef.current.play().catch(e => console.error(e));
-                if (vocalRef.current.paused) vocalRef.current.play().catch(e => console.error(e));
             }, 1000);
         }
         return () => { if (interval) clearInterval(interval); };
@@ -159,7 +164,13 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
     useEffect(() => {
         if (isAiReady) {
             if (isPlaying) {
-                const ytTime = ytPlayerRef.current?.getCurrentTime();
+                let ytTime: number | undefined;
+                try {
+                    if (ytPlayerRef.current && typeof ytPlayerRef.current.getIframe === 'function' && ytPlayerRef.current.getIframe()) {
+                        ytTime = ytPlayerRef.current.getCurrentTime();
+                    }
+                } catch (e) {}
+
                 if (typeof ytTime === 'number' && ytTime > 0) {
                     if (vocalRef.current && Math.abs(vocalRef.current.currentTime - ytTime) > 0.3) vocalRef.current.currentTime = ytTime;
                     if (instrumentalRef.current && Math.abs(instrumentalRef.current.currentTime - ytTime) > 0.3) instrumentalRef.current.currentTime = ytTime;
@@ -239,7 +250,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
         const aiVocal = useAIVocalStore.getState();
         const jobId = currentVideo?.videoId || currentVideo?.id;
         if (currentVideo?.aiVocalRequested && jobId && aiVocal.jobs[jobId]?.status === 'ready') {
-            event.target.mute();
+            try { if (event.target.getIframe()) event.target.mute(); } catch (e) {}
         }
 
         // Register adapter if needed
@@ -254,7 +265,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
         const aiVocal = useAIVocalStore.getState();
         const jobId = currentVideo?.videoId || currentVideo?.id;
         if (currentVideo?.aiVocalRequested && jobId && aiVocal.jobs[jobId]?.status === 'ready' && (event.data === 1 || event.data === 3)) {
-            event.target.mute(); // Force mute if AI mode
+            try { if (event.target.getIframe()) event.target.mute(); } catch (e) {}
         }
         // Handle state changes if needed
         if (onStateChange) onStateChange(event);
@@ -262,7 +273,11 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
 
     useEffect(() => {
         if (isAiReady && ytPlayerRef.current) {
-            ytPlayerRef.current.mute();
+            try {
+                if (typeof ytPlayerRef.current.getIframe === 'function' && ytPlayerRef.current.getIframe()) {
+                    ytPlayerRef.current.mute();
+                }
+            } catch (e) {}
         }
     }, [isAiReady]);
 

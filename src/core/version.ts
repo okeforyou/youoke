@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.113";
+export const SYSTEM_VERSION = "5.5.115";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "v5.5.115 (Fix UniversalPlayer Unmount Crash)",
+        date: "18 ก.ค. 2569",
+        changes: [
+            "Bugfix: Resolved a critical 'Cannot read properties of null (reading src)' error in UniversalPlayer.",
+            "Stability: Added try-catch and getIframe() safety checks to YouTube API calls (mute, getCurrentTime, getPlayerState) to prevent crashes when the component unmounts rapidly."
+        ],
+        recent_updates: "Fixed UniversalPlayer crash during unmount"
+    },
     {
         version: "v5.5.113 (QueueItem AI UX Polish)",
         date: "18 ก.ค. 2569",
