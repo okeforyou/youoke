@@ -156,42 +156,17 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             disabled: !isAiReady
         },
         {
-            id: 'instrumental',
-            icon: Music,
-            label: "ดนตรี",
-            onClick: () => {
-                if (isAiReady) toggleMute('instrumental');
-            },
-            active: isAiReady && !trackStates.instrumental.muted,
-            activeColor: "text-blue-500 bg-blue-500/10",
-            textColor: isAiReady ? (!trackStates.instrumental.muted ? "text-blue-500" : "text-black/60 dark:text-zinc-400") : "text-gray-300 dark:text-zinc-600",
-            disabled: !isAiReady
-        },
-        {
             id: 'mixer',
             icon: SlidersHorizontal,
             label: "มิกเซอร์",
             onClick: () => {
-                if (isAiReady) setShowVocalMixer(!showVocalMixer);
+                setShowVocalMixer(!showVocalMixer);
             },
             active: showVocalMixer,
             activeColor: "text-black dark:text-white bg-gray-100 dark:bg-zinc-800",
-            textColor: isAiReady ? (showVocalMixer ? "text-black dark:text-white" : "text-black/60 dark:text-zinc-400") : "text-gray-300 dark:text-zinc-600",
-            disabled: !isAiReady,
+            textColor: showVocalMixer ? "text-black dark:text-white" : "text-black/60 dark:text-zinc-400",
+            disabled: false,
             ref: vocalBtnRef
-        },
-        {
-            id: 'volume',
-            icon: isMuted ? VolumeX : Volume2,
-            label: "เสียง",
-            onClick: () => {
-                if (isConnected) {
-                    cast.setMuted(!isMuted);
-                } else {
-                    setMuted(!isMuted);
-                }
-            },
-            active: !isMuted,
         },
         {
             id: 'fullscreen',
@@ -266,33 +241,64 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             {/* Flat Mixer Popover */}
             {showVocalMixer && (
                 <div ref={mixerRef} className="absolute bottom-[60px] right-2 mb-2 w-72 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 z-50 animate-in fade-in zoom-in-95 duration-200 shadow-xl">
-                    <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-5">AI Volume Mixer</h4>
+                    <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-5">ตั้งค่าเสียง (Audio Settings)</h4>
                     
-                    {/* Vocals */}
-                    <div className="mb-5">
-                        <div className="flex justify-between text-xs font-bold mb-2 text-black dark:text-white">
-                            <span>เสียงร้อง (Vocals)</span>
-                            <span className="text-primary">{volumes.vocals}%</span>
+                    {/* Master Mute */}
+                    <div className={clsx("mb-2", isAiReady && "border-b border-gray-100 dark:border-zinc-800 pb-5 mb-5")}>
+                        <div className="flex justify-between text-xs font-bold mb-3 text-black dark:text-white">
+                            <span>เสียงหลัก (Master)</span>
+                            <span className="text-gray-500">{isMuted ? 'Muted' : 'On'}</span>
                         </div>
-                        <div className="flex items-center gap-3">
-                            <button onClick={() => toggleMute('vocals')} className={clsx("w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black transition-colors border", trackStates.vocals.muted ? "bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-800" : "bg-white dark:bg-zinc-800 text-gray-400 border-gray-100 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-700")}>M</button>
-                            <button onClick={() => toggleSolo('vocals')} className={clsx("w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black transition-colors border", trackStates.vocals.solo ? "bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 border-yellow-200 dark:border-yellow-800" : "bg-white dark:bg-zinc-800 text-gray-400 border-gray-100 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-700")}>S</button>
-                            <input type="range" min="0" max="100" value={volumes.vocals} onChange={(e) => handleVolumeChange('vocals', parseInt(e.target.value))} className="flex-1 h-1.5 bg-gray-100 dark:bg-zinc-800 rounded-full appearance-none accent-primary" />
-                        </div>
+                        <button 
+                            onClick={() => {
+                                if (isConnected) {
+                                    cast.setMuted(!isMuted);
+                                } else {
+                                    setMuted(!isMuted);
+                                }
+                            }}
+                            className={clsx(
+                                "w-full py-2.5 rounded-xl flex items-center justify-center gap-2 text-xs font-bold transition-colors border",
+                                isMuted 
+                                    ? "bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-800" 
+                                    : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
+                            )}
+                        >
+                            {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+                            {isMuted ? "กำลังปิดเสียง" : "กดเพื่อปิดเสียง"}
+                        </button>
                     </div>
 
-                    {/* Instrumental */}
-                    <div>
-                        <div className="flex justify-between text-xs font-bold mb-2 text-black dark:text-white">
-                            <span>ดนตรี (Instrumental)</span>
-                            <span className="text-blue-500">{volumes.instrumental}%</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <button onClick={() => toggleMute('instrumental')} className={clsx("w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black transition-colors border", trackStates.instrumental.muted ? "bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-800" : "bg-white dark:bg-zinc-800 text-gray-400 border-gray-100 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-700")}>M</button>
-                            <button onClick={() => toggleSolo('instrumental')} className={clsx("w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black transition-colors border", trackStates.instrumental.solo ? "bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 border-yellow-200 dark:border-yellow-800" : "bg-white dark:bg-zinc-800 text-gray-400 border-gray-100 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-700")}>S</button>
-                            <input type="range" min="0" max="100" value={volumes.instrumental} onChange={(e) => handleVolumeChange('instrumental', parseInt(e.target.value))} className="flex-1 h-1.5 bg-gray-100 dark:bg-zinc-800 rounded-full appearance-none accent-blue-500" />
-                        </div>
-                    </div>
+                    {/* AI Controls */}
+                    {isAiReady && (
+                        <>
+                            {/* Vocals */}
+                            <div className="mb-5">
+                                <div className="flex justify-between text-xs font-bold mb-2 text-black dark:text-white">
+                                    <span>เสียงร้อง (Vocals)</span>
+                                    <span className="text-primary">{volumes.vocals}%</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <button onClick={() => toggleMute('vocals')} className={clsx("w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black transition-colors border", trackStates.vocals.muted ? "bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-800" : "bg-white dark:bg-zinc-800 text-gray-400 border-gray-100 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-700")}>M</button>
+                                    <button onClick={() => toggleSolo('vocals')} className={clsx("w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black transition-colors border", trackStates.vocals.solo ? "bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 border-yellow-200 dark:border-yellow-800" : "bg-white dark:bg-zinc-800 text-gray-400 border-gray-100 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-700")}>S</button>
+                                    <input type="range" min="0" max="100" value={volumes.vocals} onChange={(e) => handleVolumeChange('vocals', parseInt(e.target.value))} className="flex-1 h-1.5 bg-gray-100 dark:bg-zinc-800 rounded-full appearance-none accent-primary" />
+                                </div>
+                            </div>
+
+                            {/* Instrumental */}
+                            <div>
+                                <div className="flex justify-between text-xs font-bold mb-2 text-black dark:text-white">
+                                    <span>ดนตรี (Instrumental)</span>
+                                    <span className="text-blue-500">{volumes.instrumental}%</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <button onClick={() => toggleMute('instrumental')} className={clsx("w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black transition-colors border", trackStates.instrumental.muted ? "bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-800" : "bg-white dark:bg-zinc-800 text-gray-400 border-gray-100 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-700")}>M</button>
+                                    <button onClick={() => toggleSolo('instrumental')} className={clsx("w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black transition-colors border", trackStates.instrumental.solo ? "bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 border-yellow-200 dark:border-yellow-800" : "bg-white dark:bg-zinc-800 text-gray-400 border-gray-100 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-700")}>S</button>
+                                    <input type="range" min="0" max="100" value={volumes.instrumental} onChange={(e) => handleVolumeChange('instrumental', parseInt(e.target.value))} className="flex-1 h-1.5 bg-gray-100 dark:bg-zinc-800 rounded-full appearance-none accent-blue-500" />
+                                </div>
+                            </div>
+                        </>
+                    )}
                 </div>
             )}
         </div>

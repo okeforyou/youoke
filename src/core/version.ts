@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.110";
+export const SYSTEM_VERSION = "5.5.111";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "v5.5.111 (Simplify Player Controls)",
+        date: "18 ก.ค. 2569",
+        changes: [
+            "UI: Merged Volume and Instrumental toggles into a unified Audio Settings (Mixer) popover.",
+            "UX: Reduced main control bar clutter from 9 to 7 buttons for better mobile/responsive experience.",
+            "UI: Mixer popover now dynamically displays Master Volume and AI Audio controls based on song capabilities."
+        ],
+        recent_updates: "Simplified Player Controls & Unified Mixer"
+    },
     {
         version: "v5.5.110 (Restore Player Controls)",
         date: "18 ก.ค. 2569",
