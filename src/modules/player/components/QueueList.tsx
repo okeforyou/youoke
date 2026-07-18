@@ -140,7 +140,6 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                     >
                         <Trash2 className="w-4 h-4" />
                     </button>
-                </div>
             </div>
         </div>
     );
