@@ -76,70 +76,65 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
             </div>
             
             {/* Info */}
-            <div className="flex-1 min-w-0 ml-3">
-                <h4 className="text-[14px] font-black text-black dark:text-white line-clamp-1 leading-snug mb-0.5 flex items-center gap-2">
-                    <span className="truncate">{video.title}</span>
+            <div className="flex-1 min-w-0 ml-3 mr-1">
+                <h4 className="text-[14px] font-black text-black dark:text-white line-clamp-1 leading-snug mb-1">
+                    {video.title}
                 </h4>
-                <div className="flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-zinc-500 font-medium w-full">
-                    {video.aiVocalRequested && aiJob && aiJob.status !== 'ready' ? (
-                        <div className={clsx("flex items-center gap-2 w-full", aiJob.status === 'error' ? 'text-red-500' : 'text-blue-500')}>
-                            {aiJob.status === 'processing' && <Loader2 className="w-3 h-3 animate-spin shrink-0" />}
-                            <span className="shrink-0">{aiJob.status === 'error' ? 'เกิดข้อผิดพลาด' : `กำลังแยกเสียง ${aiJob.progress.toFixed(0)}%`}</span>
-                            {aiJob.status === 'processing' && (
-                                <div className="flex-1 h-1.5 bg-blue-500/20 rounded-full overflow-hidden mr-2">
-                                    <div className="h-full bg-blue-500 transition-all duration-500 ease-out" style={{ width: `${aiJob.progress}%` }} />
+                {video.aiVocalRequested && aiJob && aiJob.status === 'processing' ? (
+                    <div className="flex items-center gap-2 w-full shrink-0">
+                        <span className="shrink-0 text-[11px] text-blue-500 font-bold flex items-center gap-1.5">
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                            กำลังแยกเสียง
+                        </span>
+                        <div className="flex-1 h-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-full overflow-hidden">
+                            <div className="h-full bg-blue-500 transition-all duration-500 ease-out" style={{ width: `${aiJob.progress}%` }} />
+                        </div>
+                        <span className="text-[10px] font-black text-blue-500 w-7 text-right">{aiJob.progress.toFixed(0)}%</span>
+                    </div>
+                ) : (
+                    <div className="flex items-center gap-2 w-full">
+                        <span className="truncate text-[11.5px] text-gray-500 dark:text-zinc-500 font-medium">
+                            {video.author}
+                        </span>
+                        
+                        <div className="shrink-0 ml-auto flex items-center">
+                            {aiJob?.status === 'ready' ? (
+                                <div className="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/20 text-blue-500 rounded flex items-center gap-1 border border-blue-100 dark:border-blue-800/50">
+                                    <AudioWaveform className="w-2.5 h-2.5" />
+                                    <span className="text-[9px] font-black uppercase tracking-wide mt-0.5">แยกเสียงแล้ว</span>
                                 </div>
+                            ) : aiJob?.status === 'error' ? (
+                                <div className="px-2 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-500 rounded flex items-center gap-1 border border-red-100 dark:border-red-800/50">
+                                    <span className="text-[9px] font-black uppercase tracking-wide mt-0.5">ล้มเหลว</span>
+                                </div>
+                            ) : (
+                                <button 
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (!video.aiVocalRequested) {
+                                            usePlayerStore.getState().updateQueueItem(video.uuid, { aiVocalRequested: true });
+                                        }
+                                        const vidId = video.videoId || video.id;
+                                        useAIVocalStore.getState().processAudio(vidId).catch(console.error);
+                                    }}
+                                    className="px-2 py-0.5 bg-gray-100 dark:bg-zinc-800/80 text-gray-500 dark:text-zinc-400 hover:text-blue-500 hover:bg-blue-50 hover:border-blue-200 dark:hover:bg-blue-500/10 dark:hover:border-blue-800/50 active:scale-95 rounded flex items-center gap-1 border border-transparent transition-all"
+                                >
+                                    <AudioLines className="w-2.5 h-2.5" />
+                                    <span className="text-[9px] font-black uppercase tracking-wide mt-0.5">ตัดเสียงร้อง</span>
+                                </button>
                             )}
                         </div>
-                    ) : (
-                        <span className="truncate">{video.author}</span>
-                    )}
-                </div>
+                    </div>
+                )}
             </div>
 
             {/* Actions / Status */}
-            <div className="flex flex-col items-end justify-center shrink-0 pl-2 space-y-2">
-                <div className="flex items-center gap-1">
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            if (!aiJob || aiJob.status === 'error' || !video.aiVocalRequested) {
-                                if (!video.aiVocalRequested) {
-                                    usePlayerStore.getState().updateQueueItem(video.uuid, { aiVocalRequested: true });
-                                }
-                                const vidId = video.videoId || video.id;
-                                useAIVocalStore.getState().processAudio(vidId).catch(console.error);
-                            }
-                        }}
-                        disabled={aiJob?.status === 'processing' || aiJob?.status === 'ready'}
-                        className={clsx(
-                            "w-8 h-8 flex items-center justify-center rounded-full transition-all flex-shrink-0",
-                            aiJob?.status === 'ready'
-                                ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 cursor-default"
-                                : aiJob?.status === 'processing'
-                                    ? "text-blue-400 cursor-wait"
-                                    : "text-gray-400 dark:text-zinc-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10"
-                        )}
-                        title={
-                            aiJob?.status === 'ready' ? "แยกแทร็กเสียงสำเร็จพร้อมใช้งาน" : 
-                            aiJob?.status === 'processing' ? "กำลังแยกแทร็กเสียง..." : 
-                            "สั่งแยกแทร็กเสียงร้องด้วย AI"
-                        }
-                    >
-                        {aiJob?.status === 'ready' ? (
-                            <AudioWaveform className="w-4 h-4" />
-                        ) : aiJob?.status === 'processing' ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                            <AudioLines className="w-4 h-4" />
-                        )}
-                    </button>
-
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            removeFromQueue(video.uuid);
-                        }}
+            <div className="flex items-center justify-center shrink-0 pl-1">
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        removeFromQueue(video.uuid);
+                    }}
                         className="w-8 h-8 flex items-center justify-center text-gray-400 dark:text-zinc-500 hover:text-red-500 dark:hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-all flex-shrink-0"
                         title="ลบออกจากคิว"
                     >

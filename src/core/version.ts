@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.112";
+export const SYSTEM_VERSION = "5.5.113";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "v5.5.113 (QueueItem AI UX Polish)",
+        date: "18 ก.ค. 2569",
+        changes: [
+            "UX: Redesigned the AI Vocal Separation button in the Queue list to use clear text labels ('ตัดเสียงร้อง', 'แยกเสียงแล้ว') instead of ambiguous icons.",
+            "UI: Moved the AI button to sit inline with the artist name, freeing up horizontal space for longer song titles.",
+            "UI: Replaced the standalone progress bar with an inline text-based percentage for a cleaner flat design aesthetic."
+        ],
+        recent_updates: "Redesigned AI Separation Badges"
+    },
     {
         version: "v5.5.112 (Fix Mixer Popup z-index)",
         date: "18 ก.ค. 2569",
