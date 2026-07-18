@@ -1,5 +1,5 @@
 import React from "react";
-import { ListMusic, Trash2, ChevronDown, Sparkles, Loader2, Wand2, MicVocal, GripVertical } from "lucide-react";
+import { ListMusic, Trash2, ChevronDown, Loader2, AudioLines, AudioWaveform, GripVertical } from "lucide-react";
 import { usePlayerStore } from "../stores/usePlayerStore";
 import { useAIVocalStore } from "../../../stores/useAIVocalStore";
 import { useUIStore } from "../../../stores/useUIStore";
@@ -95,12 +95,12 @@ export function QueueList() {
                                 </div>
 
                                 {/* Thumbnail */}
-                                <div className="relative w-12 h-12 rounded-lg overflow-hidden shrink-0 shadow-sm">
+                                <div className="relative w-24 h-16 rounded-lg overflow-hidden shrink-0 shadow-sm border border-black/5 dark:border-white/5 bg-black/5 dark:bg-white/5">
                                     <Image
                                         src={video.thumbnail || `https://i.ytimg.com/vi/${video.videoId || video.id}/default.jpg`}
                                         alt={video.title}
                                         fill
-                                        sizes="48px"
+                                        sizes="96px"
                                         className="object-cover"
                                         unoptimized
                                         onError={(e) => {
@@ -116,18 +116,13 @@ export function QueueList() {
                                 <div className="flex-1 min-w-0 ml-3">
                                     <h4 className="text-[14px] font-black text-black dark:text-white line-clamp-1 leading-snug mb-0.5 flex items-center gap-2">
                                         <span className="truncate">{video.title}</span>
-                                        {video.aiVocalRequested && (
-                                            <span className="shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-pink-100 dark:bg-pink-900/30 text-pink-500">
-                                                <Sparkles className="w-3 h-3" />
-                                            </span>
-                                        )}
                                     </h4>
                                     <div className="flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-zinc-500 font-medium">
                                         <span className="truncate">{video.author}</span>
                                         {video.aiVocalRequested && aiJob && aiJob.status !== 'ready' && (
                                             <>
                                                 <span>•</span>
-                                                <span className={clsx("flex items-center gap-1 truncate", aiJob.status === 'error' ? 'text-red-500' : 'text-pink-500')}>
+                                                <span className={clsx("flex items-center gap-1 truncate", aiJob.status === 'error' ? 'text-red-500' : 'text-blue-500')}>
                                                     {aiJob.status === 'processing' && <Loader2 className="w-3 h-3 animate-spin" />}
                                                     {aiJob.status === 'error' ? 'เกิดข้อผิดพลาด' : `กำลังแยกเสียง ${aiJob.progress.toFixed(0)}%`}
                                                 </span>
@@ -138,12 +133,6 @@ export function QueueList() {
 
                                 {/* Actions / Status */}
                                 <div className="flex flex-col items-end justify-center shrink-0 pl-2 space-y-2">
-                                    {isCurrent && (
-                                        <div className="px-2 py-1 rounded bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 text-[9px] font-black tracking-wider uppercase flex items-center gap-1 shadow-sm">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>
-                                            PLAYING
-                                        </div>
-                                    )}
                                     <div className="flex items-center gap-1">
                                         <button
                                             onClick={(e) => {
@@ -160,23 +149,23 @@ export function QueueList() {
                                             className={clsx(
                                                 "w-8 h-8 flex items-center justify-center rounded-full transition-all flex-shrink-0",
                                                 aiJob?.status === 'ready'
-                                                    ? "bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400 cursor-default"
+                                                    ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 cursor-default"
                                                     : aiJob?.status === 'processing'
-                                                        ? "text-pink-400 cursor-wait"
-                                                        : "text-gray-400 dark:text-zinc-500 hover:text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-500/10"
+                                                        ? "text-blue-400 cursor-wait"
+                                                        : "text-gray-400 dark:text-zinc-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10"
                                             )}
                                             title={
-                                                aiJob?.status === 'ready' ? "แยกเสียงร้องสำเร็จพร้อมใช้งาน" : 
-                                                aiJob?.status === 'processing' ? "กำลังแยกเสียง..." : 
-                                                "สั่งแยกเสียงร้องด้วย AI"
+                                                aiJob?.status === 'ready' ? "แยกแทร็กเสียงสำเร็จพร้อมใช้งาน" : 
+                                                aiJob?.status === 'processing' ? "กำลังแยกแทร็กเสียง..." : 
+                                                "สั่งแยกแทร็กเสียงร้องด้วย AI"
                                             }
                                         >
                                             {aiJob?.status === 'ready' ? (
-                                                <MicVocal className="w-4 h-4" />
+                                                <AudioWaveform className="w-4 h-4" />
                                             ) : aiJob?.status === 'processing' ? (
                                                 <Loader2 className="w-4 h-4 animate-spin" />
                                             ) : (
-                                                <Wand2 className="w-4 h-4" />
+                                                <AudioLines className="w-4 h-4" />
                                             )}
                                         </button>
 
@@ -195,9 +184,9 @@ export function QueueList() {
                                 
                                 {/* Thin Progress Bar at bottom of item */}
                                 {video.aiVocalRequested && aiJob?.status === 'processing' && (
-                                    <div className="absolute bottom-0 left-0 h-[2px] bg-pink-500/20 w-full">
+                                    <div className="absolute bottom-0 left-0 h-[2px] bg-blue-500/20 w-full">
                                         <div 
-                                            className="h-full bg-pink-500 transition-all duration-500 ease-out"
+                                            className="h-full bg-blue-500 transition-all duration-500 ease-out"
                                             style={{ width: `${aiJob.progress}%` }}
                                         />
                                     </div>
