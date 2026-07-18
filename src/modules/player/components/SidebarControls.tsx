@@ -179,6 +179,33 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             textColor: isAiReady ? (showVocalMixer ? "text-black dark:text-white" : "text-black/60 dark:text-zinc-400") : "text-gray-300 dark:text-zinc-600",
             disabled: !isAiReady,
             ref: vocalBtnRef
+        },
+        {
+            id: 'volume',
+            icon: isMuted ? VolumeX : Volume2,
+            label: "เสียง",
+            onClick: () => {
+                if (isConnected) {
+                    cast.setMuted(!isMuted);
+                } else {
+                    setMuted(!isMuted);
+                }
+            },
+            active: !isMuted,
+        },
+        {
+            id: 'fullscreen',
+            icon: Maximize,
+            label: "เต็มจอ",
+            onClick: () => triggerFullscreen(),
+            active: false,
+        },
+        {
+            id: 'cast',
+            icon: Cast,
+            label: "CAST",
+            onClick: () => setCastModalOpen(true),
+            active: isAnyCastOn,
         }
     ];
 

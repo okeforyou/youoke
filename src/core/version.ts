@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.109";
+export const SYSTEM_VERSION = "5.5.110";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "v5.5.110 (Restore Player Controls)",
+        date: "18 ก.ค. 2569",
+        changes: [
+            "UI: Restored Fullscreen, CAST, and Volume (Mute) buttons to SidebarControls.",
+            "UX: Grouped AI Mixer controls with standard player controls for a unified interface."
+        ],
+        recent_updates: "Restored Fullscreen, CAST, and Volume controls"
+    },
     {
         version: "v5.5.109 (Queue Drag & Drop UX Polish)",
         date: "18 ก.ค. 2569",
