@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.107";
+export const SYSTEM_VERSION = "5.5.108";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,17 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "v5.5.108 (Drag & Drop Queue Sorting)",
+        date: "18 ก.ค. 2569",
+        changes: [
+            "UI: Restored Drag & Drop functionality in QueueList using dnd-kit.",
+            "UX: Locked the currently playing song from being dragged, allowing users to safely reorder upcoming songs.",
+            "UI: Replaced Next/Image with standard img tags for thumbnails to prevent hydration errors and improve visual consistency.",
+            "CLEANUP: Removed absolute bottom progress bars in favor of inline AI vocal status indicators."
+        ],
+        recent_updates: "Restored Drag & Drop Queue Sorting"
+    },
     {
         version: "v5.5.107 (Isolated AI Vocal Mode)",
         date: "17 ก.ค. 2569",
