@@ -38,23 +38,23 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
         <div 
             ref={setNodeRef}
             style={style}
+            {...dragAttributes}
+            {...dragListeners}
             className={clsx(
-                "group flex items-center p-3 rounded-2xl border transition-all cursor-pointer relative",
+                "group flex items-center p-3 rounded-2xl border transition-colors relative",
+                !isCurrent && "cursor-grab active:cursor-grabbing touch-none",
                 isCurrent 
-                    ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 ring-1 ring-blue-500"
+                    ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 ring-1 ring-blue-500 cursor-pointer"
                     : "bg-white dark:bg-zinc-900 border-gray-100 dark:border-zinc-800 hover:border-gray-200 dark:hover:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800/50"
             )}
             onClick={() => setCurrentIndex(actualIndex)}
         >
-            {/* Drag Handle */}
+            {/* Drag Handle Indicator */}
             {isCurrent ? (
                 <div className="w-5 shrink-0" />
             ) : (
                 <div 
-                    {...dragAttributes}
-                    {...dragListeners}
-                    className="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 w-5 flex items-center justify-center text-gray-300 hover:text-gray-500 shrink-0 cursor-grab active:cursor-grabbing touch-none"
-                    onClick={(e) => e.stopPropagation()}
+                    className="w-5 flex items-center justify-center text-gray-300 group-hover:text-gray-400 shrink-0 transition-colors"
                 >
                     <GripVertical size={16} />
                 </div>

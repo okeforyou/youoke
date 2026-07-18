@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.108";
+export const SYSTEM_VERSION = "5.5.109";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "v5.5.109 (Queue Drag & Drop UX Polish)",
+        date: "18 ก.ค. 2569",
+        changes: [
+            "UX: Made the entire queue item draggable instead of just the grip handle for easier reordering.",
+            "UI: Removed `transition-all` on queue items to prevent the drag transform from animating, eliminating the sluggish 'jumping' effect.",
+            "UI: Made the GripVertical handle permanently visible on upcoming queue items to clearly indicate draggability."
+        ],
+        recent_updates: "Queue Drag & Drop UX Polish"
+    },
     {
         version: "v5.5.108 (Drag & Drop Queue Sorting)",
         date: "18 ก.ค. 2569",
