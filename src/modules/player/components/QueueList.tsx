@@ -114,16 +114,19 @@ export function QueueList() {
                                     <h4 className="text-[14px] font-black text-black dark:text-white line-clamp-1 leading-snug mb-0.5 flex items-center gap-2">
                                         <span className="truncate">{video.title}</span>
                                     </h4>
-                                    <div className="flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-zinc-500 font-medium">
-                                        <span className="truncate">{video.author}</span>
-                                        {video.aiVocalRequested && aiJob && aiJob.status !== 'ready' && (
-                                            <>
-                                                <span>•</span>
-                                                <span className={clsx("flex items-center gap-1 truncate", aiJob.status === 'error' ? 'text-red-500' : 'text-blue-500')}>
-                                                    {aiJob.status === 'processing' && <Loader2 className="w-3 h-3 animate-spin" />}
-                                                    {aiJob.status === 'error' ? 'เกิดข้อผิดพลาด' : `กำลังแยกเสียง ${aiJob.progress.toFixed(0)}%`}
-                                                </span>
-                                            </>
+                                    <div className="flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-zinc-500 font-medium w-full">
+                                        {video.aiVocalRequested && aiJob && aiJob.status !== 'ready' ? (
+                                            <div className={clsx("flex items-center gap-2 w-full", aiJob.status === 'error' ? 'text-red-500' : 'text-blue-500')}>
+                                                {aiJob.status === 'processing' && <Loader2 className="w-3 h-3 animate-spin shrink-0" />}
+                                                <span className="shrink-0">{aiJob.status === 'error' ? 'เกิดข้อผิดพลาด' : `กำลังแยกเสียง ${aiJob.progress.toFixed(0)}%`}</span>
+                                                {aiJob.status === 'processing' && (
+                                                    <div className="flex-1 h-1.5 bg-blue-500/20 rounded-full overflow-hidden mr-2">
+                                                        <div className="h-full bg-blue-500 transition-all duration-500 ease-out" style={{ width: `${aiJob.progress}%` }} />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <span className="truncate">{video.author}</span>
                                         )}
                                     </div>
                                 </div>
@@ -179,15 +182,7 @@ export function QueueList() {
                                     </div>
                                 </div>
                                 
-                                {/* Thin Progress Bar at bottom of item */}
-                                {video.aiVocalRequested && aiJob?.status === 'processing' && (
-                                    <div className="absolute bottom-0 left-0 h-[2px] bg-blue-500/20 w-full">
-                                        <div 
-                                            className="h-full bg-blue-500 transition-all duration-500 ease-out"
-                                            style={{ width: `${aiJob.progress}%` }}
-                                        />
-                                    </div>
-                                )}
+
                             </div>
                         );
                     })
