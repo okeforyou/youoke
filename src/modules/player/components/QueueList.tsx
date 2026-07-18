@@ -1,5 +1,5 @@
 import React from "react";
-import { ListMusic, Trash2, ChevronDown, Sparkles, Loader2 } from "lucide-react";
+import { ListMusic, Trash2, ChevronDown, Sparkles, Loader2, Wand2, MicVocal, GripVertical } from "lucide-react";
 import { usePlayerStore } from "../stores/usePlayerStore";
 import { useAIVocalStore } from "../../../stores/useAIVocalStore";
 import { useUIStore } from "../../../stores/useUIStore";
@@ -89,12 +89,20 @@ export function QueueList() {
                                 )}
                                 onClick={() => setCurrentIndex(actualIndex)}
                             >
+                                {/* Drag Handle Placeholder (visible on hover) */}
+                                <div className="opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 w-5 flex items-center justify-center text-gray-300 hover:text-gray-500 shrink-0">
+                                    <GripVertical size={16} />
+                                </div>
+
                                 {/* Thumbnail */}
-                                <div className="w-24 h-16 rounded-lg overflow-hidden shrink-0 relative bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5">
-                                    <img
-                                        src={video.thumbnail || `https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`}
+                                <div className="relative w-12 h-12 rounded-lg overflow-hidden shrink-0 shadow-sm">
+                                    <Image
+                                        src={video.thumbnail || `https://i.ytimg.com/vi/${video.videoId || video.id}/default.jpg`}
                                         alt={video.title}
-                                        className="object-cover w-full h-full opacity-90 group-hover:opacity-100 transition-opacity"
+                                        fill
+                                        sizes="48px"
+                                        className="object-cover"
+                                        unoptimized
                                         onError={(e) => {
                                             const target = e.target as HTMLImageElement;
                                             if (!target.src.includes('icon-cover.png')) {
@@ -114,36 +122,18 @@ export function QueueList() {
                                             </span>
                                         )}
                                     </h4>
-                                    <p className="text-[11px] text-gray-500 dark:text-zinc-500 truncate font-medium">
-                                        {video.author}
-                                    </p>
-                                    
-                                    {/* AI Processing Progress */}
-                                    {video.aiVocalRequested && aiJob && (
-                                        <div className="mt-1.5 flex flex-col gap-1 pr-2">
-                                            <div className="flex items-center justify-between text-[10px] font-bold">
-                                                <span className={
-                                                    aiJob.status === 'error' ? 'text-red-500' :
-                                                    aiJob.status === 'ready' ? 'text-green-500' :
-                                                    'text-pink-500'
-                                                }>
-                                                    {aiJob.status === 'processing' && <Loader2 className="w-3 h-3 inline mr-1 animate-spin" />}
-                                                    {aiJob.message || (aiJob.status === 'processing' ? 'กำลังแยกเสียง...' : '')}
+                                    <div className="flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-zinc-500 font-medium">
+                                        <span className="truncate">{video.author}</span>
+                                        {video.aiVocalRequested && aiJob && aiJob.status !== 'ready' && (
+                                            <>
+                                                <span>•</span>
+                                                <span className={clsx("flex items-center gap-1 truncate", aiJob.status === 'error' ? 'text-red-500' : 'text-pink-500')}>
+                                                    {aiJob.status === 'processing' && <Loader2 className="w-3 h-3 animate-spin" />}
+                                                    {aiJob.status === 'error' ? 'เกิดข้อผิดพลาด' : `กำลังแยกเสียง ${aiJob.progress.toFixed(0)}%`}
                                                 </span>
-                                                {aiJob.status === 'processing' && (
-                                                    <span className="text-gray-400">{aiJob.progress.toFixed(0)}%</span>
-                                                )}
-                                            </div>
-                                            {aiJob.status === 'processing' && (
-                                                <div className="w-full bg-gray-100 dark:bg-zinc-700 h-1 rounded-full overflow-hidden">
-                                                    <div 
-                                                        className="bg-pink-500 h-full transition-all duration-500 ease-out"
-                                                        style={{ width: `${aiJob.progress}%` }}
-                                                    />
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
+                                            </>
+                                        )}
+                                    </div>
                                 </div>
 
                                 {/* Actions / Status */}
@@ -154,36 +144,43 @@ export function QueueList() {
                                             PLAYING
                                         </div>
                                     )}
-                                    <div className="flex items-center gap-2">
-                                        {aiJob?.status === 'ready' && <span className="px-1.5 py-0.5 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[9px] font-bold rounded uppercase">Ready</span>}
-                                        {aiJob?.status === 'error' && <span className="px-1.5 py-0.5 bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-[9px] font-bold rounded uppercase">Error</span>}
-                                        
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                if (!aiJob || aiJob.status === 'error' || !video.aiVocalRequested) {
-                                                    if (!video.aiVocalRequested) {
-                                                        usePlayerStore.getState().updateQueueItem(video.uuid, { aiVocalRequested: true });
+                                    <div className="flex items-center gap-1">
+                                        {!isKaraoke && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    if (!aiJob || aiJob.status === 'error' || !video.aiVocalRequested) {
+                                                        if (!video.aiVocalRequested) {
+                                                            usePlayerStore.getState().updateQueueItem(video.uuid, { aiVocalRequested: true });
+                                                        }
+                                                        const vidId = video.videoId || video.id;
+                                                        useAIVocalStore.getState().processAudio(vidId).catch(console.error);
                                                     }
-                                                    const vidId = video.videoId || video.id;
-                                                    useAIVocalStore.getState().processAudio(vidId).catch(console.error);
+                                                }}
+                                                disabled={aiJob?.status === 'processing' || aiJob?.status === 'ready'}
+                                                className={clsx(
+                                                    "w-8 h-8 flex items-center justify-center rounded-full transition-all flex-shrink-0",
+                                                    aiJob?.status === 'ready'
+                                                        ? "bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400 cursor-default"
+                                                        : aiJob?.status === 'processing'
+                                                            ? "text-pink-400 cursor-wait"
+                                                            : "text-gray-400 dark:text-zinc-500 hover:text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-500/10"
+                                                )}
+                                                title={
+                                                    aiJob?.status === 'ready' ? "แยกเสียงร้องสำเร็จพร้อมใช้งาน" : 
+                                                    aiJob?.status === 'processing' ? "กำลังแยกเสียง..." : 
+                                                    "สั่งแยกเสียงร้องด้วย AI"
                                                 }
-                                            }}
-                                            disabled={aiJob?.status === 'processing' || aiJob?.status === 'ready'}
-                                            className={clsx(
-                                                "w-8 h-8 flex items-center justify-center rounded-full transition-all flex-shrink-0",
-                                                (aiJob?.status === 'processing' || aiJob?.status === 'ready')
-                                                    ? "bg-pink-100 text-pink-300 dark:bg-pink-900/20 dark:text-pink-700 cursor-not-allowed"
-                                                    : "text-gray-400 dark:text-zinc-500 hover:text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-500/10"
-                                            )}
-                                            title={
-                                                aiJob?.status === 'ready' ? "แยกเสียงแล้ว" : 
-                                                aiJob?.status === 'processing' ? "กำลังแยกเสียง..." : 
-                                                "แยกเสียงร้องด้วย AI"
-                                            }
-                                        >
-                                            <Sparkles className="w-4 h-4" />
-                                        </button>
+                                            >
+                                                {aiJob?.status === 'ready' ? (
+                                                    <MicVocal className="w-4 h-4" />
+                                                ) : aiJob?.status === 'processing' ? (
+                                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                                ) : (
+                                                    <Wand2 className="w-4 h-4" />
+                                                )}
+                                            </button>
+                                        )}
 
                                         <button
                                             onClick={(e) => {
@@ -197,6 +194,16 @@ export function QueueList() {
                                         </button>
                                     </div>
                                 </div>
+                                
+                                {/* Thin Progress Bar at bottom of item */}
+                                {video.aiVocalRequested && aiJob?.status === 'processing' && (
+                                    <div className="absolute bottom-0 left-0 h-[2px] bg-pink-500/20 w-full">
+                                        <div 
+                                            className="h-full bg-pink-500 transition-all duration-500 ease-out"
+                                            style={{ width: `${aiJob.progress}%` }}
+                                        />
+                                    </div>
+                                )}
                             </div>
                         );
                     })
