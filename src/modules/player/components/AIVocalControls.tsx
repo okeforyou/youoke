@@ -17,6 +17,13 @@ export const AIVocalControls = ({ mobile }: AIVocalControlsProps) => {
     const currentJob = currentVideoId ? aiVocal.jobs[currentVideoId] : null;
     const isActive = !!currentVideo?.aiVocalRequested;
 
+    // Auto-resume job if requested but missing in store (e.g. page refresh)
+    useEffect(() => {
+        if (isActive && currentVideoId && !currentJob) {
+            aiVocal.processAudio(currentVideoId).catch(console.error);
+        }
+    }, [isActive, currentVideoId, currentJob, aiVocal]);
+
     const [showSlider, setShowSlider] = useState(false);
     const popoverRef = useRef<HTMLDivElement>(null);
 
@@ -36,11 +43,13 @@ export const AIVocalControls = ({ mobile }: AIVocalControlsProps) => {
     if (!currentVideo) return null;
 
     const handleToggle = async () => {
-        if (!isActive) {
+        if (!isActive || !currentJob || currentJob.status === 'error') {
             // Usually triggered from queue now, but if somehow they click it here:
             if (currentVideoId) {
+                if (!isActive) {
+                    usePlayerStore.getState().updateQueueItem(currentVideo!.uuid, { aiVocalRequested: true });
+                }
                 await aiVocal.processAudio(currentVideoId);
-                usePlayerStore.getState().updateQueueItem(currentVideo!.uuid, { aiVocalRequested: true });
             }
         } else if (currentJob?.status === 'ready') {
             // Toggle Slider

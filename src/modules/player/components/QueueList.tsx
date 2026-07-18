@@ -161,20 +161,26 @@ export function QueueList() {
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                if (!video.aiVocalRequested) {
-                                                    usePlayerStore.getState().updateQueueItem(video.uuid, { aiVocalRequested: true });
+                                                if (!aiJob || aiJob.status === 'error' || !video.aiVocalRequested) {
+                                                    if (!video.aiVocalRequested) {
+                                                        usePlayerStore.getState().updateQueueItem(video.uuid, { aiVocalRequested: true });
+                                                    }
                                                     const vidId = video.videoId || video.id;
                                                     useAIVocalStore.getState().processAudio(vidId).catch(console.error);
                                                 }
                                             }}
+                                            disabled={aiJob?.status === 'processing' || aiJob?.status === 'ready'}
                                             className={clsx(
                                                 "w-8 h-8 flex items-center justify-center rounded-full transition-all flex-shrink-0",
-                                                video.aiVocalRequested || aiJob?.status === 'ready'
-                                                    ? "bg-pink-100 text-pink-500 dark:bg-pink-900/20"
+                                                (aiJob?.status === 'processing' || aiJob?.status === 'ready')
+                                                    ? "bg-pink-100 text-pink-300 dark:bg-pink-900/20 dark:text-pink-700 cursor-not-allowed"
                                                     : "text-gray-400 dark:text-zinc-500 hover:text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-500/10"
                                             )}
-                                            title="แยกเสียงร้องด้วย AI"
-                                            disabled={video.aiVocalRequested}
+                                            title={
+                                                aiJob?.status === 'ready' ? "แยกเสียงแล้ว" : 
+                                                aiJob?.status === 'processing' ? "กำลังแยกเสียง..." : 
+                                                "แยกเสียงร้องด้วย AI"
+                                            }
                                         >
                                             <Sparkles className="w-4 h-4" />
                                         </button>

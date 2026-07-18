@@ -62,7 +62,16 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
 
     const aiVocalStore = useAIVocalStore();
     const activeVideoId = currentVideo?.videoId || currentVideo?.id;
-    const isAiReady = currentVideo?.aiVocalRequested && activeVideoId && aiVocalStore.jobs[activeVideoId]?.status === 'ready';
+    const aiJob = activeVideoId ? aiVocalStore.jobs[activeVideoId] : null;
+
+    // Auto-resume job if requested but missing in store (e.g. page refresh)
+    useEffect(() => {
+        if (currentVideo?.aiVocalRequested && activeVideoId && !aiJob) {
+            aiVocalStore.processAudio(activeVideoId).catch(console.error);
+        }
+    }, [currentVideo?.aiVocalRequested, activeVideoId, aiJob, aiVocalStore]);
+
+    const isAiReady = currentVideo?.aiVocalRequested && activeVideoId && aiJob?.status === 'ready';
 
 
 
