@@ -247,16 +247,7 @@ export default function SearchResultGrid({
                         <ListPlus className="w-4 h-4" />
                       </button>
 
-                      {/* Extract Vocals Button for Grid (AI) */}
-                      {!isKaraoke && (
-                        <button
-                          onClick={(e) => handleExtractVocals(e, rcm)}
-                          className="absolute right-9 top-2 w-7 h-7 flex items-center justify-center rounded-full bg-pink-50 dark:bg-pink-900/20 text-pink-500 hover:bg-pink-500 hover:text-white transition-colors hover:shadow-md z-10"
-                          title="แยกเสียงร้องด้วย AI"
-                        >
-                          <Sparkles className="w-3.5 h-3.5" />
-                        </button>
-                      )}
+
                     </div>
                   </div>
                 </div>

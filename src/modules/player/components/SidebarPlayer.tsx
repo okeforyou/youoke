@@ -573,25 +573,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                 />
             )}
 
-            {/* 🛡️ IDENTITY SHIELD BADGE (YouTube Shell Strategy) */}
-            {mounted && user?.isYouTubeConnected && currentSource && (
-                <div 
-                    className="absolute top-3 left-3 z-[60] flex items-center gap-2 px-3 py-1.5 bg-black/40 backdrop-blur-md border border-white/10 rounded-full animate-in fade-in slide-in-from-left-4 duration-700 hover:bg-black/60 transition-colors group/identity"
-                    title={`เล่นผ่านสิทธิของคุณ: ${user.youtubeEmail || user.email}`}
-                >
-                    <div className="relative w-2 h-2">
-                        <div className="absolute inset-0 bg-green-500 rounded-full animate-ping opacity-40"></div>
-                        <div className="absolute inset-0 bg-green-500 rounded-full border border-green-400/20"></div>
-                    </div>
-                    <span className="text-[10px] font-black text-white/80 uppercase tracking-widest flex items-center gap-1.5">
-                        <LockClosedIcon className="w-3 h-3 text-primary" />
-                        <span className="max-w-[120px] truncate hidden sm:inline-block">
-                            {user.youtubeEmail || (typeof user.email === 'string' ? safeSplit(user.email, '@')[0] : 'USER')}
-                        </span>
-                        <span className="sm:hidden">SHELLED</span>
-                    </span>
-                </div>
-            )}
+
 
             {/* Limit Indicator Removed (v2.10.3) */}
 

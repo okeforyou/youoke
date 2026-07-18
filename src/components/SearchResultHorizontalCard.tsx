@@ -54,19 +54,7 @@ export default function SearchResultHorizontalCard({
           </h2>
           {/* Removed author/uploader info */}
 
-          {/* Extract Vocals Button (AI) */}
-          {onExtractVocals && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onExtractVocals(e);
-              }}
-              className="absolute right-10 top-1/2 -translate-y-1/2 p-2 hover:bg-pink-100 dark:hover:bg-pink-900/30 rounded-full text-pink-500 dark:text-pink-400 transition"
-              title="แยกเสียงร้องด้วย AI"
-            >
-              <Sparkles className="w-4 h-4" />
-            </button>
-          )}
+
 
           {/* Add to Playlist Button */}
           {onAddToPlaylist && (

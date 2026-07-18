@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Mic2, Loader2, Sparkles, Volume2, VolumeX } from 'lucide-react';
+import { Mic2, Loader2, Sparkles, Volume2, VolumeX, Music } from 'lucide-react';
 import { useAIVocalStore } from '../../../stores/useAIVocalStore';
 import { usePlayerStore } from '../stores/usePlayerStore';
 

@@ -122,7 +122,7 @@ export const useAIVocalStore = create<AIVocalState>((set, get) => ({
             isPolling = false;
             const data = await res.json();
             
-            if (res.ok && (data.status === "success" || data.status === "cached")) {
+            if (res.ok && (data.status === "success" || data.status === "cached" || data.status === "already_exists")) {
                 set((state) => ({
                     jobs: {
                         ...state.jobs,
