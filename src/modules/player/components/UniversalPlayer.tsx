@@ -295,7 +295,6 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
             )}
             {activeVideoId ? (
                     <YouTube
-                        key={activeVideoId}
                         videoId={activeVideoId}
                         opts={opts}
                         className="w-full h-full"

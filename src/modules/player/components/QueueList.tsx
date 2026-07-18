@@ -95,14 +95,11 @@ export function QueueList() {
                                 </div>
 
                                 {/* Thumbnail */}
-                                <div className="relative w-24 h-16 rounded-lg overflow-hidden shrink-0 shadow-sm border border-black/5 dark:border-white/5 bg-black/5 dark:bg-white/5">
-                                    <Image
-                                        src={video.thumbnail || `https://i.ytimg.com/vi/${video.videoId || video.id}/default.jpg`}
+                                <div className="w-24 h-16 rounded-lg overflow-hidden shrink-0 relative bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5">
+                                    <img
+                                        src={video.thumbnail || `https://i.ytimg.com/vi/${video.videoId || video.id}/mqdefault.jpg`}
                                         alt={video.title}
-                                        fill
-                                        sizes="96px"
-                                        className="object-cover"
-                                        unoptimized
+                                        className="object-cover w-full h-full opacity-90 group-hover:opacity-100 transition-opacity"
                                         onError={(e) => {
                                             const target = e.target as HTMLImageElement;
                                             if (!target.src.includes('icon-cover.png')) {
