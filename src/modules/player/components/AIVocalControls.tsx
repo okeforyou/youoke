@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Mic2, Loader2, Sparkles, Volume2, VolumeX, Music } from 'lucide-react';
+import { MicVocal, Loader2, Sparkles, Volume2, VolumeX, Music } from 'lucide-react';
 import { useAIVocalStore } from '../../../stores/useAIVocalStore';
 import { usePlayerStore } from '../stores/usePlayerStore';
 
@@ -71,7 +71,7 @@ export const AIVocalControls = ({ mobile }: AIVocalControlsProps) => {
                     <Loader2 size={18} className="animate-spin" />
                 ) : (
                     <>
-                        <Mic2 size={18} />
+                        <MicVocal size={18} />
                         {!isActive && (
                             <Sparkles size={10} className="absolute top-1 right-1 text-yellow-500" />
                         )}
@@ -108,7 +108,7 @@ export const AIVocalControls = ({ mobile }: AIVocalControlsProps) => {
                     <div className="space-y-2 mb-4">
                         <div className="flex items-center justify-between text-xs font-bold text-gray-600">
                             <span className="flex items-center gap-1.5">
-                                <Mic2 size={12} /> เสียงร้อง (Vocals)
+                                <MicVocal size={12} /> เสียงร้อง (Vocals)
                             </span>
                             <span>{aiVocal.volumes.vocals}%</span>
                         </div>
