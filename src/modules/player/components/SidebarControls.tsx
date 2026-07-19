@@ -287,9 +287,8 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                         </button>
                     </div>
 
-                    {/* AI Controls */}
-                    {isAiReady && (
-                        <>
+                    {/* AI & Volume Controls (Always Visible) */}
+                    <>
                             {/* Vocals */}
                             <div className="mb-5">
                                 <div className="flex justify-between text-xs font-bold mb-2 text-black dark:text-white">
@@ -312,7 +311,6 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                 </div>
                             </div>
                         </>
-                    )}
 
                     {/* Lyrics Toggle */}
                     <div className={clsx("mt-5 pt-5", isAiReady || isConnected ? "border-t border-gray-100 dark:border-zinc-800" : "")}>

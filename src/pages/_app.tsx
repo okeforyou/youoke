@@ -185,6 +185,7 @@ function App({ Component, pageProps }: AppProps) {
           </QueryClientProvider>
           <Analytics />
           <GlobalConfirmModal />
+          <VocalModeModal />
         </GlobalErrorBoundary>
       </AuthContextProvider >
     </ToastProvider >
