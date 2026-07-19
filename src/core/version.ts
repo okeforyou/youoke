@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.117";
+export const SYSTEM_VERSION = "5.5.119";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "v5.5.119 (Lyrics Bug Fix & Sync Logic)",
+        date: "19 ก.ค. 2569",
+        changes: [
+            "Hotfix: Resolved 'showLyrics is not defined' crash in SidebarControls.",
+            "Bugfix: Implemented safe track change logic to prevent playback looping when changing songs."
+        ],
+        recent_updates: "Fixed Lyrics toggle crash and sync looping."
+    },
     {
         version: "v5.5.117 (Mixer & Vocals UI Simplification)",
         date: "19 ก.ค. 2569",

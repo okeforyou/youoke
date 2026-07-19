@@ -54,6 +54,8 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
         setVolume
     } = useMixerStore();
 
+    const { isEnabled: showLyrics, toggleLyrics } = useLyricsStore();
+
     const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
     const { setCastModalOpen } = useUIStore();
     const cast = useCast();

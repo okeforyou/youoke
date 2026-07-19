@@ -11,6 +11,7 @@ import { useSystemConfig } from "../../../hooks/useSystemConfig";
 import { useUIStore } from "../../../stores/useUIStore";
 import { safeSplit } from '@/utils/stringUtils';
 import { useAIVocalStore } from '../../../stores/useAIVocalStore';
+import { AIVocalJobsIndicator } from './AIVocalJobsIndicator';
 
 import { useShallow } from 'zustand/react/shallow';
 import { QuotaIndicator } from "./QuotaIndicator";
@@ -20,6 +21,8 @@ import { usePlayerLifecycle } from "../hooks/usePlayerLifecycle";
 import { usePlayerSync } from "../hooks/usePlayerSync";
 import { useAiProcessor } from "../../../hooks/useAiProcessor";
 import { useCast } from "../../../plugins/cast/context/CastContext";
+import { ToastNotification } from './ToastNotification';
+import { MiniControls } from './MiniControls';
 
 import { Tv, Radio, Monitor, Power, PlayCircle } from 'lucide-react';
 
@@ -57,8 +60,6 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
 
     // AI Vocal Store
     const aiVocal = useAIVocalStore();
-    const currentAiJob = currentSource ? aiVocal.jobs[currentSource] : null;
-    const isAiProcessing = currentVideo?.aiVocalRequested && currentAiJob?.status === 'processing';
 
 
 
@@ -345,73 +346,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
         }
     }, [castMode, isMuted]);
     // 🍞 Toast Logic
-    const [showToast, setShowToast] = useState(false);
-    const [toastType, setToastType] = useState<'added' | 'upnext'>('added');
-    const [activeToastVideo, setActiveToastVideo] = useState<any>(null);
-    const [upNextVideo, setUpNextVideo] = useState<any>(null);
-    const hasShownUpNext = useRef<string | null>(null);
-
-    // Update active toast video when showToast becomes true
-    useEffect(() => {
-        if (showToast) {
-            const v = (toastType === 'added' ? currentVideo : upNextVideo);
-            if (v) setActiveToastVideo(v);
-        } else {
-            // Keep the content for 1 second to allow exit animation to finish
-            const timer = setTimeout(() => {
-                setActiveToastVideo(null);
-            }, 1000);
-            return () => clearTimeout(timer);
-        }
-    }, [showToast, toastType, currentVideo, upNextVideo]);
-
-    // Track "Up Next" logic
-
-    // Track "Up Next" logic
-    useEffect(() => {
-        if (!isPlaying || duration <= 0) return;
-
-        // Show Up Next toast 20 seconds before end
-        const timeLeft = duration - currentTime;
-        if (timeLeft > 5 && timeLeft < 20 && queue.length > currentIndex + 1) {
-            const nextVideo = queue[currentIndex + 1];
-            if (hasShownUpNext.current !== nextVideo.uuid) {
-                setUpNextVideo(nextVideo);
-                setToastType('upnext');
-                setShowToast(true);
-                hasShownUpNext.current = nextVideo.uuid;
-
-                // Broadcast to Store & Firebase
-                usePlayerStore.getState().setNotification({
-                    type: 'upnext',
-                    video: nextVideo,
-                    timestamp: Date.now()
-                });
-
-                // Hide after 10 seconds
-                setTimeout(() => setShowToast(false), 10000);
-            }
-        }
-    }, [currentTime, duration, isPlaying, queue, currentIndex]);
-
-    // Clear notification when starting new video
-    useEffect(() => {
-        if (currentVideo) {
-            setToastType('added');
-            setShowToast(true);
-
-            // Broadcast added notification
-            usePlayerStore.getState().setNotification({
-                type: 'added',
-                video: currentVideo,
-                timestamp: Date.now()
-            });
-
-            const timer = setTimeout(() => setShowToast(false), 5000);
-            return () => clearTimeout(timer);
-        }
-    }, [currentVideo?.uuid]);
-
+    // 🍞 Toast Logic (Moved to ToastNotification.tsx)
 
 
     // --- RENDER LOGIC ---
@@ -510,34 +445,8 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
 
             {/* Casting Overlays REMOVED (Phase 6) */}
 
-            {/* 🤖 AI Processing Overlay (While playing but still separating) */}
-            {isAiProcessing && (
-                <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40">
-                    <div className="flex flex-col items-center gap-2 px-5 py-3 bg-black/80 backdrop-blur-md rounded-2xl border border-pink-500/30 shadow-lg shadow-pink-500/20">
-                        <div className="flex items-center gap-2 text-pink-500">
-                            <Sparkles className="w-4 h-4 animate-pulse" />
-                            <span className="text-[12px] font-bold tracking-wide uppercase">
-                                ระบบกำลังแยกเสียงร้อง
-                            </span>
-                            <Loader2 className="w-4 h-4 animate-spin ml-1" />
-                        </div>
-                        
-                        {/* Progress Bar */}
-                        <div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden mt-1">
-                            <div 
-                                className="h-full bg-gradient-to-r from-pink-600 to-pink-400 transition-all duration-500 ease-out relative"
-                                style={{ width: `${currentAiJob.progress}%` }}
-                            >
-                                <div className="absolute inset-0 bg-white/20 animate-pulse" />
-                            </div>
-                        </div>
-                        <div className="w-full flex justify-between text-[10px] text-zinc-400 font-bold px-1">
-                            <span>กำลังประมวลผล AI</span>
-                            <span>{currentAiJob.progress.toFixed(0)}%</span>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* 🤖 AI Processing Background Jobs Tracker */}
+            <AIVocalJobsIndicator />
 
 
             {/* Overlay (Waiting) */}
@@ -578,82 +487,14 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
             {/* Limit Indicator Removed (v2.10.3) */}
 
             {/* 🎯 YOUTUBE-STYLE MINI CONTROLS (Fullscreen Only - Rounded Capsule - VANISHING MODE) */}
-            {
-                !isPassive && layoutMode === 'fullscreen' && (
-                    <div
-                        className={`absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-50 flex items-center gap-1 p-1.5 bg-black/60 backdrop-blur-xl border border-white/10 rounded-full transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] cursor-default ${showMiniControls ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}
-                    >
-                        {/* Play/Pause */}
-                        <button
-                            onClick={handlePlayPause}
-                            className={`w-11 h-11 flex items-center justify-center rounded-full transition-all active:scale-90 ${isPlaying ? 'text-white/70 hover:text-white hover:bg-white/10' : 'bg-primary text-white'}`}
-                            title={isPlaying ? "Pause" : "Play"}
-                        >
-                            {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-1" />}
-                        </button>
+            {/* 🎯 YOUTUBE-STYLE MINI CONTROLS */}
+            {!isPassive && (
+                <MiniControls showMiniControls={showMiniControls} layoutMode={layoutMode} />
+            )}
 
-                        <div className="w-[1px] h-6 bg-white/10 mx-1" />
+            {/* 🏝️ iOS DYNAMIC ISLAND STYLE NOTIFICATION */}
+            {!isPassive && <ToastNotification />}
 
-                        {/* Exit Fullscreen Toggle */}
-                        <button
-                            onClick={toggleFullscreen}
-                            className="w-11 h-11 flex items-center justify-center rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-all active:scale-90"
-                            title="ย่อหน้าจอ"
-                        >
-                            <Minimize2 size={20} />
-                        </button>
-
-                        {/* Exit to Split Mode */}
-                        <button
-                            onClick={() => usePlayerStore.getState().setLayoutMode('split')}
-                            className="w-11 h-11 flex items-center justify-center rounded-full text-red-400 hover:text-white hover:bg-red-500 transition-all active:scale-90"
-                            title="ออกจากหน้าจอเต็มจอ"
-                        >
-                            <X size={20} strokeWidth={3} />
-                        </button>
-                    </div>
-                )
-            }
-
-            {/* 🏝️ iOS DYNAMIC ISLAND STYLE NOTIFICATION (Top-Center) */}
-            {
-                (() => {
-                    if (isPassive || !activeToastVideo) return null;
-                    const thumb = activeToastVideo.thumbnail || (activeToastVideo.videoId ? `https://i.ytimg.com/vi/${activeToastVideo.videoId}/mqdefault.jpg` : "/icon-cover.png");
-
-                    return (
-                        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[110] transition-all duration-[600ms] ease-[cubic-bezier(0.23,1,0.32,1)] ${showToast ? 'opacity-100 translate-y-0 scale-100 blur-0' : 'opacity-0 -translate-y-12 scale-[0.8] pointer-events-none blur-sm'}`}>
-                            <div className="flex items-center gap-3 bg-black/85 backdrop-blur-2xl rounded-full py-2 px-3 pl-2 min-w-[260px] max-w-[90vw]">
-                                {/* Thumbnail (Circular) with Ring */}
-                                <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 shrink-0 relative bg-stone-900 group">
-                                    <img
-                                        src={thumb}
-                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                        alt="Cover"
-                                    />
-                                </div>
-
-                                {/* Info */}
-                                <div className="flex flex-col min-w-0 flex-1 pr-2">
-                                    <div className="flex items-center justify-between gap-3 overflow-hidden">
-                                        <h3 className="text-[13px] font-black text-white leading-tight truncate">
-                                            {activeToastVideo.title || "Unknown Title"}
-                                        </h3>
-                                        {toastType === 'upnext' && (
-                                            <span className="text-[9px] font-black uppercase tracking-tighter shrink-0 px-2 py-0.5 rounded-full bg-amber-500 text-black border border-amber-600/20">
-                                                ถัดไป
-                                            </span>
-                                        )}
-                                    </div>
-                                    <p className="text-[11px] font-bold text-white/50 truncate mt-1">
-                                        {activeToastVideo.author || "Unknown"}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    );
-                })()
-            }
 
         </div >
     );

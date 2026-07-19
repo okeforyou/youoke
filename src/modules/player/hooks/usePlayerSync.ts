@@ -61,6 +61,21 @@ export const usePlayerSync = (
     }));
 
     const isSeekingRef = useRef(false);
+    const lastSourceRef = useRef(currentSource);
+    const isChangingTrackRef = useRef(false);
+
+    // Track change lock to prevent bogus seek commands during player load
+    useEffect(() => {
+        if (lastSourceRef.current !== currentSource) {
+            lastSourceRef.current = currentSource;
+            isChangingTrackRef.current = true;
+            console.log("🔄 Track change detected, locking sync for 3 seconds...");
+            const timer = setTimeout(() => {
+                isChangingTrackRef.current = false;
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [currentSource]);
 
     // ⏱️ Sync Time & Enforce Duration Limit
     useEffect(() => {
@@ -110,6 +125,12 @@ export const usePlayerSync = (
 
             if (typeof target.getCurrentTime === 'function') {
                 const playerTime = target.getCurrentTime();
+                
+                // Prevent seeking if we just changed tracks to avoid loops
+                if (isChangingTrackRef.current) {
+                    return;
+                }
+
                 if (Math.abs(currentTime - playerTime) > 2) {
                     console.log(`⏩ Syncing time: ${playerTime} -> ${currentTime}`);
 
