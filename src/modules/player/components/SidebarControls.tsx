@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Play, Pause, SkipForward, RotateCcw, Volume2, VolumeX, Maximize, Cast, Mic, MicOff, ChevronUp, Mic2, Music, SlidersHorizontal } from "lucide-react";
+import { Play, Pause, SkipForward, RotateCcw, Volume2, VolumeX, Maximize, Cast, Mic, MicOff, ChevronUp, Mic2, Music, SlidersHorizontal, Type } from "lucide-react";
 import { usePlayerStore } from "../stores/usePlayerStore";
+import { useLyricsStore } from "../stores/useLyricsStore";
 import { useMixerStore } from "../stores/useMixerStore";
 import { useShallow } from "zustand/react/shallow";
 import { useUIStore } from "../../../stores/useUIStore";
@@ -295,6 +296,26 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                             </div>
                         </>
                     )}
+
+                    {/* Lyrics Toggle */}
+                    <div className={clsx("mt-5 pt-5", isAiReady || isConnected ? "border-t border-gray-100 dark:border-zinc-800" : "")}>
+                        <div className="flex justify-between text-xs font-bold mb-3 text-black dark:text-white">
+                            <span>เนื้อเพลง (Lyrics)</span>
+                            <span className="text-gray-500">{showLyrics ? 'On' : 'Off'}</span>
+                        </div>
+                        <button 
+                            onClick={toggleLyrics}
+                            className={clsx(
+                                "w-full py-2.5 rounded-xl flex items-center justify-center gap-2 text-xs font-bold transition-colors border",
+                                showLyrics 
+                                    ? "bg-primary text-white border-primary" 
+                                    : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
+                            )}
+                        >
+                            <Type size={16} />
+                            {showLyrics ? "ปิดเนื้อเพลง" : "เปิดเนื้อเพลง"}
+                        </button>
+                    </div>
                 </div>
             )}
         </div>

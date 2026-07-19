@@ -3,6 +3,7 @@ import YouTube from 'react-youtube';
 import { useAIVocalStore } from '../../../stores/useAIVocalStore';
 import { usePlayerStore } from '../stores/usePlayerStore';
 import { MidiCanvasRenderer } from './MidiCanvasRenderer';
+import { LyricsOverlay } from './LyricsOverlay';
 import { useMidiEngine } from '@/context/MidiEngineContext';
 import { playerService } from '../services/playerService';
 import { YouTubeAdapter } from '../adapters/YouTubeAdapter';
@@ -309,6 +310,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                 </div>
             )}
             {activeVideoId ? (
+                <>
                     <YouTube
                         videoId={activeVideoId}
                         opts={opts}
@@ -318,6 +320,12 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                         onStateChange={handleYouTubeStateChange}
                         onEnd={onEnded}
                     />
+                    <LyricsOverlay 
+                        playerRef={ytPlayerRef} 
+                        activeVideoId={activeVideoId} 
+                        videoTitle={currentVideo?.title} 
+                    />
+                </>
             ) : (
                 <div className="w-full h-full bg-black flex items-center justify-center">
                     <div className="flex flex-col items-center gap-4 opacity-20">
