@@ -32,7 +32,7 @@ interface QueueItemProps {
 }
 
 function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragListeners, setNodeRef, style }: QueueItemProps) {
-    const { removeFromQueue, setCurrentIndex } = usePlayerStore();
+    const { removeFromQueue, setCurrentIndex, isKaraoke } = usePlayerStore();
     
     return (
         <div 
@@ -97,33 +97,35 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                             {video.author}
                         </span>
                         
-                        <div className="shrink-0 ml-auto flex items-center">
-                            {aiJob?.status === 'ready' ? (
-                                <div className="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/20 text-blue-500 rounded flex items-center gap-1 border border-blue-100 dark:border-blue-800/50">
-                                    <AudioWaveform className="w-2.5 h-2.5" />
-                                    <span className="text-[9px] font-black uppercase tracking-wide mt-0.5">แยกเสียงแล้ว</span>
-                                </div>
-                            ) : aiJob?.status === 'error' ? (
-                                <div className="px-2 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-500 rounded flex items-center gap-1 border border-red-100 dark:border-red-800/50">
-                                    <span className="text-[9px] font-black uppercase tracking-wide mt-0.5">ล้มเหลว</span>
-                                </div>
-                            ) : (
-                                <button 
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        if (!video.aiVocalRequested) {
-                                            usePlayerStore.getState().updateQueueItem(video.uuid, { aiVocalRequested: true });
-                                        }
-                                        const vidId = video.videoId || video.id;
-                                        useAIVocalStore.getState().processAudio(vidId).catch(console.error);
-                                    }}
-                                    className="px-2 py-0.5 bg-gray-100 dark:bg-zinc-800/80 text-gray-500 dark:text-zinc-400 hover:text-blue-500 hover:bg-blue-50 hover:border-blue-200 dark:hover:bg-blue-500/10 dark:hover:border-blue-800/50 active:scale-95 rounded flex items-center gap-1 border border-transparent transition-all"
-                                >
-                                    <AudioLines className="w-2.5 h-2.5" />
-                                    <span className="text-[9px] font-black uppercase tracking-wide mt-0.5">ตัดเสียงร้อง</span>
-                                </button>
-                            )}
-                        </div>
+                        {!isKaraoke && (
+                            <div className="shrink-0 ml-auto flex items-center">
+                                {aiJob?.status === 'ready' ? (
+                                    <div className="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/20 text-blue-500 rounded flex items-center gap-1 border border-blue-100 dark:border-blue-800/50">
+                                        <AudioWaveform className="w-2.5 h-2.5" />
+                                        <span className="text-[9px] font-black uppercase tracking-wide mt-0.5">แยกเสียงแล้ว</span>
+                                    </div>
+                                ) : aiJob?.status === 'error' ? (
+                                    <div className="px-2 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-500 rounded flex items-center gap-1 border border-red-100 dark:border-red-800/50">
+                                        <span className="text-[9px] font-black uppercase tracking-wide mt-0.5">ล้มเหลว</span>
+                                    </div>
+                                ) : (
+                                    <button 
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (!video.aiVocalRequested) {
+                                                usePlayerStore.getState().updateQueueItem(video.uuid, { aiVocalRequested: true });
+                                            }
+                                            const vidId = video.videoId || video.id;
+                                            useAIVocalStore.getState().processAudio(vidId).catch(console.error);
+                                        }}
+                                        className="px-2 py-0.5 bg-gray-100 dark:bg-zinc-800/80 text-gray-500 dark:text-zinc-400 hover:text-blue-500 hover:bg-blue-50 hover:border-blue-200 dark:hover:bg-blue-500/10 dark:hover:border-blue-800/50 active:scale-95 rounded flex items-center gap-1 border border-transparent transition-all"
+                                    >
+                                        <AudioLines className="w-2.5 h-2.5" />
+                                        <span className="text-[9px] font-black uppercase tracking-wide mt-0.5">ตัดเสียงร้อง</span>
+                                    </button>
+                                )}
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
