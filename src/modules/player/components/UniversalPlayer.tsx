@@ -124,7 +124,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
     }, [midiTime, currentVideo, isMidiPlaying]);
 
     // Helper to check if any track is soloed
-    const isAnySolo = trackStates.vocals.solo || trackStates.instrumental.solo || trackStates.drums.solo || trackStates.bass.solo || trackStates.other.solo;
+    const isAnySolo = trackStates?.vocals?.solo || trackStates?.instrumental?.solo || trackStates?.drums?.solo || trackStates?.bass?.solo || trackStates?.other?.solo;
 
     // Resilient Volume Sync (AI Tracks)
     useEffect(() => {
@@ -134,11 +134,11 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                 ref.current.muted = muted || (isAnySolo && !solo) || isMuted || forceMute;
             }
         };
-        syncTrack(vocalRef, volumes.vocals, trackStates.vocals.muted, trackStates.vocals.solo);
-        syncTrack(instrumentalRef, volumes.instrumental, trackStates.instrumental.muted, trackStates.instrumental.solo);
-        syncTrack(drumsRef, volumes.drums, trackStates.drums.muted, trackStates.drums.solo);
-        syncTrack(bassRef, volumes.bass, trackStates.bass.muted, trackStates.bass.solo);
-        syncTrack(otherRef, volumes.other, trackStates.other.muted, trackStates.other.solo);
+        syncTrack(vocalRef, volumes?.vocals ?? 100, trackStates?.vocals?.muted ?? false, trackStates?.vocals?.solo ?? false);
+        syncTrack(instrumentalRef, volumes?.instrumental ?? 100, trackStates?.instrumental?.muted ?? false, trackStates?.instrumental?.solo ?? false);
+        syncTrack(drumsRef, volumes?.drums ?? 100, trackStates?.drums?.muted ?? false, trackStates?.drums?.solo ?? false);
+        syncTrack(bassRef, volumes?.bass ?? 100, trackStates?.bass?.muted ?? false, trackStates?.bass?.solo ?? false);
+        syncTrack(otherRef, volumes?.other ?? 100, trackStates?.other?.muted ?? false, trackStates?.other?.solo ?? false);
     }, [volumes, trackStates, isMuted, forceMute, isAnySolo]);
 
     // Resilient Volume Sync (YouTube Track)
