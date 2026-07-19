@@ -70,7 +70,7 @@ export const LyricsOverlay = ({ playerRef, activeVideoId, videoTitle }: LyricsOv
     const bottomLine = lyrics[bottomLineIndex];
 
     const renderLine = (line: any, index: number, align: 'left' | 'right') => {
-        if (!line) return <div className="min-h-[4rem] md:min-h-[6rem] w-full" />; // Empty slot
+        if (!line) return <div className="w-full" style={{ minHeight: 'clamp(3rem, 12cqw, 6rem)' }} />; // Empty slot
 
         const adjustedTime = currentTime - syncOffset;
         const nextTime = index < lyrics.length - 1 ? lyrics[index + 1].time : line.time + 5;
@@ -88,15 +88,17 @@ export const LyricsOverlay = ({ playerRef, activeVideoId, videoTitle }: LyricsOv
         const isActive = index === currentLineIndex;
 
         return (
-            <div className={`flex w-full ${align === 'left' ? 'justify-start' : 'justify-end'} min-h-[4rem] md:min-h-[6rem] items-center`}>
+            <div className={`flex w-full ${align === 'left' ? 'justify-start' : 'justify-end'} min-h-[12cqh] items-center px-4`}>
                 <div 
                     className={clsx(
-                        "relative inline-block font-black text-xl sm:text-2xl md:text-4xl lg:text-[44px] tracking-wide",
+                        "relative inline-block font-black tracking-wide",
                         "transition-transform duration-200 break-words whitespace-pre-wrap max-w-full text-center md:text-left",
                         isActive ? "scale-100" : "scale-[0.95]"
                     )}
                     style={{
-                        WebkitTextStroke: '3px black',
+                        fontSize: 'clamp(1rem, 4cqw, 3rem)',
+                        lineHeight: '1.2',
+                        WebkitTextStroke: 'clamp(2px, 0.4cqw, 4px) black',
                         paintOrder: 'stroke fill',
                     }}
                 >
@@ -114,7 +116,7 @@ export const LyricsOverlay = ({ playerRef, activeVideoId, videoTitle }: LyricsOv
                             className="absolute left-0 top-0 text-[#2563eb] drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] whitespace-pre-wrap break-words max-w-full text-center md:text-left"
                             style={{ 
                                 clipPath: `inset(0% ${100 - (progress * 100)}% 0% 0%)`,
-                                WebkitTextStroke: '3px black',
+                                WebkitTextStroke: 'clamp(2px, 0.4cqw, 4px) black',
                                 paintOrder: 'stroke fill',
                                 transition: isActive ? 'clip-path 0.1s linear' : 'none'
                             }}
@@ -128,7 +130,7 @@ export const LyricsOverlay = ({ playerRef, activeVideoId, videoTitle }: LyricsOv
     };
 
     return (
-        <div className="absolute inset-0 pointer-events-none z-40 flex items-end justify-center pb-16 md:pb-24">
+        <div className="absolute inset-0 pointer-events-none z-40 flex items-end justify-center pb-16 md:pb-24 [@container/player]:true" style={{ containerType: 'inline-size' }}>
             {/* Lyrics Container */}
             <div className="w-[95%] max-w-5xl flex flex-col space-y-2 px-6">
                 {source && (

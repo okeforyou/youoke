@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.123";
+export const SYSTEM_VERSION = "5.5.124";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "v5.5.124 (Responsive Fluid Typography for Lyrics)",
+        date: "19 ก.ค. 2569",
+        changes: [
+            "UI: Migrated Lyrics text sizing from strict screen-size breakpoints (sm, md, lg) to true Fluid Typography using CSS container queries (cqw). Now, the lyrics smoothly scale in exact proportion to the video player's width, ensuring they look perfect on any screen size without being too large or too small."
+        ],
+        recent_updates: "Switched Lyrics font size to fluid cqw units."
+    },
     {
         version: "v5.5.123 (Lyrics Source Choice & Font Sizing)",
         date: "19 ก.ค. 2569",
