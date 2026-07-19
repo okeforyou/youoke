@@ -118,8 +118,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
         }
     }, [midiTime, currentVideo, isMidiPlaying]);
 
-    // --- AI AUDIO SYNC (YouOke AI) ---
-    // Resilient Volume Sync
+    // Resilient Volume Sync (AI Tracks)
     useEffect(() => {
         if (vocalRef.current) {
             vocalRef.current.volume = volumes.vocals / 100;
@@ -130,6 +129,26 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
             instrumentalRef.current.muted = trackStates.instrumental.muted || trackStates.vocals.solo || isMuted;
         }
     }, [volumes, trackStates, isMuted]);
+
+    // Resilient Volume Sync (YouTube Track)
+    useEffect(() => {
+        if (!ytPlayerRef.current || typeof ytPlayerRef.current.getIframe !== 'function') return;
+        try {
+            if (!ytPlayerRef.current.getIframe()) return;
+            
+            // If AI is ready, YouTube must be MUTED so we only hear AI tracks
+            // If Master is muted, YouTube must be MUTED
+            const shouldBeMuted = isMuted || isAiReady;
+            
+            if (shouldBeMuted) {
+                ytPlayerRef.current.mute();
+            } else {
+                ytPlayerRef.current.unMute();
+                // Sync YouTube volume with Mixer's instrumental volume (for normal videos)
+                ytPlayerRef.current.setVolume(volumes.instrumental);
+            }
+        } catch (e) {}
+    }, [isMuted, isAiReady, volumes.instrumental]);
 
     // Ultimate Sync Loop (Slaved to YT)
     useEffect(() => {
