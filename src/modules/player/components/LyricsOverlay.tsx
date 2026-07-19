@@ -100,22 +100,27 @@ export const LyricsOverlay = ({ playerRef, activeVideoId, videoTitle }: LyricsOv
                     }}
                 >
                     {/* Base Text (White with shadow) */}
-                    <span className="text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]">
+                    <span className={clsx(
+                        "text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]",
+                        source === 'youtube' && isActive && "text-[#2563eb]" // Just turn blue if active for CC
+                    )}>
                         {line.text}
                     </span>
                     
-                    {/* Swept Text (Blue) */}
-                    <span 
-                        className="absolute left-0 top-0 overflow-hidden text-[#2563eb] whitespace-pre drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]"
-                        style={{ 
-                            width: `${progress * 100}%`,
-                            WebkitTextStroke: '4px black',
-                            paintOrder: 'stroke fill',
-                            transition: isActive ? 'width 0.1s linear' : 'none'
-                        }}
-                    >
-                        {line.text}
-                    </span>
+                    {/* Swept Text (Blue) - Only for LRCLIB which has real timing */}
+                    {source === 'lrclib' && (
+                        <span 
+                            className="absolute left-0 top-0 overflow-hidden text-[#2563eb] whitespace-pre drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]"
+                            style={{ 
+                                width: `${progress * 100}%`,
+                                WebkitTextStroke: '4px black',
+                                paintOrder: 'stroke fill',
+                                transition: isActive ? 'width 0.1s linear' : 'none'
+                            }}
+                        >
+                            {line.text}
+                        </span>
+                    )}
                 </div>
             </div>
         );

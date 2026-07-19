@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.120";
+export const SYSTEM_VERSION = "5.5.121";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "v5.5.121 (UI Polish: Toast & Lyrics Sweep)",
+        date: "19 ก.ค. 2569",
+        changes: [
+            "UI: Removed the floating AI Vocal Jobs indicator that was overlapping the video, relying entirely on the cleaner inline queue indicators.",
+            "UX: Disabled the sweeping animation for YouTube CC fallback lyrics, opting for a clean highlight instead, as CC lacks per-word timing."
+        ],
+        recent_updates: "Removed floating AI Toast & Disabled CC sweep."
+    },
     {
         version: "v5.5.120 (Lyrics Fallback & Mute Logic Fix)",
         date: "19 ก.ค. 2569",

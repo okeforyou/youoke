@@ -11,7 +11,7 @@ import { useSystemConfig } from "../../../hooks/useSystemConfig";
 import { useUIStore } from "../../../stores/useUIStore";
 import { safeSplit } from '@/utils/stringUtils';
 import { useAIVocalStore } from '../../../stores/useAIVocalStore';
-import { AIVocalJobsIndicator } from './AIVocalJobsIndicator';
+
 
 import { useShallow } from 'zustand/react/shallow';
 import { QuotaIndicator } from "./QuotaIndicator";
@@ -426,8 +426,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
 
             {/* Casting Overlays REMOVED (Phase 6) */}
 
-            {/* 🤖 AI Processing Background Jobs Tracker */}
-            <AIVocalJobsIndicator />
+
 
 
             {/* Overlay (Waiting) */}
