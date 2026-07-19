@@ -162,7 +162,7 @@ def separate(req: SeparateRequest):
     download_success = False
     try:
         from pytubefix import YouTube
-        yt = YouTube(yt_url)
+        yt = YouTube(yt_url, client='WEB')
         stream = yt.streams.get_audio_only()
         if stream:
             stream.download(output_path=song_dir, filename=f"{vid}.m4a")

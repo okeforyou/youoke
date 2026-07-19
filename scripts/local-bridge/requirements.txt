@@ -7,3 +7,4 @@ numpy<2
 imageio-ffmpeg
 torchcodec
 soundfile
+pytubefix

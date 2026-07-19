@@ -281,7 +281,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                     </div>
 
                     {/* AI Controls */}
-                    {isAiReady && (
+                    {isAiReady ? (
                         <>
                             {/* Vocals */}
                             <div className="mb-5">
@@ -305,6 +305,25 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                 </div>
                             </div>
                         </>
+                    ) : (
+                        <div className="mt-4 p-4 rounded-xl bg-primary/10 border border-primary/20 text-center">
+                            <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-2">ต้องการแยกเสียงร้องไหม?</h4>
+                            <p className="text-xs text-gray-600 dark:text-gray-400 mb-4">
+                                ใช้ AI แยกเสียงร้องและดนตรีออกจากกัน เพื่อปรับระดับเสียงแยกชิ้นได้อย่างอิสระ
+                            </p>
+                            <button
+                                onClick={() => {
+                                    if (currentVideo && currentVideo.uuid) {
+                                        useUIStore.getState().showVocalModeModal(currentVideo.uuid, activeVideoId);
+                                    } else if (currentVideo && currentVideo.id) {
+                                        useUIStore.getState().showVocalModeModal(currentVideo.id, activeVideoId);
+                                    }
+                                }}
+                                className="w-full py-2 bg-primary hover:bg-primary/90 text-white rounded-lg text-xs font-bold transition-colors"
+                            >
+                                เริ่มแยกเสียงด้วย AI
+                            </button>
+                        </div>
                     )}
 
                     {/* Lyrics Toggle */}
