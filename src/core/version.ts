@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.119";
+export const SYSTEM_VERSION = "5.5.120";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "v5.5.120 (Lyrics Fallback & Mute Logic Fix)",
+        date: "19 ก.ค. 2569",
+        changes: [
+            "Hotfix: Resolved issue where toggling Mute caused overlapping audio by moving all YouTube mute logic strictly to UniversalPlayer.",
+            "Bugfix: Improved LRCLIB API search query to use a generic fallback, greatly increasing lyrics hit rates for Thai songs.",
+            "UI: Forcefully unloaded YouTube native CC module to prevent native subtitles from displaying simultaneously with custom LyricsOverlay."
+        ],
+        recent_updates: "Fixed audio overlap and CC lyrics issues."
+    },
     {
         version: "v5.5.119 (Lyrics Bug Fix & Sync Logic)",
         date: "19 ก.ค. 2569",

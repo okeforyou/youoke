@@ -38,28 +38,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 .replace(/(\(|\[).*?(official|mv|lyrics|lyric|audio|video|live).*?(\)|\])/gi, '')
                 .trim();
             
-            // Try to extract artist and title
-            const info = getArtistTitle(cleanTitle, {
-                defaultArtist: ''
+            // Use generic search which works much better for varied Thai title formats
+            const searchParams = new URLSearchParams({
+                q: cleanTitle
             });
 
-            if (info) {
-                const [artist, trackName] = info;
-                const searchParams = new URLSearchParams({
-                    artist_name: artist,
-                    track_name: trackName
-                });
-
-                const lrclibRes = await fetch(`https://lrclib.net/api/search?${searchParams.toString()}`);
-                if (lrclibRes.ok) {
-                    const data = await lrclibRes.json();
-                    if (Array.isArray(data) && data.length > 0) {
-                        // Find the first one with synced lyrics
-                        const bestMatch = data.find((d: any) => d.syncedLyrics);
-                        if (bestMatch && bestMatch.syncedLyrics) {
-                            lyrics = parseLRC(bestMatch.syncedLyrics);
-                            source = 'lrclib';
-                        }
+            const lrclibRes = await fetch(`https://lrclib.net/api/search?${searchParams.toString()}`);
+            if (lrclibRes.ok) {
+                const data = await lrclibRes.json();
+                if (Array.isArray(data) && data.length > 0) {
+                    // Find the first one with synced lyrics
+                    const bestMatch = data.find((d: any) => d.syncedLyrics);
+                    if (bestMatch && bestMatch.syncedLyrics) {
+                        lyrics = parseLRC(bestMatch.syncedLyrics);
+                        source = 'lrclib';
                     }
                 }
             }

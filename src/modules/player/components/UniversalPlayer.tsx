@@ -15,8 +15,8 @@ interface UniversalPlayerProps {
     onReady?: (target: any) => void;
     onStateChange?: (event: any) => void;
     className?: string;
-
     showControls?: boolean;
+    forceMute?: boolean;
 }
 
 export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
@@ -24,7 +24,8 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
     onReady,
     onStateChange,
     className,
-    showControls = false
+    showControls = false,
+    forceMute = false
 }) => {
 
     const currentVideo = usePlayerStore(state => state.currentVideo);
@@ -122,13 +123,13 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
     useEffect(() => {
         if (vocalRef.current) {
             vocalRef.current.volume = volumes.vocals / 100;
-            vocalRef.current.muted = trackStates.vocals.muted || trackStates.instrumental.solo || isMuted;
+            vocalRef.current.muted = trackStates.vocals.muted || trackStates.instrumental.solo || isMuted || forceMute;
         }
         if (instrumentalRef.current) {
             instrumentalRef.current.volume = volumes.instrumental / 100;
-            instrumentalRef.current.muted = trackStates.instrumental.muted || trackStates.vocals.solo || isMuted;
+            instrumentalRef.current.muted = trackStates.instrumental.muted || trackStates.vocals.solo || isMuted || forceMute;
         }
-    }, [volumes, trackStates, isMuted]);
+    }, [volumes, trackStates, isMuted, forceMute]);
 
     // Resilient Volume Sync (YouTube Track)
     useEffect(() => {
@@ -138,7 +139,8 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
             
             // If AI is ready, YouTube must be MUTED so we only hear AI tracks
             // If Master is muted, YouTube must be MUTED
-            const shouldBeMuted = isMuted || isAiReady;
+            // If forceMute is true (e.g. Casting), YouTube must be MUTED
+            const shouldBeMuted = isMuted || isAiReady || forceMute;
             
             if (shouldBeMuted) {
                 ytPlayerRef.current.mute();
@@ -148,7 +150,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                 ytPlayerRef.current.setVolume(volumes.instrumental);
             }
         } catch (e) {}
-    }, [isMuted, isAiReady, volumes.instrumental]);
+    }, [isMuted, isAiReady, volumes.instrumental, forceMute]);
 
     // Ultimate Sync Loop (Slaved to YT)
     useEffect(() => {
@@ -268,6 +270,17 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
 
     const handleYouTubeReady = (event: any) => {
         ytPlayerRef.current = event.target;
+
+        // Force disable native YouTube CC
+        try {
+            if (typeof event.target.unloadModule === 'function') {
+                event.target.unloadModule("captions");
+                event.target.unloadModule("cc");
+            }
+        } catch (e) {
+            console.warn("Could not unload captions module:", e);
+        }
+
         const aiVocal = useAIVocalStore.getState();
         const jobId = currentVideo?.videoId || currentVideo?.id;
         if (currentVideo?.aiVocalRequested && jobId && aiVocal.jobs[jobId]?.status === 'ready') {
