@@ -145,14 +145,14 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
         },
         {
             id: 'vocals',
-            icon: Mic2,
+            icon: (isAiReady && trackStates.vocals.muted) ? MicOff : Mic2,
             label: "ร้อง",
             onClick: () => {
                 if (isAiReady) toggleMute('vocals');
             },
-            active: isAiReady && !trackStates.vocals.muted,
+            active: isAiReady && trackStates.vocals.muted,
             activeColor: "text-primary bg-primary/10",
-            textColor: isAiReady ? (!trackStates.vocals.muted ? "text-primary" : "text-black/60 dark:text-zinc-400") : "text-gray-300 dark:text-zinc-600",
+            textColor: isAiReady ? (trackStates.vocals.muted ? "text-primary" : "text-black/60 dark:text-zinc-400") : "text-gray-300 dark:text-zinc-600",
             disabled: !isAiReady
         },
         {
@@ -278,9 +278,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                     <span>เสียงร้อง (Vocals)</span>
                                     <span className="text-primary">{trackStates.vocals.muted ? 0 : volumes.vocals}%</span>
                                 </div>
-                                <div className="flex items-center gap-3">
-                                    <button onClick={() => toggleMute('vocals')} className={clsx("w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black transition-colors border", trackStates.vocals.muted ? "bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-800" : "bg-white dark:bg-zinc-800 text-gray-400 border-gray-100 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-700")}>M</button>
-                                    <button onClick={() => toggleSolo('vocals')} className={clsx("w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black transition-colors border", trackStates.vocals.solo ? "bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 border-yellow-200 dark:border-yellow-800" : "bg-white dark:bg-zinc-800 text-gray-400 border-gray-100 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-700")}>S</button>
+                                <div className="flex items-center gap-3 mt-3">
                                     <input type="range" min="0" max="100" value={trackStates.vocals.muted ? 0 : volumes.vocals} onChange={(e) => handleVolumeChange('vocals', parseInt(e.target.value))} className="flex-1 h-1.5 bg-gray-100 dark:bg-zinc-800 rounded-full appearance-none accent-primary" />
                                 </div>
                             </div>
@@ -291,9 +289,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                     <span>ดนตรี (Instrumental)</span>
                                     <span className="text-blue-500">{trackStates.instrumental.muted ? 0 : volumes.instrumental}%</span>
                                 </div>
-                                <div className="flex items-center gap-3">
-                                    <button onClick={() => toggleMute('instrumental')} className={clsx("w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black transition-colors border", trackStates.instrumental.muted ? "bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-800" : "bg-white dark:bg-zinc-800 text-gray-400 border-gray-100 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-700")}>M</button>
-                                    <button onClick={() => toggleSolo('instrumental')} className={clsx("w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black transition-colors border", trackStates.instrumental.solo ? "bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 border-yellow-200 dark:border-yellow-800" : "bg-white dark:bg-zinc-800 text-gray-400 border-gray-100 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-700")}>S</button>
+                                <div className="flex items-center gap-3 mt-3">
                                     <input type="range" min="0" max="100" value={trackStates.instrumental.muted ? 0 : volumes.instrumental} onChange={(e) => handleVolumeChange('instrumental', parseInt(e.target.value))} className="flex-1 h-1.5 bg-gray-100 dark:bg-zinc-800 rounded-full appearance-none accent-blue-500" />
                                 </div>
                             </div>

@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.116";
+export const SYSTEM_VERSION = "5.5.117";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "v5.5.117 (Mixer & Vocals UI Simplification)",
+        date: "19 ก.ค. 2569",
+        changes: [
+            "UI Update: Simplified the Mixer by removing redundant Mute (M) and Solo (S) buttons since dragging the volume to 0 already handles muting.",
+            "UX Polish: The 'Vocals' shortcut button now highlights and changes icon to a crossed-out mic when vocals are CUT, making the state more intuitive."
+        ],
+        recent_updates: "Simplified Mixer UI and adjusted Vocals button logic"
+    },
     {
         version: "v5.5.116 (Mixer UI Mute Sync)",
         date: "18 ก.ค. 2569",
