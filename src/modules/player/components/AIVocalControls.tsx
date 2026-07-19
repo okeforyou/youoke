@@ -72,15 +72,15 @@ export const AIVocalControls = ({ mobile }: AIVocalControlsProps) => {
                 <span>{mixer.volumes[trackKey]}%</span>
             </div>
             <div className="flex items-center gap-2">
-                <button onClick={() => mixer.toggleMute(trackKey)} className={`p-1.5 rounded-md transition-colors ${mixer.trackStates[trackKey].muted ? 'bg-red-100 text-red-500' : 'text-gray-400 hover:bg-gray-100'}`}>
-                    {mixer.trackStates[trackKey].muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                <button onClick={() => mixer.toggleMute(trackKey)} className={`p-1.5 rounded-md transition-colors ${mixer.trackStates?.[trackKey]?.muted ? 'bg-red-100 text-red-500' : 'text-gray-400 hover:bg-gray-100'}`}>
+                    {mixer.trackStates?.[trackKey]?.muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
                 </button>
                 <input 
                     type="range" 
                     min="0" max="100" 
-                    value={mixer.trackStates[trackKey].muted ? 0 : mixer.volumes[trackKey]}
+                    value={mixer.trackStates?.[trackKey]?.muted ? 0 : mixer.volumes[trackKey]}
                     onChange={(e) => {
-                        if (mixer.trackStates[trackKey].muted) mixer.toggleMute(trackKey);
+                        if (mixer.trackStates?.[trackKey]?.muted) mixer.toggleMute(trackKey);
                         mixer.setVolume(trackKey, parseInt(e.target.value));
                     }}
                     className="w-full h-1.5 bg-gray-200 rounded-full appearance-none cursor-pointer accent-primary" 

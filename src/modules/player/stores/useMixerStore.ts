@@ -45,8 +45,8 @@ export const useMixerStore = create<MixerState>()(
                     trackStates: {
                         ...state.trackStates,
                         [type]: {
-                            ...state.trackStates[type],
-                            muted: safeValue === 0 ? true : (state.trackStates[type].muted && safeValue > 0 ? false : state.trackStates[type].muted)
+                            ...state.trackStates?.[type],
+                            muted: safeValue === 0 ? true : (state.trackStates?.[type]?.muted && safeValue > 0 ? false : state.trackStates?.[type]?.muted)
                         }
                     }
                 }));
@@ -54,26 +54,26 @@ export const useMixerStore = create<MixerState>()(
             toggleMute: (type) => set((state) => ({
                 trackStates: {
                     ...state.trackStates,
-                    [type]: { ...state.trackStates[type], muted: !state.trackStates[type].muted }
+                    [type]: { ...state.trackStates?.[type], muted: !state.trackStates?.[type]?.muted }
                 }
             })),
             toggleSolo: (type) => set((state) => {
-                const newSolo = !state.trackStates[type].solo;
+                const newSolo = !state.trackStates?.[type]?.solo;
                 return {
                     trackStates: {
-                        vocals: { ...state.trackStates.vocals, solo: type === 'vocals' ? newSolo : false },
-                        instrumental: { ...state.trackStates.instrumental, solo: type === 'instrumental' ? newSolo : false },
-                        drums: { ...state.trackStates.drums, solo: type === 'drums' ? newSolo : false },
-                        bass: { ...state.trackStates.bass, solo: type === 'bass' ? newSolo : false },
-                        other: { ...state.trackStates.other, solo: type === 'other' ? newSolo : false }
+                        vocals: { ...state.trackStates?.vocals, solo: type === 'vocals' ? newSolo : false },
+                        instrumental: { ...state.trackStates?.instrumental, solo: type === 'instrumental' ? newSolo : false },
+                        drums: { ...state.trackStates?.drums, solo: type === 'drums' ? newSolo : false },
+                        bass: { ...state.trackStates?.bass, solo: type === 'bass' ? newSolo : false },
+                        other: { ...state.trackStates?.other, solo: type === 'other' ? newSolo : false }
                     }
                 };
             }),
             getEffectiveVolume: (type) => {
                 const state = get();
-                const isAnySolo = state.trackStates.vocals.solo || state.trackStates.instrumental.solo || state.trackStates.drums.solo || state.trackStates.bass.solo || state.trackStates.other.solo;
-                if (isAnySolo && !state.trackStates[type].solo) return 0;
-                if (state.trackStates[type].muted) return 0;
+                const isAnySolo = state.trackStates?.vocals?.solo || state.trackStates?.instrumental?.solo || state.trackStates?.drums?.solo || state.trackStates?.bass?.solo || state.trackStates?.other?.solo;
+                if (isAnySolo && !state.trackStates?.[type]?.solo) return 0;
+                if (state.trackStates?.[type]?.muted) return 0;
                 return state.volumes[type];
             }
         }),
