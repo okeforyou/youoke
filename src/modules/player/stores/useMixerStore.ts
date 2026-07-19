@@ -10,24 +10,33 @@ interface MixerState {
     volumes: {
         vocals: number;
         instrumental: number;
+        drums: number;
+        bass: number;
+        other: number;
     };
     trackStates: {
         vocals: TrackState;
         instrumental: TrackState;
+        drums: TrackState;
+        bass: TrackState;
+        other: TrackState;
     };
-    setVolume: (type: 'vocals' | 'instrumental', value: number) => void;
-    toggleMute: (type: 'vocals' | 'instrumental') => void;
-    toggleSolo: (type: 'vocals' | 'instrumental') => void;
-    getEffectiveVolume: (type: 'vocals' | 'instrumental') => number;
+    setVolume: (type: 'vocals' | 'instrumental' | 'drums' | 'bass' | 'other', value: number) => void;
+    toggleMute: (type: 'vocals' | 'instrumental' | 'drums' | 'bass' | 'other') => void;
+    toggleSolo: (type: 'vocals' | 'instrumental' | 'drums' | 'bass' | 'other') => void;
+    getEffectiveVolume: (type: 'vocals' | 'instrumental' | 'drums' | 'bass' | 'other') => number;
 }
 
 export const useMixerStore = create<MixerState>()(
     persist(
         (set, get) => ({
-            volumes: { vocals: 100, instrumental: 100 },
+            volumes: { vocals: 100, instrumental: 100, drums: 100, bass: 100, other: 100 },
             trackStates: {
                 vocals: { muted: false, solo: false },
-                instrumental: { muted: false, solo: false }
+                instrumental: { muted: false, solo: false },
+                drums: { muted: false, solo: false },
+                bass: { muted: false, solo: false },
+                other: { muted: false, solo: false }
             },
             setVolume: (type, value) => {
                 const safeValue = Math.max(0, Math.min(100, Number(value) || 0));
@@ -53,13 +62,16 @@ export const useMixerStore = create<MixerState>()(
                 return {
                     trackStates: {
                         vocals: { ...state.trackStates.vocals, solo: type === 'vocals' ? newSolo : false },
-                        instrumental: { ...state.trackStates.instrumental, solo: type === 'instrumental' ? newSolo : false }
+                        instrumental: { ...state.trackStates.instrumental, solo: type === 'instrumental' ? newSolo : false },
+                        drums: { ...state.trackStates.drums, solo: type === 'drums' ? newSolo : false },
+                        bass: { ...state.trackStates.bass, solo: type === 'bass' ? newSolo : false },
+                        other: { ...state.trackStates.other, solo: type === 'other' ? newSolo : false }
                     }
                 };
             }),
             getEffectiveVolume: (type) => {
                 const state = get();
-                const isAnySolo = state.trackStates.vocals.solo || state.trackStates.instrumental.solo;
+                const isAnySolo = state.trackStates.vocals.solo || state.trackStates.instrumental.solo || state.trackStates.drums.solo || state.trackStates.bass.solo || state.trackStates.other.solo;
                 if (isAnySolo && !state.trackStates[type].solo) return 0;
                 if (state.trackStates[type].muted) return 0;
                 return state.volumes[type];
