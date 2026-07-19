@@ -37,6 +37,7 @@ async def add_pna_headers(request, call_next):
 
 class SeparateRequest(BaseModel):
     video_id: str
+    mode: str = "basic"  # "basic" or "pro"
 
 CACHE_DIR = os.path.expanduser("~/Library/Application Support/YouOke/Cache")
 os.makedirs(CACHE_DIR, exist_ok=True)
@@ -119,6 +120,7 @@ def get_progress(video_id: str):
 @app.post("/separate")
 def separate(req: SeparateRequest):
     vid = req.video_id
+    mode = req.mode
     song_dir = os.path.join(CACHE_DIR, vid)
     
     progress_store[vid] = {"status": "starting", "percent": 0, "message": "กำลังตรวจสอบข้อมูล..."}
@@ -126,10 +128,20 @@ def separate(req: SeparateRequest):
     # Check if already cached
     vocal_m4a = os.path.join(song_dir, "vocals.m4a")
     no_vocal_m4a = os.path.join(song_dir, "no_vocals.m4a")
+    drums_m4a = os.path.join(song_dir, "drums.m4a")
+    bass_m4a = os.path.join(song_dir, "bass.m4a")
+    other_m4a = os.path.join(song_dir, "other.m4a")
     
-    if os.path.exists(vocal_m4a) and os.path.exists(no_vocal_m4a):
-        progress_store[vid] = {"status": "success", "percent": 100, "message": "ดึงข้อมูลจากแคชสำเร็จ!"}
-        return {"status": "cached", "video_id": vid}
+    # Cache hit logic
+    is_cached = False
+    if mode == "basic" and os.path.exists(vocal_m4a) and os.path.exists(no_vocal_m4a):
+        is_cached = True
+    elif mode == "pro" and os.path.exists(vocal_m4a) and os.path.exists(drums_m4a) and os.path.exists(bass_m4a) and os.path.exists(other_m4a):
+        is_cached = True
+        
+    if is_cached:
+        progress_store[vid] = {"status": "success", "percent": 100, "message": "ดึงข้อมูลจากแคชสำเร็จ!", "mode": mode}
+        return {"status": "cached", "video_id": vid, "mode": mode}
         
     os.makedirs(song_dir, exist_ok=True)
     
@@ -194,10 +206,14 @@ def separate(req: SeparateRequest):
     # 3. Run Demucs
     progress_store[vid] = {"status": "separating", "percent": 25, "message": "AI กำลังแยกเสียงร้องและดนตรี (อาจใช้เวลา 2-3 นาที)..."}
     try:
+        demucs_args = ["-n", "htdemucs_ft", "--shifts=0", "-d", device, "-o", song_dir, wav_path]
+        if mode == "basic":
+            demucs_args = ["-n", "htdemucs_ft", "--shifts=0", "-d", device, "--two-stems=vocals", "-o", song_dir, wav_path]
+            
         if getattr(sys, 'frozen', False):
-            cmd = [sys.executable, "demucs_worker", "-n", "htdemucs_ft", "--shifts=0", "-d", device, "--two-stems=vocals", "-o", song_dir, wav_path]
+            cmd = [sys.executable, "demucs_worker"] + demucs_args
         else:
-            cmd = [sys.executable, "-m", "demucs.separate", "-n", "htdemucs_ft", "--shifts=0", "-d", device, "--two-stems=vocals", "-o", song_dir, wav_path]
+            cmd = [sys.executable, "-m", "demucs.separate"] + demucs_args
 
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True)
         
@@ -228,16 +244,33 @@ def separate(req: SeparateRequest):
         
     demucs_out_dir = os.path.join(song_dir, "htdemucs_ft", vid)
     vocal_wav = os.path.join(demucs_out_dir, "vocals.wav")
-    no_vocal_wav = os.path.join(demucs_out_dir, "no_vocals.wav")
     
-    if not os.path.exists(vocal_wav) or not os.path.exists(no_vocal_wav):
-        progress_store[vid] = {"status": "error", "percent": 0, "message": "ไม่พบไฟล์ผลลัพธ์"}
+    if not os.path.exists(vocal_wav):
+        progress_store[vid] = {"status": "error", "percent": 0, "message": "ไม่พบไฟล์ผลลัพธ์จาก AI"}
         return {"status": "error", "message": "Demucs output files not found."}
         
     # 4. Convert back to M4A to save space
     progress_store[vid] = {"status": "compressing", "percent": 95, "message": "กำลังบีบอัดไฟล์ขั้นสุดท้าย..."}
+    
+    # Always convert vocals
     convert_audio(vocal_wav, vocal_m4a, fmt="m4a")
-    convert_audio(no_vocal_wav, no_vocal_m4a, fmt="m4a")
+    
+    if mode == "basic":
+        no_vocal_wav = os.path.join(demucs_out_dir, "no_vocals.wav")
+        if os.path.exists(no_vocal_wav):
+            convert_audio(no_vocal_wav, no_vocal_m4a, fmt="m4a")
+    else:
+        # Pro mode (4 stems)
+        stems = ["drums", "bass", "other"]
+        for stem in stems:
+            stem_wav = os.path.join(demucs_out_dir, f"{stem}.wav")
+            stem_m4a = os.path.join(song_dir, f"{stem}.m4a")
+            if os.path.exists(stem_wav):
+                convert_audio(stem_wav, stem_m4a, fmt="m4a")
+    
+    # Save mode flag for client checks
+    with open(os.path.join(song_dir, "mode.txt"), "w") as f:
+        f.write(mode)
         
     # Cleanup temporary files (WAV is huge)
     for tmp_file in [m4a_path, wav_path]:
@@ -254,8 +287,8 @@ def separate(req: SeparateRequest):
     except Exception as e:
         print(f"Failed to remove demucs dir: {e}")
         
-    progress_store[vid] = {"status": "success", "percent": 100, "message": "เสร็จสมบูรณ์!"}
-    return {"status": "success", "video_id": vid}
+    progress_store[vid] = {"status": "success", "percent": 100, "message": "เสร็จสมบูรณ์!", "mode": mode}
+    return {"status": "success", "video_id": vid, "mode": mode}
 
 # Mount cache directory for robust static file serving with range request support
 app.mount("/files", StaticFiles(directory=CACHE_DIR), name="files")

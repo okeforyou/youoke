@@ -25,6 +25,7 @@ export const AIVocalControls = ({ mobile }: AIVocalControlsProps) => {
     }, [isActive, currentVideoId, currentJob, aiVocal]);
 
     const [showSlider, setShowSlider] = useState(false);
+    const [showModeSelect, setShowModeSelect] = useState(false);
     const popoverRef = useRef<HTMLDivElement>(null);
 
     // Close popover when clicking outside
@@ -32,6 +33,7 @@ export const AIVocalControls = ({ mobile }: AIVocalControlsProps) => {
         const handleClickOutside = (event: MouseEvent) => {
             if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
                 setShowSlider(false);
+                setShowModeSelect(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -44,16 +46,11 @@ export const AIVocalControls = ({ mobile }: AIVocalControlsProps) => {
 
     const handleToggle = async () => {
         if (!isActive || !currentJob || currentJob.status === 'error') {
-            // Usually triggered from queue now, but if somehow they click it here:
-            if (currentVideoId) {
-                if (!isActive) {
-                    usePlayerStore.getState().updateQueueItem(currentVideo!.uuid, { aiVocalRequested: true });
-                }
-                await aiVocal.processAudio(currentVideoId);
-            }
+            setShowModeSelect(!showModeSelect);
+            setShowSlider(false);
         } else if (currentJob?.status === 'ready') {
-            // Toggle Slider
             setShowSlider(!showSlider);
+            setShowModeSelect(false);
         }
     };
 
@@ -63,6 +60,32 @@ export const AIVocalControls = ({ mobile }: AIVocalControlsProps) => {
         }
         setShowSlider(false);
     };
+
+    const renderTrackSlider = (label: string, trackKey: 'vocals' | 'instrumental' | 'drums' | 'bass' | 'other') => (
+        <div className="space-y-2 mb-3">
+            <div className="flex items-center justify-between text-xs font-bold text-gray-600">
+                <span className="flex items-center gap-1.5">
+                    {trackKey === 'vocals' ? <MicVocal size={12} /> : <Music size={12} />} {label}
+                </span>
+                <span>{aiVocal.volumes[trackKey]}%</span>
+            </div>
+            <div className="flex items-center gap-2">
+                <button onClick={() => aiVocal.toggleMute(trackKey)} className={`p-1.5 rounded-md transition-colors ${aiVocal.trackStates[trackKey].muted ? 'bg-red-100 text-red-500' : 'text-gray-400 hover:bg-gray-100'}`}>
+                    {aiVocal.trackStates[trackKey].muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                </button>
+                <input 
+                    type="range" 
+                    min="0" max="100" 
+                    value={aiVocal.trackStates[trackKey].muted ? 0 : aiVocal.volumes[trackKey]}
+                    onChange={(e) => {
+                        if (aiVocal.trackStates[trackKey].muted) aiVocal.toggleMute(trackKey);
+                        aiVocal.setVolume(trackKey, parseInt(e.target.value));
+                    }}
+                    className="w-full h-1.5 bg-gray-200 rounded-full appearance-none cursor-pointer accent-primary" 
+                />
+            </div>
+        </div>
+    );
 
     return (
         <div className="relative" ref={popoverRef}>
@@ -96,6 +119,41 @@ export const AIVocalControls = ({ mobile }: AIVocalControlsProps) => {
                 </div>
             )}
 
+            {/* Mode Selection Popover */}
+            {showModeSelect && (!isActive || currentJob?.status === 'error') && (
+                <div className="absolute bottom-full right-1/2 translate-x-1/2 mb-3 bg-white/95 backdrop-blur-xl border border-gray-200 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] rounded-2xl p-4 w-[240px] z-50 animate-in fade-in zoom-in-95 duration-200">
+                    <h4 className="text-sm font-black text-gray-900 mb-2">เลือกระดับการแยกเสียง</h4>
+                    <div className="space-y-2">
+                        <button 
+                            onClick={async () => {
+                                setShowModeSelect(false);
+                                if (currentVideoId) {
+                                    if (!isActive) usePlayerStore.getState().updateQueueItem(currentVideo!.uuid, { aiVocalRequested: true });
+                                    await aiVocal.processAudio(currentVideoId, 'basic');
+                                }
+                            }}
+                            className="w-full text-left p-3 rounded-xl bg-gray-50 hover:bg-primary/10 hover:text-primary transition-colors"
+                        >
+                            <div className="font-bold text-sm">Basic Mode</div>
+                            <div className="text-[10px] text-gray-500">แยก 2 แทร็ก (เสียงร้อง/ดนตรี)</div>
+                        </button>
+                        <button 
+                            onClick={async () => {
+                                setShowModeSelect(false);
+                                if (currentVideoId) {
+                                    if (!isActive) usePlayerStore.getState().updateQueueItem(currentVideo!.uuid, { aiVocalRequested: true });
+                                    await aiVocal.processAudio(currentVideoId, 'pro');
+                                }
+                            }}
+                            className="w-full text-left p-3 rounded-xl bg-gray-50 hover:bg-primary/10 hover:text-primary transition-colors border border-yellow-200 relative overflow-hidden"
+                        >
+                            <div className="font-bold text-sm flex justify-between">Pro Mode <Sparkles size={12} className="text-yellow-500" /></div>
+                            <div className="text-[10px] text-gray-500">แยก 4 แทร็ก (ร้อง/กลอง/เบส/อื่นๆ)</div>
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* Vocal Volume Slider Popover */}
             {showSlider && isActive && currentJob?.status === 'ready' && (
                 <div className="absolute bottom-full right-1/2 translate-x-1/2 mb-3 bg-white/95 backdrop-blur-xl border border-gray-200 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] rounded-2xl p-4 w-[240px] z-50 animate-in fade-in zoom-in-95 duration-200">
@@ -103,7 +161,9 @@ export const AIVocalControls = ({ mobile }: AIVocalControlsProps) => {
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2">
                             <Sparkles size={14} className="text-primary" />
-                            <h4 className="text-sm font-black text-gray-900">AI Vocal Mixer</h4>
+                            <h4 className="text-sm font-black text-gray-900">
+                                {currentJob.mode === 'pro' ? 'Pro Mixer' : 'AI Vocal Mixer'}
+                            </h4>
                         </div>
                         <button 
                             onClick={handleTurnOff}
@@ -113,55 +173,17 @@ export const AIVocalControls = ({ mobile }: AIVocalControlsProps) => {
                         </button>
                     </div>
 
-                    {/* Vocals Control */}
-                    <div className="space-y-2 mb-4">
-                        <div className="flex items-center justify-between text-xs font-bold text-gray-600">
-                            <span className="flex items-center gap-1.5">
-                                <MicVocal size={12} /> เสียงร้อง (Vocals)
-                            </span>
-                            <span>{aiVocal.volumes.vocals}%</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <button onClick={() => aiVocal.toggleMute('vocals')} className={`p-1.5 rounded-md transition-colors ${aiVocal.trackStates.vocals.muted ? 'bg-red-100 text-red-500' : 'text-gray-400 hover:bg-gray-100'}`}>
-                                {aiVocal.trackStates.vocals.muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-                            </button>
-                            <input 
-                                type="range" 
-                                min="0" max="100" 
-                                value={aiVocal.trackStates.vocals.muted ? 0 : aiVocal.volumes.vocals}
-                                onChange={(e) => {
-                                    if (aiVocal.trackStates.vocals.muted) aiVocal.toggleMute('vocals');
-                                    aiVocal.setVolume('vocals', parseInt(e.target.value));
-                                }}
-                                className="w-full h-1.5 bg-gray-200 rounded-full appearance-none cursor-pointer accent-primary" 
-                            />
-                        </div>
-                    </div>
-
-                    {/* Instrumental Control */}
-                    <div className="space-y-2">
-                        <div className="flex items-center justify-between text-xs font-bold text-gray-600">
-                            <span className="flex items-center gap-1.5">
-                                <Music size={12} /> เสียงดนตรี
-                            </span>
-                            <span>{aiVocal.volumes.instrumental}%</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <button onClick={() => aiVocal.toggleMute('instrumental')} className={`p-1.5 rounded-md transition-colors ${aiVocal.trackStates.instrumental.muted ? 'bg-red-100 text-red-500' : 'text-gray-400 hover:bg-gray-100'}`}>
-                                {aiVocal.trackStates.instrumental.muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-                            </button>
-                            <input 
-                                type="range" 
-                                min="0" max="100" 
-                                value={aiVocal.trackStates.instrumental.muted ? 0 : aiVocal.volumes.instrumental}
-                                onChange={(e) => {
-                                    if (aiVocal.trackStates.instrumental.muted) aiVocal.toggleMute('instrumental');
-                                    aiVocal.setVolume('instrumental', parseInt(e.target.value));
-                                }}
-                                className="w-full h-1.5 bg-gray-200 rounded-full appearance-none cursor-pointer accent-primary" 
-                            />
-                        </div>
-                    </div>
+                    {renderTrackSlider('เสียงร้อง (Vocals)', 'vocals')}
+                    
+                    {currentJob.mode === 'pro' ? (
+                        <>
+                            {renderTrackSlider('เสียงกลอง (Drums)', 'drums')}
+                            {renderTrackSlider('เสียงเบส (Bass)', 'bass')}
+                            {renderTrackSlider('ดนตรีอื่นๆ (Other)', 'other')}
+                        </>
+                    ) : (
+                        renderTrackSlider('เสียงดนตรี (Instrumental)', 'instrumental')
+                    )}
 
                     <div className="mt-3 pt-3 border-t border-gray-100">
                         <p className="text-[9px] text-gray-400 text-center uppercase tracking-wider font-bold">Powered by Demucs HTDEMUCS</p>

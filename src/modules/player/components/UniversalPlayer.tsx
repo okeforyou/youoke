@@ -42,11 +42,15 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
 
     // React to aiStatus becoming ready while playing
     const aiJobStatus = useAIVocalStore(state => activeVideoId ? state.jobs[activeVideoId]?.status : undefined);
+    const aiMode = useAIVocalStore(state => activeVideoId ? state.jobs[activeVideoId]?.mode : 'basic') || 'basic';
     const isAiReady = currentVideo?.aiVocalRequested && activeVideoId && aiJobStatus === 'ready';
 
     // AI Audio Mixer Refs
     const vocalRef = useRef<HTMLAudioElement>(null);
     const instrumentalRef = useRef<HTMLAudioElement>(null);
+    const drumsRef = useRef<HTMLAudioElement>(null);
+    const bassRef = useRef<HTMLAudioElement>(null);
+    const otherRef = useRef<HTMLAudioElement>(null);
     const ytPlayerRef = useRef<any>(null);
 
     const { trackStates, volumes } = useMixerStore(
@@ -119,17 +123,23 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
         }
     }, [midiTime, currentVideo, isMidiPlaying]);
 
+    // Helper to check if any track is soloed
+    const isAnySolo = trackStates.vocals.solo || trackStates.instrumental.solo || trackStates.drums.solo || trackStates.bass.solo || trackStates.other.solo;
+
     // Resilient Volume Sync (AI Tracks)
     useEffect(() => {
-        if (vocalRef.current) {
-            vocalRef.current.volume = volumes.vocals / 100;
-            vocalRef.current.muted = trackStates.vocals.muted || trackStates.instrumental.solo || isMuted || forceMute;
-        }
-        if (instrumentalRef.current) {
-            instrumentalRef.current.volume = volumes.instrumental / 100;
-            instrumentalRef.current.muted = trackStates.instrumental.muted || trackStates.vocals.solo || isMuted || forceMute;
-        }
-    }, [volumes, trackStates, isMuted, forceMute]);
+        const syncTrack = (ref: React.RefObject<HTMLAudioElement>, vol: number, muted: boolean, solo: boolean) => {
+            if (ref.current) {
+                ref.current.volume = vol / 100;
+                ref.current.muted = muted || (isAnySolo && !solo) || isMuted || forceMute;
+            }
+        };
+        syncTrack(vocalRef, volumes.vocals, trackStates.vocals.muted, trackStates.vocals.solo);
+        syncTrack(instrumentalRef, volumes.instrumental, trackStates.instrumental.muted, trackStates.instrumental.solo);
+        syncTrack(drumsRef, volumes.drums, trackStates.drums.muted, trackStates.drums.solo);
+        syncTrack(bassRef, volumes.bass, trackStates.bass.muted, trackStates.bass.solo);
+        syncTrack(otherRef, volumes.other, trackStates.other.muted, trackStates.other.solo);
+    }, [volumes, trackStates, isMuted, forceMute, isAnySolo]);
 
     // Resilient Volume Sync (YouTube Track)
     useEffect(() => {
@@ -157,7 +167,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
         let interval: NodeJS.Timeout;
         if (isAiReady && isPlaying) {
             interval = setInterval(() => {
-                if (!ytPlayerRef.current || typeof ytPlayerRef.current.getIframe !== 'function' || !ytPlayerRef.current.getIframe() || !instrumentalRef.current || !vocalRef.current) return;
+                if (!ytPlayerRef.current || typeof ytPlayerRef.current.getIframe !== 'function' || !ytPlayerRef.current.getIframe()) return;
                 
                 try {
                     const state = ytPlayerRef.current.getPlayerState();
@@ -166,21 +176,29 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                     const ytTime = ytPlayerRef.current.getCurrentTime();
                     if (typeof ytTime !== 'number' || ytTime === 0) return;
                     
-                    if (Math.abs(instrumentalRef.current.currentTime - ytTime) > 0.3) {
-                        instrumentalRef.current.currentTime = ytTime;
+                    const syncRef = (ref: React.RefObject<HTMLAudioElement>) => {
+                        if (!ref.current) return;
+                        if (Math.abs(ref.current.currentTime - ytTime) > 0.3) {
+                            ref.current.currentTime = ytTime;
+                        }
+                        if (ref.current.paused) ref.current.play().catch(e => console.error(e));
+                    };
+
+                    syncRef(vocalRef);
+                    if (aiMode === 'pro') {
+                        syncRef(drumsRef);
+                        syncRef(bassRef);
+                        syncRef(otherRef);
+                    } else {
+                        syncRef(instrumentalRef);
                     }
-                    if (Math.abs(vocalRef.current.currentTime - ytTime) > 0.3) {
-                        vocalRef.current.currentTime = ytTime;
-                    }
-                    if (instrumentalRef.current.paused) instrumentalRef.current.play().catch(e => console.error(e));
-                    if (vocalRef.current.paused) vocalRef.current.play().catch(e => console.error(e));
                 } catch (e) {
                     console.warn("YT Sync error:", e);
                 }
             }, 1000);
         }
         return () => { if (interval) clearInterval(interval); };
-    }, [isPlaying, isAiReady]);
+    }, [isPlaying, isAiReady, aiMode]);
 
     // Handle Play/Pause
     useEffect(() => {
@@ -201,28 +219,34 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                     }
                 } catch (e) {}
 
-                if (typeof ytTime === 'number' && ytTime > 0) {
-                    if (vocalRef.current && Math.abs(vocalRef.current.currentTime - ytTime) > 0.3) vocalRef.current.currentTime = ytTime;
-                    if (instrumentalRef.current && Math.abs(instrumentalRef.current.currentTime - ytTime) > 0.3) instrumentalRef.current.currentTime = ytTime;
-                }
+                const syncRefPlay = (ref: React.RefObject<HTMLAudioElement>) => {
+                    if (!ref.current) return;
+                    if (typeof ytTime === 'number' && ytTime > 0) {
+                        if (Math.abs(ref.current.currentTime - ytTime) > 0.3) ref.current.currentTime = ytTime;
+                    }
+                    ref.current.play().catch(e => {
+                        ref.current?.load();
+                        ref.current?.play().catch(()=>{});
+                    });
+                };
                 
-                // Catch play errors (browser suspend) and force reload if needed
-                vocalRef.current?.play().catch(e => {
-                    console.warn("Vocal resume failed:", e);
-                    vocalRef.current?.load();
-                    vocalRef.current?.play().catch(()=>{});
-                });
-                instrumentalRef.current?.play().catch(e => {
-                    console.warn("Inst resume failed:", e);
-                    instrumentalRef.current?.load();
-                    instrumentalRef.current?.play().catch(()=>{});
-                });
+                syncRefPlay(vocalRef);
+                if (aiMode === 'pro') {
+                    syncRefPlay(drumsRef);
+                    syncRefPlay(bassRef);
+                    syncRefPlay(otherRef);
+                } else {
+                    syncRefPlay(instrumentalRef);
+                }
             } else {
                 vocalRef.current?.pause();
                 instrumentalRef.current?.pause();
+                drumsRef.current?.pause();
+                bassRef.current?.pause();
+                otherRef.current?.pause();
             }
         }
-    }, [isPlaying, isAiReady]);
+    }, [isPlaying, isAiReady, aiMode]);
 
     // --- RENDERERS ---
 
@@ -342,22 +366,22 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                         ref={vocalRef} 
                         src={`http://127.0.0.1:5050/files/${activeVideoId}/vocals.m4a`} 
                         preload="auto" 
-                        onLoadedData={(e) => {
-                            e.currentTarget.volume = volumes.vocals / 100;
-                            e.currentTarget.muted = trackStates.vocals.muted || trackStates.instrumental.solo || isMuted;
-                            if (isPlaying) e.currentTarget.play().catch(()=>{});
-                        }} 
+                        onLoadedData={(e) => { e.currentTarget.volume = volumes.vocals / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} 
                     />
-                    <audio 
-                        ref={instrumentalRef} 
-                        src={`http://127.0.0.1:5050/files/${activeVideoId}/no_vocals.m4a`} 
-                        preload="auto" 
-                        onLoadedData={(e) => {
-                            e.currentTarget.volume = volumes.instrumental / 100;
-                            e.currentTarget.muted = trackStates.instrumental.muted || trackStates.vocals.solo || isMuted;
-                            if (isPlaying) e.currentTarget.play().catch(()=>{});
-                        }} 
-                    />
+                    {aiMode === 'pro' ? (
+                        <>
+                            <audio ref={drumsRef} src={`http://127.0.0.1:5050/files/${activeVideoId}/drums.m4a`} preload="auto" onLoadedData={(e) => { e.currentTarget.volume = volumes.drums / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} />
+                            <audio ref={bassRef} src={`http://127.0.0.1:5050/files/${activeVideoId}/bass.m4a`} preload="auto" onLoadedData={(e) => { e.currentTarget.volume = volumes.bass / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} />
+                            <audio ref={otherRef} src={`http://127.0.0.1:5050/files/${activeVideoId}/other.m4a`} preload="auto" onLoadedData={(e) => { e.currentTarget.volume = volumes.other / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} />
+                        </>
+                    ) : (
+                        <audio 
+                            ref={instrumentalRef} 
+                            src={`http://127.0.0.1:5050/files/${activeVideoId}/no_vocals.m4a`} 
+                            preload="auto" 
+                            onLoadedData={(e) => { e.currentTarget.volume = volumes.instrumental / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} 
+                        />
+                    )}
                 </div>
             )}
             {activeVideoId ? (
