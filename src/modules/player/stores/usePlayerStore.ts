@@ -334,7 +334,7 @@ export const usePlayerStore = create<PlayerStore>()(
                 const videos = Array.isArray(video) ? video : [video];
                 console.log(`🏗️ Store Action: addToQueue (${videos.length} items)`);
 
-                const newItems: QueueItem[] = videos.map(v => ({ ...v, uuid: generateUUID() }));
+                const newItems: QueueItem[] = videos.map(v => ({ ...v, uuid: v.uuid || generateUUID() }));
                 
                 // 🤖 Trigger background AI processing for any AI Vocal requests
                 const aiVocalStore = useAIVocalStore.getState();

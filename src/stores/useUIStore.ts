@@ -70,6 +70,14 @@ interface UIState {
     }) => void;
     hideConfirm: () => void;
 
+    vocalModeModal: {
+        isOpen: boolean;
+        videoUuid: string | null;
+        videoId: string | null;
+    };
+    showVocalModeModal: (videoUuid: string, videoId: string) => void;
+    hideVocalModeModal: () => void;
+
     config: SystemConfig;
     setConfig: (config: SystemConfig) => void;
 }
@@ -152,6 +160,18 @@ export const useUIStore = create<UIState>((set, get) => ({
         }
     }),
     hideConfirm: () => set({ confirmModal: { ...get().confirmModal, isOpen: false } }),
+
+    vocalModeModal: {
+        isOpen: false,
+        videoUuid: null,
+        videoId: null
+    },
+    showVocalModeModal: (videoUuid, videoId) => set({
+        vocalModeModal: { isOpen: true, videoUuid, videoId }
+    }),
+    hideVocalModeModal: () => set({
+        vocalModeModal: { isOpen: false, videoUuid: null, videoId: null }
+    }),
 
     config: DEFAULT_CONFIG,
     setConfig: (config) => set({ config }),

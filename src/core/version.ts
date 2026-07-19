@@ -11,6 +11,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
  
 export const CHANGELOGS = [
     {
+        version: "5.5.128",
+        date: "2026-07-19",
+        changes: [
+            "feat: Added a modal to select between Basic and Pro modes when clicking 'ตัดเสียงร้อง' (Remove Vocals).",
+            "fix: Resolved an issue where AI Vocal processing would automatically start in Basic mode without prompting the user."
+        ]
+    },
+    {
         version: "5.5.127",
         date: "2026-07-19",
         changes: [

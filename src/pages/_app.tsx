@@ -20,6 +20,7 @@ import { YouTubeCastProvider } from '@/context/YouTubeCastContext'
 import { ToastProvider } from '@/context/ToastContext'
 import { MidiEngineProvider } from '@/context/MidiEngineContext'
 import { FontLoader } from '../components/FontLoader';
+import { VocalModeModal } from "../components/VocalModeModal";
 import GlobalErrorBoundary from '../components/GlobalErrorBoundary';
 import { GlobalConfirmModal } from '../components/common/GlobalConfirmModal';
 

@@ -603,7 +603,9 @@ export default function MainDashboard({ showTab = true, mode = 'default' }: { sh
                           ) : (
                             stationResults?.map((video: any, idx: number) => (
                                 <div key={video.videoId + idx} onClick={() => {
+                                    const newUuid = crypto.randomUUID();
                                     const videoToAdd = {
+                                        uuid: newUuid,
                                         id: video.videoId,
                                         sourceType: 'youtube',
                                         videoId: video.videoId,

@@ -113,10 +113,9 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             if (!video.aiVocalRequested) {
-                                                usePlayerStore.getState().updateQueueItem(video.uuid, { aiVocalRequested: true });
+                                                const vidId = video.videoId || video.id;
+                                                useUIStore.getState().showVocalModeModal(video.uuid, vidId);
                                             }
-                                            const vidId = video.videoId || video.id;
-                                            useAIVocalStore.getState().processAudio(vidId).catch(console.error);
                                         }}
                                         className="px-2 py-0.5 bg-gray-100 dark:bg-zinc-800/80 text-gray-500 dark:text-zinc-400 hover:text-blue-500 hover:bg-blue-50 hover:border-blue-200 dark:hover:bg-blue-500/10 dark:hover:border-blue-800/50 active:scale-95 rounded flex items-center gap-1 border border-transparent transition-all"
                                     >

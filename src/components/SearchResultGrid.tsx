@@ -14,6 +14,7 @@ import { getSearchResult, getSkeletonItems, getVideoInfo } from "../utils/api";
 import SearchResultHorizontalCard from "./SearchResultHorizontalCard";
 import AddToPlaylistModal from "./AddToPlaylistModal";
 import { Sparkles } from "lucide-react";
+import { useUIStore } from "../stores/useUIStore";
 
 export default function SearchResultGrid({
   onClick = () => { },
@@ -100,16 +101,18 @@ export default function SearchResultGrid({
 
   const handleExtractVocals = (e: React.MouseEvent, video: SearchResult | RecommendedVideo) => {
     e.stopPropagation();
+    const newUuid = crypto.randomUUID();
     usePlayerStore.getState().addToQueue({
+      uuid: newUuid,
       id: video.videoId,
       videoId: video.videoId,
       title: video.title,
       author: video.author || 'Unknown',
       thumbnail: video.videoThumbnails?.[0]?.url,
-      sourceType: 'youtube', // Keep standard source type
-      aiVocalRequested: true // Flag for AI Vocal processing
+      sourceType: 'youtube'
     });
-    // Optional: add a toast here
+    
+    useUIStore.getState().showVocalModeModal(newUuid, video.videoId);
   };
 
   return (
