@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Play, Pause, SkipForward, RotateCcw, Volume2, VolumeX, Maximize, Cast, Mic, MicOff, ChevronUp, Mic2, Music, SlidersHorizontal, Type } from "lucide-react";
 import { usePlayerStore } from "../stores/usePlayerStore";
 import { useLyricsStore } from "../stores/useLyricsStore";
-import { useMixerStore } from "../stores/useMixerStore";
+import { useMixerStore, type TrackType } from "../stores/useMixerStore";
 import { useShallow } from "zustand/react/shallow";
 import { useUIStore } from "../../../stores/useUIStore";
 import { useCast } from "../../../plugins/cast/context/CastContext";
@@ -83,6 +83,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
     }, [currentVideo?.aiVocalRequested, activeVideoId, aiJob, aiVocalStore]);
 
     const isAiReady = currentVideo?.aiVocalRequested && activeVideoId && aiJob?.status === 'ready';
+    const isProMode = aiJob?.mode === 'pro';
 
 
 
@@ -108,7 +109,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
         };
     }, []);
 
-    const handleVolumeChange = (track: 'vocals' | 'instrumental', value: number) => {
+    const handleVolumeChange = (track: TrackType, value: number) => {
         setVolume(track, value);
     };
 
@@ -300,16 +301,56 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                 </div>
                             </div>
 
-                            {/* Instrumental */}
-                            <div>
-                                <div className="flex justify-between text-xs font-bold mb-2 text-black dark:text-white">
-                                    <span>ดนตรี (Instrumental)</span>
-                                    <span className="text-blue-500">{trackStates.instrumental.muted ? 0 : volumes.instrumental}%</span>
+                            {/* Instrumental (Basic Mode or Karaoke) */}
+                            {!isProMode && (
+                                <div>
+                                    <div className="flex justify-between text-xs font-bold mb-2 text-black dark:text-white">
+                                        <span>ดนตรี (Instrumental)</span>
+                                        <span className="text-blue-500">{trackStates.instrumental.muted ? 0 : volumes.instrumental}%</span>
+                                    </div>
+                                    <div className="flex items-center gap-3 mt-3">
+                                        <input type="range" min="0" max="100" value={trackStates.instrumental.muted ? 0 : volumes.instrumental} onChange={(e) => handleVolumeChange('instrumental', parseInt(e.target.value))} className="flex-1 h-1.5 bg-gray-100 dark:bg-zinc-800 rounded-full appearance-none accent-blue-500" />
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-3 mt-3">
-                                    <input type="range" min="0" max="100" value={trackStates.instrumental.muted ? 0 : volumes.instrumental} onChange={(e) => handleVolumeChange('instrumental', parseInt(e.target.value))} className="flex-1 h-1.5 bg-gray-100 dark:bg-zinc-800 rounded-full appearance-none accent-blue-500" />
-                                </div>
-                            </div>
+                            )}
+
+                            {/* Pro Mode Tracks */}
+                            {isProMode && (
+                                <>
+                                    {/* Drums */}
+                                    <div className="mb-5">
+                                        <div className="flex justify-between text-xs font-bold mb-2 text-black dark:text-white">
+                                            <span>กลอง (Drums)</span>
+                                            <span className="text-orange-500">{trackStates.drums.muted ? 0 : volumes.drums}%</span>
+                                        </div>
+                                        <div className="flex items-center gap-3 mt-3">
+                                            <input type="range" min="0" max="100" value={trackStates.drums.muted ? 0 : volumes.drums} onChange={(e) => handleVolumeChange('drums', parseInt(e.target.value))} className="flex-1 h-1.5 bg-gray-100 dark:bg-zinc-800 rounded-full appearance-none accent-orange-500" />
+                                        </div>
+                                    </div>
+
+                                    {/* Bass */}
+                                    <div className="mb-5">
+                                        <div className="flex justify-between text-xs font-bold mb-2 text-black dark:text-white">
+                                            <span>เบส (Bass)</span>
+                                            <span className="text-purple-500">{trackStates.bass.muted ? 0 : volumes.bass}%</span>
+                                        </div>
+                                        <div className="flex items-center gap-3 mt-3">
+                                            <input type="range" min="0" max="100" value={trackStates.bass.muted ? 0 : volumes.bass} onChange={(e) => handleVolumeChange('bass', parseInt(e.target.value))} className="flex-1 h-1.5 bg-gray-100 dark:bg-zinc-800 rounded-full appearance-none accent-purple-500" />
+                                        </div>
+                                    </div>
+
+                                    {/* Other */}
+                                    <div>
+                                        <div className="flex justify-between text-xs font-bold mb-2 text-black dark:text-white">
+                                            <span>ดนตรีอื่นๆ (Other)</span>
+                                            <span className="text-blue-500">{trackStates.other.muted ? 0 : volumes.other}%</span>
+                                        </div>
+                                        <div className="flex items-center gap-3 mt-3">
+                                            <input type="range" min="0" max="100" value={trackStates.other.muted ? 0 : volumes.other} onChange={(e) => handleVolumeChange('other', parseInt(e.target.value))} className="flex-1 h-1.5 bg-gray-100 dark:bg-zinc-800 rounded-full appearance-none accent-blue-500" />
+                                        </div>
+                                    </div>
+                                </>
+                            )}
                         </>
 
                     {/* Lyrics Toggle */}
