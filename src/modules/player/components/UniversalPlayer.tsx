@@ -241,6 +241,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
             rel: 0 as 0,
             showinfo: 0 as 0,
             iv_load_policy: 3 as 3,
+            cc_load_policy: 0 as 0 | 1,
             origin: typeof window !== 'undefined' ? window.location.origin : undefined,
             enablejsapi: 1 as 0 | 1,
         },

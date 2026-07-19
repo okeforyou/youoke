@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useLyricsStore } from '../stores/useLyricsStore';
 import { usePlayerStore } from '../stores/usePlayerStore';
 import clsx from 'clsx';
@@ -11,11 +11,9 @@ interface LyricsOverlayProps {
 
 export const LyricsOverlay = ({ playerRef, activeVideoId, videoTitle }: LyricsOverlayProps) => {
     const { isEnabled, lyrics, source, fetchLyrics } = useLyricsStore();
-    const { isPlaying, currentSource } = usePlayerStore();
+    const { isPlaying } = usePlayerStore();
     
     const [currentTime, setCurrentTime] = useState(0);
-    const containerRef = useRef<HTMLDivElement>(null);
-    const activeLineRef = useRef<HTMLDivElement>(null);
 
     // Fetch lyrics when video changes
     useEffect(() => {
@@ -57,84 +55,83 @@ export const LyricsOverlay = ({ playerRef, activeVideoId, videoTitle }: LyricsOv
         return -1;
     }, [currentTime, lyrics]);
 
-    // Auto-scroll
-    useEffect(() => {
-        if (activeLineRef.current && containerRef.current) {
-            activeLineRef.current.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center',
-            });
-        }
-    }, [currentLineIndex]);
-
     if (!isEnabled || !lyrics || lyrics.length === 0) return null;
 
-    // Determine the visible lines (window around the current line)
-    // Traditional karaoke shows about 2-4 lines
-    const startIdx = Math.max(0, currentLineIndex - 1);
-    const visibleLines = lyrics.slice(startIdx, startIdx + 3);
+    // VCD Style Layout Logic
+    const activeIndex = Math.max(0, currentLineIndex);
+    const isTopActive = activeIndex % 2 === 0;
+
+    const topLineIndex = isTopActive ? activeIndex : activeIndex + 1;
+    const bottomLineIndex = isTopActive ? activeIndex + 1 : activeIndex;
+
+    const topLine = lyrics[topLineIndex];
+    const bottomLine = lyrics[bottomLineIndex];
+
+    const renderLine = (line: any, index: number, align: 'left' | 'right') => {
+        if (!line) return <div className="h-[4.5rem] md:h-[100px] w-full" />; // Empty slot to maintain height
+
+        // Fake sweep duration calculation
+        const nextTime = index < lyrics.length - 1 ? lyrics[index + 1].time : line.time + 5;
+        const rawDuration = nextTime - line.time;
+        // Don't sweep slower than 5 seconds (prevent super slow sweep during instrumental)
+        const lineDuration = Math.min(rawDuration, 5); 
+
+        let progress = 0;
+        if (index < currentLineIndex) {
+            progress = 1;
+        } else if (index === currentLineIndex) {
+            progress = (currentTime - line.time) / lineDuration;
+        }
+        progress = Math.min(1, Math.max(0, progress));
+
+        const isActive = index === currentLineIndex;
+
+        return (
+            <div className={`flex w-full ${align === 'left' ? 'justify-start' : 'justify-end'} h-[4.5rem] md:h-[100px] items-center`}>
+                <div 
+                    className={clsx(
+                        "relative inline-block font-black text-[32px] md:text-[56px] tracking-wide",
+                        "transition-transform duration-200",
+                        isActive ? "scale-100" : "scale-[0.95]" // Slight pop when active
+                    )}
+                    style={{
+                        WebkitTextStroke: '4px black', // Thick outline for VCD style
+                        paintOrder: 'stroke fill',
+                    }}
+                >
+                    {/* Base Text (White with shadow) */}
+                    <span className="text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]">
+                        {line.text}
+                    </span>
+                    
+                    {/* Swept Text (Blue) */}
+                    <span 
+                        className="absolute left-0 top-0 overflow-hidden text-[#2563eb] whitespace-pre drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]"
+                        style={{ 
+                            width: `${progress * 100}%`,
+                            WebkitTextStroke: '4px black',
+                            paintOrder: 'stroke fill',
+                            transition: isActive ? 'width 0.1s linear' : 'none'
+                        }}
+                    >
+                        {line.text}
+                    </span>
+                </div>
+            </div>
+        );
+    };
 
     return (
-        <div className="absolute inset-0 pointer-events-none z-40 flex items-end justify-center pb-20">
+        <div className="absolute inset-0 pointer-events-none z-40 flex items-end justify-center pb-16 md:pb-24">
             {/* Lyrics Container */}
-            <div 
-                ref={containerRef}
-                className="w-[90%] max-w-4xl text-center space-y-4 px-4 py-8"
-            >
-                {/* Source Attribution (only show briefly or keep small) */}
+            <div className="w-[95%] max-w-5xl flex flex-col space-y-2 px-6">
                 {source && (
                     <div className="absolute top-4 left-4 bg-black/40 backdrop-blur-sm rounded-lg px-2 py-1 text-[10px] text-white/50 font-medium">
                         เนื้อเพลงจาก: {source === 'lrclib' ? 'LRCLIB' : 'YouTube CC'}
                     </div>
                 )}
-
-                {lyrics.map((line, index) => {
-                    // Only render lines near the current one to save DOM nodes
-                    if (Math.abs(index - currentLineIndex) > 3) return null;
-
-                    const isActive = index === currentLineIndex;
-                    const isPassed = index < currentLineIndex;
-                    
-                    // For sweep effect on LRCLIB synced lyrics:
-                    // We need the duration of the line. Approximate it by next line time.
-                    const nextTime = index < lyrics.length - 1 ? lyrics[index + 1].time : line.time + 5;
-                    const lineDuration = nextTime - line.time;
-                    const progress = isActive ? Math.min(1, Math.max(0, (currentTime - line.time) / lineDuration)) : (isPassed ? 1 : 0);
-
-                    return (
-                        <div 
-                            key={index} 
-                            ref={isActive ? activeLineRef : null}
-                            className={clsx(
-                                "transition-all duration-300 ease-out font-black transform",
-                                isActive ? "text-3xl md:text-5xl scale-110 opacity-100" : "text-2xl md:text-3xl opacity-50 scale-100"
-                            )}
-                            style={{
-                                textShadow: '2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 4px 10px rgba(0,0,0,0.8)'
-                            }}
-                        >
-                            {/* The Sweep Background Text (White/Gray) */}
-                            <div className="relative inline-block">
-                                <span className={isActive ? "text-white" : "text-gray-300"}>
-                                    {line.text}
-                                </span>
-                                
-                                {/* The Swept Foreground Text (Yellow/Primary) */}
-                                {source === 'lrclib' && (
-                                    <span 
-                                        className="absolute left-0 top-0 overflow-hidden text-yellow-400 whitespace-pre"
-                                        style={{ 
-                                            width: `${progress * 100}%`,
-                                            transition: isActive ? 'width 0.1s linear' : 'none'
-                                        }}
-                                    >
-                                        {line.text}
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-                    );
-                })}
+                {renderLine(topLine, topLineIndex, 'left')}
+                {renderLine(bottomLine, bottomLineIndex, 'right')}
             </div>
         </div>
     );
