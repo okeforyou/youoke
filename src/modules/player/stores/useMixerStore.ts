@@ -78,7 +78,7 @@ export const useMixerStore = create<MixerState>()(
             }
         }),
         {
-            name: 'youoke-mixer-storage',
+            name: 'youoke-mixer-storage-v2',
         }
     )
 );
