@@ -21,7 +21,7 @@ function parseLRC(lrc: string) {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    const { videoId, title } = req.query;
+    const { videoId, title, forceSource } = req.query;
 
     if (!videoId || typeof videoId !== 'string') {
         return res.status(400).json({ error: 'Missing videoId' });
@@ -30,8 +30,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let lyrics: any[] = [];
     let source: 'lrclib' | 'youtube' | null = null;
 
-    // 1. Try LRCLIB first if title is provided
-    if (title && typeof title === 'string') {
+    // 1. Try LRCLIB first if title is provided and we aren't forcing youtube
+    if (title && typeof title === 'string' && forceSource !== 'youtube') {
         try {
             // Clean title (e.g. remove "Official MV", "Lyrics", etc.)
             const cleanTitle = title

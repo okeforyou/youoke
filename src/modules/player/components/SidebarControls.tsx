@@ -54,7 +54,15 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
         setVolume
     } = useMixerStore();
 
-    const { isEnabled: showLyrics, toggleLyrics, syncOffset, setSyncOffset } = useLyricsStore();
+    const { isEnabled: showLyrics, toggleLyrics, syncOffset, setSyncOffset, preferredSource, setPreferredSource, fetchLyrics } = useLyricsStore();
+
+    const handleSourceChange = (src: 'auto' | 'youtube') => {
+        setPreferredSource(src);
+        const activeId = currentVideo?.videoId || currentVideo?.id;
+        if (activeId) {
+            fetchLyrics(activeId, currentVideo?.title || '', src);
+        }
+    };
 
     const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
     const { setCastModalOpen } = useUIStore();
@@ -318,34 +326,68 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                             {showLyrics ? "ปิดเนื้อเพลง" : "เปิดเนื้อเพลง"}
                         </button>
                         
-                        {/* Sync Offset Controls */}
+                        {/* Lyrics Details Controls */}
                         {showLyrics && (
-                            <div className="mt-4 p-3 bg-gray-50 dark:bg-zinc-800/50 rounded-xl border border-gray-100 dark:border-zinc-700/50">
-                                <div className="flex justify-between text-[10px] font-bold mb-2 text-black/70 dark:text-zinc-400 uppercase">
-                                    <span>ปรับเวลา (Sync)</span>
-                                    <span className={syncOffset !== 0 ? "text-primary" : ""}>
-                                        {syncOffset > 0 ? '+' : ''}{syncOffset.toFixed(1)}s
-                                    </span>
+                            <div className="mt-4 p-3 bg-gray-50 dark:bg-zinc-800/50 rounded-xl border border-gray-100 dark:border-zinc-700/50 flex flex-col gap-4">
+                                {/* Source Selector */}
+                                <div>
+                                    <div className="flex justify-between text-[10px] font-bold mb-2 text-black/70 dark:text-zinc-400 uppercase">
+                                        <span>แหล่งข้อมูล (Source)</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <button 
+                                            onClick={() => handleSourceChange('auto')}
+                                            className={clsx(
+                                                "flex-1 py-1.5 rounded shadow-sm text-[10px] font-bold transition-all border",
+                                                preferredSource === 'auto' 
+                                                    ? "bg-primary text-white border-primary" 
+                                                    : "bg-white dark:bg-zinc-700 text-black dark:text-white border-gray-200 dark:border-zinc-600 hover:bg-gray-50 dark:hover:bg-zinc-600"
+                                            )}
+                                        >
+                                            อัตโนมัติ (LRCLIB)
+                                        </button>
+                                        <button 
+                                            onClick={() => handleSourceChange('youtube')}
+                                            className={clsx(
+                                                "flex-1 py-1.5 rounded shadow-sm text-[10px] font-bold transition-all border",
+                                                preferredSource === 'youtube' 
+                                                    ? "bg-blue-600 text-white border-blue-600" 
+                                                    : "bg-white dark:bg-zinc-700 text-black dark:text-white border-gray-200 dark:border-zinc-600 hover:bg-gray-50 dark:hover:bg-zinc-600"
+                                            )}
+                                        >
+                                            YouTube CC
+                                        </button>
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <button 
-                                        onClick={() => setSyncOffset(syncOffset - 0.5)}
-                                        className="flex-1 py-1.5 bg-white dark:bg-zinc-700 border border-gray-200 dark:border-zinc-600 rounded shadow-sm text-xs font-bold hover:bg-gray-50 dark:hover:bg-zinc-600 active:scale-95 transition-all text-black dark:text-white"
-                                    >
-                                        -0.5s
-                                    </button>
-                                    <button 
-                                        onClick={() => setSyncOffset(0)}
-                                        className="px-3 py-1.5 bg-gray-200 dark:bg-zinc-800 rounded text-[10px] font-bold text-gray-500 hover:text-black dark:hover:text-white transition-colors"
-                                    >
-                                        Reset
-                                    </button>
-                                    <button 
-                                        onClick={() => setSyncOffset(syncOffset + 0.5)}
-                                        className="flex-1 py-1.5 bg-white dark:bg-zinc-700 border border-gray-200 dark:border-zinc-600 rounded shadow-sm text-xs font-bold hover:bg-gray-50 dark:hover:bg-zinc-600 active:scale-95 transition-all text-black dark:text-white"
-                                    >
-                                        +0.5s
-                                    </button>
+
+                                {/* Sync Offset Controls */}
+                                <div>
+                                    <div className="flex justify-between text-[10px] font-bold mb-2 text-black/70 dark:text-zinc-400 uppercase">
+                                        <span>ปรับเวลา (Sync)</span>
+                                        <span className={syncOffset !== 0 ? "text-primary" : ""}>
+                                            {syncOffset > 0 ? '+' : ''}{syncOffset.toFixed(1)}s
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <button 
+                                            onClick={() => setSyncOffset(syncOffset - 0.5)}
+                                            className="flex-1 py-1.5 bg-white dark:bg-zinc-700 border border-gray-200 dark:border-zinc-600 rounded shadow-sm text-xs font-bold hover:bg-gray-50 dark:hover:bg-zinc-600 active:scale-95 transition-all text-black dark:text-white"
+                                        >
+                                            -0.5s
+                                        </button>
+                                        <button 
+                                            onClick={() => setSyncOffset(0)}
+                                            className="px-3 py-1.5 bg-gray-200 dark:bg-zinc-800 rounded text-[10px] font-bold text-gray-500 hover:text-black dark:hover:text-white transition-colors"
+                                        >
+                                            Reset
+                                        </button>
+                                        <button 
+                                            onClick={() => setSyncOffset(syncOffset + 0.5)}
+                                            className="flex-1 py-1.5 bg-white dark:bg-zinc-700 border border-gray-200 dark:border-zinc-600 rounded shadow-sm text-xs font-bold hover:bg-gray-50 dark:hover:bg-zinc-600 active:scale-95 transition-all text-black dark:text-white"
+                                        >
+                                            +0.5s
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         )}

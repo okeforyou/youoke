@@ -91,7 +91,7 @@ export const LyricsOverlay = ({ playerRef, activeVideoId, videoTitle }: LyricsOv
             <div className={`flex w-full ${align === 'left' ? 'justify-start' : 'justify-end'} min-h-[4rem] md:min-h-[6rem] items-center`}>
                 <div 
                     className={clsx(
-                        "relative inline-block font-black text-2xl sm:text-3xl md:text-5xl lg:text-[56px] tracking-wide",
+                        "relative inline-block font-black text-xl sm:text-2xl md:text-4xl lg:text-[44px] tracking-wide",
                         "transition-transform duration-200 break-words whitespace-pre-wrap max-w-full text-center md:text-left",
                         isActive ? "scale-100" : "scale-[0.95]"
                     )}

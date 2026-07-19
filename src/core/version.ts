@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.122";
+export const SYSTEM_VERSION = "5.5.123";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "v5.5.123 (Lyrics Source Choice & Font Sizing)",
+        date: "19 ก.ค. 2569",
+        changes: [
+            "Feature: Added a 'Source' selector in the Lyrics settings to switch between Auto (LRCLIB synced lyrics) and YouTube CC (Official video subtitles). This is useful for Live/Concert videos where the studio timing doesn't match.",
+            "UI: Reduced Lyrics font size significantly on mobile screens to prevent text crowding."
+        ],
+        recent_updates: "Added Lyrics Source selector (LRCLIB / YouTube CC) and optimized mobile font sizes."
+    },
     {
         version: "v5.5.122 (Lyrics Sync Offset & UI Wrapping Fix)",
         date: "19 ก.ค. 2569",
