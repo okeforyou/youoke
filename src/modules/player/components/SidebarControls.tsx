@@ -54,7 +54,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
         setVolume
     } = useMixerStore();
 
-    const { isEnabled: showLyrics, toggleLyrics } = useLyricsStore();
+    const { isEnabled: showLyrics, toggleLyrics, syncOffset, setSyncOffset } = useLyricsStore();
 
     const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
     const { setCastModalOpen } = useUIStore();
@@ -317,6 +317,38 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                             <Type size={16} />
                             {showLyrics ? "ปิดเนื้อเพลง" : "เปิดเนื้อเพลง"}
                         </button>
+                        
+                        {/* Sync Offset Controls */}
+                        {showLyrics && (
+                            <div className="mt-4 p-3 bg-gray-50 dark:bg-zinc-800/50 rounded-xl border border-gray-100 dark:border-zinc-700/50">
+                                <div className="flex justify-between text-[10px] font-bold mb-2 text-black/70 dark:text-zinc-400 uppercase">
+                                    <span>ปรับเวลา (Sync)</span>
+                                    <span className={syncOffset !== 0 ? "text-primary" : ""}>
+                                        {syncOffset > 0 ? '+' : ''}{syncOffset.toFixed(1)}s
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <button 
+                                        onClick={() => setSyncOffset(syncOffset - 0.5)}
+                                        className="flex-1 py-1.5 bg-white dark:bg-zinc-700 border border-gray-200 dark:border-zinc-600 rounded shadow-sm text-xs font-bold hover:bg-gray-50 dark:hover:bg-zinc-600 active:scale-95 transition-all text-black dark:text-white"
+                                    >
+                                        -0.5s
+                                    </button>
+                                    <button 
+                                        onClick={() => setSyncOffset(0)}
+                                        className="px-3 py-1.5 bg-gray-200 dark:bg-zinc-800 rounded text-[10px] font-bold text-gray-500 hover:text-black dark:hover:text-white transition-colors"
+                                    >
+                                        Reset
+                                    </button>
+                                    <button 
+                                        onClick={() => setSyncOffset(syncOffset + 0.5)}
+                                        className="flex-1 py-1.5 bg-white dark:bg-zinc-700 border border-gray-200 dark:border-zinc-600 rounded shadow-sm text-xs font-bold hover:bg-gray-50 dark:hover:bg-zinc-600 active:scale-95 transition-all text-black dark:text-white"
+                                    >
+                                        +0.5s
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}

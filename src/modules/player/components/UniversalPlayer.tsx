@@ -184,6 +184,14 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
 
     // Handle Play/Pause
     useEffect(() => {
+        // Always sync YouTube play state regardless of AI
+        if (ytPlayerRef.current && typeof ytPlayerRef.current.playVideo === 'function') {
+            try {
+                if (isPlaying) ytPlayerRef.current.playVideo();
+                else ytPlayerRef.current.pauseVideo();
+            } catch (e) {}
+        }
+
         if (isAiReady) {
             if (isPlaying) {
                 let ytTime: number | undefined;
@@ -197,8 +205,18 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                     if (vocalRef.current && Math.abs(vocalRef.current.currentTime - ytTime) > 0.3) vocalRef.current.currentTime = ytTime;
                     if (instrumentalRef.current && Math.abs(instrumentalRef.current.currentTime - ytTime) > 0.3) instrumentalRef.current.currentTime = ytTime;
                 }
-                vocalRef.current?.play().catch(e => console.error(e));
-                instrumentalRef.current?.play().catch(e => console.error(e));
+                
+                // Catch play errors (browser suspend) and force reload if needed
+                vocalRef.current?.play().catch(e => {
+                    console.warn("Vocal resume failed:", e);
+                    vocalRef.current?.load();
+                    vocalRef.current?.play().catch(()=>{});
+                });
+                instrumentalRef.current?.play().catch(e => {
+                    console.warn("Inst resume failed:", e);
+                    instrumentalRef.current?.load();
+                    instrumentalRef.current?.play().catch(()=>{});
+                });
             } else {
                 vocalRef.current?.pause();
                 instrumentalRef.current?.pause();

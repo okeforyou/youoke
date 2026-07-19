@@ -10,7 +10,7 @@ interface LyricsOverlayProps {
 }
 
 export const LyricsOverlay = ({ playerRef, activeVideoId, videoTitle }: LyricsOverlayProps) => {
-    const { isEnabled, lyrics, source, fetchLyrics } = useLyricsStore();
+    const { isEnabled, lyrics, source, fetchLyrics, syncOffset } = useLyricsStore();
     const { isPlaying } = usePlayerStore();
     
     const [currentTime, setCurrentTime] = useState(0);
@@ -43,17 +43,19 @@ export const LyricsOverlay = ({ playerRef, activeVideoId, videoTitle }: LyricsOv
         return () => cancelAnimationFrame(animationFrameId);
     }, [isEnabled, isPlaying, playerRef]);
 
-    // Find current line index
+    // Find current line index (taking syncOffset into account)
     const currentLineIndex = useMemo(() => {
         if (!lyrics || lyrics.length === 0) return -1;
-        // Find the last line whose time is <= currentTime
+        
+        const adjustedTime = currentTime - syncOffset;
+        
         for (let i = lyrics.length - 1; i >= 0; i--) {
-            if (currentTime >= lyrics[i].time) {
+            if (adjustedTime >= lyrics[i].time) {
                 return i;
             }
         }
         return -1;
-    }, [currentTime, lyrics]);
+    }, [currentTime, lyrics, syncOffset]);
 
     if (!isEnabled || !lyrics || lyrics.length === 0) return null;
 
@@ -68,54 +70,53 @@ export const LyricsOverlay = ({ playerRef, activeVideoId, videoTitle }: LyricsOv
     const bottomLine = lyrics[bottomLineIndex];
 
     const renderLine = (line: any, index: number, align: 'left' | 'right') => {
-        if (!line) return <div className="h-[4.5rem] md:h-[100px] w-full" />; // Empty slot to maintain height
+        if (!line) return <div className="min-h-[4rem] md:min-h-[6rem] w-full" />; // Empty slot
 
-        // Fake sweep duration calculation
+        const adjustedTime = currentTime - syncOffset;
         const nextTime = index < lyrics.length - 1 ? lyrics[index + 1].time : line.time + 5;
         const rawDuration = nextTime - line.time;
-        // Don't sweep slower than 5 seconds (prevent super slow sweep during instrumental)
         const lineDuration = Math.min(rawDuration, 5); 
 
         let progress = 0;
         if (index < currentLineIndex) {
             progress = 1;
         } else if (index === currentLineIndex) {
-            progress = (currentTime - line.time) / lineDuration;
+            progress = (adjustedTime - line.time) / lineDuration;
         }
         progress = Math.min(1, Math.max(0, progress));
 
         const isActive = index === currentLineIndex;
 
         return (
-            <div className={`flex w-full ${align === 'left' ? 'justify-start' : 'justify-end'} h-[4.5rem] md:h-[100px] items-center`}>
+            <div className={`flex w-full ${align === 'left' ? 'justify-start' : 'justify-end'} min-h-[4rem] md:min-h-[6rem] items-center`}>
                 <div 
                     className={clsx(
-                        "relative inline-block font-black text-[32px] md:text-[56px] tracking-wide",
-                        "transition-transform duration-200",
-                        isActive ? "scale-100" : "scale-[0.95]" // Slight pop when active
+                        "relative inline-block font-black text-2xl sm:text-3xl md:text-5xl lg:text-[56px] tracking-wide",
+                        "transition-transform duration-200 break-words whitespace-pre-wrap max-w-full text-center md:text-left",
+                        isActive ? "scale-100" : "scale-[0.95]"
                     )}
                     style={{
-                        WebkitTextStroke: '4px black', // Thick outline for VCD style
+                        WebkitTextStroke: '3px black',
                         paintOrder: 'stroke fill',
                     }}
                 >
                     {/* Base Text (White with shadow) */}
                     <span className={clsx(
                         "text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]",
-                        source === 'youtube' && isActive && "text-[#2563eb]" // Just turn blue if active for CC
+                        source === 'youtube' && isActive && "text-[#2563eb]"
                     )}>
                         {line.text}
                     </span>
                     
-                    {/* Swept Text (Blue) - Only for LRCLIB which has real timing */}
+                    {/* Swept Text (Blue) - Uses clip-path to support multi-line wrap sweep */}
                     {source === 'lrclib' && (
                         <span 
-                            className="absolute left-0 top-0 overflow-hidden text-[#2563eb] whitespace-pre drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]"
+                            className="absolute left-0 top-0 text-[#2563eb] drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] whitespace-pre-wrap break-words max-w-full text-center md:text-left"
                             style={{ 
-                                width: `${progress * 100}%`,
-                                WebkitTextStroke: '4px black',
+                                clipPath: `inset(0% ${100 - (progress * 100)}% 0% 0%)`,
+                                WebkitTextStroke: '3px black',
                                 paintOrder: 'stroke fill',
-                                transition: isActive ? 'width 0.1s linear' : 'none'
+                                transition: isActive ? 'clip-path 0.1s linear' : 'none'
                             }}
                         >
                             {line.text}

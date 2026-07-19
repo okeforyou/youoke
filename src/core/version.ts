@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.121";
+export const SYSTEM_VERSION = "5.5.122";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "v5.5.122 (Lyrics Sync Offset & UI Wrapping Fix)",
+        date: "19 ก.ค. 2569",
+        changes: [
+            "Bugfix: Fixed missing audio after pausing by explicitly syncing YouTube's programmatic play/pause state and reloading audio streams if the browser suspended them.",
+            "Feature: Added 'Sync Offset' (+/- 0.5s) to the Mixer under Lyrics settings. This allows users to manually shift LRCLIB studio lyrics to match Live/MV video versions.",
+            "UI: Redesigned LyricsOverlay to properly wrap long text (like Palmy's songs) using clip-path for sweeping, and reduced font sizes on smaller screens to prevent overflow."
+        ],
+        recent_updates: "Added Lyrics Sync slider and fixed multi-line wrapping."
+    },
     {
         version: "v5.5.121 (UI Polish: Toast & Lyrics Sweep)",
         date: "19 ก.ค. 2569",

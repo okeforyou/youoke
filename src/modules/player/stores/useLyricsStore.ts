@@ -12,8 +12,11 @@ interface LyricsState {
     source: 'lrclib' | 'youtube' | null;
     error: string | null;
     
+    syncOffset: number;
+    
     toggleLyrics: () => void;
     setLyricsEnabled: (enabled: boolean) => void;
+    setSyncOffset: (offset: number) => void;
     fetchLyrics: (videoId: string, title: string) => Promise<void>;
     clearLyrics: () => void;
 }
@@ -23,12 +26,14 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
     isLoading: false,
     lyrics: [],
     source: null,
+    syncOffset: 0,
     error: null,
 
     toggleLyrics: () => set((state) => ({ isEnabled: !state.isEnabled })),
     setLyricsEnabled: (enabled) => set({ isEnabled: enabled }),
+    setSyncOffset: (offset) => set({ syncOffset: offset }),
 
-    clearLyrics: () => set({ lyrics: [], source: null, error: null, isLoading: false }),
+    clearLyrics: () => set({ lyrics: [], source: null, error: null, isLoading: false, syncOffset: 0 }),
 
     fetchLyrics: async (videoId: string, title: string) => {
         set({ isLoading: true, error: null, lyrics: [], source: null });
