@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.131";
+export const SYSTEM_VERSION = "5.5.132";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.132",
+        date: "2026-07-20",
+        changes: [
+            "feat: Updated QueueList AI Vocal badge to replace the author name, providing more space.",
+            "feat: Replaced 2CH/4CH text marks with intuitive instrument icons (Vocals, Drums, Bass, Guitar) in the QueueList.",
+            "feat: Made the 2CH badge in the QueueList clickable, allowing users to upgrade to 4CH directly with a simple confirmation prompt."
+        ]
+    },
     {
         version: "5.5.131",
         date: "2026-07-20",

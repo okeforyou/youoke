@@ -1,5 +1,5 @@
 import React from "react";
-import { ListMusic, Trash2, ChevronDown, Loader2, AudioLines, AudioWaveform, GripVertical } from "lucide-react";
+import { ListMusic, Trash2, ChevronDown, Loader2, AudioLines, AudioWaveform, GripVertical, MicVocal, Music, Drum, Guitar, Piano } from "lucide-react";
 import { usePlayerStore } from "../stores/usePlayerStore";
 import { useAIVocalStore } from "../../../stores/useAIVocalStore";
 import { useUIStore } from "../../../stores/useUIStore";
@@ -93,20 +93,42 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                     </div>
                 ) : (
                     <div className="flex items-center gap-2 w-full">
-                        <span className="truncate text-[11.5px] text-gray-500 dark:text-zinc-500 font-medium">
-                            {video.author}
-                        </span>
-                        
                         {!isKaraoke && (
-                            <div className="shrink-0 ml-auto flex items-center">
+                            <div className="shrink-0 flex items-center">
                                 {aiJob?.status === 'ready' ? (
-                                    <div className="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/20 text-blue-500 rounded flex items-center gap-1 border border-blue-100 dark:border-blue-800/50">
-                                        <AudioWaveform className="w-2.5 h-2.5" />
-                                        <span className="text-[9px] font-black uppercase tracking-wide mt-0.5 flex items-center gap-1">
+                                    <div 
+                                        onClick={(e) => {
+                                            if (aiJob.mode === 'pro') return;
+                                            e.stopPropagation();
+                                            if (window.confirm("คุณต้องการแยกเสียงใหม่เป็น 4 Channel (Pro Mode) หรือไม่?")) {
+                                                aiVocalStore.setDefaultMode('pro');
+                                                aiVocalStore.processAudio(video.uuid || video.id, 'pro');
+                                            }
+                                        }}
+                                        className={`px-2 py-0.5 rounded flex items-center gap-1.5 border transition-colors ${
+                                            aiJob.mode === 'pro' 
+                                                ? 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 border-yellow-200 dark:border-yellow-800/50 cursor-default' 
+                                                : 'bg-blue-50 dark:bg-blue-900/20 text-blue-500 border-blue-200 dark:border-blue-800/50 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/40'
+                                        }`}
+                                        title={aiJob.mode === 'pro' ? 'แยกเสียงแล้ว (4 แทร็ก)' : 'แยกเสียงแล้ว (2 แทร็ก) - คลิกเพื่ออัปเกรดเป็น 4 แทร็ก'}
+                                    >
+                                        <div className="flex items-center gap-0.5">
+                                            {aiJob.mode === 'pro' ? (
+                                                <>
+                                                    <MicVocal size={11} />
+                                                    <Drum size={11} />
+                                                    <Guitar size={11} />
+                                                    <Piano size={11} />
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <MicVocal size={11} />
+                                                    <Music size={11} />
+                                                </>
+                                            )}
+                                        </div>
+                                        <span className="text-[9.5px] font-black uppercase tracking-wide">
                                             แยกเสียงแล้ว
-                                            <span className="px-1 py-[1px] bg-blue-100 dark:bg-blue-800 rounded text-[8px]">
-                                                {aiJob.mode === 'pro' ? '4CH' : '2CH'}
-                                            </span>
                                         </span>
                                     </div>
                                 ) : aiJob?.status === 'error' ? (
@@ -114,7 +136,16 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                                         <span className="text-[9px] font-black uppercase tracking-wide mt-0.5">ล้มเหลว</span>
                                     </div>
                                 ) : (
-                                    <button 
+                                    <span className="truncate text-[11.5px] text-gray-500 dark:text-zinc-500 font-medium">
+                                        {video.author}
+                                    </span>
+                                )}
+                            </div>
+                        )}
+                        
+                        {!isKaraoke && !aiJob?.status && (
+                            <div className="shrink-0 ml-auto flex items-center">
+                                <button 
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             if (!video.aiVocalRequested) {
