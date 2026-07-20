@@ -159,7 +159,6 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                                         <AudioLines className="w-2.5 h-2.5" />
                                         <span className="text-[9px] font-black uppercase tracking-wide mt-0.5">ตัดเสียงร้อง</span>
                                     </button>
-                                )}
                             </div>
                         )}
                     </div>

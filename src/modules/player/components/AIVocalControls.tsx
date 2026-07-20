@@ -160,7 +160,7 @@ export const AIVocalControls = ({ mobile }: AIVocalControlsProps) => {
 
             {/* Vocal Volume Slider Popover */}
             {showSlider && isActive && currentJob?.status === 'ready' && (
-                <div className="absolute bottom-full right-1/2 translate-x-1/2 mb-3 bg-white/95 backdrop-blur-xl border border-gray-200 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] rounded-2xl p-4 w-[240px] z-50 animate-in fade-in zoom-in-95 duration-200">
+                <div className="absolute bottom-full right-1/2 translate-x-1/2 mb-3 bg-white/95 backdrop-blur-xl border border-gray-200 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] rounded-2xl p-4 w-[240px] z-50 animate-in fade-in zoom-in-95 duration-200 max-h-[60vh] overflow-y-auto custom-scrollbar">
                     
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2">
