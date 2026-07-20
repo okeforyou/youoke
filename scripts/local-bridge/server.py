@@ -164,7 +164,7 @@ def separate(req: SeparateRequest):
     download_success = False
     try:
         from pytubefix import YouTube
-        yt = YouTube(yt_url, client='WEB')
+        yt = YouTube(yt_url, client='TV')
         stream = yt.streams.get_audio_only()
         if stream:
             stream.download(output_path=song_dir, filename=f"{vid}.m4a")
@@ -180,6 +180,7 @@ def separate(req: SeparateRequest):
                 'format': 'm4a/bestaudio/best',
                 'outtmpl': os.path.join(song_dir, f"{vid}.%(ext)s"),
                 'quiet': True,
+                'cookiesfrombrowser': ('chrome',),  # Try to use Chrome cookies to bypass YouTube SABR
             }
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([yt_url])

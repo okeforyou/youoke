@@ -48,28 +48,28 @@ export const VocalModeModal = () => {
                     </div>
 
                     <div className="flex flex-col gap-3">
-                        {/* Basic Mode */}
+                        {/* Basic Mode (2CH) */}
                         <button
                             onClick={() => handleSelectMode('basic')}
                             disabled={isPro}
                             className={clsx(
-                                "flex items-start gap-4 p-4 rounded-xl text-left transition-all border group",
+                                "flex items-start gap-4 p-4 rounded-xl text-left transition-all group",
                                 isPro 
-                                    ? "bg-gray-50 dark:bg-zinc-800/50 border-gray-100 dark:border-zinc-800 opacity-50 cursor-not-allowed" 
-                                    : "bg-white dark:bg-zinc-800 border-gray-200 dark:border-zinc-700 hover:border-blue-400 hover:shadow-sm"
+                                    ? "bg-gray-100 dark:bg-zinc-800/50 opacity-50 cursor-not-allowed" 
+                                    : "bg-gray-100 dark:bg-zinc-800 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                             )}
                         >
                             <div className={clsx(
                                 "p-2 rounded-lg transition-colors",
                                 isPro 
-                                    ? "bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500" 
-                                    : "bg-gray-100 dark:bg-zinc-700 text-gray-600 dark:text-zinc-300 group-hover:bg-blue-100 group-hover:text-blue-500"
+                                    ? "bg-gray-200 dark:bg-zinc-700 text-gray-400 dark:text-zinc-500" 
+                                    : "bg-white dark:bg-zinc-700 text-gray-600 dark:text-zinc-300 group-hover:text-blue-500"
                             )}>
                                 <Mic className="w-5 h-5" />
                             </div>
                             <div>
                                 <h4 className={clsx("font-bold text-sm mb-1", isPro ? "text-gray-400 dark:text-zinc-500" : "text-gray-900 dark:text-white")}>
-                                    Basic Mode
+                                    โหมด 2CH (ดั้งเดิม)
                                 </h4>
                                 <p className={clsx("text-xs line-clamp-2 leading-relaxed", isPro ? "text-gray-400 dark:text-zinc-600" : "text-gray-500 dark:text-zinc-400")}>
                                     แยก 2 แทร็ก: เสียงร้อง และ ดนตรี (รวดเร็ว ใช้ทรัพยากรน้อย)
@@ -77,26 +77,25 @@ export const VocalModeModal = () => {
                             </div>
                         </button>
 
-                        {/* Pro Mode */}
+                        {/* Pro Mode (4CH) */}
                         <button
                             onClick={() => handleSelectMode('pro')}
                             className={clsx(
-                                "flex items-start gap-4 p-4 rounded-xl text-left transition-all border group",
-                                "bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30",
-                                "border-indigo-100 dark:border-indigo-800/50 hover:border-indigo-400 hover:shadow-md"
+                                "flex items-start gap-4 p-4 rounded-xl text-left transition-all group",
+                                "bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50"
                             )}
                         >
-                            <div className="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-500 group-hover:text-white transition-colors shadow-sm">
+                            <div className="p-2 rounded-lg bg-indigo-500 text-white shadow-sm">
                                 <Sparkles className="w-5 h-5" />
                             </div>
                             <div>
-                                <h4 className="font-bold text-sm text-indigo-900 dark:text-indigo-300 mb-1 flex items-center gap-2">
-                                    Pro Mode 
+                                <h4 className="font-bold text-sm text-indigo-900 dark:text-indigo-100 mb-1 flex items-center gap-2">
+                                    โหมด 4CH (อัปเกรด)
                                     <span className="text-[9px] font-black uppercase tracking-wider bg-indigo-500 text-white px-1.5 py-0.5 rounded-sm">
-                                        Multi-track
+                                        Pro
                                     </span>
                                 </h4>
-                                <p className="text-xs text-indigo-700/80 dark:text-indigo-400/80 line-clamp-2 leading-relaxed">
+                                <p className="text-xs text-indigo-700/80 dark:text-indigo-200/80 line-clamp-2 leading-relaxed">
                                     แยก 4 แทร็ก: ร้อง, กลอง, เบส, ดนตรี (ปรับละเอียดได้แบบ Moises)
                                 </p>
                             </div>

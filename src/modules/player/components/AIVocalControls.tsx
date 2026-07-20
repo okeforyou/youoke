@@ -128,6 +128,7 @@ export const AIVocalControls = ({ mobile }: AIVocalControlsProps) => {
                     <div className="space-y-2">
                         <button 
                             onClick={async () => {
+                                if (currentJob?.mode === 'pro') return; // Prevent downgrading to basic
                                 setShowModeSelect(false);
                                 if (currentVideoId) {
                                     if (!isActive) usePlayerStore.getState().updateQueueItem(currentVideo!.uuid, { aiVocalRequested: true });
@@ -135,9 +136,10 @@ export const AIVocalControls = ({ mobile }: AIVocalControlsProps) => {
                                     await aiVocal.processAudio(currentVideoId, 'basic');
                                 }
                             }}
-                            className="w-full text-left p-3 rounded-xl bg-gray-50 hover:bg-primary/10 hover:text-primary transition-colors"
+                            disabled={currentJob?.mode === 'pro'}
+                            className={`w-full text-left p-3 rounded-xl transition-colors ${currentJob?.mode === 'pro' ? 'bg-gray-100 opacity-50 cursor-not-allowed' : 'bg-gray-50 hover:bg-primary/10 hover:text-primary'}`}
                         >
-                            <div className="font-bold text-sm">Basic Mode</div>
+                            <div className={`font-bold text-sm ${currentJob?.mode === 'pro' ? 'text-gray-400' : ''}`}>Basic Mode (2CH)</div>
                             <div className="text-[10px] text-gray-500">แยก 2 แทร็ก (เสียงร้อง/ดนตรี)</div>
                         </button>
                         <button 
@@ -160,7 +162,7 @@ export const AIVocalControls = ({ mobile }: AIVocalControlsProps) => {
 
             {/* Vocal Volume Slider Popover */}
             {showSlider && isActive && currentJob?.status === 'ready' && (
-                <div className="absolute bottom-full right-1/2 translate-x-1/2 mb-3 bg-white/95 backdrop-blur-xl border border-gray-200 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] rounded-2xl p-4 w-[240px] z-50 animate-in fade-in zoom-in-95 duration-200 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                <div className="absolute bottom-full right-1/2 translate-x-1/2 mb-3 bg-white/95 backdrop-blur-xl border border-gray-200 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] rounded-2xl p-4 w-[240px] z-50 animate-in fade-in zoom-in-95 duration-200 max-h-[350px] overflow-y-auto">
                     
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2">
