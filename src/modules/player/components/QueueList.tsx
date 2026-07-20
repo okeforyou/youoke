@@ -102,23 +102,13 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                                                 if (aiJob.mode === 'pro') return;
                                                 e.stopPropagation();
                                                 import('../../../stores/useUIStore').then(({ useUIStore }) => {
-                                                    useUIStore.getState().showConfirm({
-                                                        title: 'อัปเกรดเป็น 4 Channel',
-                                                        message: 'คุณต้องการแยกเสียงใหม่แบบ 4 Channel (Pro Mode) หรือไม่? กระบวนการนี้จะใช้เวลาสักครู่',
-                                                        confirmText: 'อัปเกรดเลย',
-                                                        cancelText: 'ยกเลิก',
-                                                        type: 'info',
-                                                        onConfirm: () => {
-                                                            aiVocalStore.setDefaultMode('pro');
-                                                            aiVocalStore.processAudio(video.videoId || video.id, 'pro');
-                                                        }
-                                                    });
+                                                    useUIStore.getState().showVocalModeModal(video.uuid || video.id, video.videoId || video.id);
                                                 });
                                             }}
-                                            className={`px-2 py-0.5 rounded flex items-center justify-center border transition-colors ${
+                                            className={`px-2 py-0.5 rounded flex items-center justify-center transition-colors ${
                                                 aiJob.mode === 'pro' 
-                                                    ? 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 border-yellow-200 dark:border-yellow-800/50 cursor-default' 
-                                                    : 'bg-blue-50 dark:bg-blue-900/20 text-blue-500 border-blue-200 dark:border-blue-800/50 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/40'
+                                                    ? 'bg-yellow-500 text-white cursor-default' 
+                                                    : 'bg-blue-500 text-white cursor-pointer hover:bg-blue-600'
                                             }`}
                                             title={aiJob.mode === 'pro' ? 'แยกเสียงแล้ว (4 แทร็ก)' : 'แยกเสียงแล้ว (2 แทร็ก) - คลิกเพื่ออัปเกรดเป็น 4 แทร็ก'}
                                         >
@@ -126,7 +116,7 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                                                 {aiJob.mode === 'pro' ? 'แยกเสียงแล้ว 4CH' : 'แยกเสียงแล้ว 2CH'}
                                             </span>
                                         </div>
-                                        <div className="flex items-center gap-0.5 text-gray-500 dark:text-gray-400">
+                                        <div className="flex items-center gap-0.5 text-gray-400">
                                             {aiJob.mode === 'pro' ? (
                                                 <>
                                                     <MicVocal size={13} strokeWidth={2.5} />

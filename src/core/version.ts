@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.133";
+export const SYSTEM_VERSION = "5.5.134";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.134",
+        date: "2026-07-20",
+        changes: [
+            "ui: Restored solid background colors for AI Vocal badges (Blue for 2CH, Yellow for 4CH) instead of outline borders.",
+            "ux: Changed 4CH upgrade confirmation in QueueList to use the native Vocal Mode Modal instead of a generic confirm dialog."
+        ]
+    },
     {
         version: "5.5.133",
         date: "2026-07-20",
