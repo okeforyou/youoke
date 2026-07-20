@@ -181,9 +181,10 @@ def separate(req: SeparateRequest):
             # Using subprocess to run the standalone binary with Chrome cookies
             cmd = [
                 yt_dlp_exe,
-                "-f", "m4a/bestaudio/best",
+                "-f", "140/bestaudio/best",
                 "-o", out_template,
                 "--cookies-from-browser", "chrome",
+                "--js-runtimes", "node",
                 "--quiet",
                 "--no-warnings",
                 yt_url

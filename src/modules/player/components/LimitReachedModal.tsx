@@ -17,10 +17,10 @@ export const LimitReachedModal = () => {
 
     const title = isLoggedIn && isExpired 
         ? "สิทธิสมาชิกหมดอายุแล้ว!" 
-        : (upsell?.title || "โควต้าการลองใช้งานสิ้นสุดแล้ว");
+        : (upsell?.title || "กรุณาเข้าสู่ระบบเพื่อใช้งาน");
 
     const buttonText = !isLoggedIn 
-        ? (upsell?.button_text || "เชื่อมต่อผ่าน Gmail เพื่อรับสิทธิพิเศษ") 
+        ? (upsell?.button_text || "เชื่อมต่อผ่าน Gmail ฟรี 1 วัน") 
         : "อัปเกรดแผนการใช้งาน";
 
     const onClose = () => setLimitModalOpen(false);
@@ -60,15 +60,13 @@ export const LimitReachedModal = () => {
 
                     <div className="text-gray-500 dark:text-zinc-400 mb-8 px-2 font-medium leading-relaxed text-sm whitespace-pre-wrap">
                         {!isLoggedIn ? (
-                            upsell?.subtitle || (
-                                <>
-                                    กรุณา <span className="text-zinc-900 dark:text-white font-black">เชื่อมต่อผ่าน Gmail</span> เพื่อใช้งานผ่านสิทธิส่วนบุคคลของคุณ
-                                    <br />
-                                    <span className="text-[11px] opacity-80">(YouOke เป็นเพียงระบบจัดคิวเพลงผ่านบัญชีของสมาชิกเท่านั้น)</span>
-                                    <br />
-                                    เพื่อเล่นเพลงโปรดของคุณได้ต่อเนื่องและไม่มีโฆษณาคั่น
-                                </>
-                            )
+                            <>
+                                คุณจำเป็นต้องเข้าสู่ระบบด้วยบัญชี Gmail เพื่อเข้าถึงคลังเพลงบน YouTube 
+                                <br /><br />
+                                <span className="text-[11px] opacity-80 leading-tight block">
+                                    (เราเป็นเพียงเครื่องเล่นและระบบจัดคิวเพลงเพื่อความสะดวกเท่านั้น การใช้งานเป็นการใช้สิทธิ์ผ่านบัญชีของคุณเองโดยตรง เพื่อให้เป็นไปตามข้อกำหนดด้านลิขสิทธิ์)
+                                </span>
+                            </>
                         ) : (
                             "แพ็กเกจพรีเมียมส่วนตัวของคุณสิ้นสุดแล้ว เลือกแผนการใช้งานใหม่เพื่อสนุกต่อได้ทันที"
                         )}
