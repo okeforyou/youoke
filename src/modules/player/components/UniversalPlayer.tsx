@@ -178,10 +178,22 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                     
                     const syncRef = (ref: React.RefObject<HTMLAudioElement>) => {
                         if (!ref.current) return;
+                        
+                        // Sync time if drifting more than 0.3s
                         if (Math.abs(ref.current.currentTime - ytTime) > 0.3) {
                             ref.current.currentTime = ytTime;
                         }
-                        if (ref.current.paused) ref.current.play().catch(e => console.error(e));
+                        
+                        // If it got paused unexpectedly (e.g., audio device change)
+                        if (ref.current.paused) {
+                            ref.current.play().catch(e => {
+                                console.warn("Audio resume failed, attempting reload:", e);
+                                // Force reload to recover from device change glitches
+                                ref.current?.load();
+                                if (ref.current) ref.current.currentTime = ytTime;
+                                ref.current?.play().catch(() => {});
+                            });
+                        }
                     };
 
                     syncRef(vocalRef);
