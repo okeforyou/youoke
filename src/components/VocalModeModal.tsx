@@ -10,10 +10,10 @@ export const VocalModeModal = () => {
     const { isOpen, videoUuid, videoId } = vocalModeModal;
     const processAudio = useAIVocalStore(state => state.processAudio);
     const updateQueueItem = usePlayerStore(state => state.updateQueueItem);
+    
+    const isPro = useAIVocalStore(state => videoId ? state.jobs[videoId]?.mode === 'pro' : false);
 
     if (!isOpen || !videoUuid || !videoId) return null;
-
-    const isPro = useAIVocalStore(state => state.jobs[videoId]?.mode === 'pro');
 
     const handleSelectMode = (mode: 'basic' | 'pro') => {
         // Update queue item
