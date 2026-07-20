@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.132";
+export const SYSTEM_VERSION = "5.5.133";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.133",
+        date: "2026-07-20",
+        changes: [
+            "fix: Resolved issue with missing AI Vocal drums causing no audio to play for existing users (cache volume fallback).",
+            "fix: Resolved race condition where selecting 'Upgrade to 4 Channel' on previously separated 2CH songs downgraded them instead.",
+            "ux: Added a clean popup confirmation modal when upgrading a 2CH song to 4CH from the QueueList.",
+            "ui: Moved 4CH/2CH instrument icons strictly outside the badge for cleaner typography."
+        ]
+    },
     {
         version: "5.5.132",
         date: "2026-07-20",

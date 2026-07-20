@@ -366,20 +366,20 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                         ref={vocalRef} 
                         src={`http://127.0.0.1:5050/files/${activeVideoId}/vocals.m4a`} 
                         preload="auto" 
-                        onLoadedData={(e) => { e.currentTarget.volume = volumes.vocals / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} 
+                        onLoadedData={(e) => { e.currentTarget.volume = (volumes?.vocals ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} 
                     />
                     {aiMode === 'pro' ? (
                         <>
-                            <audio ref={drumsRef} src={`http://127.0.0.1:5050/files/${activeVideoId}/drums.m4a`} preload="auto" onLoadedData={(e) => { e.currentTarget.volume = volumes.drums / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} />
-                            <audio ref={bassRef} src={`http://127.0.0.1:5050/files/${activeVideoId}/bass.m4a`} preload="auto" onLoadedData={(e) => { e.currentTarget.volume = volumes.bass / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} />
-                            <audio ref={otherRef} src={`http://127.0.0.1:5050/files/${activeVideoId}/other.m4a`} preload="auto" onLoadedData={(e) => { e.currentTarget.volume = volumes.other / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} />
+                            <audio ref={drumsRef} src={`http://127.0.0.1:5050/files/${activeVideoId}/drums.m4a`} preload="auto" onLoadedData={(e) => { e.currentTarget.volume = (volumes?.drums ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} />
+                            <audio ref={bassRef} src={`http://127.0.0.1:5050/files/${activeVideoId}/bass.m4a`} preload="auto" onLoadedData={(e) => { e.currentTarget.volume = (volumes?.bass ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} />
+                            <audio ref={otherRef} src={`http://127.0.0.1:5050/files/${activeVideoId}/other.m4a`} preload="auto" onLoadedData={(e) => { e.currentTarget.volume = (volumes?.other ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} />
                         </>
                     ) : (
                         <audio 
                             ref={instrumentalRef} 
                             src={`http://127.0.0.1:5050/files/${activeVideoId}/no_vocals.m4a`} 
                             preload="auto" 
-                            onLoadedData={(e) => { e.currentTarget.volume = volumes.instrumental / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} 
+                            onLoadedData={(e) => { e.currentTarget.volume = (volumes?.instrumental ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} 
                         />
                     )}
                 </div>

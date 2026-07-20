@@ -134,9 +134,11 @@ def separate(req: SeparateRequest):
     
     # Cache hit logic
     is_cached = False
-    if mode == "basic" and os.path.exists(vocal_m4a) and os.path.exists(no_vocal_m4a):
+    if os.path.exists(vocal_m4a) and os.path.exists(drums_m4a) and os.path.exists(bass_m4a) and os.path.exists(other_m4a):
+        # We already have Pro stems, so even if basic is requested, use Pro
         is_cached = True
-    elif mode == "pro" and os.path.exists(vocal_m4a) and os.path.exists(drums_m4a) and os.path.exists(bass_m4a) and os.path.exists(other_m4a):
+        mode = "pro"
+    elif mode == "basic" and os.path.exists(vocal_m4a) and os.path.exists(no_vocal_m4a):
         is_cached = True
         
     if is_cached:

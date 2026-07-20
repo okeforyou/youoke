@@ -96,40 +96,51 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                         {!isKaraoke && (
                             <div className="shrink-0 flex items-center">
                                 {aiJob?.status === 'ready' ? (
-                                    <div 
-                                        onClick={(e) => {
-                                            if (aiJob.mode === 'pro') return;
-                                            e.stopPropagation();
-                                            if (window.confirm("คุณต้องการแยกเสียงใหม่เป็น 4 Channel (Pro Mode) หรือไม่?")) {
-                                                aiVocalStore.setDefaultMode('pro');
-                                                aiVocalStore.processAudio(video.uuid || video.id, 'pro');
-                                            }
-                                        }}
-                                        className={`px-2 py-0.5 rounded flex items-center gap-1.5 border transition-colors ${
-                                            aiJob.mode === 'pro' 
-                                                ? 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 border-yellow-200 dark:border-yellow-800/50 cursor-default' 
-                                                : 'bg-blue-50 dark:bg-blue-900/20 text-blue-500 border-blue-200 dark:border-blue-800/50 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/40'
-                                        }`}
-                                        title={aiJob.mode === 'pro' ? 'แยกเสียงแล้ว (4 แทร็ก)' : 'แยกเสียงแล้ว (2 แทร็ก) - คลิกเพื่ออัปเกรดเป็น 4 แทร็ก'}
-                                    >
-                                        <div className="flex items-center gap-0.5">
+                                    <div className="flex items-center gap-2">
+                                        <div
+                                            onClick={(e) => {
+                                                if (aiJob.mode === 'pro') return;
+                                                e.stopPropagation();
+                                                import('../../../stores/useUIStore').then(({ useUIStore }) => {
+                                                    useUIStore.getState().showConfirm({
+                                                        title: 'อัปเกรดเป็น 4 Channel',
+                                                        message: 'คุณต้องการแยกเสียงใหม่แบบ 4 Channel (Pro Mode) หรือไม่? กระบวนการนี้จะใช้เวลาสักครู่',
+                                                        confirmText: 'อัปเกรดเลย',
+                                                        cancelText: 'ยกเลิก',
+                                                        type: 'info',
+                                                        onConfirm: () => {
+                                                            aiVocalStore.setDefaultMode('pro');
+                                                            aiVocalStore.processAudio(video.videoId || video.id, 'pro');
+                                                        }
+                                                    });
+                                                });
+                                            }}
+                                            className={`px-2 py-0.5 rounded flex items-center justify-center border transition-colors ${
+                                                aiJob.mode === 'pro' 
+                                                    ? 'bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 border-yellow-200 dark:border-yellow-800/50 cursor-default' 
+                                                    : 'bg-blue-50 dark:bg-blue-900/20 text-blue-500 border-blue-200 dark:border-blue-800/50 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/40'
+                                            }`}
+                                            title={aiJob.mode === 'pro' ? 'แยกเสียงแล้ว (4 แทร็ก)' : 'แยกเสียงแล้ว (2 แทร็ก) - คลิกเพื่ออัปเกรดเป็น 4 แทร็ก'}
+                                        >
+                                            <span className="text-[9.5px] font-black uppercase tracking-wide">
+                                                {aiJob.mode === 'pro' ? 'แยกเสียงแล้ว 4CH' : 'แยกเสียงแล้ว 2CH'}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-0.5 text-gray-500 dark:text-gray-400">
                                             {aiJob.mode === 'pro' ? (
                                                 <>
-                                                    <MicVocal size={11} />
-                                                    <Drum size={11} />
-                                                    <Guitar size={11} />
-                                                    <Piano size={11} />
+                                                    <MicVocal size={13} strokeWidth={2.5} />
+                                                    <Drum size={13} strokeWidth={2.5} />
+                                                    <Guitar size={13} strokeWidth={2.5} />
+                                                    <Piano size={13} strokeWidth={2.5} />
                                                 </>
                                             ) : (
                                                 <>
-                                                    <MicVocal size={11} />
-                                                    <Music size={11} />
+                                                    <MicVocal size={13} strokeWidth={2.5} />
+                                                    <Music size={13} strokeWidth={2.5} />
                                                 </>
                                             )}
                                         </div>
-                                        <span className="text-[9.5px] font-black uppercase tracking-wide">
-                                            แยกเสียงแล้ว
-                                        </span>
                                     </div>
                                 ) : aiJob?.status === 'error' ? (
                                     <div className="px-2 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-500 rounded flex items-center gap-1 border border-red-100 dark:border-red-800/50">
