@@ -78,3 +78,6 @@ youoke-plugin/dist/
 youoke-plugin/bin/
 scripts/local-bridge/build/
 scripts/local-bridge/dist/
+venv_test/
+*.mp4
+yt-dlp_macos

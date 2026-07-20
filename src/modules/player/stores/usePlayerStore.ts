@@ -302,28 +302,27 @@ export const usePlayerStore = create<PlayerStore>()(
                 // v5.5.36: Bypass check if skipQuota is requested (Trusted Remote/Internal)
                 if (!skipQuota) {
                     const authUser = useAuthStore.getState().user;
-                    const today = safeSplit(new Date().toISOString(), 'T')[0];
-                    const storageKey = `daily_songs_${today}`;
                     
-                    let currentUsed = 0;
-                    let dailyLimit = 0;
-
-                    if (authUser) {
-                        currentUsed = authUser.quota?.used || 0;
-                        dailyLimit = authUser.quota?.daily_limit || 0;
-                        const isPremium = ['premium', 'monthly', 'yearly', 'lifetime', 'day_pass', 'trial'].includes(authUser.membership?.type || '') || authUser.role === 'admin';
-                        if (isPremium) dailyLimit = -1; // Unlimited
-                    } else {
-                        currentUsed = parseInt(localStorage.getItem(storageKey) || '0');
-                        dailyLimit = 5; // Default for guests if config not available
+                    // 🚨 GLOBAL LOGIN ENFORCEMENT: All users MUST log in to play any song
+                    if (!authUser) {
+                        console.warn("🚫 Global Gatekeeper: User not logged in. Forcing login.");
+                        // LimitModal already asks guests to connect via Gmail
+                        useUIStore.getState().setLimitModalOpen(true);
+                        return {};
                     }
+                    
+                    let currentUsed = authUser.quota?.used || 0;
+                    let dailyLimit = authUser.quota?.daily_limit || 0;
+
+                    const isPremium = ['premium', 'monthly', 'yearly', 'lifetime', 'day_pass', 'trial'].includes(authUser.membership?.type || '') || authUser.role === 'admin';
+                    if (isPremium) dailyLimit = -1; // Unlimited
 
                     // Development / Preview Bypass
                     if (typeof window !== 'undefined' && window.location.hostname !== 'play.okeforyou.com') {
                         dailyLimit = -1; // Unlimited for preview deployments and local testing
                     }
 
-                    // If limit reached, block adding and show modal
+                    // If limit reached for the logged-in user, block adding and show modal
                     if (dailyLimit !== -1 && currentUsed >= dailyLimit && dailyLimit > 0) {
                         console.warn("🚫 Global Gatekeeper: Daily limit reached on Host. Blocking addition.");
                         useUIStore.getState().setLimitModalOpen(true);

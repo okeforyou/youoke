@@ -175,15 +175,26 @@ def separate(req: SeparateRequest):
 
     if not download_success:
         try:
-            import yt_dlp
-            ydl_opts = {
-                'format': 'm4a/bestaudio/best',
-                'outtmpl': os.path.join(song_dir, f"{vid}.%(ext)s"),
-                'quiet': True,
-                'cookiesfrombrowser': ('chrome',),  # Try to use Chrome cookies to bypass YouTube SABR
-            }
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                ydl.download([yt_url])
+            yt_dlp_exe = os.path.join(os.path.dirname(__file__), 'yt-dlp_macos')
+            out_template = os.path.join(song_dir, f"{vid}.%(ext)s")
+            
+            # Using subprocess to run the standalone binary with Chrome cookies
+            cmd = [
+                yt_dlp_exe,
+                "-f", "m4a/bestaudio/best",
+                "-o", out_template,
+                "--cookies-from-browser", "chrome",
+                "--quiet",
+                "--no-warnings",
+                yt_url
+            ]
+            
+            print(f"Executing yt-dlp standalone: {' '.join(cmd)}")
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            
+            if result.returncode != 0:
+                print(f"yt-dlp_macos failed. stdout: {result.stdout}, stderr: {result.stderr}")
+                raise Exception(f"yt-dlp standalone failed with code {result.returncode}")
             
             downloaded_files = [f for f in os.listdir(song_dir) if f.startswith(vid) and f != "vocals.m4a" and f != "no_vocals.m4a" and not f.endswith(".wav")]
             if not downloaded_files:

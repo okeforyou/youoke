@@ -166,9 +166,16 @@ export const useUIStore = create<UIState>((set, get) => ({
         videoUuid: null,
         videoId: null
     },
-    showVocalModeModal: (videoUuid, videoId) => set({
-        vocalModeModal: { isOpen: true, videoUuid, videoId }
-    }),
+    showVocalModeModal: (videoUuid, videoId) => {
+        // Late import to avoid circular dependency
+        const authUser = require('../modules/auth/useAuthStore').useAuthStore.getState().user;
+        if (!authUser) {
+            console.warn("🚫 showVocalModeModal: User not logged in. Forcing login modal.");
+            set({ isLimitModalOpen: true });
+            return;
+        }
+        set({ vocalModeModal: { isOpen: true, videoUuid, videoId } });
+    },
     hideVocalModeModal: () => set({
         vocalModeModal: { isOpen: false, videoUuid: null, videoId: null }
     }),
