@@ -189,7 +189,22 @@ export const AIVocalControls = ({ mobile }: AIVocalControlsProps) => {
                         renderTrackSlider('เสียงดนตรี (Instrumental)', 'instrumental')
                     )}
 
-                    <div className="mt-3 pt-3 border-t border-gray-100">
+                    <div className="mt-3 pt-3 border-t border-gray-100 flex flex-col gap-2">
+                        {currentJob.mode !== 'pro' && (
+                            <button 
+                                onClick={async () => {
+                                    if (currentVideoId) {
+                                        aiVocal.setDefaultMode('pro');
+                                        await aiVocal.processAudio(currentVideoId, 'pro');
+                                        setShowSlider(false);
+                                    }
+                                }}
+                                className="w-full text-left p-2 rounded-lg bg-yellow-50 hover:bg-yellow-100 text-yellow-700 transition-colors border border-yellow-200 flex items-center justify-between"
+                            >
+                                <div className="font-bold text-[10px]">อัปเกรดเป็น 4 Channel</div>
+                                <Sparkles size={10} className="text-yellow-500" />
+                            </button>
+                        )}
                         <p className="text-[9px] text-gray-400 text-center uppercase tracking-wider font-bold">Powered by Demucs HTDEMUCS</p>
                     </div>
                 </div>

@@ -102,7 +102,12 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                                 {aiJob?.status === 'ready' ? (
                                     <div className="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/20 text-blue-500 rounded flex items-center gap-1 border border-blue-100 dark:border-blue-800/50">
                                         <AudioWaveform className="w-2.5 h-2.5" />
-                                        <span className="text-[9px] font-black uppercase tracking-wide mt-0.5">แยกเสียงแล้ว</span>
+                                        <span className="text-[9px] font-black uppercase tracking-wide mt-0.5 flex items-center gap-1">
+                                            แยกเสียงแล้ว
+                                            <span className="px-1 py-[1px] bg-blue-100 dark:bg-blue-800 rounded text-[8px]">
+                                                {aiJob.mode === 'pro' ? '4CH' : '2CH'}
+                                            </span>
+                                        </span>
                                     </div>
                                 ) : aiJob?.status === 'error' ? (
                                     <div className="px-2 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-500 rounded flex items-center gap-1 border border-red-100 dark:border-red-800/50">
