@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 interface AIVocalJob {
     status: 'idle' | 'processing' | 'ready' | 'error';
@@ -36,7 +37,9 @@ interface AIVocalState {
     setCurrentVideoId: (id: string | null) => void;
 }
 
-export const useAIVocalStore = create<AIVocalState>((set, get) => ({
+export const useAIVocalStore = create<AIVocalState>()(
+    persist(
+        (set, get) => ({
     isActive: false,
     currentVideoId: null,
     jobs: {},
@@ -92,6 +95,18 @@ export const useAIVocalStore = create<AIVocalState>((set, get) => ({
     }),
 
     processAudio: async (videoId: string, mode: 'basic' | 'pro' = 'basic') => {
+        const { jobs } = get();
+        const currentJob = jobs[videoId];
+        
+        // Prevent duplicate calls if already processing
+        if (currentJob?.status === 'processing') {
+            return;
+        }
+        // Prevent if already ready in the SAME mode
+        if (currentJob?.status === 'ready' && currentJob?.mode === mode) {
+            return;
+        }
+
         // Init job
         set((state) => ({
             jobs: {
@@ -160,4 +175,9 @@ export const useAIVocalStore = create<AIVocalState>((set, get) => ({
             }));
         }
     }
-}));
+}),
+    {
+        name: 'ai-vocal-storage',
+        partialize: (state) => ({ jobs: state.jobs }), // Only persist jobs to remember mode/status
+    }
+));
