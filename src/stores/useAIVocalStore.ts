@@ -11,6 +11,7 @@ interface AIVocalJob {
 interface AIVocalState {
     isActive: boolean; // Is the currently playing song using AI Vocal?
     currentVideoId: string | null;
+    defaultMode: 'basic' | 'pro';
     
     // Background jobs
     jobs: Record<string, AIVocalJob>;
@@ -35,6 +36,7 @@ interface AIVocalState {
     processAudio: (videoId: string, mode?: 'basic' | 'pro') => Promise<void>;
     reset: () => void;
     setCurrentVideoId: (id: string | null) => void;
+    setDefaultMode: (mode: 'basic' | 'pro') => void;
 }
 
 export const useAIVocalStore = create<AIVocalState>()(
@@ -42,6 +44,7 @@ export const useAIVocalStore = create<AIVocalState>()(
         (set, get) => ({
     isActive: false,
     currentVideoId: null,
+    defaultMode: 'basic',
     jobs: {},
 
     volumes: { vocals: 100, instrumental: 100, drums: 100, bass: 100, other: 100 },
@@ -94,8 +97,9 @@ export const useAIVocalStore = create<AIVocalState>()(
         }
     }),
 
-    processAudio: async (videoId: string, mode: 'basic' | 'pro' = 'basic') => {
-        const { jobs } = get();
+    processAudio: async (videoId: string, mode?: 'basic' | 'pro') => {
+        const { jobs, defaultMode } = get();
+        const targetMode = mode || defaultMode;
         const currentJob = jobs[videoId];
         
         // Prevent duplicate calls if already processing
@@ -103,7 +107,7 @@ export const useAIVocalStore = create<AIVocalState>()(
             return;
         }
         // Prevent if already ready in the SAME mode
-        if (currentJob?.status === 'ready' && currentJob?.mode === mode) {
+        if (currentJob?.status === 'ready' && currentJob?.mode === targetMode) {
             return;
         }
 
@@ -111,7 +115,7 @@ export const useAIVocalStore = create<AIVocalState>()(
         set((state) => ({
             jobs: {
                 ...state.jobs,
-                [videoId]: { status: 'processing', progress: 0, message: 'กำลังเตรียมการ...', mode }
+                [videoId]: { status: 'processing', progress: 0, message: 'กำลังเตรียมการ...', mode: targetMode }
             }
         }));
         
@@ -144,7 +148,7 @@ export const useAIVocalStore = create<AIVocalState>()(
             const res = await fetch("http://127.0.0.1:5050/separate", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ video_id: videoId, mode })
+                body: JSON.stringify({ video_id: videoId, mode: targetMode })
             });
             
             isPolling = false;
@@ -154,7 +158,7 @@ export const useAIVocalStore = create<AIVocalState>()(
                 set((state) => ({
                     jobs: {
                         ...state.jobs,
-                        [videoId]: { ...state.jobs[videoId], status: 'ready', message: 'พร้อมเล่น!', progress: 100, mode: data.mode || mode }
+                        [videoId]: { ...state.jobs[videoId], status: 'ready', message: 'พร้อมเล่น!', progress: 100, mode: data.mode || targetMode }
                     }
                 }));
             } else {
@@ -178,6 +182,6 @@ export const useAIVocalStore = create<AIVocalState>()(
 }),
     {
         name: 'ai-vocal-storage',
-        partialize: (state) => ({ jobs: state.jobs }), // Only persist jobs to remember mode/status
+        partialize: (state) => ({ jobs: state.jobs, defaultMode: state.defaultMode }), // Persist jobs and user's default mode preference
     }
 ));

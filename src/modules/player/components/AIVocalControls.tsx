@@ -131,6 +131,7 @@ export const AIVocalControls = ({ mobile }: AIVocalControlsProps) => {
                                 setShowModeSelect(false);
                                 if (currentVideoId) {
                                     if (!isActive) usePlayerStore.getState().updateQueueItem(currentVideo!.uuid, { aiVocalRequested: true });
+                                    aiVocal.setDefaultMode('basic');
                                     await aiVocal.processAudio(currentVideoId, 'basic');
                                 }
                             }}
@@ -144,6 +145,7 @@ export const AIVocalControls = ({ mobile }: AIVocalControlsProps) => {
                                 setShowModeSelect(false);
                                 if (currentVideoId) {
                                     if (!isActive) usePlayerStore.getState().updateQueueItem(currentVideo!.uuid, { aiVocalRequested: true });
+                                    aiVocal.setDefaultMode('pro');
                                     await aiVocal.processAudio(currentVideoId, 'pro');
                                 }
                             }}

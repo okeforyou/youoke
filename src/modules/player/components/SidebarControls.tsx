@@ -78,7 +78,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
     // Auto-resume job if requested but missing in store (e.g. page refresh)
     useEffect(() => {
         if (currentVideo?.aiVocalRequested && activeVideoId && !aiJob) {
-            aiVocalStore.processAudio(activeVideoId).catch(console.error);
+            aiVocalStore.processAudio(activeVideoId, aiVocalStore.defaultMode).catch(console.error);
         }
     }, [currentVideo?.aiVocalRequested, activeVideoId, aiJob, aiVocalStore]);
 
