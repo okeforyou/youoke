@@ -54,11 +54,11 @@ export const useMixerStore = create<MixerState>()(
             toggleMute: (type) => set((state) => ({
                 trackStates: {
                     ...state.trackStates,
-                    [type]: { ...state.trackStates?.[type], muted: !state.trackStates?.[type]?.muted }
+                    [type]: { ...state.trackStates?.[type], muted: !(state.trackStates?.[type]?.muted ?? false) }
                 }
             })),
             toggleSolo: (type) => set((state) => {
-                const newSolo = !state.trackStates?.[type]?.solo;
+                const newSolo = !(state.trackStates?.[type]?.solo ?? false);
                 return {
                     trackStates: {
                         vocals: { ...state.trackStates?.vocals, solo: type === 'vocals' ? newSolo : false },
@@ -79,6 +79,20 @@ export const useMixerStore = create<MixerState>()(
         }),
         {
             name: 'youoke-mixer-storage-v2',
+            merge: (persistedState: any, currentState: MixerState) => {
+                return {
+                    ...currentState,
+                    ...persistedState,
+                    volumes: {
+                        ...currentState.volumes,
+                        ...(persistedState?.volumes || {})
+                    },
+                    trackStates: {
+                        ...currentState.trackStates,
+                        ...(persistedState?.trackStates || {})
+                    }
+                };
+            }
         }
     )
 );

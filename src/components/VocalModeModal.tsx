@@ -13,6 +13,8 @@ export const VocalModeModal = () => {
 
     if (!isOpen || !videoUuid || !videoId) return null;
 
+    const isPro = useAIVocalStore(state => state.jobs[videoId]?.mode === 'pro');
+
     const handleSelectMode = (mode: 'basic' | 'pro') => {
         // Update queue item
         updateQueueItem(videoUuid, { aiVocalRequested: true });
@@ -49,17 +51,27 @@ export const VocalModeModal = () => {
                         {/* Basic Mode */}
                         <button
                             onClick={() => handleSelectMode('basic')}
+                            disabled={isPro}
                             className={clsx(
                                 "flex items-start gap-4 p-4 rounded-xl text-left transition-all border group",
-                                "bg-white dark:bg-zinc-800 border-gray-200 dark:border-zinc-700 hover:border-blue-400 hover:shadow-sm"
+                                isPro 
+                                    ? "bg-gray-50 dark:bg-zinc-800/50 border-gray-100 dark:border-zinc-800 opacity-50 cursor-not-allowed" 
+                                    : "bg-white dark:bg-zinc-800 border-gray-200 dark:border-zinc-700 hover:border-blue-400 hover:shadow-sm"
                             )}
                         >
-                            <div className="p-2 rounded-lg bg-gray-100 dark:bg-zinc-700 text-gray-600 dark:text-zinc-300 group-hover:bg-blue-100 group-hover:text-blue-500 transition-colors">
+                            <div className={clsx(
+                                "p-2 rounded-lg transition-colors",
+                                isPro 
+                                    ? "bg-gray-100 dark:bg-zinc-800 text-gray-400 dark:text-zinc-500" 
+                                    : "bg-gray-100 dark:bg-zinc-700 text-gray-600 dark:text-zinc-300 group-hover:bg-blue-100 group-hover:text-blue-500"
+                            )}>
                                 <Mic className="w-5 h-5" />
                             </div>
                             <div>
-                                <h4 className="font-bold text-sm text-gray-900 dark:text-white mb-1">Basic Mode</h4>
-                                <p className="text-xs text-gray-500 dark:text-zinc-400 line-clamp-2 leading-relaxed">
+                                <h4 className={clsx("font-bold text-sm mb-1", isPro ? "text-gray-400 dark:text-zinc-500" : "text-gray-900 dark:text-white")}>
+                                    Basic Mode
+                                </h4>
+                                <p className={clsx("text-xs line-clamp-2 leading-relaxed", isPro ? "text-gray-400 dark:text-zinc-600" : "text-gray-500 dark:text-zinc-400")}>
                                     แยก 2 แทร็ก: เสียงร้อง และ ดนตรี (รวดเร็ว ใช้ทรัพยากรน้อย)
                                 </p>
                             </div>

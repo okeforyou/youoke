@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.134";
+export const SYSTEM_VERSION = "5.5.135";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.135",
+        date: "2026-07-20",
+        changes: [
+            "ux: Disabled downgrade to Basic Mode (2CH) when already in Pro Mode (4CH) in Vocal Mode Modal.",
+            "fix: Fixed potential crash in Mixer UI when track state is missing from old cache.",
+            "fix: Ensured proper merging of persisted state in useMixerStore."
+        ]
+    },
     {
         version: "5.5.134",
         date: "2026-07-20",
