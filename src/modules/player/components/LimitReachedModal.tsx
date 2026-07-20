@@ -28,7 +28,7 @@ export const LimitReachedModal = () => {
     const onAction = () => {
         setLimitModalOpen(false);
         if (!isLoggedIn) {
-            router.push('/login?action=link');
+            router.push('/login');
         } else {
             router.push('/packages');
         }

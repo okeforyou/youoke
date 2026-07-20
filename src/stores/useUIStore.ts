@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { SystemConfig, DEFAULT_CONFIG } from '../services/systemConfigService';
+import { useAuthStore } from '../modules/auth/useAuthStore';
 
 interface UIState {
     isQueueOpen: boolean;
@@ -167,8 +168,7 @@ export const useUIStore = create<UIState>((set, get) => ({
         videoId: null
     },
     showVocalModeModal: (videoUuid, videoId) => {
-        // Late import to avoid circular dependency
-        const authUser = require('../modules/auth/useAuthStore').useAuthStore.getState().user;
+        const authUser = useAuthStore.getState().user;
         if (!authUser) {
             console.warn("🚫 showVocalModeModal: User not logged in. Forcing login modal.");
             set({ isLimitModalOpen: true });
