@@ -313,6 +313,20 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
         const jobId = currentVideo?.videoId || currentVideo?.id;
         const isReady = jobId && aiVocal.jobs[jobId]?.status === 'ready';
 
+        // Force disable native CC when video plays
+        if (event.data === 1) { // PLAYING
+            try {
+                if (typeof event.target.unloadModule === 'function') {
+                    event.target.unloadModule("captions");
+                    event.target.unloadModule("cc");
+                }
+                if (typeof event.target.setOption === 'function') {
+                    event.target.setOption("captions", "track", {"languageCode": ""}); // Force turn off
+                    event.target.setOption("cc", "track", {"languageCode": ""});
+                }
+            } catch (e) {}
+        }
+
         if (isReady && (event.data === 1 || event.data === 3)) {
             try { if (event.target.getIframe()) event.target.mute(); } catch (e) {}
             

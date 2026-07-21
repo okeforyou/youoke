@@ -188,6 +188,16 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             ref: vocalBtnRef
         },
         {
+            id: 'lyrics',
+            icon: Type,
+            label: "เนื้อเพลง",
+            onClick: toggleLyrics,
+            active: showLyrics,
+            activeColor: "text-primary bg-primary/10",
+            textColor: showLyrics ? "text-primary" : "text-black/60 dark:text-zinc-400",
+            disabled: false
+        },
+        {
             id: 'fullscreen',
             icon: Maximize,
             label: "เต็มจอ",
