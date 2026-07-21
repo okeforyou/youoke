@@ -6,7 +6,6 @@ import { usePlayerStore } from '../stores/usePlayerStore';
 export const AIVocalJobsIndicator = () => {
     const jobs = useAIVocalStore(state => state.jobs);
     const queue = usePlayerStore(state => state.queue);
-    const history = usePlayerStore(state => state.history);
     
     // Filter only processing jobs
     const activeJobs = Object.entries(jobs).filter(([_, job]) => job.status === 'processing');
@@ -16,8 +15,8 @@ export const AIVocalJobsIndicator = () => {
     return (
         <div className="absolute top-16 right-4 z-[60] flex flex-col gap-2 pointer-events-none">
             {activeJobs.map(([videoId, job]) => {
-                // Try to find the title from the queue or history to display a nice name
-                const queueItem = queue.find(q => q.videoId === videoId) || history?.find((h: any) => h.videoId === videoId);
+                // Try to find the title from the queue to display a nice name
+                const queueItem = queue.find(q => (q.videoId || q.id) === videoId);
                 const title = queueItem ? queueItem.title : "ระบบกำลังแยกเสียง...";
 
                 return (

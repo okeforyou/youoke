@@ -58,6 +58,7 @@ export const useAIVocalStore = create<AIVocalState>()(
 
     setIsActive: (active) => set({ isActive: active }),
     setCurrentVideoId: (id) => set({ currentVideoId: id }),
+    setDefaultMode: (mode) => set({ defaultMode: mode }),
 
     setVolume: (type, val) => set((state) => ({
         volumes: { ...state.volumes, [type]: val }
