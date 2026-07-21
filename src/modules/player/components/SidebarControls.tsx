@@ -297,6 +297,17 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                     <span className="text-primary">{trackStates.vocals.muted ? 0 : volumes.vocals}%</span>
                                 </div>
                                 <div className="flex items-center gap-3 mt-3">
+                                    <button 
+                                        onClick={() => toggleMute('vocals')}
+                                        className={clsx(
+                                            "shrink-0 p-1.5 rounded-lg transition-colors border",
+                                            trackStates.vocals.muted 
+                                                ? "bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-800" 
+                                                : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
+                                        )}
+                                    >
+                                        {trackStates.vocals.muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                                    </button>
                                     <input type="range" min="0" max="100" value={trackStates.vocals.muted ? 0 : volumes.vocals} onChange={(e) => handleVolumeChange('vocals', parseInt(e.target.value))} className="flex-1 h-1.5 bg-gray-100 dark:bg-zinc-800 rounded-full appearance-none accent-primary" />
                                 </div>
                             </div>
@@ -309,6 +320,17 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                         <span className="text-blue-500">{trackStates.instrumental.muted ? 0 : volumes.instrumental}%</span>
                                     </div>
                                     <div className="flex items-center gap-3 mt-3">
+                                        <button 
+                                            onClick={() => toggleMute('instrumental')}
+                                            className={clsx(
+                                                "shrink-0 p-1.5 rounded-lg transition-colors border",
+                                                trackStates.instrumental.muted 
+                                                    ? "bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-800" 
+                                                    : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
+                                            )}
+                                        >
+                                            {trackStates.instrumental.muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                                        </button>
                                         <input type="range" min="0" max="100" value={trackStates.instrumental.muted ? 0 : volumes.instrumental} onChange={(e) => handleVolumeChange('instrumental', parseInt(e.target.value))} className="flex-1 h-1.5 bg-gray-100 dark:bg-zinc-800 rounded-full appearance-none accent-blue-500" />
                                     </div>
                                 </div>
@@ -324,6 +346,17 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                             <span className="text-orange-500">{trackStates.drums.muted ? 0 : volumes.drums}%</span>
                                         </div>
                                         <div className="flex items-center gap-3 mt-3">
+                                            <button 
+                                                onClick={() => toggleMute('drums')}
+                                                className={clsx(
+                                                    "shrink-0 p-1.5 rounded-lg transition-colors border",
+                                                    trackStates.drums.muted 
+                                                        ? "bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-800" 
+                                                        : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
+                                                )}
+                                            >
+                                                {trackStates.drums.muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                                            </button>
                                             <input type="range" min="0" max="100" value={trackStates.drums.muted ? 0 : volumes.drums} onChange={(e) => handleVolumeChange('drums', parseInt(e.target.value))} className="flex-1 h-1.5 bg-gray-100 dark:bg-zinc-800 rounded-full appearance-none accent-orange-500" />
                                         </div>
                                     </div>
@@ -335,6 +368,17 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                             <span className="text-purple-500">{trackStates.bass.muted ? 0 : volumes.bass}%</span>
                                         </div>
                                         <div className="flex items-center gap-3 mt-3">
+                                            <button 
+                                                onClick={() => toggleMute('bass')}
+                                                className={clsx(
+                                                    "shrink-0 p-1.5 rounded-lg transition-colors border",
+                                                    trackStates.bass.muted 
+                                                        ? "bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-800" 
+                                                        : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
+                                                )}
+                                            >
+                                                {trackStates.bass.muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                                            </button>
                                             <input type="range" min="0" max="100" value={trackStates.bass.muted ? 0 : volumes.bass} onChange={(e) => handleVolumeChange('bass', parseInt(e.target.value))} className="flex-1 h-1.5 bg-gray-100 dark:bg-zinc-800 rounded-full appearance-none accent-purple-500" />
                                         </div>
                                     </div>
@@ -346,6 +390,17 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                             <span className="text-blue-500">{trackStates.other.muted ? 0 : volumes.other}%</span>
                                         </div>
                                         <div className="flex items-center gap-3 mt-3">
+                                            <button 
+                                                onClick={() => toggleMute('other')}
+                                                className={clsx(
+                                                    "shrink-0 p-1.5 rounded-lg transition-colors border",
+                                                    trackStates.other.muted 
+                                                        ? "bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-800" 
+                                                        : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
+                                                )}
+                                            >
+                                                {trackStates.other.muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                                            </button>
                                             <input type="range" min="0" max="100" value={trackStates.other.muted ? 0 : volumes.other} onChange={(e) => handleVolumeChange('other', parseInt(e.target.value))} className="flex-1 h-1.5 bg-gray-100 dark:bg-zinc-800 rounded-full appearance-none accent-blue-500" />
                                         </div>
                                     </div>

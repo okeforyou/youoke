@@ -51,12 +51,20 @@ export const useMixerStore = create<MixerState>()(
                     }
                 }));
             },
-            toggleMute: (type) => set((state) => ({
-                trackStates: {
-                    ...state.trackStates,
-                    [type]: { ...state.trackStates?.[type], muted: !(state.trackStates?.[type]?.muted ?? false) }
-                }
-            })),
+            toggleMute: (type) => set((state) => {
+                const willBeMuted = !(state.trackStates?.[type]?.muted ?? false);
+                const currentVolume = state.volumes[type];
+                return {
+                    volumes: {
+                        ...state.volumes,
+                        [type]: (!willBeMuted && currentVolume === 0) ? 100 : currentVolume
+                    },
+                    trackStates: {
+                        ...state.trackStates,
+                        [type]: { ...state.trackStates?.[type], muted: willBeMuted }
+                    }
+                };
+            }),
             toggleSolo: (type) => set((state) => {
                 const newSolo = !(state.trackStates?.[type]?.solo ?? false);
                 return {
