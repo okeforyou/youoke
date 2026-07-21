@@ -44,7 +44,7 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                 "group flex items-center p-3 rounded-2xl border transition-colors relative",
                 !isCurrent && "cursor-grab active:cursor-grabbing touch-none",
                 isCurrent 
-                    ? "bg-primary/5 dark:bg-primary/10 border-primary/20 dark:border-primary/30 ring-1 ring-primary/30 cursor-pointer"
+                    ? "bg-primary/5 dark:bg-primary/10 border-primary/30 dark:border-primary/40 cursor-pointer"
                     : "bg-white dark:bg-zinc-900 border-gray-100 dark:border-zinc-800 hover:border-gray-200 dark:hover:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800/50"
             )}
             onClick={() => setCurrentIndex(actualIndex)}
@@ -170,7 +170,7 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
             </div>
 
             {/* Actions / Status */}
-            <div className="flex items-center justify-center shrink-0 pl-1">
+            <div className="flex flex-col items-center justify-start self-stretch shrink-0 pl-1 pt-0.5">
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
