@@ -82,14 +82,40 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
         }
 
-        res.status(200).json({
-            status: 'success',
-            data: formattedData
-        });
+        if (formattedData.length === 0 && !req.query.noproxy) {
+            try {
+                console.log(`[YT Search] Proxying to VPS for "${q}"`);
+                const proxyRes = await fetch(`https://play.okeforyou.com/api/yt/search?q=${encodeURIComponent(q as string)}&type=${type || ''}&noproxy=1`);
+                if (proxyRes.ok) {
+                    const proxyData = await proxyRes.json();
+                    if (proxyData.status === 'success' && Array.isArray(proxyData.data) && proxyData.data.length > 0) {
+                        console.log(`[YT Search] ✅ VPS Proxy: ${proxyData.data.length} results`);
+                        return res.status(200).json(proxyData);
+                    }
+                }
+            } catch (e: any) {
+                console.error("[YT Search] VPS Proxy failed:", e.message);
+            }
+        }
 
+        return res.status(200).json({ status: 'success', data: formattedData });
     } catch (error: any) {
         console.error("YT Search Error:", error);
-        res.status(200).json({
+        
+        // Final Proxy attempt on hard crash
+        if (!req.query.noproxy) {
+            try {
+                const proxyRes = await fetch(`https://play.okeforyou.com/api/yt/search?q=${encodeURIComponent(q as string)}&type=${type || ''}&noproxy=1`);
+                if (proxyRes.ok) {
+                    const proxyData = await proxyRes.json();
+                    if (proxyData.status === 'success') {
+                        return res.status(200).json(proxyData);
+                    }
+                }
+            } catch (e) {}
+        }
+
+        res.status(500).json({
             status: 'error',
             message: error.message || 'Search failed',
             debug_info: error.toString()

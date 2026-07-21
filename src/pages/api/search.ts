@@ -82,5 +82,22 @@ export default async function handler(req: any, res: any) {
     console.error("[API/Search] Scraper also failed:", error.message);
   }
 
+  // Strategy 3: Proxy to VPS (Bypass Vercel Edge blocks)
+  if (!req.query.noproxy) {
+    try {
+      console.log(`[API/Search] Proxying to VPS for "${q}"`);
+      const proxyRes = await fetch(`https://play.okeforyou.com/api/search?q=${encodeURIComponent(q as string)}&noproxy=1`);
+      if (proxyRes.ok) {
+        const proxyData = await proxyRes.json();
+        if (Array.isArray(proxyData) && proxyData.length > 0) {
+          console.log(`[API/Search] ✅ VPS Proxy: ${proxyData.length} results`);
+          return res.status(200).json(proxyData);
+        }
+      }
+    } catch (e: any) {
+      console.error("[API/Search] VPS Proxy failed:", e.message);
+    }
+  }
+
   return res.status(200).json([]);
 }
