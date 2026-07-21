@@ -130,8 +130,13 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
     useEffect(() => {
         const syncTrack = (ref: React.RefObject<HTMLAudioElement>, vol: number, muted: boolean, solo: boolean) => {
             if (ref.current) {
-                ref.current.volume = vol / 100;
-                ref.current.muted = muted || (isAnySolo && !solo) || isMuted || forceMute;
+                const isAnySolo = trackStates?.vocals?.solo || trackStates?.instrumental?.solo || trackStates?.drums?.solo || trackStates?.bass?.solo || trackStates?.other?.solo;
+                const isEffectivelyMuted = muted || (isAnySolo && !solo) || isMuted || forceMute;
+                const effectiveVolume = isEffectivelyMuted ? 0 : vol / 100;
+
+                ref.current.volume = effectiveVolume;
+                // Prevent browser from suspending playback of muted elements, which breaks synchronization
+                ref.current.muted = false; 
             }
         };
         syncTrack(vocalRef, volumes?.vocals ?? 100, trackStates?.vocals?.muted ?? false, trackStates?.vocals?.solo ?? false);
