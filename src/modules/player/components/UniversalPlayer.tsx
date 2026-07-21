@@ -406,7 +406,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                 <>
                     <YouTube
                         videoId={activeVideoId}
-                        opts={opts}
+                        opts={opts as any}
                         className="w-full h-full"
                         iframeClassName="w-full h-full pointer-events-none"
                         onReady={handleYouTubeReady}

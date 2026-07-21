@@ -705,7 +705,6 @@ export const CHANGELOGS = [
     },
     {
         version: "v5.5.55 (Static Shield & Diagnostics)",
-        version: "v5.5.49 (Intelligent Admin Filter)",
         date: "16 เม.ย. 2569",
         changes: [
             "Feature: Implemented automatic userId filtering on the Payments page",

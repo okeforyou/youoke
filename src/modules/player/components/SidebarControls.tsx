@@ -8,7 +8,7 @@ import { useUIStore } from "../../../stores/useUIStore";
 import { useCast } from "../../../plugins/cast/context/CastContext";
 import clsx from 'clsx';
 import { useAIVocalStore } from '../../../stores/useAIVocalStore';
-import { VocalMixerPopover } from "../../../pages/vocal"; // We will need to move this or copy it
+
 
 
 interface SidebarControlsProps {
