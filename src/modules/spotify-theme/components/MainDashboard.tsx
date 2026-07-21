@@ -201,7 +201,7 @@ export default function MainDashboard({ showTab = true, mode = 'default' }: { sh
     }
   }, [genreText, refetch, mode]);
 
-  const { searchTerm, setSearchTerm, addToQueue } = usePlayerStore();
+  const { searchTerm, setSearchTerm, addToQueue, setActiveIndex } = usePlayerStore();
 
   const { 
     data: stationData, 
@@ -332,6 +332,7 @@ export default function MainDashboard({ showTab = true, mode = 'default' }: { sh
                         const artistName = (video.artist_name && video.artist_name !== "Unknown Artist") ? video.artist_name : "";
                         const query = `${video.title} ${artistName}`.trim();
                         setSearchTerm(query);
+                        setActiveIndex(0);
                     }}
                 >
                     <div className="relative aspect-video overflow-hidden bg-gray-50 dark:bg-zinc-950 flex-shrink-0">
@@ -369,7 +370,7 @@ export default function MainDashboard({ showTab = true, mode = 'default' }: { sh
                       const overrideUrl = artistOverrides[cleanName];
                       
                       return (
-                        <div key={artist.name + i} onClick={() => setSearchTerm(cleanSearchQuery(cleanName))} className="group cursor-pointer">
+                        <div key={artist.name + i} onClick={() => { setSearchTerm(cleanSearchQuery(cleanName)); setActiveIndex(0); }} className="group cursor-pointer">
                           <div className="relative aspect-square rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 shadow-sm group-hover:shadow-md transition-all duration-300">
                             <Image 
                                src={overrideUrl || `/api/spotify/artists/image?name=${encodeURIComponent(artist.name)}`}
@@ -456,7 +457,7 @@ export default function MainDashboard({ showTab = true, mode = 'default' }: { sh
                       const overrideUrl = artistOverrides[cleanName];
 
                       return (
-                        <div key={artist.name + i} onClick={() => setSearchTerm(cleanSearchQuery(cleanName))} className="group cursor-pointer">
+                        <div key={artist.name + i} onClick={() => { setSearchTerm(cleanSearchQuery(cleanName)); setActiveIndex(0); }} className="group cursor-pointer">
                           <div className="relative aspect-square rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 shadow-sm group-hover:shadow-md transition-all">
                             <Image 
                                src={overrideUrl || `/api/spotify/artists/image?name=${encodeURIComponent(artist.name)}`} 

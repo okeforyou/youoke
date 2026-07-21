@@ -46,7 +46,7 @@ const fetchPlaylist = async (id: string, type: string = 'playlist') => {
 };
 
 export default function YouTubeDashboard() {
-    const { addToQueue, searchTerm, isKaraoke, setSearchTerm } = usePlayerStore();
+    const { addToQueue, searchTerm, isKaraoke, setSearchTerm, setActiveIndex } = usePlayerStore();
     const [debouncedTerm, setDebouncedTerm] = useState("");
     const [activePlaylist, setActivePlaylist] = useState<YTItem | null>(null);
     const [selectedShelfIndex, setSelectedShelfIndex] = useState(0);
@@ -171,6 +171,7 @@ export default function YouTubeDashboard() {
         if (item.type === 'artist') {
             // Artist -> Trigger Search
             setSearchTerm(item.title);
+            setActiveIndex(0);
             return;
         }
 
@@ -183,6 +184,7 @@ export default function YouTubeDashboard() {
             if (!finalVideoId || finalVideoId.startsWith('artist-')) {
                 // Fallback for artist items that might have been misclicked
                 setSearchTerm(item.title);
+                setActiveIndex(0);
                 return;
             }
 
