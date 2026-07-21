@@ -293,3 +293,8 @@ html {
 .animate-fade-in {
   animation: fade-in 0.5s ease-out;
 }
+@keyframes eq {
+  0% { height: 30%; }
+  50% { height: 100%; }
+  100% { height: 50%; }
+}

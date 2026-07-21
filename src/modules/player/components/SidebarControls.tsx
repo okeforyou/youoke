@@ -298,7 +298,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                         : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
                                 )}
                             >
-                                <MicVocal size={14} />
+                                {trackStates.vocals.muted ? <MicOff size={14} /> : <MicVocal size={14} />}
                             </button>
                             <div className="flex-1 flex flex-col justify-center">
                                 <div className="flex justify-between items-center mb-1">
@@ -321,14 +321,14 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                             : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
                                     )}
                                 >
-                                    <Music size={14} />
+                                    {trackStates.instrumental.muted ? <VolumeX size={14} /> : <Music size={14} />}
                                 </button>
                                 <div className="flex-1 flex flex-col justify-center">
                                     <div className="flex justify-between items-center mb-1">
                                         <span className="text-[10px] font-bold text-black dark:text-white">ดนตรี (Instrumental)</span>
-                                        <span className="text-[10px] font-bold text-blue-500">{trackStates.instrumental.muted ? 0 : volumes.instrumental}%</span>
+                                        <span className="text-[10px] font-bold text-primary">{trackStates.instrumental.muted ? 0 : volumes.instrumental}%</span>
                                     </div>
-                                    <input type="range" min="0" max="100" value={trackStates.instrumental.muted ? 0 : volumes.instrumental} onChange={(e) => handleVolumeChange('instrumental', parseInt(e.target.value))} className="w-full h-1 bg-gray-200 dark:bg-zinc-700 rounded-full appearance-none accent-blue-500" />
+                                    <input type="range" min="0" max="100" value={trackStates.instrumental.muted ? 0 : volumes.instrumental} onChange={(e) => handleVolumeChange('instrumental', parseInt(e.target.value))} className="w-full h-1 bg-gray-200 dark:bg-zinc-700 rounded-full appearance-none accent-primary" />
                                 </div>
                             </div>
                         )}
@@ -347,14 +347,14 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                                 : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
                                         )}
                                     >
-                                        <Drum size={14} />
+                                        {trackStates.drums.muted ? <VolumeX size={14} /> : <Drum size={14} />}
                                     </button>
                                     <div className="flex-1 flex flex-col justify-center">
                                         <div className="flex justify-between items-center mb-1">
                                             <span className="text-[10px] font-bold text-black dark:text-white">กลอง (Drums)</span>
-                                            <span className="text-[10px] font-bold text-orange-500">{trackStates.drums.muted ? 0 : volumes.drums}%</span>
+                                            <span className="text-[10px] font-bold text-primary">{trackStates.drums.muted ? 0 : volumes.drums}%</span>
                                         </div>
-                                        <input type="range" min="0" max="100" value={trackStates.drums.muted ? 0 : volumes.drums} onChange={(e) => handleVolumeChange('drums', parseInt(e.target.value))} className="w-full h-1 bg-gray-200 dark:bg-zinc-700 rounded-full appearance-none accent-orange-500" />
+                                        <input type="range" min="0" max="100" value={trackStates.drums.muted ? 0 : volumes.drums} onChange={(e) => handleVolumeChange('drums', parseInt(e.target.value))} className="w-full h-1 bg-gray-200 dark:bg-zinc-700 rounded-full appearance-none accent-primary" />
                                     </div>
                                 </div>
 
@@ -369,14 +369,14 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                                 : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
                                         )}
                                     >
-                                        <Guitar size={14} />
+                                        {trackStates.bass.muted ? <VolumeX size={14} /> : <Guitar size={14} />}
                                     </button>
                                     <div className="flex-1 flex flex-col justify-center">
                                         <div className="flex justify-between items-center mb-1">
                                             <span className="text-[10px] font-bold text-black dark:text-white">เบส (Bass)</span>
-                                            <span className="text-[10px] font-bold text-purple-500">{trackStates.bass.muted ? 0 : volumes.bass}%</span>
+                                            <span className="text-[10px] font-bold text-primary">{trackStates.bass.muted ? 0 : volumes.bass}%</span>
                                         </div>
-                                        <input type="range" min="0" max="100" value={trackStates.bass.muted ? 0 : volumes.bass} onChange={(e) => handleVolumeChange('bass', parseInt(e.target.value))} className="w-full h-1 bg-gray-200 dark:bg-zinc-700 rounded-full appearance-none accent-purple-500" />
+                                        <input type="range" min="0" max="100" value={trackStates.bass.muted ? 0 : volumes.bass} onChange={(e) => handleVolumeChange('bass', parseInt(e.target.value))} className="w-full h-1 bg-gray-200 dark:bg-zinc-700 rounded-full appearance-none accent-primary" />
                                     </div>
                                 </div>
 
@@ -391,14 +391,14 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                                 : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
                                         )}
                                     >
-                                        <Piano size={14} />
+                                        {trackStates.other.muted ? <VolumeX size={14} /> : <Piano size={14} />}
                                     </button>
                                     <div className="flex-1 flex flex-col justify-center">
                                         <div className="flex justify-between items-center mb-1">
                                             <span className="text-[10px] font-bold text-black dark:text-white">ดนตรีอื่นๆ (Other)</span>
-                                            <span className="text-[10px] font-bold text-blue-500">{trackStates.other.muted ? 0 : volumes.other}%</span>
+                                            <span className="text-[10px] font-bold text-primary">{trackStates.other.muted ? 0 : volumes.other}%</span>
                                         </div>
-                                        <input type="range" min="0" max="100" value={trackStates.other.muted ? 0 : volumes.other} onChange={(e) => handleVolumeChange('other', parseInt(e.target.value))} className="w-full h-1 bg-gray-200 dark:bg-zinc-700 rounded-full appearance-none accent-blue-500" />
+                                        <input type="range" min="0" max="100" value={trackStates.other.muted ? 0 : volumes.other} onChange={(e) => handleVolumeChange('other', parseInt(e.target.value))} className="w-full h-1 bg-gray-200 dark:bg-zinc-700 rounded-full appearance-none accent-primary" />
                                     </div>
                                 </div>
                             </>

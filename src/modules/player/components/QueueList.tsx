@@ -84,13 +84,16 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
             
             {/* Info */}
             <div className="flex-1 min-w-0 ml-3 mr-1">
-                <div className="flex items-start justify-between gap-2 mb-1">
+                <div className="flex items-start gap-2 mb-1">
                     <h4 className="text-[14px] font-black text-black dark:text-white line-clamp-1 leading-snug">
                         {video.title}
                     </h4>
                     {isCurrent && (
-                        <div className="shrink-0 text-primary mt-0.5">
-                            <AudioLines className="w-4 h-4 animate-pulse" />
+                        <div className="flex items-end gap-[2px] h-3 shrink-0 mt-1">
+                            <div className="w-[2px] bg-black dark:bg-white rounded-t-[1px]" style={{ animation: 'eq 0.8s infinite alternate ease-in-out', height: '40%' }} />
+                            <div className="w-[2px] bg-black dark:bg-white rounded-t-[1px]" style={{ animation: 'eq 0.8s infinite alternate ease-in-out 0.2s', height: '100%' }} />
+                            <div className="w-[2px] bg-black dark:bg-white rounded-t-[1px]" style={{ animation: 'eq 0.8s infinite alternate ease-in-out 0.4s', height: '60%' }} />
+                            <div className="w-[2px] bg-black dark:bg-white rounded-t-[1px]" style={{ animation: 'eq 0.8s infinite alternate ease-in-out 0.1s', height: '80%' }} />
                         </div>
                     )}
                 </div>
