@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.146";
+export const SYSTEM_VERSION = "5.5.147";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.147",
+        date: "2026-07-21",
+        changes: [
+            "ui: Removed Lyrics (CC) toggle from the main control bar to reduce clutter.",
+            "ui: Added error/loading states for Lyrics in the Mixer to clarify why CC might not turn on if no lyrics are found."
+        ]
+    },
     {
         version: "5.5.146",
         date: "2026-07-21",

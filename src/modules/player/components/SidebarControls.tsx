@@ -54,7 +54,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
         setVolume
     } = useMixerStore();
 
-    const { isEnabled: showLyrics, toggleLyrics, syncOffset, setSyncOffset, preferredSource, setPreferredSource, fetchLyrics } = useLyricsStore();
+    const { isEnabled: showLyrics, toggleLyrics, syncOffset, setSyncOffset, preferredSource, setPreferredSource, fetchLyrics, error: lyricsError, isLoading: lyricsLoading } = useLyricsStore();
 
     const handleSourceChange = (src: 'auto' | 'youtube') => {
         setPreferredSource(src);
@@ -186,16 +186,6 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             textColor: showVocalMixer ? "text-black dark:text-white" : "text-black/60 dark:text-zinc-400",
             disabled: false,
             ref: vocalBtnRef
-        },
-        {
-            id: 'lyrics',
-            icon: Type,
-            label: "เนื้อเพลง",
-            onClick: toggleLyrics,
-            active: showLyrics,
-            activeColor: "text-primary bg-primary/10",
-            textColor: showLyrics ? "text-primary" : "text-black/60 dark:text-zinc-400",
-            disabled: false
         },
         {
             id: 'fullscreen',
@@ -436,6 +426,17 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                             <Type size={16} />
                             {showLyrics ? "ปิดเนื้อเพลง" : "เปิดเนื้อเพลง"}
                         </button>
+                        
+                        {lyricsError && showLyrics && (
+                            <div className="mt-2 text-[10px] text-red-500 font-medium bg-red-50 dark:bg-red-900/20 p-2 rounded">
+                                {lyricsError}
+                            </div>
+                        )}
+                        {lyricsLoading && showLyrics && (
+                            <div className="mt-2 text-[10px] text-blue-500 font-medium bg-blue-50 dark:bg-blue-900/20 p-2 rounded">
+                                กำลังค้นหาเนื้อเพลง...
+                            </div>
+                        )}
                         
                         {/* Lyrics Details Controls */}
                         {showLyrics && (
