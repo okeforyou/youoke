@@ -61,10 +61,10 @@ export const LimitReachedModal = () => {
                     <div className="text-gray-500 dark:text-zinc-400 mb-8 px-2 font-medium leading-relaxed text-sm whitespace-pre-wrap">
                         {!isLoggedIn ? (
                             <>
-                                คุณจำเป็นต้องเข้าสู่ระบบด้วยบัญชี Gmail เพื่อเข้าถึงคลังเพลงบน YouTube 
+                                คุณจำเป็นต้องเข้าสู่ระบบด้วยบัญชี Gmail เพื่อเข้าถึงการใช้งานบน YouTube 
                                 <br /><br />
                                 <span className="text-[11px] opacity-80 leading-tight block">
-                                    (เราเป็นเพียงเครื่องเล่นและระบบจัดคิวเพลงเพื่อความสะดวกเท่านั้น การใช้งานเป็นการใช้สิทธิ์ผ่านบัญชีของคุณเองโดยตรง เพื่อให้เป็นไปตามข้อกำหนดด้านลิขสิทธิ์)
+                                    (YouOke เป็นเพียงเครื่องเล่นและระบบจัดคิวเพลงเพื่อความสะดวกเท่านั้น)
                                 </span>
                             </>
                         ) : (

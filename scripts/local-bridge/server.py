@@ -44,7 +44,8 @@ os.makedirs(CACHE_DIR, exist_ok=True)
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "message": "YouOke Local AI Bridge is running."}
+    device = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
+    return {"status": "ok", "message": "YouOke Local AI Bridge is running.", "device": device}
 
 @app.get("/config")
 def get_config():
@@ -162,50 +163,56 @@ def separate(req: SeparateRequest):
     yt_url = f"https://www.youtube.com/watch?v={vid}"
     
     download_success = False
+    
+    # 1. Try yt-dlp_macos first as primary
     try:
-        from pytubefix import YouTube
-        yt = YouTube(yt_url, client='TV')
-        stream = yt.streams.get_audio_only()
-        if stream:
-            stream.download(output_path=song_dir, filename=f"{vid}.m4a")
-            m4a_path = os.path.join(song_dir, f"{vid}.m4a")
-            download_success = True
-    except Exception as py_err:
-        print(f"pytubefix download failed: {py_err}, falling back to yt-dlp")
+        yt_dlp_exe = os.path.join(os.path.dirname(__file__), 'yt-dlp_macos')
+        if not os.path.exists(yt_dlp_exe):
+            yt_dlp_exe = "yt-dlp"
 
+        out_template = os.path.join(song_dir, f"{vid}.%(ext)s")
+        cmd = [
+            yt_dlp_exe,
+            "-f", "140/m4a/bestaudio/best",
+            "-o", out_template,
+            "--no-warnings",
+            yt_url
+        ]
+        print(f"Executing yt-dlp standalone: {' '.join(cmd)}")
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode == 0:
+            downloaded_files = [f for f in os.listdir(song_dir) if f.startswith(vid) and f != "vocals.m4a" and f != "no_vocals.m4a" and not f.endswith(".wav")]
+            if downloaded_files:
+                downloaded_files.sort(key=lambda x: os.path.getmtime(os.path.join(song_dir, x)), reverse=True)
+                candidate = os.path.join(song_dir, downloaded_files[0])
+                if os.path.getsize(candidate) > 0:
+                    m4a_path = candidate
+                    download_success = True
+    except Exception as e:
+        print(f"yt-dlp download failed: {e}")
+
+    # 2. Fallback to pytubefix if yt-dlp failed
     if not download_success:
         try:
-            yt_dlp_exe = os.path.join(os.path.dirname(__file__), 'yt-dlp_macos')
-            out_template = os.path.join(song_dir, f"{vid}.%(ext)s")
-            
-            # Using subprocess to run the standalone binary with Chrome cookies
-            cmd = [
-                yt_dlp_exe,
-                "-f", "140/bestaudio/best",
-                "-o", out_template,
-                "--cookies-from-browser", "chrome",
-                "--js-runtimes", "node",
-                "--quiet",
-                "--no-warnings",
-                yt_url
-            ]
-            
-            print(f"Executing yt-dlp standalone: {' '.join(cmd)}")
-            result = subprocess.run(cmd, capture_output=True, text=True)
-            
-            if result.returncode != 0:
-                print(f"yt-dlp_macos failed. stdout: {result.stdout}, stderr: {result.stderr}")
-                raise Exception(f"yt-dlp standalone failed with code {result.returncode}")
-            
-            downloaded_files = [f for f in os.listdir(song_dir) if f.startswith(vid) and f != "vocals.m4a" and f != "no_vocals.m4a" and not f.endswith(".wav")]
-            if not downloaded_files:
-                raise Exception("File not found after download.")
-            downloaded_files.sort(key=lambda x: os.path.getmtime(os.path.join(song_dir, x)), reverse=True)
-            m4a_path = os.path.join(song_dir, downloaded_files[0])
-            
-        except Exception as e:
-            progress_store[vid] = {"status": "error", "percent": 0, "message": "ดาวน์โหลดล้มเหลว"}
-            return {"status": "error", "message": f"Download failed: {str(e)}"}
+            # Clean up any leftover empty files
+            if os.path.exists(m4a_path) and os.path.getsize(m4a_path) == 0:
+                os.remove(m4a_path)
+            from pytubefix import YouTube
+            yt = YouTube(yt_url, client='MWEB')
+            stream = yt.streams.get_audio_only()
+            if stream:
+                stream.download(output_path=song_dir, filename=f"{vid}.m4a")
+                m4a_path = os.path.join(song_dir, f"{vid}.m4a")
+                if os.path.exists(m4a_path) and os.path.getsize(m4a_path) > 0:
+                    download_success = True
+        except Exception as py_err:
+            print(f"pytubefix fallback failed: {py_err}")
+
+    if not download_success or not os.path.exists(m4a_path) or os.path.getsize(m4a_path) == 0:
+        if os.path.exists(m4a_path) and os.path.getsize(m4a_path) == 0:
+            os.remove(m4a_path)
+        progress_store[vid] = {"status": "error", "percent": 0, "message": "ดาวน์โหลดล้มเหลว"}
+        return {"status": "error", "message": "Download failed from all sources"}
         
     # 2. Convert to WAV for demucs
     progress_store[vid] = {"status": "converting", "percent": 20, "message": "เตรียมไฟล์สำหรับ AI..."}

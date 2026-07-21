@@ -68,11 +68,9 @@ export default function GuestLimitModal({
                         {!isLoggedIn ? (
                             upsell?.subtitle || (
                                 <>
-                                    กรุณา <span className="text-zinc-900 dark:text-white font-black">เชื่อมต่อผ่าน Gmail</span> เพื่อใช้งานผ่านสิทธิส่วนบุคคลของคุณ
+                                    คุณจำเป็นต้อง <span className="text-zinc-900 dark:text-white font-black">เข้าสู่ระบบด้วยบัญชี Gmail</span> เพื่อเข้าถึงการใช้งานบน YouTube
                                     <br />
-                                    <span className="text-[11px] opacity-80">(YouOke เป็นเพียงระบบจัดคิวเพลงผ่านบัญชีของสมาชิกเท่านั้น)</span>
-                                    <br />
-                                    เพื่อเล่นเพลงโปรดของคุณได้ต่อเนื่องและไม่มีโฆษณาคั่น
+                                    <span className="text-[11px] opacity-80">(YouOke เป็นเพียงเครื่องเล่นและระบบจัดคิวเพลงเพื่อความสะดวกเท่านั้น)</span>
                                 </>
                             )
                         ) : (

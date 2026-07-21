@@ -43,7 +43,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
     // React to aiStatus becoming ready while playing
     const aiJobStatus = useAIVocalStore(state => activeVideoId ? state.jobs[activeVideoId]?.status : undefined);
     const aiMode = useAIVocalStore(state => activeVideoId ? state.jobs[activeVideoId]?.mode : 'basic') || 'basic';
-    const isAiReady = currentVideo?.aiVocalRequested && activeVideoId && aiJobStatus === 'ready';
+    const isAiReady = Boolean(activeVideoId && aiJobStatus === 'ready');
 
     // AI Audio Mixer Refs
     const vocalRef = useRef<HTMLAudioElement>(null);
@@ -173,6 +173,11 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                     const state = ytPlayerRef.current.getPlayerState();
                     if (state !== 1) return; // Only sync if playing
                     
+                    if (typeof ytPlayerRef.current.getVideoData === 'function') {
+                        const vData = ytPlayerRef.current.getVideoData();
+                        if (vData && vData.video_id !== activeVideoId) return;
+                    }
+                    
                     const ytTime = ytPlayerRef.current.getCurrentTime();
                     if (typeof ytTime !== 'number' || ytTime === 0) return;
                     
@@ -187,11 +192,8 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                         // If it got paused unexpectedly (e.g., audio device change)
                         if (ref.current.paused) {
                             ref.current.play().catch(e => {
-                                console.warn("Audio resume failed, attempting reload:", e);
-                                // Force reload to recover from device change glitches
-                                ref.current?.load();
-                                if (ref.current) ref.current.currentTime = ytTime;
-                                ref.current?.play().catch(() => {});
+                                console.warn("Audio resume failed:", e);
+                                // DO NOT call load() here! It causes infinite re-download loops if buffering takes >1s.
                             });
                         }
                     };
@@ -237,8 +239,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                         if (Math.abs(ref.current.currentTime - ytTime) > 0.3) ref.current.currentTime = ytTime;
                     }
                     ref.current.play().catch(e => {
-                        ref.current?.load();
-                        ref.current?.play().catch(()=>{});
+                        console.warn("Manual audio play failed:", e);
                     });
                 };
                 
@@ -373,7 +374,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
         <div className={`relative w-full h-full ${className} youtube-player-wrapper`}>
             {/* AI Audio Elements */}
             {isAiReady && activeVideoId && (
-                <div className="hidden">
+                <div className="hidden" key={`${activeVideoId}-${aiMode}`}>
                     <audio 
                         ref={vocalRef} 
                         src={`http://127.0.0.1:5050/files/${activeVideoId}/vocals.m4a`} 

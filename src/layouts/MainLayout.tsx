@@ -152,6 +152,16 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const { config } = useSystemConfig();
     const allowRemote = config?.membership?.[isPremium ? 'premium' : 'free']?.allow_remote;
 
+    // Enforce Guest Mode Disabling
+    const { isLoading: authLoading } = useAuthStore();
+    useEffect(() => {
+        if (!mounted || authLoading || !config) return;
+        // If guestMode is explicitly set to false and the user is not logged in, redirect to login
+        if (config?.features?.guestMode === false && !user && router.pathname !== '/login') {
+            router.push('/login?action=link');
+        }
+    }, [mounted, authLoading, config?.features?.guestMode, user, router]);
+
     // Unified Party Room Code (Always numeric PIN)
     // For Monitor/Receiver model, we don't auto-generate on Dashboard. 
     // We wait for the user to enter the PIN from the Monitor page.

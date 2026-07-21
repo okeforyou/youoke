@@ -82,7 +82,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
         }
     }, [currentVideo?.aiVocalRequested, activeVideoId, aiJob, aiVocalStore]);
 
-    const isAiReady = currentVideo?.aiVocalRequested && activeVideoId && aiJob?.status === 'ready';
+    const isAiReady = Boolean(activeVideoId && aiJob?.status === 'ready');
     const isProMode = aiJob?.mode === 'pro';
 
 
