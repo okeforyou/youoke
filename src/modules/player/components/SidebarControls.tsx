@@ -259,7 +259,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             
             {/* Flat Mixer Popover */}
             {showVocalMixer && (
-                <div ref={mixerRef} className="absolute top-[60px] right-2 mt-2 w-72 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 z-50 animate-in fade-in zoom-in-95 duration-200 shadow-xl">
+                <div ref={mixerRef} className="absolute top-[60px] right-2 mt-2 w-72 max-h-[75vh] overflow-y-auto overscroll-contain bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 z-50 animate-in fade-in zoom-in-95 duration-200 shadow-xl">
                     <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-5">ตั้งค่าเสียง (Audio Settings)</h4>
                     
                     {/* Master Mute */}
