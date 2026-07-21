@@ -15,6 +15,7 @@ import SearchResultHorizontalCard from "./SearchResultHorizontalCard";
 import AddToPlaylistModal from "./AddToPlaylistModal";
 import { Sparkles } from "lucide-react";
 import { useUIStore } from "../stores/useUIStore";
+import { useAIVocalStore } from "../stores/useAIVocalStore";
 
 export default function SearchResultGrid({
   onClick = () => { },
@@ -84,9 +85,15 @@ export default function SearchResultGrid({
       ? searchResults
       : recommendedVideos;
 
+  const checkCachedStatus = useAIVocalStore(state => state.checkCachedStatus);
+
   useEffect(() => {
     handleDivScroll();
-  }, [renderList]);
+    
+    if (renderList && renderList.length > 0) {
+      checkCachedStatus(renderList.map(v => v.videoId));
+    }
+  }, [renderList, checkCachedStatus]);
 
   const handleAddToPlaylist = (e: React.MouseEvent, video: SearchResult | RecommendedVideo) => {
     e.stopPropagation();

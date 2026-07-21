@@ -167,59 +167,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
         } catch (e) {}
     }, [isMuted, isAiReady, volumes.instrumental, forceMute]);
 
-    // Ultimate Sync Loop (Slaved to YT)
-    useEffect(() => {
-        let interval: NodeJS.Timeout;
-        if (isAiReady && isPlaying) {
-            interval = setInterval(() => {
-                if (!ytPlayerRef.current || typeof ytPlayerRef.current.getIframe !== 'function' || !ytPlayerRef.current.getIframe()) return;
-                
-                try {
-                    const state = ytPlayerRef.current.getPlayerState();
-                    if (state !== 1) return; // Only sync if playing
-                    
-                    if (typeof ytPlayerRef.current.getVideoData === 'function') {
-                        const vData = ytPlayerRef.current.getVideoData();
-                        if (vData && vData.video_id !== activeVideoId) return;
-                    }
-                    
-                    const ytTime = ytPlayerRef.current.getCurrentTime();
-                    if (typeof ytTime !== 'number' || ytTime === 0) return;
-                    
-                    const syncRef = (ref: React.RefObject<HTMLAudioElement>) => {
-                        if (!ref.current) return;
-                        
-                        // Sync time if drifting more than 0.3s
-                        if (Math.abs(ref.current.currentTime - ytTime) > 0.3) {
-                            ref.current.currentTime = ytTime;
-                        }
-                        
-                        // If it got paused unexpectedly (e.g., audio device change)
-                        if (ref.current.paused) {
-                            ref.current.play().catch(e => {
-                                console.warn("Audio resume failed:", e);
-                                // DO NOT call load() here! It causes infinite re-download loops if buffering takes >1s.
-                            });
-                        }
-                    };
-
-                    syncRef(vocalRef);
-                    if (aiMode === 'pro') {
-                        syncRef(drumsRef);
-                        syncRef(bassRef);
-                        syncRef(otherRef);
-                    } else {
-                        syncRef(instrumentalRef);
-                    }
-                } catch (e) {
-                    console.warn("YT Sync error:", e);
-                }
-            }, 1000);
-        }
-        return () => { if (interval) clearInterval(interval); };
-    }, [isPlaying, isAiReady, aiMode]);
-
-    // Handle Play/Pause
+    // Handle Play/Pause and Event-Driven Sync
     useEffect(() => {
         // Always sync YouTube play state regardless of AI
         if (ytPlayerRef.current && typeof ytPlayerRef.current.playVideo === 'function') {
@@ -241,11 +189,16 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                 const syncRefPlay = (ref: React.RefObject<HTMLAudioElement>) => {
                     if (!ref.current) return;
                     if (typeof ytTime === 'number' && ytTime > 0) {
-                        if (Math.abs(ref.current.currentTime - ytTime) > 0.3) ref.current.currentTime = ytTime;
+                        // Event-driven sync: align time exactly once on play/seek
+                        if (Math.abs(ref.current.currentTime - ytTime) > 0.1) {
+                            ref.current.currentTime = ytTime;
+                        }
                     }
-                    ref.current.play().catch(e => {
-                        console.warn("Manual audio play failed:", e);
-                    });
+                    if (ref.current.paused) {
+                        ref.current.play().catch(e => {
+                            console.warn("Manual audio play failed:", e);
+                        });
+                    }
                 };
                 
                 syncRefPlay(vocalRef);
@@ -358,9 +311,31 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
     const handleYouTubeStateChange = (event: any) => {
         const aiVocal = useAIVocalStore.getState();
         const jobId = currentVideo?.videoId || currentVideo?.id;
-        if (currentVideo?.aiVocalRequested && jobId && aiVocal.jobs[jobId]?.status === 'ready' && (event.data === 1 || event.data === 3)) {
+        const isReady = currentVideo?.aiVocalRequested && jobId && aiVocal.jobs[jobId]?.status === 'ready';
+
+        if (isReady && (event.data === 1 || event.data === 3)) {
             try { if (event.target.getIframe()) event.target.mute(); } catch (e) {}
+            
+            // Event-driven sync on seek/buffering/play transition
+            const ytTime = event.target.getCurrentTime();
+            if (typeof ytTime === 'number' && ytTime > 0) {
+                const syncRefPlay = (ref: React.RefObject<HTMLAudioElement>) => {
+                    if (!ref.current) return;
+                    if (Math.abs(ref.current.currentTime - ytTime) > 0.1) {
+                        ref.current.currentTime = ytTime;
+                    }
+                };
+                syncRefPlay(vocalRef);
+                if (aiMode === 'pro') {
+                    syncRefPlay(drumsRef);
+                    syncRefPlay(bassRef);
+                    syncRefPlay(otherRef);
+                } else {
+                    syncRefPlay(instrumentalRef);
+                }
+            }
         }
+
         // Handle state changes if needed
         if (onStateChange) onStateChange(event);
     };

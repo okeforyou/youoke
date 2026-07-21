@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.142";
+export const SYSTEM_VERSION = "5.5.143";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.143",
+        date: "2026-07-21",
+        changes: [
+            "perf: Removed high-frequency 1-second interval sync loop in UniversalPlayer, replacing it with an Event-Driven architecture for smooth, artifact-free AI audio playback.",
+            "feat: Implemented automatic cache detection via HEAD requests in the Queue and Search results, displaying 'แยกเสียงแล้ว' instantly without manual interaction."
+        ]
+    },
     {
         version: "5.5.142",
         date: "2026-07-21",

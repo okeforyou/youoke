@@ -34,6 +34,7 @@ interface AIVocalState {
     
     // API Actions
     processAudio: (videoId: string, mode?: 'basic' | 'pro') => Promise<void>;
+    checkCachedStatus: (videoIds: string[]) => Promise<void>;
     reset: () => void;
     setCurrentVideoId: (id: string | null) => void;
     setDefaultMode: (mode: 'basic' | 'pro') => void;
@@ -177,6 +178,32 @@ export const useAIVocalStore = create<AIVocalState>()(
                     ...state.jobs,
                     [videoId]: { ...state.jobs[videoId], status: 'error', message: 'เชื่อมต่อ YouOke Plugin ไม่สำเร็จ' }
                 }
+            }));
+        }
+    },
+
+    checkCachedStatus: async (videoIds: string[]) => {
+        const { jobs, defaultMode } = get();
+        const updates: Record<string, AIVocalJob> = {};
+        
+        await Promise.all(videoIds.map(async (id) => {
+            // Skip if already tracked as ready or processing
+            if (jobs[id]?.status === 'ready' || jobs[id]?.status === 'processing') return;
+            
+            try {
+                // Use HEAD request to quickly check if the file exists
+                const res = await fetch(`http://127.0.0.1:5050/files/${id}/vocals.m4a`, { method: 'HEAD' });
+                if (res.ok) {
+                    updates[id] = { status: 'ready', message: 'พร้อมเล่น!', progress: 100, mode: defaultMode };
+                }
+            } catch (e) {
+                // Ignore errors (server offline or file doesn't exist)
+            }
+        }));
+
+        if (Object.keys(updates).length > 0) {
+            set(state => ({
+                jobs: { ...state.jobs, ...updates }
             }));
         }
     }

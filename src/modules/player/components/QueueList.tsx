@@ -250,6 +250,14 @@ export function QueueList() {
         }
     };
 
+    React.useEffect(() => {
+        if (queue.length > 0) {
+            const checkCachedStatus = useAIVocalStore.getState().checkCachedStatus;
+            const videoIds = queue.map(v => v.videoId || v.id).filter(Boolean);
+            checkCachedStatus(videoIds);
+        }
+    }, [queue]);
+
     return (
         <div className="flex-1 flex flex-col h-full relative z-20 bg-white dark:bg-zinc-950 transition-colors">
             {/* Mobile Handle */}
