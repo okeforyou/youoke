@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.151";
+export const SYSTEM_VERSION = "5.5.153";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -11,7 +11,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
  
 export const CHANGELOGS = [
     {
-        version: "5.5.151",
+        version: "5.5.153",
+        date: "2026-07-21",
+        changes: [
+            "ui: Moved AI vocal separation button to align left with status badges.",
+            "ui: Changed AI vocal separation button color to a clean, subtle plain style."
+        ]
+    },
+    {
+        version: "5.5.152",
         date: "2026-07-21",
         changes: [
             "ui: Updated Mixer track icons to reflect specific instruments.",

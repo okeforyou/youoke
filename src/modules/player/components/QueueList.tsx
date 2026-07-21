@@ -148,13 +148,8 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                                     <div className="px-2 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-500 rounded flex items-center gap-1 border border-red-100 dark:border-red-800/50">
                                         <span className="text-[9px] font-black uppercase tracking-wide mt-0.5">ล้มเหลว</span>
                                     </div>
-                                ) : null}
-                            </div>
-                        )}
-                        
-                        {!isKaraoke && !aiJob?.status && (
-                            <div className="shrink-0 ml-auto flex items-center">
-                                <button 
+                                ) : !aiJob?.status ? (
+                                    <button 
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             if (!video.aiVocalRequested) {
@@ -162,11 +157,12 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                                                 useUIStore.getState().showVocalModeModal(video.uuid, vidId);
                                             }
                                         }}
-                                        className="px-2 py-0.5 bg-primary/5 dark:bg-primary/10 text-primary hover:bg-primary/10 dark:hover:bg-primary/20 active:scale-95 rounded flex items-center gap-1 border border-primary/20 dark:border-primary/30 transition-all shadow-sm"
+                                        className="px-2 py-0.5 bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 hover:bg-gray-200 dark:hover:bg-zinc-700 active:scale-95 rounded flex items-center gap-1 border border-transparent transition-all"
                                     >
                                         <AudioLines className="w-2.5 h-2.5" />
                                         <span className="text-[9px] font-black uppercase tracking-wide mt-0.5">ตัดเสียงร้อง</span>
                                     </button>
+                                ) : null}
                             </div>
                         )}
                     </div>
