@@ -1,7 +1,7 @@
 import { useUIStore } from "../stores/useUIStore";
 import { useModule } from "../hooks/useModule";
-import MainDashboard from "../modules/spotify-theme/components/MainDashboard";
-import YouTubeDashboard from "../modules/youtube-theme/components/YouTubeDashboard";
+import MainDashboard from "../components/home/MainDashboard";
+import YouTubeDashboard from "../components/home/YouTubeDashboard";
 import { PremiumLockOverlay } from "./common/PremiumLockOverlay";
 
 interface MusicProviderContainerProps {

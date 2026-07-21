@@ -1,7 +1,7 @@
 import axios from "axios";
 
 import { OKE_PLAYLIST } from "../../../const/common";
-import { getAccessToken } from "../../../modules/spotify-theme/services/auth";
+import { getAccessToken } from "../../../services/spotifyAuth";
 import { SearchPlaylists } from "../../../types";
 
 import type { NextApiRequest, NextApiResponse } from "next";

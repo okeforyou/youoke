@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getAccessToken } from './auth';
+import { getAccessToken } from './spotifyAuth';
 
 /**
  * Get Spotify Access Token

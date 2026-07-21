@@ -1,6 +1,6 @@
 import axios from 'axios'
 import querystring from 'querystring'
-import { getSystemConfig } from '../../../services/systemConfigService';
+import { getSystemConfig } from './systemConfigService';
 
 let accessToken: string | null = null;
 let tokenExpiry: number | null = null;
@@ -17,7 +17,7 @@ const getAccessToken = async () => {
   // Server-Side: Use Admin SDK to fetch sensitive config securely
   if (typeof window === 'undefined') {
     try {
-      const { adminFirestore } = await import('../../../firebase-admin');
+      const { adminFirestore } = await import('../firebase-admin');
       if (adminFirestore) {
         const docSnap = await adminFirestore.collection('settings').doc('default').get();
 

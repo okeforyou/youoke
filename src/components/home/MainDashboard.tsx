@@ -4,11 +4,11 @@ import { Fragment, useEffect, useRef, useState, useMemo } from "react";
 import { useRouter } from "next/router";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 
-import { OKE_PLAYLIST } from "../../../const/common";
-import { usePlayerStore } from "../../../modules/player/stores/usePlayerStore";
-import { useListSingerState } from "../../../hooks/listSinger";
-import { GetTopArtists, SearchPlaylists } from "../../../types";
-import { useSystem } from "../../../core/container/SystemContext";
+import { OKE_PLAYLIST } from "../../const/common";
+import { usePlayerStore } from "../../modules/player/stores/usePlayerStore";
+import { useListSingerState } from "../../hooks/listSinger";
+import { GetTopArtists, SearchPlaylists } from "../../types";
+import { useSystem } from "../../core/container/SystemContext";
 import {
   getArtists,
   getSkeletonItems,
@@ -17,18 +17,18 @@ import {
   getSearchResult,
   cleanSearchQuery,
   getJooxCharts,
-} from "../../../utils/api";
-import { safeArtistName } from "../../../utils/stringUtils";
-import JooxError from "../../../components/JooxError";
-import { useSystemConfig } from "../../../hooks/useSystemConfig";
-import { useUIStore } from "../../../stores/useUIStore";
+} from "../../utils/api";
+import { safeArtistName } from "../../utils/stringUtils";
+import JooxError from "../../components/JooxError";
+import { useSystemConfig } from "../../hooks/useSystemConfig";
+import { useUIStore } from "../../stores/useUIStore";
 import { Headphones, Library, ChevronRight, Grid as GridIcon, Headphones as HeadphonesIcon, Music, Guitar, Disc, Mic2, Star, Globe, Heart, Mic, Coffee, Radio, PlayCircle } from "lucide-react";
 import { clsx } from "clsx";
-import { ARTIST_CATEGORIES, ArtistCategory } from "../../../data/artist-categories";
-import { PackageStore } from "../../../components/profile/PackageStore";
+import { ARTIST_CATEGORIES, ArtistCategory } from "../../data/artist-categories";
+import { PackageStore } from "../../components/profile/PackageStore";
 
 import { collection, getDocs } from "firebase/firestore";
-import { db } from "../../../firebase";
+import { db } from "../../firebase";
 
 const GENRES = [
   "ลูกทุ่ง",

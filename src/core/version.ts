@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.141";
+export const SYSTEM_VERSION = "5.5.142";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -11,7 +11,7 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
  
 export const CHANGELOGS = [
     {
-        version: "5.5.141",
+        version: "5.5.142",
         date: "2026-07-21",
         changes: [
             "fix: Fixed a bug where gradually muting tracks in 4ch mode caused all audio to disappear due to browser suspension of muted HTMLAudioElements.",
@@ -694,7 +694,7 @@ export const CHANGELOGS = [
         recent_updates: "Emergency Quota Notification System"
     },
     {
-        version: "v5.5.141 (Quota Shield)",
+        version: "v5.5.142 (Quota Shield)",
         date: "16 เม.ย. 2569",
         changes: [
             "STABILITY: Optimized Firestore usage (Admin Users, Sidebar, TV Heartbeat)",

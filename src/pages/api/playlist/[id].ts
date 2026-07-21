@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { scrapeYouTubePlaylistVideos, scrapeYouTubeSearch } from "../../../utils/youtubeScraper";
-import { getSpotifyPlaylistTracks, getSpotifyAlbumTracks } from "../../../modules/spotify-theme/services/api";
+import { getSpotifyPlaylistTracks, getSpotifyAlbumTracks } from "../../../services/spotifyApi";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query;

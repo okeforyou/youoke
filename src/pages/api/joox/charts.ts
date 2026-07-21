@@ -415,7 +415,7 @@ export default async function handler(
         // 1. Prepare Spotify access token beforehand to be reused across fallback channels
         let spotifyToken: string | null = null;
         try {
-          const { getAccessToken } = await import("@/modules/spotify-theme/services/auth");
+          const { getAccessToken } = await import("@/services/spotifyAuth");
           spotifyToken = await getAccessToken().catch((err: any) => {
             debugLog(`[SPOTIFY] getAccessToken caught error: ${err.message}`);
             return null;

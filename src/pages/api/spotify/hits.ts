@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
 
-import { getAccessToken } from "../../../modules/spotify-theme/services/auth";
+import { getAccessToken } from "../../../services/spotifyAuth";
 import { Single } from "../../../types";
 
 /**
