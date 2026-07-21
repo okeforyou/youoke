@@ -44,7 +44,7 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                 "group flex items-center p-3 rounded-2xl border transition-colors relative",
                 !isCurrent && "cursor-grab active:cursor-grabbing touch-none",
                 isCurrent 
-                    ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 ring-1 ring-blue-500 cursor-pointer"
+                    ? "bg-primary/5 dark:bg-primary/10 border-primary/20 dark:border-primary/30 ring-1 ring-primary/30 cursor-pointer"
                     : "bg-white dark:bg-zinc-900 border-gray-100 dark:border-zinc-800 hover:border-gray-200 dark:hover:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800/50"
             )}
             onClick={() => setCurrentIndex(actualIndex)}
@@ -116,18 +116,30 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                                                 {aiJob.mode === 'pro' ? 'แยกเสียงแล้ว 4CH' : 'แยกเสียงแล้ว 2CH'}
                                             </span>
                                         </div>
-                                        <div className="flex items-center gap-0.5 text-gray-400">
+                                        <div className="flex items-center gap-1">
                                             {aiJob.mode === 'pro' ? (
                                                 <>
-                                                    <MicVocal size={13} strokeWidth={2.5} />
-                                                    <Drum size={13} strokeWidth={2.5} />
-                                                    <Guitar size={13} strokeWidth={2.5} />
-                                                    <Piano size={13} strokeWidth={2.5} />
+                                                    <div className="w-5 h-5 rounded-full bg-pink-50 dark:bg-pink-900/20 text-pink-500 flex items-center justify-center" title="เสียงร้อง">
+                                                        <MicVocal size={11} strokeWidth={2.5} />
+                                                    </div>
+                                                    <div className="w-5 h-5 rounded-full bg-orange-50 dark:bg-orange-900/20 text-orange-500 flex items-center justify-center" title="เสียงกลอง">
+                                                        <Drum size={11} strokeWidth={2.5} />
+                                                    </div>
+                                                    <div className="w-5 h-5 rounded-full bg-purple-50 dark:bg-purple-900/20 text-purple-500 flex items-center justify-center" title="เสียงเบส">
+                                                        <Guitar size={11} strokeWidth={2.5} />
+                                                    </div>
+                                                    <div className="w-5 h-5 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-500 flex items-center justify-center" title="เสียงดนตรีอื่นๆ">
+                                                        <Piano size={11} strokeWidth={2.5} />
+                                                    </div>
                                                 </>
                                             ) : (
                                                 <>
-                                                    <MicVocal size={13} strokeWidth={2.5} />
-                                                    <Music size={13} strokeWidth={2.5} />
+                                                    <div className="w-5 h-5 rounded-full bg-pink-50 dark:bg-pink-900/20 text-pink-500 flex items-center justify-center" title="เสียงร้อง">
+                                                        <MicVocal size={11} strokeWidth={2.5} />
+                                                    </div>
+                                                    <div className="w-5 h-5 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-500 flex items-center justify-center" title="เสียงดนตรี">
+                                                        <Music size={11} strokeWidth={2.5} />
+                                                    </div>
                                                 </>
                                             )}
                                         </div>
