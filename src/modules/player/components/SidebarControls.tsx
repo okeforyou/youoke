@@ -259,12 +259,12 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             
             {/* Flat Mixer Popover */}
             {showVocalMixer && (
-                <div ref={mixerRef} className="absolute top-[60px] right-2 mt-2 w-72 max-h-[75vh] overflow-y-auto overscroll-contain bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-5 z-50 animate-in fade-in zoom-in-95 duration-200 shadow-xl">
-                    <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-5">ตั้งค่าเสียง (Audio Settings)</h4>
+                <div ref={mixerRef} className="absolute top-[60px] right-2 mt-2 w-72 max-h-[75vh] overflow-y-auto overscroll-contain bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-4 z-50 animate-in fade-in zoom-in-95 duration-200 shadow-xl">
+                    <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3">ตั้งค่าเสียง (Audio Settings)</h4>
                     
                     {/* Master Mute */}
-                    <div className={clsx("mb-2", isAiReady && "border-b border-gray-100 dark:border-zinc-800 pb-5 mb-5")}>
-                        <div className="flex justify-between text-xs font-bold mb-3 text-black dark:text-white">
+                    <div className={clsx("mb-2", isAiReady && "border-b border-gray-100 dark:border-zinc-800 pb-3 mb-3")}>
+                        <div className="flex justify-between text-xs font-bold mb-2 text-black dark:text-white">
                             <span>เสียงหลัก (Master)</span>
                             <span className="text-gray-500">{isMuted ? 'Muted' : 'On'}</span>
                         </div>
@@ -277,7 +277,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                 }
                             }}
                             className={clsx(
-                                "w-full py-2.5 rounded-xl flex items-center justify-center gap-2 text-xs font-bold transition-colors border",
+                                "w-full py-2 rounded-xl flex items-center justify-center gap-2 text-xs font-bold transition-colors border",
                                 isMuted 
                                     ? "bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-800" 
                                     : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
@@ -291,12 +291,12 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                     {/* AI & Volume Controls (Always Visible) */}
                     <>
                             {/* Vocals */}
-                            <div className="mb-5">
-                                <div className="flex justify-between text-xs font-bold mb-2 text-black dark:text-white">
+                            <div className="mb-3">
+                                <div className="flex justify-between text-xs font-bold mb-1 text-black dark:text-white">
                                     <span>เสียงร้อง (Vocals)</span>
                                     <span className="text-primary">{trackStates.vocals.muted ? 0 : volumes.vocals}%</span>
                                 </div>
-                                <div className="flex items-center gap-3 mt-3">
+                                <div className="flex items-center gap-2 mt-1.5">
                                     <button 
                                         onClick={() => toggleMute('vocals')}
                                         className={clsx(
@@ -315,11 +315,11 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                             {/* Instrumental (Basic Mode or Karaoke) */}
                             {!isProMode && (
                                 <div>
-                                    <div className="flex justify-between text-xs font-bold mb-2 text-black dark:text-white">
+                                    <div className="flex justify-between text-xs font-bold mb-1 text-black dark:text-white">
                                         <span>ดนตรี (Instrumental)</span>
                                         <span className="text-blue-500">{trackStates.instrumental.muted ? 0 : volumes.instrumental}%</span>
                                     </div>
-                                    <div className="flex items-center gap-3 mt-3">
+                                    <div className="flex items-center gap-2 mt-1.5">
                                         <button 
                                             onClick={() => toggleMute('instrumental')}
                                             className={clsx(
@@ -340,12 +340,12 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                             {isProMode && (
                                 <>
                                     {/* Drums */}
-                                    <div className="mb-5">
-                                        <div className="flex justify-between text-xs font-bold mb-2 text-black dark:text-white">
+                                    <div className="mb-3">
+                                        <div className="flex justify-between text-xs font-bold mb-1 text-black dark:text-white">
                                             <span>กลอง (Drums)</span>
                                             <span className="text-orange-500">{trackStates.drums.muted ? 0 : volumes.drums}%</span>
                                         </div>
-                                        <div className="flex items-center gap-3 mt-3">
+                                        <div className="flex items-center gap-2 mt-1.5">
                                             <button 
                                                 onClick={() => toggleMute('drums')}
                                                 className={clsx(
@@ -362,12 +362,12 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                     </div>
 
                                     {/* Bass */}
-                                    <div className="mb-5">
-                                        <div className="flex justify-between text-xs font-bold mb-2 text-black dark:text-white">
+                                    <div className="mb-3">
+                                        <div className="flex justify-between text-xs font-bold mb-1 text-black dark:text-white">
                                             <span>เบส (Bass)</span>
                                             <span className="text-purple-500">{trackStates.bass.muted ? 0 : volumes.bass}%</span>
                                         </div>
-                                        <div className="flex items-center gap-3 mt-3">
+                                        <div className="flex items-center gap-2 mt-1.5">
                                             <button 
                                                 onClick={() => toggleMute('bass')}
                                                 className={clsx(
@@ -385,11 +385,11 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
 
                                     {/* Other */}
                                     <div>
-                                        <div className="flex justify-between text-xs font-bold mb-2 text-black dark:text-white">
+                                        <div className="flex justify-between text-xs font-bold mb-1 text-black dark:text-white">
                                             <span>ดนตรีอื่นๆ (Other)</span>
                                             <span className="text-blue-500">{trackStates.other.muted ? 0 : volumes.other}%</span>
                                         </div>
-                                        <div className="flex items-center gap-3 mt-3">
+                                        <div className="flex items-center gap-2 mt-1.5">
                                             <button 
                                                 onClick={() => toggleMute('other')}
                                                 className={clsx(
@@ -409,15 +409,15 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                         </>
 
                     {/* Lyrics Toggle */}
-                    <div className={clsx("mt-5 pt-5", isAiReady || isConnected ? "border-t border-gray-100 dark:border-zinc-800" : "")}>
-                        <div className="flex justify-between text-xs font-bold mb-3 text-black dark:text-white">
+                    <div className={clsx("mt-3 pt-3", isAiReady || isConnected ? "border-t border-gray-100 dark:border-zinc-800" : "")}>
+                        <div className="flex justify-between text-xs font-bold mb-2 text-black dark:text-white">
                             <span>เนื้อเพลง (Lyrics)</span>
                             <span className="text-gray-500">{showLyrics ? 'On' : 'Off'}</span>
                         </div>
                         <button 
                             onClick={toggleLyrics}
                             className={clsx(
-                                "w-full py-2.5 rounded-xl flex items-center justify-center gap-2 text-xs font-bold transition-colors border",
+                                "w-full py-2 rounded-xl flex items-center justify-center gap-2 text-xs font-bold transition-colors border",
                                 showLyrics 
                                     ? "bg-primary text-white border-primary" 
                                     : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
@@ -440,10 +440,10 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                         
                         {/* Lyrics Details Controls */}
                         {showLyrics && (
-                            <div className="mt-4 p-3 bg-gray-50 dark:bg-zinc-800/50 rounded-xl border border-gray-100 dark:border-zinc-700/50 flex flex-col gap-4">
+                            <div className="mt-2 p-2 bg-gray-50 dark:bg-zinc-800/50 rounded-xl border border-gray-100 dark:border-zinc-700/50 flex flex-col gap-3">
                                 {/* Source Selector */}
                                 <div>
-                                    <div className="flex justify-between text-[10px] font-bold mb-2 text-black/70 dark:text-zinc-400 uppercase">
+                                    <div className="flex justify-between text-[10px] font-bold mb-1 text-black/70 dark:text-zinc-400 uppercase">
                                         <span>แหล่งข้อมูล (Source)</span>
                                     </div>
                                     <div className="flex items-center gap-2">
@@ -474,7 +474,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
 
                                 {/* Sync Offset Controls */}
                                 <div>
-                                    <div className="flex justify-between text-[10px] font-bold mb-2 text-black/70 dark:text-zinc-400 uppercase">
+                                    <div className="flex justify-between text-[10px] font-bold mb-1 text-black/70 dark:text-zinc-400 uppercase">
                                         <span>ปรับเวลา (Sync)</span>
                                         <span className={syncOffset !== 0 ? "text-primary" : ""}>
                                             {syncOffset > 0 ? '+' : ''}{syncOffset.toFixed(1)}s
