@@ -39,7 +39,7 @@ const formatDuration = (seconds?: number) => {
 };
 
 function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragListeners, setNodeRef, style }: QueueItemProps) {
-    const { removeFromQueue, setCurrentIndex, isKaraoke } = usePlayerStore();
+    const { removeFromQueue, setCurrentIndex, isKaraoke, isPlaying } = usePlayerStore();
     
     return (
         <div 
@@ -47,13 +47,14 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
             style={style}
             {...dragAttributes}
             {...dragListeners}
-            className={clsx(
-                "group flex items-center p-3 rounded-2xl border transition-colors relative",
-                !isCurrent && "cursor-grab active:cursor-grabbing touch-none",
-                isCurrent 
-                    ? "bg-primary/5 dark:bg-primary/10 border-primary/30 dark:border-primary/40 cursor-pointer"
-                    : "bg-white dark:bg-zinc-900 border-gray-100 dark:border-zinc-800 hover:border-gray-200 dark:hover:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800/50"
-            )}
+            className={`
+                group relative flex items-center p-2 rounded-xl border mb-2
+                ${isCurrent 
+                    ? 'bg-red-50/50 dark:bg-red-500/10 border-red-200 dark:border-red-500/30' 
+                    : 'bg-white dark:bg-zinc-900 border-gray-100 dark:border-zinc-800 hover:border-gray-200 dark:hover:border-zinc-700'
+                }
+                transition-all cursor-pointer select-none touch-none
+            `}
             onClick={() => setCurrentIndex(actualIndex)}
         >
             {/* Drag Handle Indicator */}
@@ -61,9 +62,10 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                 <div className="w-7 pr-2 shrink-0" />
             ) : (
                 <div 
-                    className="w-7 pr-2 flex items-center justify-center text-gray-300 group-hover:text-gray-400 shrink-0 transition-colors"
+                    className="w-7 pr-2 flex items-center justify-center text-gray-300 group-hover:text-gray-500 dark:text-zinc-600 dark:group-hover:text-zinc-400"
+                    title="ลากเพื่อจัดลำดับ"
                 >
-                    <GripVertical size={16} />
+                    <GripVertical className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
             )}
 
@@ -72,7 +74,8 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                 <img
                     src={video.thumbnail || `https://i.ytimg.com/vi/${video.videoId || video.id}/mqdefault.jpg`}
                     alt={video.title}
-                    className="object-cover w-full h-full opacity-90 group-hover:opacity-100 transition-opacity"
+                    className="w-full h-full object-cover"
+                    loading="lazy"
                     onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         if (!target.src.includes('icon-cover.png')) {
@@ -85,17 +88,17 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
             {/* Info */}
             <div className="flex-1 min-w-0 ml-3 mr-1">
                 <div className="flex items-start gap-2 mb-1">
+                    {isCurrent && (
+                        <div className="flex items-end gap-[2px] h-3 shrink-0 mt-1">
+                            <div className="w-[2px] bg-black dark:bg-white rounded-t-[1px]" style={isPlaying ? { animation: 'eq 0.8s infinite alternate ease-in-out', height: '40%' } : { height: '2px' }} />
+                            <div className="w-[2px] bg-black dark:bg-white rounded-t-[1px]" style={isPlaying ? { animation: 'eq 0.8s infinite alternate ease-in-out 0.2s', height: '100%' } : { height: '2px' }} />
+                            <div className="w-[2px] bg-black dark:bg-white rounded-t-[1px]" style={isPlaying ? { animation: 'eq 0.8s infinite alternate ease-in-out 0.4s', height: '60%' } : { height: '2px' }} />
+                            <div className="w-[2px] bg-black dark:bg-white rounded-t-[1px]" style={isPlaying ? { animation: 'eq 0.8s infinite alternate ease-in-out 0.1s', height: '80%' } : { height: '2px' }} />
+                        </div>
+                    )}
                     <h4 className="text-[14px] font-black text-black dark:text-white line-clamp-1 leading-snug">
                         {video.title}
                     </h4>
-                    {isCurrent && (
-                        <div className="flex items-end gap-[2px] h-3 shrink-0 mt-1">
-                            <div className="w-[2px] bg-black dark:bg-white rounded-t-[1px]" style={{ animation: 'eq 0.8s infinite alternate ease-in-out', height: '40%' }} />
-                            <div className="w-[2px] bg-black dark:bg-white rounded-t-[1px]" style={{ animation: 'eq 0.8s infinite alternate ease-in-out 0.2s', height: '100%' }} />
-                            <div className="w-[2px] bg-black dark:bg-white rounded-t-[1px]" style={{ animation: 'eq 0.8s infinite alternate ease-in-out 0.4s', height: '60%' }} />
-                            <div className="w-[2px] bg-black dark:bg-white rounded-t-[1px]" style={{ animation: 'eq 0.8s infinite alternate ease-in-out 0.1s', height: '80%' }} />
-                        </div>
-                    )}
                 </div>
                 {video.aiVocalRequested && aiJob && aiJob.status === 'processing' ? (
                     <div className="flex items-center gap-2 w-full shrink-0">

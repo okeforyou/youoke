@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Play, Pause, SkipForward, RotateCcw, Volume2, VolumeX, Maximize, Cast, Mic, MicOff, ChevronUp, Mic2, Music, SlidersHorizontal, Type, Drum, Guitar, Piano, MicVocal } from "lucide-react";
+import { Play, Pause, SkipForward, RotateCcw, Volume2, VolumeX, Maximize, Cast, Mic, MicOff, ChevronUp, Mic2, Music, SlidersHorizontal, Type, Drum, Guitar, Piano, MicVocal, X } from "lucide-react";
 import { usePlayerStore } from "../stores/usePlayerStore";
 import { useLyricsStore } from "../stores/useLyricsStore";
 import { useMixerStore, type TrackType } from "../stores/useMixerStore";
@@ -298,7 +298,10 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                         : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
                                 )}
                             >
-                                {trackStates.vocals.muted ? <MicOff size={14} /> : <MicVocal size={14} />}
+                                <div className="relative flex items-center justify-center">
+                                    <MicVocal size={14} className={trackStates.vocals.muted ? "opacity-30" : ""} />
+                                    {trackStates.vocals.muted && <X size={18} strokeWidth={3} className="absolute text-red-500" />}
+                                </div>
                             </button>
                             <div className="flex-1 flex flex-col justify-center">
                                 <div className="flex justify-between items-center mb-1">
@@ -321,7 +324,10 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                             : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
                                     )}
                                 >
-                                    {trackStates.instrumental.muted ? <VolumeX size={14} /> : <Music size={14} />}
+                                    <div className="relative flex items-center justify-center">
+                                        <Music size={14} className={trackStates.instrumental.muted ? "opacity-30" : ""} />
+                                        {trackStates.instrumental.muted && <X size={18} strokeWidth={3} className="absolute text-red-500" />}
+                                    </div>
                                 </button>
                                 <div className="flex-1 flex flex-col justify-center">
                                     <div className="flex justify-between items-center mb-1">
@@ -347,7 +353,10 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                                 : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
                                         )}
                                     >
-                                        {trackStates.drums.muted ? <VolumeX size={14} /> : <Drum size={14} />}
+                                        <div className="relative flex items-center justify-center">
+                                            <Drum size={14} className={trackStates.drums.muted ? "opacity-30" : ""} />
+                                            {trackStates.drums.muted && <X size={18} strokeWidth={3} className="absolute text-red-500" />}
+                                        </div>
                                     </button>
                                     <div className="flex-1 flex flex-col justify-center">
                                         <div className="flex justify-between items-center mb-1">
@@ -369,7 +378,10 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                                 : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
                                         )}
                                     >
-                                        {trackStates.bass.muted ? <VolumeX size={14} /> : <Guitar size={14} />}
+                                        <div className="relative flex items-center justify-center">
+                                            <Guitar size={14} className={trackStates.bass.muted ? "opacity-30" : ""} />
+                                            {trackStates.bass.muted && <X size={18} strokeWidth={3} className="absolute text-red-500" />}
+                                        </div>
                                     </button>
                                     <div className="flex-1 flex flex-col justify-center">
                                         <div className="flex justify-between items-center mb-1">
@@ -391,7 +403,10 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                                 : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
                                         )}
                                     >
-                                        {trackStates.other.muted ? <VolumeX size={14} /> : <Piano size={14} />}
+                                        <div className="relative flex items-center justify-center">
+                                            <Piano size={14} className={trackStates.other.muted ? "opacity-30" : ""} />
+                                            {trackStates.other.muted && <X size={18} strokeWidth={3} className="absolute text-red-500" />}
+                                        </div>
                                     </button>
                                     <div className="flex-1 flex flex-col justify-center">
                                         <div className="flex justify-between items-center mb-1">
