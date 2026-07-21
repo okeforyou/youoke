@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.149";
+export const SYSTEM_VERSION = "5.5.150";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.150",
+        date: "2026-07-21",
+        changes: [
+            "ui: Fixed Mixer UI clipping at the bottom by reducing max-height to 60vh to fit within aside constraints.",
+            "ui: Changed the lyrics error message from a red box to a subtle grey 'ไม่มีเนื้อเพลง' message."
+        ]
+    },
     {
         version: "5.5.149",
         date: "2026-07-21",

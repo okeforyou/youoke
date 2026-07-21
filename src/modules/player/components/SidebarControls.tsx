@@ -259,7 +259,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             
             {/* Flat Mixer Popover */}
             {showVocalMixer && (
-                <div ref={mixerRef} className="absolute top-[50px] right-2 mt-2 w-72 max-h-[85vh] overflow-y-auto overscroll-contain bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-4 z-50 animate-in fade-in zoom-in-95 duration-200 shadow-xl">
+                <div ref={mixerRef} className="absolute top-[50px] right-2 mt-2 w-72 max-h-[60vh] overflow-y-auto overscroll-contain bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-4 z-50 animate-in fade-in zoom-in-95 duration-200 shadow-xl">
                     <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">ตั้งค่าเสียง (Audio Settings)</h4>
                     
                     {/* Master Mute */}
@@ -424,8 +424,8 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                         </button>
                         
                         {lyricsError && showLyrics && (
-                            <div className="mt-2 text-[10px] text-red-500 font-medium bg-red-50 dark:bg-red-900/20 p-2 rounded">
-                                {lyricsError}
+                            <div className="mt-2 text-[10px] text-gray-500 dark:text-gray-400 font-medium bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700 p-2 rounded-xl text-center">
+                                ไม่มีเนื้อเพลง
                             </div>
                         )}
                         {lyricsLoading && showLyrics && (
