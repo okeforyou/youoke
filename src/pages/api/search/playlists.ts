@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { searchSpotifyPlaylists } from "../../../modules/spotify-theme/services/api";
+import { searchSpotifyPlaylists } from "../../../services/spotifyApi";
 import { scrapeYouTubePlaylistSearch } from "../../../utils/youtubeScraper";
 import { adminFirestore } from "../../../firebase-admin";
 

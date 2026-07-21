@@ -3,8 +3,8 @@ import axios from "axios";
 import { Loader2, ArrowLeft, Search, Music } from "lucide-react";
 import Image from "next/image";
 import { useState, useEffect, Fragment, useRef } from "react";
-import { usePlayerStore } from "../../../modules/player/stores/usePlayerStore";
-import { useUIStore } from "../../../stores/useUIStore";
+import { usePlayerStore } from "../../modules/player/stores/usePlayerStore";
+import { useUIStore } from "../../stores/useUIStore";
 import { useRouter } from "next/router";
 
 // Types matching YouTube API

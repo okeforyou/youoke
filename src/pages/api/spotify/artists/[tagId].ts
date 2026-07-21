@@ -1,7 +1,7 @@
 import axios from "axios";
 import { Innertube } from 'youtubei.js';
 
-import { getAccessToken } from "../../../../modules/spotify-theme/services/auth";
+import { getAccessToken } from "../../../../services/spotifyAuth";
 
 import type { NextApiRequest, NextApiResponse } from "next";
 //https://www.joox.com/th/artists
