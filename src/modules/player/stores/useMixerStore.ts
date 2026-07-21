@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+export type TrackType = 'vocals' | 'instrumental' | 'drums' | 'bass' | 'other';
 
 interface TrackState {
     muted: boolean;
