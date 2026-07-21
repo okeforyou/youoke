@@ -31,6 +31,13 @@ interface QueueItemProps {
     style?: React.CSSProperties;
 }
 
+const formatDuration = (seconds?: number) => {
+    if (!seconds) return '';
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m}:${s.toString().padStart(2, '0')}`;
+};
+
 function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragListeners, setNodeRef, style }: QueueItemProps) {
     const { removeFromQueue, setCurrentIndex, isKaraoke } = usePlayerStore();
     
@@ -77,9 +84,16 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
             
             {/* Info */}
             <div className="flex-1 min-w-0 ml-3 mr-1">
-                <h4 className="text-[14px] font-black text-black dark:text-white line-clamp-1 leading-snug mb-1">
-                    {video.title}
-                </h4>
+                <div className="flex items-start justify-between gap-2 mb-1">
+                    <h4 className="text-[14px] font-black text-black dark:text-white line-clamp-1 leading-snug">
+                        {video.title}
+                    </h4>
+                    {isCurrent && (
+                        <div className="shrink-0 text-primary mt-0.5">
+                            <AudioLines className="w-4 h-4 animate-pulse" />
+                        </div>
+                    )}
+                </div>
                 {video.aiVocalRequested && aiJob && aiJob.status === 'processing' ? (
                     <div className="flex items-center gap-2 w-full shrink-0">
                         <span className="shrink-0 text-[11px] text-blue-500 font-bold flex items-center gap-1.5">
@@ -92,7 +106,7 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                         <span className="text-[10px] font-black text-blue-500 w-7 text-right">{aiJob.progress.toFixed(0)}%</span>
                     </div>
                 ) : (
-                    <div className="flex items-center gap-2 w-full">
+                    <div className="flex items-center w-full">
                         {!isKaraoke && (
                             <div className="shrink-0 flex items-center">
                                 {aiJob?.status === 'ready' ? (
@@ -157,14 +171,19 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                                                 useUIStore.getState().showVocalModeModal(video.uuid, vidId);
                                             }
                                         }}
-                                        className="px-2 py-0.5 bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 hover:bg-gray-200 dark:hover:bg-zinc-700 active:scale-95 rounded flex items-center gap-1 border border-transparent transition-all"
+                                        className="group px-2 py-0.5 bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 hover:bg-primary/10 hover:text-primary active:scale-95 rounded flex items-center gap-1 border border-transparent transition-all"
                                     >
-                                        <AudioLines className="w-2.5 h-2.5" />
-                                        <span className="text-[9px] font-black uppercase tracking-wide mt-0.5">ตัดเสียงร้อง</span>
+                                        <AudioLines className="w-2.5 h-2.5 group-hover:animate-pulse" />
+                                        <span className="text-[9px] font-black uppercase tracking-wide mt-0.5 group-hover:text-primary">ตัดเสียงร้อง</span>
                                     </button>
                                 ) : null}
                             </div>
                         )}
+                        {video.duration ? (
+                            <div className="ml-auto text-[10px] font-medium text-gray-400 dark:text-zinc-500">
+                                {formatDuration(video.duration)}
+                            </div>
+                        ) : null}
                     </div>
                 )}
             </div>
