@@ -66,9 +66,6 @@ export default function SearchResultGrid({
     queryFn: () => getVideoInfo(curVideoId || ""),
     enabled: !searchTerm.length && !!curVideoId,
     select: ({ recommendedVideos }) => {
-      if (isKaraoke) {
-        return recommendedVideos.filter(titleIncludesKaraoke);
-      }
       return recommendedVideos;
     },
   });
@@ -77,9 +74,6 @@ export default function SearchResultGrid({
     queryKey: ["searchResult", prefix + searchTerm],
     queryFn: () => getSearchResult({ q: prefix + searchTerm }),
     select: (results) => {
-      if (isKaraoke) {
-        return results.filter(titleIncludesKaraoke);
-      }
       return results;
     },
   });
