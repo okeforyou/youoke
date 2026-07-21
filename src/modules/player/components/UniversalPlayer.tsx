@@ -296,7 +296,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
 
         const aiVocal = useAIVocalStore.getState();
         const jobId = currentVideo?.videoId || currentVideo?.id;
-        if (currentVideo?.aiVocalRequested && jobId && aiVocal.jobs[jobId]?.status === 'ready') {
+        if (jobId && aiVocal.jobs[jobId]?.status === 'ready') {
             try { if (event.target.getIframe()) event.target.mute(); } catch (e) {}
         }
 
@@ -311,7 +311,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
     const handleYouTubeStateChange = (event: any) => {
         const aiVocal = useAIVocalStore.getState();
         const jobId = currentVideo?.videoId || currentVideo?.id;
-        const isReady = currentVideo?.aiVocalRequested && jobId && aiVocal.jobs[jobId]?.status === 'ready';
+        const isReady = jobId && aiVocal.jobs[jobId]?.status === 'ready';
 
         if (isReady && (event.data === 1 || event.data === 3)) {
             try { if (event.target.getIframe()) event.target.mute(); } catch (e) {}
