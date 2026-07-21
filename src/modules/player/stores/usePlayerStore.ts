@@ -266,6 +266,20 @@ export const usePlayerStore = create<PlayerStore>()(
             }),
 
             playVideo: (videoId) => set((state) => {
+                const existingIdx = state.queue.findIndex(q => (q.videoId || q.id) === videoId);
+                
+                if (existingIdx !== -1) {
+                    const newState = {
+                        currentIndex: existingIdx,
+                        currentVideo: state.queue[existingIdx],
+                        currentSource: videoId,
+                        isPlaying: true,
+                        currentTime: 0
+                    };
+                    broadcast(newState);
+                    return newState;
+                }
+
                 const newItem: QueueItem = {
                     id: videoId,
                     videoId, // Backward compat
@@ -275,9 +289,11 @@ export const usePlayerStore = create<PlayerStore>()(
                     uuid: generateUUID(),
                     thumbnail: `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`
                 };
+                
+                const newQueue = [...state.queue, newItem];
                 const newState = {
-                    queue: [newItem],
-                    currentIndex: 0,
+                    queue: newQueue,
+                    currentIndex: newQueue.length - 1,
                     currentVideo: newItem,
                     currentSource: videoId,
                     isPlaying: true,
@@ -346,42 +362,35 @@ export const usePlayerStore = create<PlayerStore>()(
                     }
                 });
 
-                let newQueue;
-                let updates: Partial<PlayerStore> = {};
+                const newQueue = [...state.queue, ...newItems];
+                let updates: Partial<PlayerStore> = { queue: newQueue };
 
-                if (state.queue.length === 0) {
-                    newQueue = [...newItems];
-                    updates.queue = newQueue;
+                if (!state.currentVideo && autoPlay && newItems.length > 0) {
+                    const firstItem = newItems[0];
+                    let source = firstItem.id;
+                    const type = firstItem.sourceType || 'youtube';
 
-                    if (!state.currentVideo && autoPlay && newItems.length > 0) {
-                        const firstItem = newItems[0];
-                        let source = firstItem.id;
-                        const type = firstItem.sourceType || 'youtube';
-
-                        if (type === 'youtube') {
-                            source = firstItem.videoId || firstItem.id;
-                        } else if (type === 'vcd') {
-                            source = firstItem.filePath || firstItem.id;
-                        } else if (type === 'midi') {
-                            source = firstItem.id;
-                        }
-
-                        updates = {
-                            ...updates,
-                            currentIndex: 0,
-                            currentVideo: firstItem,
-                            currentSource: source,
-                            isPlaying: true,
-                            currentTime: 0
-                        };
+                    if (type === 'youtube') {
+                        source = firstItem.videoId || firstItem.id;
+                    } else if (type === 'vcd') {
+                        source = firstItem.filePath || firstItem.id;
+                    } else if (type === 'midi') {
+                        source = firstItem.id;
                     }
+
+                    updates = {
+                        ...updates,
+                        currentIndex: state.queue.length,
+                        currentVideo: firstItem,
+                        currentSource: source,
+                        isPlaying: true,
+                        currentTime: 0
+                    };
                 } else {
-                    newQueue = [...state.queue, ...newItems];
-                    updates.queue = newQueue;
                     console.log(`✅ Appended ${newItems.length} items to end of queue. Total: ${newQueue.length}`);
                 }
 
-                broadcast(updates);
+                broadcast({ queue: newQueue, ...updates });
                 return updates;
             }),
 

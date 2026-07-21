@@ -55,7 +55,7 @@ export const HomePageContent = memo(({ onAddToQueue }: { onAddToQueue?: (video: 
             }
         }} />;
         case 1: return <MusicProviderContainer showTab={false} />; // "หน้าแรก" -> Main Dashboard
-        case 2: return <ListHitsGrid onClick={(hit: any) => {
+        case 2: return <ListHitsGrid onPlay={(hit: any) => {
             const artist = (hit.artist_name && hit.artist_name !== "Unknown Artist") ? hit.artist_name : "";
             const query = `${hit.title} ${artist}`.trim();
 
