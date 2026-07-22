@@ -129,10 +129,10 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                                                     useUIStore.getState().showVocalModeModal(video.uuid || video.id, video.videoId || video.id);
                                                 });
                                             }}
-                                            className={`relative group/badge pl-1.5 pr-2 py-0.5 rounded-md flex items-center justify-center border transition-all ${
+                                            className={`relative group/badge pl-1.5 pr-2 py-0.5 rounded-md flex items-center justify-center transition-all ${
                                                 aiJob.mode === 'pro' 
-                                                    ? 'bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 border-amber-200/50 dark:border-amber-700/30 text-amber-600 dark:text-amber-400 cursor-default' 
-                                                    : 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 border-blue-200/50 dark:border-blue-700/30 text-blue-600 dark:text-blue-400 cursor-pointer hover:shadow-sm'
+                                                    ? 'bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 text-amber-600 dark:text-amber-400 cursor-default' 
+                                                    : 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 text-blue-600 dark:text-blue-400 cursor-pointer hover:shadow-sm'
                                             }`}
                                         >
                                             <Sparkles className={`w-[10px] h-[10px] mr-1 shrink-0 ${aiJob.mode === 'pro' ? 'text-amber-500' : 'text-blue-500'}`} />
