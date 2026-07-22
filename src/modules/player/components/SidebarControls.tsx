@@ -292,15 +292,14 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                             <button 
                                 onClick={() => toggleMute('vocals')}
                                 className={clsx(
-                                    "w-8 h-8 shrink-0 flex items-center justify-center rounded-lg transition-colors border",
+                                    "w-8 h-8 shrink-0 flex items-center justify-center rounded-lg transition-all border",
                                     trackStates.vocals.muted 
-                                        ? "bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-800" 
+                                        ? "bg-gray-50 dark:bg-zinc-800/50 text-gray-400 dark:text-gray-500 border-transparent opacity-60 hover:opacity-80" 
                                         : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
                                 )}
                             >
                                 <div className="relative flex items-center justify-center">
-                                    <MicVocal size={14} className={trackStates.vocals.muted ? "opacity-30" : ""} />
-                                    {trackStates.vocals.muted && <div className="absolute w-[18px] h-[2px] bg-red-500 -rotate-45 rounded-full drop-shadow-sm" />}
+                                    <MicVocal size={14} />
                                 </div>
                             </button>
                             <div className="flex-1 flex flex-col justify-center">
@@ -318,15 +317,14 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                 <button 
                                     onClick={() => toggleMute('instrumental')}
                                     className={clsx(
-                                        "w-8 h-8 shrink-0 flex items-center justify-center rounded-lg transition-colors border",
+                                        "w-8 h-8 shrink-0 flex items-center justify-center rounded-lg transition-all border",
                                         trackStates.instrumental.muted 
-                                            ? "bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-800" 
+                                            ? "bg-gray-50 dark:bg-zinc-800/50 text-gray-400 dark:text-gray-500 border-transparent opacity-60 hover:opacity-80" 
                                             : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
                                     )}
                                 >
                                     <div className="relative flex items-center justify-center">
-                                        <Music size={14} className={trackStates.instrumental.muted ? "opacity-30" : ""} />
-                                        {trackStates.instrumental.muted && <div className="absolute w-[18px] h-[2px] bg-red-500 -rotate-45 rounded-full drop-shadow-sm" />}
+                                        <Music size={14} />
                                     </div>
                                 </button>
                                 <div className="flex-1 flex flex-col justify-center">
@@ -347,15 +345,14 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                     <button 
                                         onClick={() => toggleMute('drums')}
                                         className={clsx(
-                                            "w-8 h-8 shrink-0 flex items-center justify-center rounded-lg transition-colors border",
+                                            "w-8 h-8 shrink-0 flex items-center justify-center rounded-lg transition-all border",
                                             trackStates.drums.muted 
-                                                ? "bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-800" 
+                                                ? "bg-gray-50 dark:bg-zinc-800/50 text-gray-400 dark:text-gray-500 border-transparent opacity-60 hover:opacity-80" 
                                                 : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
                                         )}
                                     >
                                         <div className="relative flex items-center justify-center">
-                                            <Drum size={14} className={trackStates.drums.muted ? "opacity-30" : ""} />
-                                            {trackStates.drums.muted && <div className="absolute w-[18px] h-[2px] bg-red-500 -rotate-45 rounded-full drop-shadow-sm" />}
+                                            <Drum size={14} />
                                         </div>
                                     </button>
                                     <div className="flex-1 flex flex-col justify-center">
@@ -372,15 +369,14 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                     <button 
                                         onClick={() => toggleMute('bass')}
                                         className={clsx(
-                                            "w-8 h-8 shrink-0 flex items-center justify-center rounded-lg transition-colors border",
+                                            "w-8 h-8 shrink-0 flex items-center justify-center rounded-lg transition-all border",
                                             trackStates.bass.muted 
-                                                ? "bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-800" 
+                                                ? "bg-gray-50 dark:bg-zinc-800/50 text-gray-400 dark:text-gray-500 border-transparent opacity-60 hover:opacity-80" 
                                                 : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
                                         )}
                                     >
                                         <div className="relative flex items-center justify-center">
-                                            <Guitar size={14} className={trackStates.bass.muted ? "opacity-30" : ""} />
-                                            {trackStates.bass.muted && <div className="absolute w-[18px] h-[2px] bg-red-500 -rotate-45 rounded-full drop-shadow-sm" />}
+                                            <Guitar size={14} />
                                         </div>
                                     </button>
                                     <div className="flex-1 flex flex-col justify-center">
@@ -397,15 +393,14 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                     <button 
                                         onClick={() => toggleMute('other')}
                                         className={clsx(
-                                            "w-8 h-8 shrink-0 flex items-center justify-center rounded-lg transition-colors border",
+                                            "w-8 h-8 shrink-0 flex items-center justify-center rounded-lg transition-all border",
                                             trackStates.other.muted 
-                                                ? "bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-800" 
+                                                ? "bg-gray-50 dark:bg-zinc-800/50 text-gray-400 dark:text-gray-500 border-transparent opacity-60 hover:opacity-80" 
                                                 : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
                                         )}
                                     >
                                         <div className="relative flex items-center justify-center">
-                                            <Piano size={14} className={trackStates.other.muted ? "opacity-30" : ""} />
-                                            {trackStates.other.muted && <div className="absolute w-[18px] h-[2px] bg-red-500 -rotate-45 rounded-full drop-shadow-sm" />}
+                                            <Piano size={14} />
                                         </div>
                                     </button>
                                     <div className="flex-1 flex flex-col justify-center">
