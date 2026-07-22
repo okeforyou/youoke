@@ -1,5 +1,5 @@
 import React from "react";
-import { ListMusic, Trash2, ChevronDown, Loader2, AudioLines, AudioWaveform, GripVertical, MicVocal, Music, Drum, Guitar, Piano } from "lucide-react";
+import { ListMusic, Trash2, ChevronDown, Loader2, AudioLines, AudioWaveform, GripVertical, MicVocal, Music, Drum, Guitar, Piano, Sparkles } from "lucide-react";
 import { usePlayerStore } from "../stores/usePlayerStore";
 import { useAIVocalStore } from "../../../stores/useAIVocalStore";
 import { useUIStore } from "../../../stores/useUIStore";
@@ -61,7 +61,14 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
         >
             {/* Drag Handle Indicator */}
             {isCurrent ? (
-                <div className="w-7 pr-2 shrink-0" />
+                <div className="w-7 pr-2 shrink-0 flex items-center justify-center">
+                    <div className="flex items-end gap-[2px] h-3 shrink-0">
+                        <div className="w-[2px] bg-black dark:bg-white rounded-t-[1px]" style={isPlaying ? { animation: 'eq 0.8s infinite alternate ease-in-out', height: '40%' } : { height: '2px' }} />
+                        <div className="w-[2px] bg-black dark:bg-white rounded-t-[1px]" style={isPlaying ? { animation: 'eq 0.8s infinite alternate ease-in-out 0.2s', height: '100%' } : { height: '2px' }} />
+                        <div className="w-[2px] bg-black dark:bg-white rounded-t-[1px]" style={isPlaying ? { animation: 'eq 0.8s infinite alternate ease-in-out 0.4s', height: '60%' } : { height: '2px' }} />
+                        <div className="w-[2px] bg-black dark:bg-white rounded-t-[1px]" style={isPlaying ? { animation: 'eq 0.8s infinite alternate ease-in-out 0.1s', height: '80%' } : { height: '2px' }} />
+                    </div>
+                </div>
             ) : (
                 <div 
                     className="relative group/drag w-7 pr-2 flex items-center justify-center text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-zinc-300 transition-colors"
@@ -93,14 +100,6 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
             {/* Info */}
             <div className="flex-1 min-w-0 ml-3 mr-1">
                 <div className="flex items-start gap-2 mb-1">
-                    {isCurrent && (
-                        <div className="flex items-end gap-[2px] h-3 shrink-0 mt-1">
-                            <div className="w-[2px] bg-black dark:bg-white rounded-t-[1px]" style={isPlaying ? { animation: 'eq 0.8s infinite alternate ease-in-out', height: '40%' } : { height: '2px' }} />
-                            <div className="w-[2px] bg-black dark:bg-white rounded-t-[1px]" style={isPlaying ? { animation: 'eq 0.8s infinite alternate ease-in-out 0.2s', height: '100%' } : { height: '2px' }} />
-                            <div className="w-[2px] bg-black dark:bg-white rounded-t-[1px]" style={isPlaying ? { animation: 'eq 0.8s infinite alternate ease-in-out 0.4s', height: '60%' } : { height: '2px' }} />
-                            <div className="w-[2px] bg-black dark:bg-white rounded-t-[1px]" style={isPlaying ? { animation: 'eq 0.8s infinite alternate ease-in-out 0.1s', height: '80%' } : { height: '2px' }} />
-                        </div>
-                    )}
                     <h4 className="text-[14px] font-black text-black dark:text-white line-clamp-1 leading-snug">
                         {video.title}
                     </h4>
@@ -130,12 +129,13 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                                                     useUIStore.getState().showVocalModeModal(video.uuid || video.id, video.videoId || video.id);
                                                 });
                                             }}
-                                            className={`relative group/badge px-2 py-0.5 rounded-md flex items-center justify-center border ${
+                                            className={`relative group/badge pl-1.5 pr-2 py-0.5 rounded-md flex items-center justify-center border transition-all ${
                                                 aiJob.mode === 'pro' 
-                                                    ? 'bg-gray-50 dark:bg-zinc-800/50 border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-300 cursor-default' 
-                                                    : 'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700 text-gray-500 dark:text-gray-400 cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800'
+                                                    ? 'bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 border-amber-200/50 dark:border-amber-700/30 text-amber-600 dark:text-amber-400 cursor-default' 
+                                                    : 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 border-blue-200/50 dark:border-blue-700/30 text-blue-600 dark:text-blue-400 cursor-pointer hover:shadow-sm'
                                             }`}
                                         >
+                                            <Sparkles className={`w-[10px] h-[10px] mr-1 shrink-0 ${aiJob.mode === 'pro' ? 'text-amber-500' : 'text-blue-500'}`} />
                                             <span className="text-[9.5px] font-bold uppercase tracking-wide">
                                                 {aiJob.mode === 'pro' ? 'แยกเสียงแล้ว 4CH' : 'แยกเสียงแล้ว 2CH'}
                                             </span>
