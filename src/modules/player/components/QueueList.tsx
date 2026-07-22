@@ -155,7 +155,7 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                                                             <MicVocal size={11} strokeWidth={2.5} />
                                                         </button>
                                                         <div className="absolute -top-7 left-1/2 -translate-x-1/2 px-1.5 py-0.5 bg-black/80 dark:bg-white/90 text-white dark:text-black text-[9px] font-medium rounded opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-                                                            เสียงร้อง
+                                                            {isCurrent && trackStates.vocals.muted ? 'เปิดเสียงร้อง (Vocals)' : 'ปิดเสียงร้อง (Vocals)'}
                                                             <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-l-[3px] border-r-[3px] border-t-[4px] border-l-transparent border-r-transparent border-t-black/80 dark:border-t-white/90"></div>
                                                         </div>
                                                     </div>
@@ -167,7 +167,7 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                                                             <Drum size={11} strokeWidth={2.5} />
                                                         </button>
                                                         <div className="absolute -top-7 left-1/2 -translate-x-1/2 px-1.5 py-0.5 bg-black/80 dark:bg-white/90 text-white dark:text-black text-[9px] font-medium rounded opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-                                                            เสียงกลอง
+                                                            {isCurrent && trackStates.drums.muted ? 'เปิดเสียงกลอง (Drums)' : 'ปิดเสียงกลอง (Drums)'}
                                                             <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-l-[3px] border-r-[3px] border-t-[4px] border-l-transparent border-r-transparent border-t-black/80 dark:border-t-white/90"></div>
                                                         </div>
                                                     </div>
@@ -179,7 +179,7 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                                                             <Guitar size={11} strokeWidth={2.5} />
                                                         </button>
                                                         <div className="absolute -top-7 left-1/2 -translate-x-1/2 px-1.5 py-0.5 bg-black/80 dark:bg-white/90 text-white dark:text-black text-[9px] font-medium rounded opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-                                                            เสียงเบส
+                                                            {isCurrent && trackStates.bass.muted ? 'เปิดเสียงเบส (Bass)' : 'ปิดเสียงเบส (Bass)'}
                                                             <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-l-[3px] border-r-[3px] border-t-[4px] border-l-transparent border-r-transparent border-t-black/80 dark:border-t-white/90"></div>
                                                         </div>
                                                     </div>
@@ -191,20 +191,25 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                                                             <Piano size={11} strokeWidth={2.5} />
                                                         </button>
                                                         <div className="absolute -top-7 left-1/2 -translate-x-1/2 px-1.5 py-0.5 bg-black/80 dark:bg-white/90 text-white dark:text-black text-[9px] font-medium rounded opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-                                                            เสียงดนตรีอื่นๆ
+                                                            {isCurrent && trackStates.other.muted ? 'เปิดดนตรีอื่นๆ (Other)' : 'ปิดดนตรีอื่นๆ (Other)'}
                                                             <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-l-[3px] border-r-[3px] border-t-[4px] border-l-transparent border-r-transparent border-t-black/80 dark:border-t-white/90"></div>
                                                         </div>
                                                     </div>
                                                 </>
                                             ) : (
                                                 <>
-                                                    <button 
-                                                        onClick={(e) => { e.stopPropagation(); if (isCurrent) toggleMute('vocals'); }}
-                                                        className={`relative w-5 h-5 rounded-full flex items-center justify-center transition-all ${isCurrent && trackStates.vocals.muted ? 'bg-gray-50 dark:bg-zinc-800/50 text-gray-400 dark:text-gray-500 opacity-60' : 'bg-pink-50 dark:bg-pink-900/20 text-pink-500 hover:bg-pink-100'} ${isCurrent ? 'cursor-pointer hover:opacity-80' : 'cursor-default'}`} 
-                                                        title="เสียงร้อง"
-                                                    >
-                                                        <MicVocal size={11} strokeWidth={2.5} />
-                                                    </button>
+                                                    <div className="relative group/btn flex items-center justify-center">
+                                                        <button 
+                                                            onClick={(e) => { e.stopPropagation(); if (isCurrent) toggleMute('vocals'); }}
+                                                            className={`relative w-5 h-5 rounded-full flex items-center justify-center transition-all ${isCurrent && trackStates.vocals.muted ? 'bg-gray-50 dark:bg-zinc-800/50 text-gray-400 dark:text-gray-500 opacity-60' : 'bg-pink-50 dark:bg-pink-900/20 text-pink-500 hover:bg-pink-100'} ${isCurrent ? 'cursor-pointer hover:opacity-80' : 'cursor-default'}`} 
+                                                        >
+                                                            <MicVocal size={11} strokeWidth={2.5} />
+                                                        </button>
+                                                        <div className="absolute -top-7 left-1/2 -translate-x-1/2 px-1.5 py-0.5 bg-black/80 dark:bg-white/90 text-white dark:text-black text-[9px] font-medium rounded opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                                                            {isCurrent && trackStates.vocals.muted ? 'เปิดเสียงร้อง (Vocals)' : 'ปิดเสียงร้อง (Vocals)'}
+                                                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-l-[3px] border-r-[3px] border-t-[4px] border-l-transparent border-r-transparent border-t-black/80 dark:border-t-white/90"></div>
+                                                        </div>
+                                                    </div>
                                                     <div className="relative group/btn flex items-center justify-center">
                                                         <button 
                                                             onClick={(e) => { e.stopPropagation(); if (isCurrent) toggleMute('instrumental'); }}
@@ -213,7 +218,7 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                                                             <Music size={11} strokeWidth={2.5} />
                                                         </button>
                                                         <div className="absolute -top-7 left-1/2 -translate-x-1/2 px-1.5 py-0.5 bg-black/80 dark:bg-white/90 text-white dark:text-black text-[9px] font-medium rounded opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-                                                            เสียงดนตรี
+                                                            {isCurrent && trackStates.instrumental.muted ? 'เปิดเสียงดนตรี (Instrumental)' : 'ปิดเสียงดนตรี (Instrumental)'}
                                                             <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-l-[3px] border-r-[3px] border-t-[4px] border-l-transparent border-r-transparent border-t-black/80 dark:border-t-white/90"></div>
                                                         </div>
                                                     </div>
