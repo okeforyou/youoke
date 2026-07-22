@@ -52,7 +52,7 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
             className={`
                 group relative flex items-center p-2 rounded-xl border mb-2
                 ${isCurrent 
-                    ? 'bg-red-50/50 dark:bg-red-500/10 border-red-200 dark:border-red-500/30' 
+                    ? 'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700 shadow-sm ring-1 ring-gray-200 dark:ring-zinc-700' 
                     : 'bg-white dark:bg-zinc-900 border-gray-100 dark:border-zinc-800 hover:border-gray-200 dark:hover:border-zinc-700'
                 }
                 transition-all cursor-pointer select-none touch-none
