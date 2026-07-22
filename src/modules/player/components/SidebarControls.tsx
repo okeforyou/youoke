@@ -10,6 +10,49 @@ import clsx from 'clsx';
 import { useAIVocalStore } from '../../../stores/useAIVocalStore';
 
 
+const VolumeSlider = ({ value, onChange, muted }: { value: number, onChange: (val: number) => void, muted: boolean }) => {
+    const [isDragging, setIsDragging] = useState(false);
+    return (
+        <div className="relative h-6 flex items-center group w-full"
+            onMouseEnter={() => setIsDragging(true)}
+            onMouseLeave={() => setIsDragging(false)}
+        >
+            <div className="absolute w-full h-[3px] bg-gray-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+                <div 
+                    className={`h-full transition-all duration-75 ${muted ? 'bg-gray-400 dark:bg-gray-500' : 'bg-primary'}`} 
+                    style={{ width: `${value}%` }} 
+                />
+            </div>
+            
+            <div 
+                className={`absolute w-3.5 h-3.5 rounded-full border-[2px] bg-white dark:bg-zinc-900 shadow-sm flex items-center justify-center transition-all duration-75 pointer-events-none ${isDragging ? 'scale-125' : 'scale-100'} ${muted ? 'border-gray-400 dark:border-gray-500' : 'border-primary'}`}
+                style={{ left: `calc(${value}% - 7px)` }}
+            />
+
+            <div 
+                className={`absolute -top-7 px-1.5 py-0.5 rounded text-[9px] font-bold text-white shadow-md transition-opacity duration-150 pointer-events-none flex flex-col items-center justify-center ${isDragging ? 'opacity-100' : 'opacity-0'} ${muted ? 'bg-gray-500' : 'bg-primary'}`}
+                style={{ left: `calc(${value}% - 7px)`, transform: 'translateX(-50%)', zIndex: 50 }}
+            >
+                {value}%
+                <div className={`absolute -bottom-1 w-0 h-0 border-l-[3px] border-r-[3px] border-t-[4px] border-l-transparent border-r-transparent ${muted ? 'border-t-gray-500' : 'border-t-primary'}`} />
+            </div>
+
+            <input 
+                type="range" 
+                min="0" 
+                max="100" 
+                value={value} 
+                onChange={(e) => onChange(parseInt(e.target.value))}
+                onMouseDown={() => setIsDragging(true)}
+                onMouseUp={() => setIsDragging(false)}
+                onTouchStart={() => setIsDragging(true)}
+                onTouchEnd={() => setIsDragging(false)}
+                className="absolute w-full h-full opacity-0 cursor-pointer" 
+            />
+        </div>
+    );
+};
+
 
 interface SidebarControlsProps {
     castMode?: string;
@@ -305,9 +348,8 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                             <div className="flex-1 flex flex-col justify-center">
                                 <div className="flex justify-between items-center mb-1">
                                     <span className="text-[10px] font-bold text-black dark:text-white">เสียงร้อง (Vocals)</span>
-                                    <span className="text-[10px] font-bold text-primary">{trackStates.vocals.muted ? 0 : volumes.vocals}%</span>
                                 </div>
-                                <input type="range" min="0" max="100" value={trackStates.vocals.muted ? 0 : volumes.vocals} onChange={(e) => handleVolumeChange('vocals', parseInt(e.target.value))} className="w-full h-1 bg-gray-200 dark:bg-zinc-700 rounded-full appearance-none accent-primary" />
+                                <VolumeSlider value={trackStates.vocals.muted ? 0 : volumes.vocals} onChange={(val) => handleVolumeChange('vocals', val)} muted={trackStates.vocals.muted} />
                             </div>
                         </div>
 
@@ -330,9 +372,8 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                 <div className="flex-1 flex flex-col justify-center">
                                     <div className="flex justify-between items-center mb-1">
                                         <span className="text-[10px] font-bold text-black dark:text-white">ดนตรี (Instrumental)</span>
-                                        <span className="text-[10px] font-bold text-primary">{trackStates.instrumental.muted ? 0 : volumes.instrumental}%</span>
                                     </div>
-                                    <input type="range" min="0" max="100" value={trackStates.instrumental.muted ? 0 : volumes.instrumental} onChange={(e) => handleVolumeChange('instrumental', parseInt(e.target.value))} className="w-full h-1 bg-gray-200 dark:bg-zinc-700 rounded-full appearance-none accent-primary" />
+                                    <VolumeSlider value={trackStates.instrumental.muted ? 0 : volumes.instrumental} onChange={(val) => handleVolumeChange('instrumental', val)} muted={trackStates.instrumental.muted} />
                                 </div>
                             </div>
                         )}
@@ -358,9 +399,8 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                     <div className="flex-1 flex flex-col justify-center">
                                         <div className="flex justify-between items-center mb-1">
                                             <span className="text-[10px] font-bold text-black dark:text-white">กลอง (Drums)</span>
-                                            <span className="text-[10px] font-bold text-primary">{trackStates.drums.muted ? 0 : volumes.drums}%</span>
                                         </div>
-                                        <input type="range" min="0" max="100" value={trackStates.drums.muted ? 0 : volumes.drums} onChange={(e) => handleVolumeChange('drums', parseInt(e.target.value))} className="w-full h-1 bg-gray-200 dark:bg-zinc-700 rounded-full appearance-none accent-primary" />
+                                        <VolumeSlider value={trackStates.drums.muted ? 0 : volumes.drums} onChange={(val) => handleVolumeChange('drums', val)} muted={trackStates.drums.muted} />
                                     </div>
                                 </div>
 
@@ -382,9 +422,8 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                     <div className="flex-1 flex flex-col justify-center">
                                         <div className="flex justify-between items-center mb-1">
                                             <span className="text-[10px] font-bold text-black dark:text-white">เบส (Bass)</span>
-                                            <span className="text-[10px] font-bold text-primary">{trackStates.bass.muted ? 0 : volumes.bass}%</span>
                                         </div>
-                                        <input type="range" min="0" max="100" value={trackStates.bass.muted ? 0 : volumes.bass} onChange={(e) => handleVolumeChange('bass', parseInt(e.target.value))} className="w-full h-1 bg-gray-200 dark:bg-zinc-700 rounded-full appearance-none accent-primary" />
+                                        <VolumeSlider value={trackStates.bass.muted ? 0 : volumes.bass} onChange={(val) => handleVolumeChange('bass', val)} muted={trackStates.bass.muted} />
                                     </div>
                                 </div>
 
@@ -406,9 +445,8 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                     <div className="flex-1 flex flex-col justify-center">
                                         <div className="flex justify-between items-center mb-1">
                                             <span className="text-[10px] font-bold text-black dark:text-white">ดนตรีอื่นๆ (Other)</span>
-                                            <span className="text-[10px] font-bold text-primary">{trackStates.other.muted ? 0 : volumes.other}%</span>
                                         </div>
-                                        <input type="range" min="0" max="100" value={trackStates.other.muted ? 0 : volumes.other} onChange={(e) => handleVolumeChange('other', parseInt(e.target.value))} className="w-full h-1 bg-gray-200 dark:bg-zinc-700 rounded-full appearance-none accent-primary" />
+                                        <VolumeSlider value={trackStates.other.muted ? 0 : volumes.other} onChange={(val) => handleVolumeChange('other', val)} muted={trackStates.other.muted} />
                                     </div>
                                 </div>
                             </>
