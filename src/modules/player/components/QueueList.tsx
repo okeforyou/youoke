@@ -52,7 +52,7 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
             className={`
                 group relative flex items-center p-2 rounded-xl border mb-2
                 ${isCurrent 
-                    ? 'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700 shadow-sm ring-1 ring-gray-200 dark:ring-zinc-700' 
+                    ? 'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700 shadow-sm' 
                     : 'bg-white dark:bg-zinc-900 border-gray-100 dark:border-zinc-800 hover:border-gray-200 dark:hover:border-zinc-700'
                 }
                 transition-all cursor-pointer select-none touch-none
@@ -130,13 +130,13 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                                                     useUIStore.getState().showVocalModeModal(video.uuid || video.id, video.videoId || video.id);
                                                 });
                                             }}
-                                            className={`relative group/badge px-2 py-0.5 rounded flex items-center justify-center ${
+                                            className={`relative group/badge px-2 py-0.5 rounded-md flex items-center justify-center border ${
                                                 aiJob.mode === 'pro' 
-                                                    ? 'bg-yellow-500 text-white cursor-default' 
-                                                    : 'bg-blue-500 text-white cursor-pointer hover:bg-blue-600'
+                                                    ? 'bg-gray-50 dark:bg-zinc-800/50 border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-300 cursor-default' 
+                                                    : 'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700 text-gray-500 dark:text-gray-400 cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800'
                                             }`}
                                         >
-                                            <span className="text-[9.5px] font-black uppercase tracking-wide">
+                                            <span className="text-[9.5px] font-bold uppercase tracking-wide">
                                                 {aiJob.mode === 'pro' ? 'แยกเสียงแล้ว 4CH' : 'แยกเสียงแล้ว 2CH'}
                                             </span>
                                             <div className="absolute -top-7 left-1/2 -translate-x-1/2 px-2 py-1 bg-black/80 dark:bg-white/90 text-white dark:text-black text-[10px] font-medium rounded opacity-0 group-hover/badge:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">

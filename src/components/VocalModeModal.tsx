@@ -77,12 +77,11 @@ export const VocalModeModal = () => {
                             </div>
                         </button>
 
-                        {/* Pro Mode (4CH) */}
                         <button
                             onClick={() => handleSelectMode('pro')}
                             className={clsx(
                                 "flex items-start gap-4 p-4 rounded-xl text-left transition-all group",
-                                "bg-primary/5 dark:bg-primary/10 border border-primary/20 dark:border-primary/30 hover:bg-primary/10 dark:hover:bg-primary/20"
+                                "bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700"
                             )}
                         >
                             <div className="p-2 rounded-lg bg-gradient-to-br from-primary to-orange-500 text-white shadow-sm">
