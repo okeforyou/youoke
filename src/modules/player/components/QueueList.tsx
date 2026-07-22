@@ -142,55 +142,55 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                                             {aiJob.mode === 'pro' ? (
                                                 <>
                                                     <button 
-                                                        onClick={(e) => { e.stopPropagation(); toggleMute('vocals'); }}
-                                                        className={`relative w-5 h-5 rounded-full flex items-center justify-center transition-colors ${trackStates.vocals.muted ? 'bg-red-50 text-red-500' : 'bg-pink-50 dark:bg-pink-900/20 text-pink-500 hover:bg-pink-100'}`} 
+                                                        onClick={(e) => { e.stopPropagation(); if (isCurrent) toggleMute('vocals'); }}
+                                                        className={`relative w-5 h-5 rounded-full flex items-center justify-center transition-colors ${isCurrent && trackStates.vocals.muted ? 'bg-red-50 text-red-500' : 'bg-pink-50 dark:bg-pink-900/20 text-pink-500 hover:bg-pink-100'} ${isCurrent ? 'cursor-pointer' : 'cursor-default'}`} 
                                                         title="เสียงร้อง"
                                                     >
-                                                        <MicVocal size={11} strokeWidth={2.5} className={trackStates.vocals.muted ? "opacity-30" : ""} />
-                                                        {trackStates.vocals.muted && <div className="absolute w-[12px] h-[1.5px] bg-red-500 -rotate-45 rounded-full" />}
+                                                        <MicVocal size={11} strokeWidth={2.5} className={isCurrent && trackStates.vocals.muted ? "opacity-30" : ""} />
+                                                        {isCurrent && trackStates.vocals.muted && <div className="absolute w-[12px] h-[1.5px] bg-red-500 -rotate-45 rounded-full" />}
                                                     </button>
                                                     <button 
-                                                        onClick={(e) => { e.stopPropagation(); toggleMute('drums'); }}
-                                                        className={`relative w-5 h-5 rounded-full flex items-center justify-center transition-colors ${trackStates.drums.muted ? 'bg-red-50 text-red-500' : 'bg-orange-50 dark:bg-orange-900/20 text-orange-500 hover:bg-orange-100'}`} 
+                                                        onClick={(e) => { e.stopPropagation(); if (isCurrent) toggleMute('drums'); }}
+                                                        className={`relative w-5 h-5 rounded-full flex items-center justify-center transition-colors ${isCurrent && trackStates.drums.muted ? 'bg-red-50 text-red-500' : 'bg-orange-50 dark:bg-orange-900/20 text-orange-500 hover:bg-orange-100'} ${isCurrent ? 'cursor-pointer' : 'cursor-default'}`} 
                                                         title="เสียงกลอง"
                                                     >
-                                                        <Drum size={11} strokeWidth={2.5} className={trackStates.drums.muted ? "opacity-30" : ""} />
-                                                        {trackStates.drums.muted && <div className="absolute w-[12px] h-[1.5px] bg-red-500 -rotate-45 rounded-full" />}
+                                                        <Drum size={11} strokeWidth={2.5} className={isCurrent && trackStates.drums.muted ? "opacity-30" : ""} />
+                                                        {isCurrent && trackStates.drums.muted && <div className="absolute w-[12px] h-[1.5px] bg-red-500 -rotate-45 rounded-full" />}
                                                     </button>
                                                     <button 
-                                                        onClick={(e) => { e.stopPropagation(); toggleMute('bass'); }}
-                                                        className={`relative w-5 h-5 rounded-full flex items-center justify-center transition-colors ${trackStates.bass.muted ? 'bg-red-50 text-red-500' : 'bg-purple-50 dark:bg-purple-900/20 text-purple-500 hover:bg-purple-100'}`} 
+                                                        onClick={(e) => { e.stopPropagation(); if (isCurrent) toggleMute('bass'); }}
+                                                        className={`relative w-5 h-5 rounded-full flex items-center justify-center transition-colors ${isCurrent && trackStates.bass.muted ? 'bg-red-50 text-red-500' : 'bg-purple-50 dark:bg-purple-900/20 text-purple-500 hover:bg-purple-100'} ${isCurrent ? 'cursor-pointer' : 'cursor-default'}`} 
                                                         title="เสียงเบส"
                                                     >
-                                                        <Guitar size={11} strokeWidth={2.5} className={trackStates.bass.muted ? "opacity-30" : ""} />
-                                                        {trackStates.bass.muted && <div className="absolute w-[12px] h-[1.5px] bg-red-500 -rotate-45 rounded-full" />}
+                                                        <Guitar size={11} strokeWidth={2.5} className={isCurrent && trackStates.bass.muted ? "opacity-30" : ""} />
+                                                        {isCurrent && trackStates.bass.muted && <div className="absolute w-[12px] h-[1.5px] bg-red-500 -rotate-45 rounded-full" />}
                                                     </button>
                                                     <button 
-                                                        onClick={(e) => { e.stopPropagation(); toggleMute('other'); }}
-                                                        className={`relative w-5 h-5 rounded-full flex items-center justify-center transition-colors ${trackStates.other.muted ? 'bg-red-50 text-red-500' : 'bg-blue-50 dark:bg-blue-900/20 text-blue-500 hover:bg-blue-100'}`} 
+                                                        onClick={(e) => { e.stopPropagation(); if (isCurrent) toggleMute('other'); }}
+                                                        className={`relative w-5 h-5 rounded-full flex items-center justify-center transition-colors ${isCurrent && trackStates.other.muted ? 'bg-red-50 text-red-500' : 'bg-blue-50 dark:bg-blue-900/20 text-blue-500 hover:bg-blue-100'} ${isCurrent ? 'cursor-pointer' : 'cursor-default'}`} 
                                                         title="เสียงดนตรีอื่นๆ"
                                                     >
-                                                        <Piano size={11} strokeWidth={2.5} className={trackStates.other.muted ? "opacity-30" : ""} />
-                                                        {trackStates.other.muted && <div className="absolute w-[12px] h-[1.5px] bg-red-500 -rotate-45 rounded-full" />}
+                                                        <Piano size={11} strokeWidth={2.5} className={isCurrent && trackStates.other.muted ? "opacity-30" : ""} />
+                                                        {isCurrent && trackStates.other.muted && <div className="absolute w-[12px] h-[1.5px] bg-red-500 -rotate-45 rounded-full" />}
                                                     </button>
                                                 </>
                                             ) : (
                                                 <>
                                                     <button 
-                                                        onClick={(e) => { e.stopPropagation(); toggleMute('vocals'); }}
-                                                        className={`relative w-5 h-5 rounded-full flex items-center justify-center transition-colors ${trackStates.vocals.muted ? 'bg-red-50 text-red-500' : 'bg-pink-50 dark:bg-pink-900/20 text-pink-500 hover:bg-pink-100'}`} 
+                                                        onClick={(e) => { e.stopPropagation(); if (isCurrent) toggleMute('vocals'); }}
+                                                        className={`relative w-5 h-5 rounded-full flex items-center justify-center transition-colors ${isCurrent && trackStates.vocals.muted ? 'bg-red-50 text-red-500' : 'bg-pink-50 dark:bg-pink-900/20 text-pink-500 hover:bg-pink-100'} ${isCurrent ? 'cursor-pointer' : 'cursor-default'}`} 
                                                         title="เสียงร้อง"
                                                     >
-                                                        <MicVocal size={11} strokeWidth={2.5} className={trackStates.vocals.muted ? "opacity-30" : ""} />
-                                                        {trackStates.vocals.muted && <div className="absolute w-[12px] h-[1.5px] bg-red-500 -rotate-45 rounded-full" />}
+                                                        <MicVocal size={11} strokeWidth={2.5} className={isCurrent && trackStates.vocals.muted ? "opacity-30" : ""} />
+                                                        {isCurrent && trackStates.vocals.muted && <div className="absolute w-[12px] h-[1.5px] bg-red-500 -rotate-45 rounded-full" />}
                                                     </button>
                                                     <button 
-                                                        onClick={(e) => { e.stopPropagation(); toggleMute('instrumental'); }}
-                                                        className={`relative w-5 h-5 rounded-full flex items-center justify-center transition-colors ${trackStates.instrumental.muted ? 'bg-red-50 text-red-500' : 'bg-blue-50 dark:bg-blue-900/20 text-blue-500 hover:bg-blue-100'}`} 
+                                                        onClick={(e) => { e.stopPropagation(); if (isCurrent) toggleMute('instrumental'); }}
+                                                        className={`relative w-5 h-5 rounded-full flex items-center justify-center transition-colors ${isCurrent && trackStates.instrumental.muted ? 'bg-red-50 text-red-500' : 'bg-blue-50 dark:bg-blue-900/20 text-blue-500 hover:bg-blue-100'} ${isCurrent ? 'cursor-pointer' : 'cursor-default'}`} 
                                                         title="เสียงดนตรี"
                                                     >
-                                                        <Music size={11} strokeWidth={2.5} className={trackStates.instrumental.muted ? "opacity-30" : ""} />
-                                                        {trackStates.instrumental.muted && <div className="absolute w-[12px] h-[1.5px] bg-red-500 -rotate-45 rounded-full" />}
+                                                        <Music size={11} strokeWidth={2.5} className={isCurrent && trackStates.instrumental.muted ? "opacity-30" : ""} />
+                                                        {isCurrent && trackStates.instrumental.muted && <div className="absolute w-[12px] h-[1.5px] bg-red-500 -rotate-45 rounded-full" />}
                                                     </button>
                                                 </>
                                             )}
