@@ -64,10 +64,13 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                 <div className="w-7 pr-2 shrink-0" />
             ) : (
                 <div 
-                    className="w-7 pr-2 flex items-center justify-center text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-zinc-300 transition-colors"
-                    title="ลากเพื่อจัดลำดับ"
+                    className="relative group/drag w-7 pr-2 flex items-center justify-center text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-zinc-300 transition-colors"
                 >
                     <GripVertical className="w-4 h-4 opacity-50 hover:opacity-100 transition-opacity" />
+                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 px-1.5 py-0.5 bg-black/80 dark:bg-white/90 text-white dark:text-black text-[9px] font-medium rounded opacity-0 group-hover/drag:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                        ลากเพื่อจัดลำดับ
+                        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-l-[3px] border-r-[3px] border-t-[4px] border-l-transparent border-r-transparent border-t-black/80 dark:border-t-white/90"></div>
+                    </div>
                 </div>
             )}
 
@@ -119,7 +122,7 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                             <div className="shrink-0 flex items-center">
                                 {aiJob?.status === 'ready' ? (
                                     <div className="flex items-center gap-2">
-                                        <div
+                                        <div 
                                             onClick={(e) => {
                                                 if (aiJob.mode === 'pro') return;
                                                 e.stopPropagation();
@@ -127,48 +130,71 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                                                     useUIStore.getState().showVocalModeModal(video.uuid || video.id, video.videoId || video.id);
                                                 });
                                             }}
-                                            className={`px-2 py-0.5 rounded flex items-center justify-center transition-colors ${
+                                            className={`relative group/badge px-2 py-0.5 rounded flex items-center justify-center ${
                                                 aiJob.mode === 'pro' 
                                                     ? 'bg-yellow-500 text-white cursor-default' 
                                                     : 'bg-blue-500 text-white cursor-pointer hover:bg-blue-600'
                                             }`}
-                                            title={aiJob.mode === 'pro' ? 'แยกเสียงแล้ว (4 แทร็ก)' : 'แยกเสียงแล้ว (2 แทร็ก) - คลิกเพื่ออัปเกรดเป็น 4 แทร็ก'}
                                         >
                                             <span className="text-[9.5px] font-black uppercase tracking-wide">
                                                 {aiJob.mode === 'pro' ? 'แยกเสียงแล้ว 4CH' : 'แยกเสียงแล้ว 2CH'}
                                             </span>
+                                            <div className="absolute -top-7 left-1/2 -translate-x-1/2 px-2 py-1 bg-black/80 dark:bg-white/90 text-white dark:text-black text-[10px] font-medium rounded opacity-0 group-hover/badge:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                                                {aiJob.mode === 'pro' ? 'แยกเสียงแล้ว (4 แทร็ก)' : 'แยกเสียงแล้ว (2 แทร็ก) - คลิกเพื่ออัปเกรดเป็น 4 แทร็ก'}
+                                                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-l-[4px] border-r-[4px] border-t-[4px] border-l-transparent border-r-transparent border-t-black/80 dark:border-t-white/90"></div>
+                                            </div>
                                         </div>
                                         <div className="flex items-center gap-1">
                                             {aiJob.mode === 'pro' ? (
                                                 <>
-                                                    <button 
-                                                        onClick={(e) => { e.stopPropagation(); if (isCurrent) toggleMute('vocals'); }}
-                                                        className={`relative w-5 h-5 rounded-full flex items-center justify-center transition-all ${isCurrent && trackStates.vocals.muted ? 'bg-gray-50 dark:bg-zinc-800/50 text-gray-400 dark:text-gray-500 opacity-60' : 'bg-pink-50 dark:bg-pink-900/20 text-pink-500 hover:bg-pink-100'} ${isCurrent ? 'cursor-pointer hover:opacity-80' : 'cursor-default'}`} 
-                                                        title="เสียงร้อง"
-                                                    >
-                                                        <MicVocal size={11} strokeWidth={2.5} />
-                                                    </button>
-                                                    <button 
-                                                        onClick={(e) => { e.stopPropagation(); if (isCurrent) toggleMute('drums'); }}
-                                                        className={`relative w-5 h-5 rounded-full flex items-center justify-center transition-all ${isCurrent && trackStates.drums.muted ? 'bg-gray-50 dark:bg-zinc-800/50 text-gray-400 dark:text-gray-500 opacity-60' : 'bg-orange-50 dark:bg-orange-900/20 text-orange-500 hover:bg-orange-100'} ${isCurrent ? 'cursor-pointer hover:opacity-80' : 'cursor-default'}`} 
-                                                        title="เสียงกลอง"
-                                                    >
-                                                        <Drum size={11} strokeWidth={2.5} />
-                                                    </button>
-                                                    <button 
-                                                        onClick={(e) => { e.stopPropagation(); if (isCurrent) toggleMute('bass'); }}
-                                                        className={`relative w-5 h-5 rounded-full flex items-center justify-center transition-all ${isCurrent && trackStates.bass.muted ? 'bg-gray-50 dark:bg-zinc-800/50 text-gray-400 dark:text-gray-500 opacity-60' : 'bg-purple-50 dark:bg-purple-900/20 text-purple-500 hover:bg-purple-100'} ${isCurrent ? 'cursor-pointer hover:opacity-80' : 'cursor-default'}`} 
-                                                        title="เสียงเบส"
-                                                    >
-                                                        <Guitar size={11} strokeWidth={2.5} />
-                                                    </button>
-                                                    <button 
-                                                        onClick={(e) => { e.stopPropagation(); if (isCurrent) toggleMute('other'); }}
-                                                        className={`relative w-5 h-5 rounded-full flex items-center justify-center transition-all ${isCurrent && trackStates.other.muted ? 'bg-gray-50 dark:bg-zinc-800/50 text-gray-400 dark:text-gray-500 opacity-60' : 'bg-blue-50 dark:bg-blue-900/20 text-blue-500 hover:bg-blue-100'} ${isCurrent ? 'cursor-pointer hover:opacity-80' : 'cursor-default'}`} 
-                                                        title="เสียงดนตรีอื่นๆ"
-                                                    >
-                                                        <Piano size={11} strokeWidth={2.5} />
-                                                    </button>
+                                                    <div className="relative group/btn flex items-center justify-center">
+                                                        <button 
+                                                            onClick={(e) => { e.stopPropagation(); if (isCurrent) toggleMute('vocals'); }}
+                                                            className={`relative w-5 h-5 rounded-full flex items-center justify-center transition-all ${isCurrent && trackStates.vocals.muted ? 'bg-gray-50 dark:bg-zinc-800/50 text-gray-400 dark:text-gray-500 opacity-60' : 'bg-pink-50 dark:bg-pink-900/20 text-pink-500 hover:bg-pink-100'} ${isCurrent ? 'cursor-pointer hover:opacity-80' : 'cursor-default'}`} 
+                                                        >
+                                                            <MicVocal size={11} strokeWidth={2.5} />
+                                                        </button>
+                                                        <div className="absolute -top-7 left-1/2 -translate-x-1/2 px-1.5 py-0.5 bg-black/80 dark:bg-white/90 text-white dark:text-black text-[9px] font-medium rounded opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                                                            เสียงร้อง
+                                                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-l-[3px] border-r-[3px] border-t-[4px] border-l-transparent border-r-transparent border-t-black/80 dark:border-t-white/90"></div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="relative group/btn flex items-center justify-center">
+                                                        <button 
+                                                            onClick={(e) => { e.stopPropagation(); if (isCurrent) toggleMute('drums'); }}
+                                                            className={`relative w-5 h-5 rounded-full flex items-center justify-center transition-all ${isCurrent && trackStates.drums.muted ? 'bg-gray-50 dark:bg-zinc-800/50 text-gray-400 dark:text-gray-500 opacity-60' : 'bg-orange-50 dark:bg-orange-900/20 text-orange-500 hover:bg-orange-100'} ${isCurrent ? 'cursor-pointer hover:opacity-80' : 'cursor-default'}`} 
+                                                        >
+                                                            <Drum size={11} strokeWidth={2.5} />
+                                                        </button>
+                                                        <div className="absolute -top-7 left-1/2 -translate-x-1/2 px-1.5 py-0.5 bg-black/80 dark:bg-white/90 text-white dark:text-black text-[9px] font-medium rounded opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                                                            เสียงกลอง
+                                                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-l-[3px] border-r-[3px] border-t-[4px] border-l-transparent border-r-transparent border-t-black/80 dark:border-t-white/90"></div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="relative group/btn flex items-center justify-center">
+                                                        <button 
+                                                            onClick={(e) => { e.stopPropagation(); if (isCurrent) toggleMute('bass'); }}
+                                                            className={`relative w-5 h-5 rounded-full flex items-center justify-center transition-all ${isCurrent && trackStates.bass.muted ? 'bg-gray-50 dark:bg-zinc-800/50 text-gray-400 dark:text-gray-500 opacity-60' : 'bg-purple-50 dark:bg-purple-900/20 text-purple-500 hover:bg-purple-100'} ${isCurrent ? 'cursor-pointer hover:opacity-80' : 'cursor-default'}`} 
+                                                        >
+                                                            <Guitar size={11} strokeWidth={2.5} />
+                                                        </button>
+                                                        <div className="absolute -top-7 left-1/2 -translate-x-1/2 px-1.5 py-0.5 bg-black/80 dark:bg-white/90 text-white dark:text-black text-[9px] font-medium rounded opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                                                            เสียงเบส
+                                                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-l-[3px] border-r-[3px] border-t-[4px] border-l-transparent border-r-transparent border-t-black/80 dark:border-t-white/90"></div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="relative group/btn flex items-center justify-center">
+                                                        <button 
+                                                            onClick={(e) => { e.stopPropagation(); if (isCurrent) toggleMute('other'); }}
+                                                            className={`relative w-5 h-5 rounded-full flex items-center justify-center transition-all ${isCurrent && trackStates.other.muted ? 'bg-gray-50 dark:bg-zinc-800/50 text-gray-400 dark:text-gray-500 opacity-60' : 'bg-blue-50 dark:bg-blue-900/20 text-blue-500 hover:bg-blue-100'} ${isCurrent ? 'cursor-pointer hover:opacity-80' : 'cursor-default'}`} 
+                                                        >
+                                                            <Piano size={11} strokeWidth={2.5} />
+                                                        </button>
+                                                        <div className="absolute -top-7 left-1/2 -translate-x-1/2 px-1.5 py-0.5 bg-black/80 dark:bg-white/90 text-white dark:text-black text-[9px] font-medium rounded opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                                                            เสียงดนตรีอื่นๆ
+                                                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-l-[3px] border-r-[3px] border-t-[4px] border-l-transparent border-r-transparent border-t-black/80 dark:border-t-white/90"></div>
+                                                        </div>
+                                                    </div>
                                                 </>
                                             ) : (
                                                 <>
@@ -179,13 +205,18 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                                                     >
                                                         <MicVocal size={11} strokeWidth={2.5} />
                                                     </button>
-                                                    <button 
-                                                        onClick={(e) => { e.stopPropagation(); if (isCurrent) toggleMute('instrumental'); }}
-                                                        className={`relative w-5 h-5 rounded-full flex items-center justify-center transition-all ${isCurrent && trackStates.instrumental.muted ? 'bg-gray-50 dark:bg-zinc-800/50 text-gray-400 dark:text-gray-500 opacity-60' : 'bg-blue-50 dark:bg-blue-900/20 text-blue-500 hover:bg-blue-100'} ${isCurrent ? 'cursor-pointer hover:opacity-80' : 'cursor-default'}`} 
-                                                        title="เสียงดนตรี"
-                                                    >
-                                                        <Music size={11} strokeWidth={2.5} />
-                                                    </button>
+                                                    <div className="relative group/btn flex items-center justify-center">
+                                                        <button 
+                                                            onClick={(e) => { e.stopPropagation(); if (isCurrent) toggleMute('instrumental'); }}
+                                                            className={`relative w-5 h-5 rounded-full flex items-center justify-center transition-all ${isCurrent && trackStates.instrumental.muted ? 'bg-gray-50 dark:bg-zinc-800/50 text-gray-400 dark:text-gray-500 opacity-60' : 'bg-blue-50 dark:bg-blue-900/20 text-blue-500 hover:bg-blue-100'} ${isCurrent ? 'cursor-pointer hover:opacity-80' : 'cursor-default'}`} 
+                                                        >
+                                                            <Music size={11} strokeWidth={2.5} />
+                                                        </button>
+                                                        <div className="absolute -top-7 left-1/2 -translate-x-1/2 px-1.5 py-0.5 bg-black/80 dark:bg-white/90 text-white dark:text-black text-[9px] font-medium rounded opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                                                            เสียงดนตรี
+                                                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-l-[3px] border-r-[3px] border-t-[4px] border-l-transparent border-r-transparent border-t-black/80 dark:border-t-white/90"></div>
+                                                        </div>
+                                                    </div>
                                                 </>
                                             )}
                                         </div>
@@ -222,16 +253,21 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
 
             {/* Actions / Status */}
             <div className="flex flex-col items-center justify-start self-stretch shrink-0 pl-1 pt-0.5">
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        removeFromQueue(video.uuid);
-                    }}
+                <div className="relative group/delete flex items-center justify-center">
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            removeFromQueue(video.uuid);
+                        }}
                         className="w-8 h-8 flex items-center justify-center text-gray-400 dark:text-zinc-500 hover:text-red-500 dark:hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-all flex-shrink-0"
-                        title="ลบออกจากคิว"
                     >
                         <Trash2 className="w-4 h-4" />
                     </button>
+                    <div className="absolute -top-7 right-0 px-2 py-1 bg-black/80 dark:bg-white/90 text-white dark:text-black text-[10px] font-medium rounded opacity-0 group-hover/delete:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                        ลบออกจากคิว
+                        <div className="absolute -bottom-1 right-3 border-l-[4px] border-r-[4px] border-t-[4px] border-l-transparent border-r-transparent border-t-black/80 dark:border-t-white/90"></div>
+                    </div>
+                </div>
             </div>
         </div>
     );
