@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.158";
+export const SYSTEM_VERSION = "5.5.159";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.159",
+        date: "2026-07-22",
+        changes: [
+            "ui: Queue items track badges are now interactive, allowing toggling of track mute states directly from the queue.",
+            "sync: Queue items track badges are fully synced with the global Mixer."
+        ]
+    },
     {
         version: "5.5.158",
         date: "2026-07-22",
