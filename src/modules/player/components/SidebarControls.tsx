@@ -300,7 +300,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                             >
                                 <div className="relative flex items-center justify-center">
                                     <MicVocal size={14} className={trackStates.vocals.muted ? "opacity-30" : ""} />
-                                    {trackStates.vocals.muted && <X size={18} strokeWidth={3} className="absolute text-red-500" />}
+                                    {trackStates.vocals.muted && <div className="absolute w-[18px] h-[2px] bg-red-500 -rotate-45 rounded-full drop-shadow-sm" />}
                                 </div>
                             </button>
                             <div className="flex-1 flex flex-col justify-center">
@@ -326,7 +326,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                 >
                                     <div className="relative flex items-center justify-center">
                                         <Music size={14} className={trackStates.instrumental.muted ? "opacity-30" : ""} />
-                                        {trackStates.instrumental.muted && <X size={18} strokeWidth={3} className="absolute text-red-500" />}
+                                        {trackStates.instrumental.muted && <div className="absolute w-[18px] h-[2px] bg-red-500 -rotate-45 rounded-full drop-shadow-sm" />}
                                     </div>
                                 </button>
                                 <div className="flex-1 flex flex-col justify-center">
@@ -355,7 +355,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                     >
                                         <div className="relative flex items-center justify-center">
                                             <Drum size={14} className={trackStates.drums.muted ? "opacity-30" : ""} />
-                                            {trackStates.drums.muted && <X size={18} strokeWidth={3} className="absolute text-red-500" />}
+                                            {trackStates.drums.muted && <div className="absolute w-[18px] h-[2px] bg-red-500 -rotate-45 rounded-full drop-shadow-sm" />}
                                         </div>
                                     </button>
                                     <div className="flex-1 flex flex-col justify-center">
@@ -380,7 +380,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                     >
                                         <div className="relative flex items-center justify-center">
                                             <Guitar size={14} className={trackStates.bass.muted ? "opacity-30" : ""} />
-                                            {trackStates.bass.muted && <X size={18} strokeWidth={3} className="absolute text-red-500" />}
+                                            {trackStates.bass.muted && <div className="absolute w-[18px] h-[2px] bg-red-500 -rotate-45 rounded-full drop-shadow-sm" />}
                                         </div>
                                     </button>
                                     <div className="flex-1 flex flex-col justify-center">
@@ -405,7 +405,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                     >
                                         <div className="relative flex items-center justify-center">
                                             <Piano size={14} className={trackStates.other.muted ? "opacity-30" : ""} />
-                                            {trackStates.other.muted && <X size={18} strokeWidth={3} className="absolute text-red-500" />}
+                                            {trackStates.other.muted && <div className="absolute w-[18px] h-[2px] bg-red-500 -rotate-45 rounded-full drop-shadow-sm" />}
                                         </div>
                                     </button>
                                     <div className="flex-1 flex flex-col justify-center">
