@@ -102,9 +102,14 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
                     )}
                 </div>
 
-                <div className="mt-2.5 pt-2 flex justify-between items-center border-t border-dashed border-zinc-200 dark:border-zinc-800">
-                    <div className="flex items-center gap-2 text-[10px] font-black text-zinc-400 uppercase tracking-widest">
-                        {isAdmin ? "ADMIN PRIVILEGE" : (isLifetime ? "PREMIUM FOREVER" : `หมดอายุ: ${formatDate(safeMembership.expiresAt)}`)}
+                <div className="mt-3 pt-3 flex justify-between items-center border-t border-dashed border-zinc-200 dark:border-zinc-800">
+                    <div className="flex flex-col">
+                        <div className="text-[9px] uppercase tracking-widest font-black text-zinc-500 dark:text-zinc-400 mb-0.5">
+                            {isAdmin ? "ความปลอดภัย" : (isLifetime ? "สิทธิพิเศษ" : "วันหมดอายุ")}
+                        </div>
+                        <div className="text-[11px] font-bold text-zinc-900 dark:text-white">
+                             {isAdmin ? "ป้องกันข้อมูลระดับสูงสุด" : (isLifetime ? "สมาชิกถาวร ไม่ติดโฆษณา" : formatDate(safeMembership.expiresAt))}
+                        </div>
                     </div>
                 </div>
             </div>

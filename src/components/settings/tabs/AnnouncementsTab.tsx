@@ -3,15 +3,8 @@ import { NotificationList } from '../../profile/NotificationList';
  
 export default function AnnouncementsTab() {
     return (
-        <div className="space-y-6">
-            <div className="space-y-1">
-                <h3 className="text-xl font-black text-zinc-900 dark:text-white">ประกาศข่าวและการแจ้งเตือน</h3>
-                <p className="text-sm font-bold text-zinc-500 dark:text-zinc-400">
-                    อัปเดตข่าวสาร โปรโมชั่น และกิจกรรมใหม่ๆ จาก YouOke
-                </p>
-            </div>
- 
-            <div className="mt-6 rounded-2xl border border-gray-100 bg-zinc-50/50 dark:bg-zinc-900/30 dark:border-zinc-800/50 p-2 overflow-hidden shadow-sm">
+        <div className="animate-in fade-in duration-300 max-w-3xl">
+            <div className="rounded-3xl border border-zinc-200 bg-white dark:bg-zinc-950 dark:border-zinc-800 overflow-hidden shadow-sm p-2 sm:p-4">
                 <NotificationList />
             </div>
         </div>

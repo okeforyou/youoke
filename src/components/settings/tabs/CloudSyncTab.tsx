@@ -42,79 +42,65 @@ export default function CloudSyncTab() {
     const isDriveConnected = !!googleDriveAccessToken;
 
     return (
-        <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-
-            {/* Local Storage Card */}
-            <div className="space-y-4">
-                <h3 className="text-[13px] font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2">
-                    <DocumentArrowDownIcon className="w-5 h-5" /> ที่เก็บไฟล์ในเครื่อง (Local Cache)
-                </h3>
+        <div className="space-y-6 animate-in fade-in duration-300 max-w-3xl">
+            <div className="bg-white dark:bg-zinc-950 rounded-3xl border border-zinc-200 dark:border-zinc-800 overflow-hidden divide-y divide-zinc-100 dark:divide-zinc-800/50">
                 
-                <div className="p-6 bg-zinc-50 dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 space-y-4">
-                    <p className="text-sm font-bold text-zinc-600 dark:text-zinc-400">
-                        เลือกโฟลเดอร์สำหรับเก็บไฟล์เพลงที่แยกเสียงแล้ว (.m4a) <br/>
-                        <span className="text-xs text-zinc-400 font-medium">ปัจจุบันเพลงนึงจะใช้พื้นที่ประมาณ 5-10 MB</span>
-                    </p>
-                    
-                    <div className="flex flex-col sm:flex-row gap-3">
-                        <div className="flex-1 flex items-center px-4 py-3 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden">
-                            <FolderIcon className="w-5 h-5 text-zinc-400 mr-3 shrink-0" />
-                            <span className="text-sm font-medium text-zinc-900 dark:text-zinc-300 truncate font-mono">
-                                {cachePath}
-                            </span>
+                {/* Local Storage Row */}
+                <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900/50">
+                    <div className="flex items-start sm:items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 shrink-0">
+                            <DocumentArrowDownIcon className="w-5 h-5" />
                         </div>
-                        <button 
-                            onClick={handleSelectFolder}
-                            className="px-6 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white text-sm font-black transition-all active:scale-95 whitespace-nowrap hover:bg-zinc-100 dark:hover:bg-zinc-900"
-                        >
-                            เปลี่ยนโฟลเดอร์
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            {/* Google Drive Card */}
-            <div className="space-y-4">
-                <h3 className="text-[13px] font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2">
-                    <CloudArrowUpIcon className="w-5 h-5" /> สำรองข้อมูลขึ้นคลาวด์ (Google Drive)
-                </h3>
-                
-                <div className={`p-6 rounded-3xl border transition-colors shadow-sm ${isDriveConnected ? 'bg-primary/5 border-primary/20' : 'bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800'}`}>
-                    <div className="flex justify-between items-start gap-4">
                         <div>
-                            <p className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                                เชื่อมต่อบัญชี Google Drive
+                            <h4 className="text-sm font-bold text-zinc-900 dark:text-white">ที่เก็บไฟล์ (Local Cache)</h4>
+                            <p className="text-xs font-medium text-zinc-500 mt-0.5 truncate max-w-[200px] sm:max-w-[300px]">ปัจจุบันเลือกที่: <span className="font-mono text-zinc-400">{cachePath}</span></p>
+                        </div>
+                    </div>
+                    <button 
+                        onClick={handleSelectFolder}
+                        className="px-4 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white text-xs font-bold transition-all shrink-0 self-start sm:self-center"
+                    >
+                        เปลี่ยนที่เก็บ
+                    </button>
+                </div>
+
+                {/* Google Drive Row */}
+                <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900/50">
+                    <div className="flex items-start sm:items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-blue-50 dark:bg-blue-500/10 text-blue-500 shrink-0">
+                            <CloudArrowUpIcon className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <h4 className="text-sm font-bold text-zinc-900 dark:text-white">เชื่อมต่อ Google Drive</h4>
                                 {isDriveConnected && (
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] uppercase tracking-wider font-black">
-                                        <CheckCircleIcon className="w-3 h-3" /> เชื่อมต่อแล้ว
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-500/20 text-blue-600 text-[10px] uppercase tracking-wider font-black">
+                                        เชื่อมต่อแล้ว
                                     </span>
                                 )}
-                            </p>
-                            <p className="text-xs font-bold text-zinc-500 mt-2">
-                                สำรองไฟล์เพลงที่แยกเสียงแล้วไปยัง Google Drive อัตโนมัติ เพื่อป้องกันข้อมูลสูญหายและประหยัดพื้นที่เครื่อง
-                            </p>
-                        </div>
-                        <div className="shrink-0">
-                            {isDriveConnected ? (
-                                <button 
-                                    className="px-4 py-2 rounded-xl border border-primary/20 bg-white dark:bg-zinc-950 text-primary text-sm font-black transition-all hover:bg-primary/5 whitespace-nowrap shadow-sm"
-                                >
-                                    ตัดการเชื่อมต่อ
-                                </button>
-                            ) : (
-                                <button 
-                                    onClick={handleConnectDrive}
-                                    disabled={isConnecting}
-                                    className="px-4 py-2 rounded-xl border border-primary bg-primary text-white text-sm font-black transition-all hover:bg-primary/90 active:scale-95 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-md shadow-primary/20"
-                                >
-                                    {isConnecting ? 'กำลังเชื่อมต่อ...' : 'เชื่อมต่อตอนนี้'}
-                                </button>
-                            )}
+                            </div>
+                            <p className="text-xs font-medium text-zinc-500 mt-0.5">สำรองไฟล์เพลงอัตโนมัติป้องกันข้อมูลสูญหาย</p>
                         </div>
                     </div>
+                    
+                    {isDriveConnected ? (
+                        <button 
+                            className="px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-900 text-xs font-bold transition-all shrink-0 self-start sm:self-center"
+                        >
+                            ยกเลิก
+                        </button>
+                    ) : (
+                        <button 
+                            onClick={handleConnectDrive}
+                            disabled={isConnecting}
+                            className="px-4 py-2 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold transition-all shrink-0 self-start sm:self-center disabled:opacity-50"
+                        >
+                            {isConnecting ? 'กำลังเชื่อมต่อ...' : 'เชื่อมต่อคลาวด์'}
+                        </button>
+                    )}
                 </div>
-            </div>
 
+            </div>
         </div>
     );
 }

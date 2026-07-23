@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.180";
+export const SYSTEM_VERSION = "5.5.181";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.181",
+        date: "2026-07-23",
+        changes: [
+            "design: Restructured all remaining Settings tabs to the ultra-compact iOS Settings style.",
+            "design: Restored rich detail info block inside the compact MembershipCard."
+        ]
+    },
     {
         version: "5.5.180",
         date: "2026-07-23",
