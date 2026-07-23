@@ -4,10 +4,10 @@ import { useSystem } from '@/core/container/SystemContext';
 import { useUIStore } from '@/stores/useUIStore';
 import { getUserProfile } from '@/services/userService';
 import { UserProfile } from '@/types/subscription';
-import { ArrowRightOnRectangleIcon, BellAlertIcon } from '@heroicons/react/24/outline';
+import { ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
 import { QRCodeSVG } from 'qrcode.react';
 import { cn } from '@/lib/utils';
-import { NotificationList } from '@/components/profile/NotificationList';
+import { MembershipCard } from '@/components/profile/MembershipCard';
 
 export default function ProfileTab({ onClose }: { onClose: () => void }) {
     const { user, signOut, signInWithLine } = useSystem().auth();
@@ -46,6 +46,14 @@ export default function ProfileTab({ onClose }: { onClose: () => void }) {
     }
 
     const isLineConnected = !!profile?.lineUserId;
+    const isAdmin = user?.role === 'admin' || profile?.role === 'admin' || user?.email === 'boonyanone@gmail.com';
+    
+    const displayMembership = {
+        type: profile?.subscription?.plan || user?.membership?.type || 'free',
+        status: profile?.subscription?.status || user?.membership?.status || 'active',
+        createdAt: (profile?.subscription as any)?.startDate || (user?.membership as any)?.createdAt || null,
+        expiresAt: profile?.subscription?.endDate || user?.membership?.expiresAt || null
+    };
 
     return (
         <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -69,6 +77,14 @@ export default function ProfileTab({ onClose }: { onClose: () => void }) {
                         <p className="text-sm font-bold text-zinc-500">{profile?.email || user?.email}</p>
                     </div>
                 </div>
+            </div>
+
+            <div className="space-y-6">
+                <h3 className="text-[13px] font-black text-zinc-400 uppercase tracking-widest">สถานะสมาชิก</h3>
+                <MembershipCard
+                    membership={displayMembership as any}
+                    role={isAdmin ? 'admin' : (user?.role || profile?.role)}
+                />
             </div>
 
             <div className="space-y-6">
@@ -115,15 +131,6 @@ export default function ProfileTab({ onClose }: { onClose: () => void }) {
                         </button>
                     </div>
                 )}
-            </div>
-
-            <div className="space-y-6">
-                <h3 className="text-[13px] font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2">
-                    <BellAlertIcon className="w-4 h-4" /> การแจ้งเตือน
-                </h3>
-                <div className="rounded-3xl border-2 border-zinc-900 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 p-2 overflow-hidden h-[300px] overflow-y-auto no-scrollbar">
-                    <NotificationList />
-                </div>
             </div>
 
             <div className="pt-8 border-t-2 border-zinc-900 dark:border-zinc-800">

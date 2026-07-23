@@ -12,14 +12,16 @@ import {
 import { useSystem } from '@/core/container/SystemContext';
 import GeneralSettingsTab from './tabs/GeneralSettingsTab';
 import ProfileTab from './tabs/ProfileTab';
-import CloudSyncTab from './tabs/CloudSyncTab'; // We will rename AIVocalSettingsTab to CloudSyncTab
+import CloudSyncTab from './tabs/CloudSyncTab';
+import PackagesTab from './tabs/PackagesTab';
+import AnnouncementsTab from './tabs/AnnouncementsTab';
 
 interface GlobalSettingsModalProps {
     isOpen: boolean;
     onClose: () => void;
 }
 
-export type SettingsTabId = 'general' | 'profile' | 'line' | 'cloudsync';
+export type SettingsTabId = 'general' | 'profile' | 'packages' | 'announcements' | 'cloudsync';
 
 export default function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsModalProps) {
     const { user } = useSystem().auth();
@@ -31,6 +33,8 @@ export default function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsM
     const sidebarItems = [
         { id: 'general', label: 'ทั่วไป (General)', icon: Cog6ToothIcon, group: 'บัญชีและการแสดงผล' },
         { id: 'profile', label: 'โปรไฟล์บัญชี (Profile)', icon: UserIcon, group: 'บัญชีและการแสดงผล' },
+        { id: 'packages', label: 'แพ็กเกจ VIP (Packages)', icon: SparklesIcon, group: 'ระบบและข้อมูล' },
+        { id: 'announcements', label: 'ประกาศข่าว (News)', icon: CheckCircleIcon, group: 'ระบบและข้อมูล' },
         { id: 'cloudsync', label: 'พื้นที่จัดเก็บและคลาวด์', icon: CloudArrowUpIcon, group: 'ระบบและข้อมูล' },
     ];
 
@@ -44,6 +48,8 @@ export default function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsM
         switch (activeTab) {
             case 'general': return <GeneralSettingsTab />;
             case 'profile': return <ProfileTab onClose={onClose} />;
+            case 'packages': return <PackagesTab />;
+            case 'announcements': return <AnnouncementsTab />;
             case 'cloudsync': return <CloudSyncTab />;
             default: return null;
         }

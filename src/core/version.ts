@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.174";
+export const SYSTEM_VERSION = "5.5.175";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.175",
+        date: "2026-07-23",
+        changes: [
+            "feat: Add missing Announcements and Packages tabs back to the Settings Hub.",
+            "design: Polish Settings Hub design, removing rigid borders for a pure flat layout.",
+            "feat: Restore VIP Membership Card and LINE Connect into the Profile Tab."
+        ]
+    },
     {
         version: "5.5.174",
         date: "2026-07-23",
