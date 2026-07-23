@@ -55,7 +55,7 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                     ? 'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700 shadow-sm' 
                     : 'bg-white dark:bg-zinc-900 border-gray-100 dark:border-zinc-800 hover:border-gray-200 dark:hover:border-zinc-700'
                 }
-                transition-all cursor-pointer select-none touch-none
+                transition-colors cursor-pointer select-none touch-none
             `}
             onClick={() => setCurrentIndex(actualIndex)}
         >
@@ -284,11 +284,13 @@ function SortableQueueItem(props: QueueItemProps) {
         listeners,
         setNodeRef,
         transform,
+        transition,
         isDragging,
     } = useSortable({ id: props.video.uuid });
 
     const style = {
-        transform: CSS.Transform.toString(transform),
+        transform: CSS.Translate.toString(transform),
+        transition,
         opacity: isDragging ? 0.5 : 1,
         zIndex: isDragging ? 50 : 'auto',
     };
