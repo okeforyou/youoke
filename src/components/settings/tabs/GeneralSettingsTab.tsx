@@ -22,7 +22,7 @@ export default function GeneralSettingsTab() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <button 
                             onClick={() => { if(isDarkMode) toggleDarkMode(); }}
-                            className={clsx(
+                            className={cn(
                                 "flex flex-col items-center justify-center p-6 rounded-2xl border transition-all active:scale-95 shadow-sm",
                                 isDarkMode 
                                     ? "bg-zinc-100 dark:bg-zinc-800 border-transparent text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-white"
@@ -35,7 +35,7 @@ export default function GeneralSettingsTab() {
 
                         <button 
                             onClick={() => { if(!isDarkMode) toggleDarkMode(); }}
-                            className={clsx(
+                            className={cn(
                                 "flex flex-col items-center justify-center p-6 rounded-2xl border transition-all active:scale-95 shadow-sm",
                                 !isDarkMode 
                                     ? "bg-zinc-100 dark:bg-zinc-800 border-transparent text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-white"
