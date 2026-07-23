@@ -1,34 +1,28 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
-import ProfileDrawer from "@/components/profile/ProfileDrawer";
 import { SYSTEM_VERSION } from "@/core/version";
+import { useUIStore } from "@/stores/useUIStore";
 
 /**
- * Account Redirect Page (v4.4.0 Drawer-First Focus)
- * ทำหน้าที่เป็นหน้าทางผ่านเพื่อเปิด Profile Drawer ทันที เพื่อความคงเส้นคงวาของระบบ
+ * Account Redirect Page
+ * ทำหน้าที่เป็นหน้าทางผ่านเพื่อเปิด Settings Modal ทันที
  */
 export default function ProfilePage() {
   const router = useRouter();
-  const [isDrawerOpen, setIsDrawerOpen] = useState(true);
+  const setProfileOpen = useUIStore((state) => state.setProfileOpen);
 
-  // เมื่อปิด Drawer ให้ย้อนกลับไปหน้า Dashboard หลักทันที
-  const handleClose = () => {
-    setIsDrawerOpen(false);
+  useEffect(() => {
+    // Open settings and return to home
+    setProfileOpen(true);
     router.push("/");
-  };
+  }, [router, setProfileOpen]);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 flex flex-col pt-[20vh] items-center px-4">
       <Head>
         <title>Account Settings - YouOKE v{SYSTEM_VERSION}</title>
       </Head>
-
-      {/* Profile Drawer ที่เป็นหัวใจหลักตัวเดียวของระบบ */}
-      <ProfileDrawer 
-        isOpen={isDrawerOpen} 
-        onClose={handleClose} 
-      />
 
       {/* Loading Placeholder ระหว่างที่หน้า Dashboard จริงกำลังทำงานข้างหลัง */}
       <div className="text-center animate-pulse">

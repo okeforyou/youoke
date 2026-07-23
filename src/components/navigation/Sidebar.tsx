@@ -7,7 +7,6 @@ import { Home, Star, Flame, Library, MessageCircle, Shield, LogOut, Key, Grid, L
 import { safeSplit } from '@/utils/stringUtils';
 import { UserGroupIcon } from '@heroicons/react/24/outline'; // Import Heroicon for Party
 import { useSystem } from '../../core/container/SystemContext'; // DI Container
-import ProfileDrawer from '../profile/ProfileDrawer';
 import { usePlayerStore } from '../../modules/player/stores/usePlayerStore';
 import { useUIStore } from '../../stores/useUIStore';
 import { useUnreadNotifications } from '../../hooks/useUnreadNotifications';
@@ -17,8 +16,7 @@ export const Sidebar = memo(() => {
     const { user, signOut: logOut } = useSystem().auth(); // specific hook
     const isPremium = user?.membership?.status === 'active' && user?.membership?.type !== 'free'; // Updated check for new UserData structure
     const { activeIndex, setActiveIndex, setSearchTerm } = usePlayerStore();
-    const { isSidebarCollapsed, setSidebarCollapsed, showConfirm } = useUIStore();
-    const [isProfileDrawerOpen, setIsProfileDrawerOpen] = useState(false); // State for drawer
+    const { isSidebarCollapsed, setSidebarCollapsed, showConfirm, setProfileOpen } = useUIStore();
     const unreadCount = useUnreadNotifications();
 
     // Mounted check to match hydration safety patterns
@@ -206,11 +204,6 @@ export const Sidebar = memo(() => {
                 "border-t border-gray-100 dark:border-zinc-800/20 bg-white dark:bg-zinc-900/30 transition-all duration-300",
                 isSidebarCollapsed ? "p-2" : "p-4"
             )}>
-                <ProfileDrawer
-                    isOpen={isProfileDrawerOpen}
-                    onClose={() => setIsProfileDrawerOpen(false)}
-                />
-                
             <div className={clsx(
                 "mb-1 text-[10px] font-black text-black/40 dark:text-zinc-600 uppercase tracking-widest transition-opacity duration-300",
                 isSidebarCollapsed ? "opacity-0 h-0 overflow-hidden" : "px-3 opacity-100"
@@ -224,7 +217,7 @@ export const Sidebar = memo(() => {
                             "flex items-center justify-between transition-all duration-300",
                             isSidebarCollapsed ? "flex-col gap-2" : "gap-2 px-1 py-1"
                         )}>
-                            <div onClick={() => setIsProfileDrawerOpen(true)} 
+                            <div onClick={() => setProfileOpen(true)} 
                                 className={clsx(
                                     "flex items-center transition-all duration-300 overflow-hidden flex-1 group cursor-pointer hover:bg-gray-100/50 dark:hover:bg-zinc-800/60 rounded-2xl",
                                     isSidebarCollapsed ? "justify-center p-2" : "gap-3 p-2 bg-gray-50/50 dark:bg-zinc-800/40 border border-transparent dark:border-zinc-800/40"
