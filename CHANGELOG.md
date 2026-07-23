@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.5.183] - 2026-07-23
+- **Design**: Restructured ProfileTab into a clean 3-section layout (Settings, Account Info, Membership).
+- **Design**: Removed large headers and condensed spacing in ProfileTab for a more compact and readable interface.
+
 ## [5.5.182] - 2026-07-23
 - **Design**: Redesigned CloudSyncTab to separate local/cloud storage and restore browse input.
 - **Design**: Redesigned PackageStore into ultra-compact, scroll-free layout.
