@@ -93,13 +93,13 @@ export default function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsM
                             leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                             leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                         >
-                            <Dialog.Panel className="relative flex w-full md:max-w-5xl h-[100vh] md:h-[85vh] md:max-h-[800px] transform flex-col md:flex-row overflow-hidden md:rounded-3xl bg-zinc-50 dark:bg-zinc-950 text-left transition-all border-0 md:border-2 border-zinc-900 dark:border-zinc-800 shadow-none">
+                            <Dialog.Panel className="relative flex w-full md:max-w-5xl h-[100vh] md:h-[85vh] md:max-h-[800px] transform flex-col md:flex-row overflow-hidden md:rounded-3xl bg-zinc-50 dark:bg-zinc-950 text-left transition-all border md:border border-gray-100 dark:border-zinc-800/50 shadow-2xl">
                                 
                                 {/* 🏛️ SIDEBAR / TABS */}
-                                <aside className={`w-full md:w-72 bg-zinc-100 dark:bg-zinc-900 border-b md:border-b-0 md:border-r-2 border-zinc-900 dark:border-zinc-800 flex flex-col shrink-0 ${mobileView === 'detail' ? 'hidden md:flex' : 'flex h-full'}`}>
+                                <aside className={`w-full md:w-72 bg-zinc-100/50 dark:bg-zinc-900/30 border-b md:border-b-0 md:border-r border-gray-100 dark:border-zinc-800/50 flex flex-col shrink-0 ${mobileView === 'detail' ? 'hidden md:flex' : 'flex h-full'}`}>
                                     {/* User Info Header */}
-                                    <div className="flex items-center gap-3 p-4 md:p-6 border-b-2 border-zinc-900 dark:border-zinc-800 bg-white dark:bg-zinc-950">
-                                        <div className="w-10 h-10 rounded-xl bg-zinc-200 dark:bg-zinc-800 border-2 border-zinc-900 dark:border-zinc-700 overflow-hidden flex items-center justify-center shrink-0">
+                                    <div className="flex items-center gap-3 p-4 md:p-6 border-b border-gray-100 dark:border-zinc-800/50 bg-white/50 dark:bg-zinc-950/50">
+                                        <div className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 overflow-hidden flex items-center justify-center shrink-0">
                                             {user?.photoURL ? (
                                                 <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
                                             ) : (
@@ -110,7 +110,7 @@ export default function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsM
                                             <span className="text-[14px] font-black text-zinc-900 dark:text-white truncate">{user?.displayName || 'ผู้ใช้งาน'}</span>
                                             <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-0.5 truncate">{user?.role === 'admin' ? 'ADMINISTRATOR' : 'MEMBER'}</span>
                                         </div>
-                                        <button onClick={onClose} className="md:hidden ml-auto p-2 bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 rounded-xl text-zinc-900 dark:text-white border-2 border-zinc-900 dark:border-zinc-700 transition-all">
+                                        <button onClick={onClose} className="md:hidden ml-auto p-2 bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-xl text-zinc-900 dark:text-white border border-gray-200 dark:border-zinc-700 transition-all shadow-sm">
                                             <XMarkIcon className="w-5 h-5" />
                                         </button>
                                     </div>
@@ -128,7 +128,7 @@ export default function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsM
                                                                 setActiveTab(item.id as SettingsTabId);
                                                                 setMobileView('detail');
                                                             }}
-                                                            className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-bold transition-all border-2 ${activeTab === item.id ? 'bg-primary border-primary text-white' : 'bg-transparent border-transparent text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white'}`}
+                                                            className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-bold transition-all border ${activeTab === item.id ? 'bg-primary border-primary text-white shadow-md shadow-primary/20' : 'bg-transparent border-transparent text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-white'}`}
                                                         >
                                                             <item.icon className="w-5 h-5" />
                                                             <span className="flex-1 text-left">{item.label}</span>
@@ -143,11 +143,11 @@ export default function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsM
                                 {/* 🏗️ CONTENT AREA */}
                                 <main className={`flex-1 flex flex-col min-w-0 min-h-0 bg-white dark:bg-zinc-950 relative ${mobileView === 'list' ? 'hidden md:flex' : 'flex h-full'}`}>
                                     {/* Header Mobile / Title */}
-                                    <header className="px-4 md:px-8 py-4 border-b-2 border-zinc-900 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 flex justify-between items-center shrink-0">
+                                    <header className="px-4 md:px-8 py-4 border-b border-gray-100 dark:border-zinc-800/50 bg-white dark:bg-zinc-950 flex justify-between items-center shrink-0">
                                         <div className="flex items-center gap-2">
                                             <button 
                                                 onClick={() => setMobileView('list')}
-                                                className="md:hidden p-2 -ml-2 active:bg-zinc-200 dark:active:bg-zinc-800 rounded-xl text-zinc-900 dark:text-white border-2 border-zinc-900 dark:border-zinc-700 transition-all flex items-center bg-white dark:bg-zinc-950"
+                                                className="md:hidden p-2 -ml-2 active:bg-zinc-100 dark:active:bg-zinc-800 rounded-xl text-zinc-900 dark:text-white border border-gray-200 dark:border-zinc-700 transition-all flex items-center bg-white dark:bg-zinc-950 shadow-sm"
                                             >
                                                 <ChevronLeftIcon className="w-5 h-5" />
                                             </button>
@@ -155,7 +155,7 @@ export default function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsM
                                                 {sidebarItems.find(i => i.id === activeTab)?.label}
                                             </h2>
                                         </div>
-                                        <button onClick={onClose} className="hidden md:block p-2 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 border-2 border-zinc-900 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-white transition-all">
+                                        <button onClick={onClose} className="hidden md:block p-2 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-white transition-all shadow-sm">
                                             <XMarkIcon className="w-5 h-5" />
                                         </button>
                                     </header>
@@ -168,10 +168,10 @@ export default function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsM
                                     </div>
 
                                     {/* Footer (Save/Close) */}
-                                    <footer className="p-4 md:p-6 border-t-2 border-zinc-900 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0">
+                                    <footer className="p-4 md:p-6 border-t border-gray-100 dark:border-zinc-800/50 bg-white dark:bg-zinc-950 flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0">
                                         <div className="w-full sm:w-auto flex-1 h-10 flex items-center">
                                             {status.message && (
-                                                <div className={`flex items-center justify-center sm:justify-start gap-2 px-3 py-2 rounded-xl text-[12px] font-bold text-center sm:text-left border-2 ${status.type === 'success' ? 'text-primary border-primary bg-primary/10' : 'text-red-600 border-red-600 bg-red-50'}`}>
+                                                <div className={`flex items-center justify-center sm:justify-start gap-2 px-3 py-2 rounded-xl text-[12px] font-bold text-center sm:text-left border ${status.type === 'success' ? 'text-primary border-primary/20 bg-primary/10' : 'text-red-600 border-red-200 bg-red-50'}`}>
                                                     {status.type === 'success' ? <CheckCircleIcon className="w-4 h-4" /> : <XMarkIcon className="w-4 h-4" />}
                                                     <span>{status.message}</span>
                                                 </div>
@@ -181,14 +181,14 @@ export default function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsM
                                         <div className="flex items-center justify-end gap-3 w-full sm:w-auto shrink-0">
                                             <button 
                                                 onClick={onClose}
-                                                className="flex-1 sm:flex-none px-6 py-3 rounded-xl border-2 border-zinc-900 dark:border-zinc-700 text-zinc-900 dark:text-white bg-white dark:bg-zinc-950 text-sm font-black hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all text-center"
+                                                className="flex-1 sm:flex-none px-6 py-3 rounded-xl border border-gray-200 dark:border-zinc-700 text-zinc-900 dark:text-white bg-white dark:bg-zinc-900 text-sm font-black hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-all text-center shadow-sm"
                                             >
                                                 ปิดหน้าต่าง
                                             </button>
                                             <button
                                                 onClick={handleSave}
                                                 disabled={isSaving}
-                                                className="flex-[2] sm:flex-none px-8 py-3 rounded-xl border-2 border-primary bg-primary text-white text-sm font-black hover:bg-primary/90 transition-all flex items-center justify-center gap-2"
+                                                className="flex-[2] sm:flex-none px-8 py-3 rounded-xl border border-primary bg-primary text-white text-sm font-black hover:bg-primary/90 transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
                                             >
                                                 {isSaving ? 'กำลังบันทึก...' : 'บันทึกการตั้งค่า'}
                                             </button>

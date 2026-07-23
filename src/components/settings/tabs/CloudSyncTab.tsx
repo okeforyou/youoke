@@ -54,14 +54,14 @@ export default function CloudSyncTab() {
                     <DocumentArrowDownIcon className="w-5 h-5" /> ที่เก็บไฟล์ในเครื่อง (Local Cache)
                 </h3>
                 
-                <div className="p-6 bg-zinc-50 dark:bg-zinc-900 rounded-3xl border-2 border-zinc-900 dark:border-zinc-800 space-y-4">
+                <div className="p-6 bg-zinc-50 dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 space-y-4">
                     <p className="text-sm font-bold text-zinc-600 dark:text-zinc-400">
                         เลือกโฟลเดอร์สำหรับเก็บไฟล์เพลงที่แยกเสียงแล้ว (.m4a) <br/>
                         <span className="text-xs text-zinc-400 font-medium">ปัจจุบันเพลงนึงจะใช้พื้นที่ประมาณ 5-10 MB</span>
                     </p>
                     
                     <div className="flex flex-col sm:flex-row gap-3">
-                        <div className="flex-1 flex items-center px-4 py-3 bg-white dark:bg-zinc-950 border-2 border-zinc-900 dark:border-zinc-700 rounded-xl overflow-hidden">
+                        <div className="flex-1 flex items-center px-4 py-3 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden">
                             <FolderIcon className="w-5 h-5 text-zinc-400 mr-3 shrink-0" />
                             <span className="text-sm font-medium text-zinc-900 dark:text-zinc-300 truncate font-mono">
                                 {cachePath}
@@ -69,7 +69,7 @@ export default function CloudSyncTab() {
                         </div>
                         <button 
                             onClick={handleSelectFolder}
-                            className="px-6 py-3 rounded-xl border-2 border-zinc-900 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white text-sm font-black transition-all active:scale-95 whitespace-nowrap hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                            className="px-6 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white text-sm font-black transition-all active:scale-95 whitespace-nowrap hover:bg-zinc-100 dark:hover:bg-zinc-900"
                         >
                             เปลี่ยนโฟลเดอร์
                         </button>
@@ -83,7 +83,7 @@ export default function CloudSyncTab() {
                     <CloudArrowUpIcon className="w-5 h-5" /> สำรองข้อมูลขึ้นคลาวด์ (Google Drive)
                 </h3>
                 
-                <div className={`p-6 rounded-3xl border-2 space-y-4 transition-colors ${isDriveConnected ? 'bg-primary/5 border-primary' : 'bg-zinc-50 dark:bg-zinc-900 border-zinc-900 dark:border-zinc-800'}`}>
+                <div className={`p-6 rounded-3xl border transition-colors shadow-sm ${isDriveConnected ? 'bg-primary/5 border-primary/20' : 'bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800'}`}>
                     <div className="flex justify-between items-start gap-4">
                         <div>
                             <p className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2">
@@ -101,7 +101,7 @@ export default function CloudSyncTab() {
                         <div className="shrink-0">
                             {isDriveConnected ? (
                                 <button 
-                                    className="px-4 py-2 rounded-xl border-2 border-primary bg-white dark:bg-zinc-950 text-primary text-sm font-black transition-all hover:bg-primary/10 whitespace-nowrap"
+                                    className="px-4 py-2 rounded-xl border border-primary/20 bg-white dark:bg-zinc-950 text-primary text-sm font-black transition-all hover:bg-primary/5 whitespace-nowrap shadow-sm"
                                 >
                                     ตัดการเชื่อมต่อ
                                 </button>
@@ -109,7 +109,7 @@ export default function CloudSyncTab() {
                                 <button 
                                     onClick={handleConnectDrive}
                                     disabled={isConnecting}
-                                    className="px-4 py-2 rounded-xl border-2 border-primary bg-primary text-white text-sm font-black transition-all hover:bg-primary/90 active:scale-95 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                    className="px-4 py-2 rounded-xl border border-primary bg-primary text-white text-sm font-black transition-all hover:bg-primary/90 active:scale-95 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-md shadow-primary/20"
                                 >
                                     {isConnecting ? 'กำลังเชื่อมต่อ...' : 'เชื่อมต่อตอนนี้'}
                                 </button>

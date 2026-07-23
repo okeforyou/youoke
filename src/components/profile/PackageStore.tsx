@@ -126,10 +126,10 @@ export const PackageStore = () => {
     if (loading) {
         return (
             <div className="flex flex-col space-y-4">
-                <div className="h-24 rounded-3xl bg-zinc-100 dark:bg-zinc-900 animate-pulse border-2 border-zinc-200 dark:border-zinc-800" />
+                <div className="h-24 rounded-3xl bg-zinc-100 dark:bg-zinc-900 animate-pulse border border-gray-100 dark:border-zinc-800/50 shadow-sm" />
                 <div className="space-y-3">
-                    <div className="h-32 rounded-3xl bg-zinc-50 dark:bg-zinc-900/50 animate-pulse border-2 border-zinc-100 dark:border-zinc-800" />
-                    <div className="h-32 rounded-3xl bg-zinc-50 dark:bg-zinc-900/50 animate-pulse border-2 border-zinc-100 dark:border-zinc-800" />
+                    <div className="h-32 rounded-3xl bg-zinc-50 dark:bg-zinc-900/50 animate-pulse border border-gray-100 dark:border-zinc-800/50 shadow-sm" />
+                    <div className="h-32 rounded-3xl bg-zinc-50 dark:bg-zinc-900/50 animate-pulse border border-gray-100 dark:border-zinc-800/50 shadow-sm" />
                 </div>
             </div>
         );
@@ -147,7 +147,7 @@ export const PackageStore = () => {
                         handleSelect(trialPackage);
                     }}
                     className={cn(
-                        "group relative overflow-hidden rounded-3xl p-4 border-2 transition-all",
+                        "group relative overflow-hidden rounded-3xl p-4 border transition-all shadow-sm",
                         isTrialActive 
                             ? "bg-emerald-800 border-emerald-900 cursor-default" 
                             : "bg-emerald-600 border-emerald-700 cursor-pointer active:scale-[0.98]"
@@ -187,10 +187,10 @@ export const PackageStore = () => {
                             key={pkg.id}
                             onClick={() => handleSelect(pkg)}
                             className={cn(
-                                "group relative p-5 rounded-3xl border-2 transition-all cursor-pointer active:scale-[0.98]",
+                                "group relative p-5 rounded-3xl border transition-all cursor-pointer active:scale-[0.98] shadow-sm",
                                 isPremium 
-                                    ? "bg-zinc-50 border-purple-100 hover:border-purple-300 dark:bg-zinc-900 dark:border-purple-900/30" 
-                                    : "bg-zinc-50 border-blue-100 hover:border-blue-300 dark:bg-zinc-900 dark:border-blue-900/30"
+                                    ? "bg-white dark:bg-zinc-950 border-gray-100 dark:border-zinc-800 hover:border-purple-300" 
+                                    : "bg-white dark:bg-zinc-950 border-gray-100 dark:border-zinc-800 hover:border-blue-300"
                             )}
                         >
                             <div className="flex justify-between items-start mb-4">
@@ -243,7 +243,7 @@ export const PackageStore = () => {
 
                 <button
                     onClick={() => router.push('/packages')}
-                    className="w-full mt-3 py-5 rounded-[32px] border-2 border-dashed border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 text-[13px] font-black text-zinc-950 dark:text-white transition-all flex items-center justify-center gap-3 active:scale-95"
+                    className="w-full mt-3 py-5 rounded-[32px] border border-dashed border-gray-200 dark:border-zinc-800 hover:border-zinc-400 text-[13px] font-black text-zinc-950 dark:text-white transition-all flex items-center justify-center gap-3 active:scale-95 shadow-sm"
                 >
                     <QrCode className="w-5 h-5" /> 
                     <span>ดูรายละเอียดและเลือกแพ็กเกจทั้งหมด</span>

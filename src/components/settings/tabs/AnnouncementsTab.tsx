@@ -11,7 +11,7 @@ export default function AnnouncementsTab() {
                 </p>
             </div>
  
-            <div className="mt-6 rounded-2xl border-2 border-zinc-100 bg-zinc-50/50 dark:bg-zinc-900/30 dark:border-zinc-800 p-2 overflow-hidden">
+            <div className="mt-6 rounded-2xl border border-gray-100 bg-zinc-50/50 dark:bg-zinc-900/30 dark:border-zinc-800/50 p-2 overflow-hidden shadow-sm">
                 <NotificationList />
             </div>
         </div>

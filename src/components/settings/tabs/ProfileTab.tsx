@@ -64,8 +64,8 @@ export default function ProfileTab({ onClose }: { onClose: () => void }) {
 
             <div className="space-y-6">
                 <h3 className="text-[13px] font-black text-zinc-400 uppercase tracking-widest">ข้อมูลผู้ใช้</h3>
-                <div className="p-6 bg-zinc-50 dark:bg-zinc-900 rounded-3xl border-2 border-zinc-900 dark:border-zinc-800 flex items-center gap-6">
-                    <div className="w-20 h-20 rounded-2xl overflow-hidden bg-white dark:bg-zinc-800 border-2 border-zinc-900 dark:border-zinc-700 flex items-center justify-center">
+                <div className="p-6 bg-zinc-50 dark:bg-zinc-900 rounded-3xl border border-gray-100 dark:border-zinc-800/50 flex items-center gap-6 shadow-sm">
+                    <div className="w-20 h-20 rounded-2xl overflow-hidden bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 flex items-center justify-center shadow-sm">
                         {user?.photoURL ? (
                             <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
                         ) : (
@@ -90,9 +90,9 @@ export default function ProfileTab({ onClose }: { onClose: () => void }) {
             <div className="space-y-6">
                 <h3 className="text-[13px] font-black text-zinc-400 uppercase tracking-widest">การเชื่อมต่อ</h3>
                 
-                <div className="p-6 bg-zinc-50 dark:bg-zinc-900 rounded-3xl border-2 border-zinc-900 dark:border-zinc-800 flex items-center justify-between">
+                <div className="p-6 bg-zinc-50 dark:bg-zinc-900 rounded-3xl border border-gray-100 dark:border-zinc-800/50 flex items-center justify-between shadow-sm">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-[#06C755]/10 border-2 border-[#06C755]">
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-[#06C755]/10 border border-[#06C755]/20">
                             <svg width="24" height="24" viewBox="0 0 24 24" className="text-[#06C755]" fill="currentColor"><path d="M24 10.304c0-4.66-4.66-8.43-10.404-8.43-5.744 0-10.4 3.77-10.4 8.43 0 4.155 3.655 7.63 8.708 8.284.34.074.801.225 1.026.516.23.289.15.743.074 1.042l-.367 2.215s-.204 1.258.944.685c1.149-.574 6.204-3.655 8.46-6.255C22.618 15.352 24 13.013 24 10.304z"/></svg>
                         </div>
                         <div>
@@ -106,25 +106,25 @@ export default function ProfileTab({ onClose }: { onClose: () => void }) {
                     {!isLineConnected ? (
                         <button 
                             onClick={() => setShowLineQR(!showLineQR)}
-                            className="px-6 py-2.5 rounded-xl border-2 border-[#06C755] bg-[#06C755] hover:bg-[#06C755]/90 text-white text-sm font-black transition-all active:scale-95"
+                            className="px-6 py-2.5 rounded-xl border border-transparent bg-[#06C755] hover:bg-[#06C755]/90 text-white text-sm font-black transition-all active:scale-95 shadow-md shadow-[#06C755]/20"
                         >
                             เชื่อมต่อ
                         </button>
                     ) : (
-                        <span className="px-4 py-2 rounded-xl bg-emerald-500/10 border-2 border-emerald-500 text-emerald-500 text-xs font-black">สำเร็จ</span>
+                        <span className="px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs font-black">สำเร็จ</span>
                     )}
                 </div>
 
                 {showLineQR && !isLineConnected && (
-                    <div className="p-8 bg-white dark:bg-zinc-950 rounded-3xl border-2 border-zinc-900 dark:border-zinc-800 flex flex-col items-center justify-center text-center animate-in zoom-in-95 duration-300">
-                        <div className="bg-white p-4 rounded-3xl border-2 border-zinc-900 mb-6">
+                    <div className="p-8 bg-white dark:bg-zinc-950 rounded-3xl border border-gray-100 dark:border-zinc-800 flex flex-col items-center justify-center text-center animate-in zoom-in-95 duration-300 shadow-sm">
+                        <div className="bg-white p-4 rounded-3xl border border-gray-200 mb-6 shadow-sm">
                             <QRCodeSVG value={`${window.location.origin}/login?state=link_account`} size={200} level="H" />
                         </div>
                         <h4 className="text-xl font-black text-zinc-900 dark:text-white mb-2">สแกนเพื่อเชื่อมต่อ</h4>
                         <p className="text-sm font-bold text-zinc-500 mb-6">หรือถ้าเล่นบนมือถือ สามารถกดปุ่มด้านล่างได้เลย</p>
                         <button 
                             onClick={() => signInWithLine('link_account')}
-                            className="px-8 py-3.5 rounded-xl bg-[#06C755] text-white font-black flex items-center justify-center gap-3 active:scale-95 transition-all border-2 border-[#06C755]"
+                            className="px-8 py-3.5 rounded-xl bg-[#06C755] text-white font-black flex items-center justify-center gap-3 active:scale-95 transition-all border border-transparent shadow-lg shadow-[#06C755]/20"
                         >
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M24 10.304c0-4.66-4.66-8.43-10.404-8.43-5.744 0-10.4 3.77-10.4 8.43 0 4.155 3.655 7.63 8.708 8.284.34.074.801.225 1.026.516.23.289.15.743.074 1.042l-.367 2.215s-.204 1.258.944.685c1.149-.574 6.204-3.655 8.46-6.255C22.618 15.352 24 13.013 24 10.304z"/></svg>
                             <span className="text-lg">เชื่อมต่อทันที</span>
@@ -133,10 +133,10 @@ export default function ProfileTab({ onClose }: { onClose: () => void }) {
                 )}
             </div>
 
-            <div className="pt-8 border-t-2 border-zinc-900 dark:border-zinc-800">
+            <div className="pt-8 border-t border-gray-100 dark:border-zinc-800/50">
                 <button
                     onClick={handleLogout}
-                    className="flex items-center justify-center gap-3 w-full py-4 rounded-xl border-2 border-rose-500 bg-rose-50 dark:bg-rose-950 text-rose-500 font-black hover:bg-rose-100 dark:hover:bg-rose-900 transition-all active:scale-[0.98]"
+                    className="flex items-center justify-center gap-3 w-full py-4 rounded-xl border border-rose-500/20 bg-rose-50 dark:bg-rose-950/30 text-rose-500 font-black hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all active:scale-[0.98] shadow-sm"
                 >
                     <ArrowRightOnRectangleIcon className="w-5 h-5" strokeWidth={2.5} />
                     ออกจากระบบ
