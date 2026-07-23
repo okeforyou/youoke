@@ -45,17 +45,7 @@ export default function ProfileTab({ onClose }: { onClose: () => void }) {
         return <div className="flex justify-center p-20"><div className="loading loading-spinner loading-lg text-primary"></div></div>;
     }
 
-    
     const isLineConnected = user?.providerData?.some(p => p.providerId === 'line.com') || false;
-
-    const handleLogout = async () => {
-        try {
-            await logout();
-            onClose();
-        } catch (error) {
-            console.error("Logout failed:", error);
-        }
-    };
 
     return (
         <div className="space-y-10 animate-in fade-in duration-300">
@@ -182,8 +172,7 @@ export default function ProfileTab({ onClose }: { onClose: () => void }) {
                     </div>
                 )}
             </div>
-                </button>
-            </div>
+
         </div>
     );
 }
