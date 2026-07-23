@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.5.184] - 2026-07-23
+- **Design**: Redesigned ProfileTab to be a dedicated Dashboard focusing on Membership and Upgrade flow, with a prominent status banner and action button.
+
 ## [5.5.183] - 2026-07-23
 - **Design**: Restructured ProfileTab into a clean 3-section layout (Settings, Account Info, Membership).
 - **Design**: Removed large headers and condensed spacing in ProfileTab for a more compact and readable interface.
