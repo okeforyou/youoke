@@ -67,6 +67,7 @@ interface UserState {
     error: string | null;
     isHydrated: boolean;
     showExpiryAlert: boolean;
+    googleDriveAccessToken: string | null;
 }
 
 interface AuthActions {
@@ -75,6 +76,7 @@ interface AuthActions {
     signUp: (email: string, pass: string) => Promise<void>;
     signInWithGoogle: () => Promise<void>;
     linkGoogleAccount: () => Promise<void>;
+    connectGoogleDrive: () => Promise<void>;
     signInWithLine: (state?: string) => void;
     signInWithCustomToken: (token: string) => Promise<void>;
     signOut: () => Promise<void>;
@@ -115,6 +117,7 @@ export const useAuthStore = create<UserState & AuthActions>()(
             error: null,
             isHydrated: false,
             showExpiryAlert: false,
+            googleDriveAccessToken: null,
 
             setLoading: (loading: boolean) => set({ isLoading: loading }),
             setExpiryAlert: (show: boolean) => set({ showExpiryAlert: show }),
@@ -742,6 +745,32 @@ export const useAuthStore = create<UserState & AuthActions>()(
                         set({ error: error.message, isLoading: false });
                         throw error;
                     }
+                }
+            },
+
+            connectGoogleDrive: async () => {
+                console.log('⚡ ConnectGoogleDrive: Started');
+                set({ isLoading: true, error: null });
+                try {
+                    const provider = new GoogleAuthProvider();
+                    provider.addScope('https://www.googleapis.com/auth/drive.file');
+                    
+                    if (!auth || !auth.currentUser) throw new Error("User must be logged in to connect Google Drive");
+
+                    console.log('⚡ ConnectGoogleDrive: Starting Popup Flow');
+                    const result = await signInWithPopup(auth, provider);
+                    const credential = GoogleAuthProvider.credentialFromResult(result);
+                    const token = credential?.accessToken;
+
+                    if (token) {
+                        set({ googleDriveAccessToken: token, isLoading: false });
+                    } else {
+                        throw new Error("Could not retrieve Google Drive access token");
+                    }
+                } catch (error: any) {
+                    console.error('⚡ ConnectGoogleDrive: Error', error);
+                    set({ error: error.message, isLoading: false });
+                    throw error;
                 }
             },
 
