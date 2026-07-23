@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.172";
+export const SYSTEM_VERSION = "5.5.173";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.173",
+        date: "2026-07-23",
+        changes: [
+            "ui: Completely redesign Settings UI (GlobalSettingsModal) to use a premium Sidebar Hub layout, adopting TAX FLOW project structure.",
+            "ui: Refactor AIVocalSettingsTab to CloudSyncTab, embedding Google Drive connect functionality in a clean 2-card layout.",
+            "ui: Update GeneralSettingsTab and ProfileTab to conform strictly to the Pure Flat design system, removing gradients and soft shadows."
+        ]
+    },
     {
         version: "5.5.172",
         date: "2026-07-23",
