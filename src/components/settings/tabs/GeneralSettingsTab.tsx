@@ -7,12 +7,7 @@ export default function GeneralSettingsTab() {
     const { isDarkMode, toggleDarkMode } = useUIStore();
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div>
-                <h2 className="text-2xl font-black text-zinc-900 dark:text-white">ทั่วไป (General)</h2>
-                <p className="text-sm font-bold text-zinc-500 mt-2">จัดการการตั้งค่าพื้นฐานของระบบ</p>
-            </div>
-
+        <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="space-y-6">
                 <h3 className="text-[13px] font-black text-zinc-400 uppercase tracking-widest">การแสดงผล</h3>
                 

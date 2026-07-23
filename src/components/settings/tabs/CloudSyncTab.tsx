@@ -42,11 +42,7 @@ export default function CloudSyncTab() {
     const isDriveConnected = !!googleDriveAccessToken;
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div>
-                <h2 className="text-2xl font-black text-zinc-900 dark:text-white">พื้นที่จัดเก็บและคลาวด์</h2>
-                <p className="text-sm font-bold text-zinc-500 mt-2">จัดการไฟล์เพลงและการสำรองข้อมูล (Backup)</p>
-            </div>
+        <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
             {/* Local Storage Card */}
             <div className="space-y-4">
@@ -83,21 +79,6 @@ export default function CloudSyncTab() {
                     <CloudArrowUpIcon className="w-5 h-5" /> สำรองข้อมูลขึ้นคลาวด์ (Google Drive)
                 </h3>
                 
-                <div className={`p-6 rounded-3xl border transition-colors shadow-sm ${isDriveConnected ? 'bg-primary/5 border-primary/20' : 'bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800'}`}>
-                    <div className="flex justify-between items-start gap-4">
-                        <div>
-                            <p className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                                เชื่อมต่อบัญชี Google Drive
-                                {isDriveConnected && (
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] uppercase tracking-wider font-black">
-                                        <CheckCircleIcon className="w-3 h-3" /> เชื่อมต่อแล้ว
-                                    </span>
-                                )}
-                            </p>
-                            <p className="text-xs font-bold text-zinc-500 mt-2">
-                                สำรองไฟล์เพลงที่แยกเสียงแล้วไปยัง Google Drive อัตโนมัติ เพื่อป้องกันข้อมูลสูญหายและประหยัดพื้นที่เครื่อง
-                            </p>
-                        </div>
                         <div className="shrink-0">
                             {isDriveConnected ? (
                                 <button 
