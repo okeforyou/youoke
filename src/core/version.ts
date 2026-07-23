@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.181";
+export const SYSTEM_VERSION = "5.5.182";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.182",
+        date: "2026-07-23",
+        changes: [
+            "design: Redesigned CloudSyncTab to separate local/cloud storage and restore browse input.",
+            "design: Redesigned PackageStore into ultra-compact, scroll-free layout.",
+            "design: Updated notification indicator color in AnnouncementsTab to primary color (removed red).",
+            "cleanup: Removed GeneralSettingsTab and unified settings into ProfileTab."
+        ]
+    },
     {
         version: "5.5.181",
         date: "2026-07-23",

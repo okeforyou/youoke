@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.5.182] - 2026-07-23
+- **Design**: Redesigned CloudSyncTab to separate local/cloud storage and restore browse input.
+- **Design**: Redesigned PackageStore into ultra-compact, scroll-free layout.
+- **Design**: Updated notification indicator color in AnnouncementsTab to primary color (removed red).
+- **Cleanup**: Removed GeneralSettingsTab and unified settings into ProfileTab.
+
 ## [2.19.1] - 2026-01-20
 - **Fix (Dual Screen)**: Fixed queue synchronization buffer issues; added `uuid` tracking for reliable updates.
 - **Fix (Dual Screen)**: Restored "Heartbeat" signal to ensure main screen detects dual mode automatically.

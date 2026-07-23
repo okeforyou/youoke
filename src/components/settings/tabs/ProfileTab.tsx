@@ -4,7 +4,7 @@ import { useSystem } from '@/core/container/SystemContext';
 import { useUIStore } from '@/stores/useUIStore';
 import { getUserProfile } from '@/services/userService';
 import { UserProfile } from '@/types/subscription';
-import { ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
+import { ArrowRightOnRectangleIcon, ComputerDesktopIcon, SunIcon, MoonIcon } from '@heroicons/react/24/outline';
 import { QRCodeSVG } from 'qrcode.react';
 import { cn } from '@/lib/utils';
 import { MembershipCard } from '@/components/profile/MembershipCard';
@@ -12,7 +12,7 @@ import { MembershipCard } from '@/components/profile/MembershipCard';
 export default function ProfileTab({ onClose }: { onClose: () => void }) {
     const { user, signOut, signInWithLine } = useSystem().auth();
     const router = useRouter();
-    const { showConfirm } = useUIStore();
+    const { showConfirm, isDarkMode, toggleDarkMode } = useUIStore();
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [showLineQR, setShowLineQR] = useState(false);
@@ -48,41 +48,44 @@ export default function ProfileTab({ onClose }: { onClose: () => void }) {
     const isLineConnected = user?.providerData?.some(p => p.providerId === 'line.com') || false;
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-300 max-w-3xl">
+        <div className="space-y-4 animate-in fade-in duration-300 max-w-3xl">
             
-            {/* User Profile Card */}
-            <div className="p-5 bg-white dark:bg-zinc-950 rounded-3xl border border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+            {/* User Profile Row */}
+            <div className="p-4 bg-white dark:bg-zinc-950 rounded-3xl border border-zinc-200 dark:border-zinc-800 flex items-center justify-between shadow-sm">
                 <div className="flex items-center gap-4">
-                    <div className="relative">
-                        <div className="w-16 h-16 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-800 border-2 border-white dark:border-zinc-950 shadow-sm flex items-center justify-center">
-                            {user?.photoURL ? (
-                                <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
-                            ) : (
-                                <span className="text-zinc-400 font-bold text-xl">{user?.displayName?.charAt(0) || 'U'}</span>
-                            )}
-                        </div>
+                    <div className="w-12 h-12 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 shadow-sm flex items-center justify-center shrink-0">
+                        {user?.photoURL ? (
+                            <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                            <span className="text-zinc-400 font-bold text-lg">{user?.displayName?.charAt(0) || 'U'}</span>
+                        )}
                     </div>
-                    <div>
-                        <h2 className="text-lg font-bold text-zinc-900 dark:text-white leading-tight">
+                    <div className="flex flex-col min-w-0">
+                        <h2 className="text-base font-bold text-zinc-900 dark:text-white leading-tight truncate">
                             {user?.displayName || 'ผู้ใช้งานระบบ'}
                         </h2>
-                        <p className="text-sm text-zinc-500 font-medium mt-0.5">
-                            {user?.email || 'ไม่มีอีเมล'}
-                        </p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                            <p className="text-[11px] text-zinc-500 font-medium truncate">
+                                {user?.email || 'ไม่มีอีเมล'}
+                            </p>
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
+                                {user?.role === 'admin' ? 'ADMIN' : 'MEMBER'}
+                            </span>
+                        </div>
                     </div>
                 </div>
                 
                 <button
                     onClick={handleLogout}
-                    className="w-12 h-12 flex items-center justify-center rounded-2xl bg-rose-50 text-rose-600 hover:bg-rose-100 transition-all shrink-0"
+                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-zinc-50 dark:bg-zinc-900 hover:bg-rose-50 dark:hover:bg-rose-500/10 text-zinc-400 hover:text-rose-600 border border-zinc-200/50 dark:border-zinc-800 transition-all shrink-0 ml-4"
                     title="ออกจากระบบ"
                 >
-                    <ArrowRightOnRectangleIcon className="w-6 h-6" />
+                    <ArrowRightOnRectangleIcon className="w-5 h-5" />
                 </button>
             </div>
 
             {/* Membership Card */}
-            <div className="bg-white dark:bg-zinc-950 rounded-3xl border border-zinc-200 dark:border-zinc-800 overflow-hidden p-2">
+            <div className="bg-white dark:bg-zinc-950 rounded-3xl border border-zinc-200 dark:border-zinc-800 overflow-hidden p-1.5 shadow-sm">
                 <MembershipCard 
                     membership={(profile?.membership as any) || { type: 'free', status: 'active', expiresAt: null }}
                     role={user?.role || profile?.role}
@@ -93,9 +96,43 @@ export default function ProfileTab({ onClose }: { onClose: () => void }) {
                 />
             </div>
 
-            {/* Account Info & Connections Group */}
-            <div className="bg-white dark:bg-zinc-950 rounded-3xl border border-zinc-200 dark:border-zinc-800 overflow-hidden divide-y divide-zinc-100 dark:divide-zinc-800/50">
+            {/* Settings Group */}
+            <div className="bg-white dark:bg-zinc-950 rounded-3xl border border-zinc-200 dark:border-zinc-800 overflow-hidden divide-y divide-zinc-100 dark:divide-zinc-800/50 shadow-sm">
                 
+                {/* Theme Toggle */}
+                <div className="p-4 sm:p-5 flex items-center justify-between transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900/50">
+                    <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">
+                            <ComputerDesktopIcon className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <h4 className="text-sm font-bold text-zinc-900 dark:text-white">โหมดหน้าจอ (Theme)</h4>
+                            <p className="text-[11px] font-medium text-zinc-500 mt-0.5">เลือกรูปแบบการแสดงผล</p>
+                        </div>
+                    </div>
+                    
+                    <div className="flex bg-zinc-100 dark:bg-zinc-900 rounded-xl p-1 shrink-0 border border-zinc-200 dark:border-zinc-800 shadow-inner">
+                        <button 
+                            onClick={() => { if(isDarkMode) toggleDarkMode(); }}
+                            className={cn(
+                                "flex items-center justify-center px-4 py-1.5 rounded-lg text-xs font-bold transition-all",
+                                !isDarkMode ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm border border-zinc-200/50 dark:border-zinc-700/50" : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                            )}
+                        >
+                            <SunIcon className="w-3.5 h-3.5 mr-1.5" strokeWidth={2.5} /> สว่าง
+                        </button>
+                        <button 
+                            onClick={() => { if(!isDarkMode) toggleDarkMode(); }}
+                            className={cn(
+                                "flex items-center justify-center px-4 py-1.5 rounded-lg text-xs font-bold transition-all",
+                                isDarkMode ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm border border-zinc-200/50 dark:border-zinc-700/50" : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                            )}
+                        >
+                            <MoonIcon className="w-3.5 h-3.5 mr-1.5" strokeWidth={2.5} /> มืด
+                        </button>
+                    </div>
+                </div>
+
                 {/* LINE Connection */}
                 <div className="p-4 sm:p-5 flex items-center justify-between transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900/50">
                     <div className="flex items-center gap-4">
@@ -104,14 +141,14 @@ export default function ProfileTab({ onClose }: { onClose: () => void }) {
                         </div>
                         <div>
                             <h4 className="text-sm font-bold text-zinc-900 dark:text-white">เชื่อมต่อ LINE</h4>
-                            <p className="text-xs font-medium text-zinc-500 mt-0.5">รับการแจ้งเตือนและเข้าสู่ระบบด้วย LINE</p>
+                            <p className="text-[11px] font-medium text-zinc-500 mt-0.5">รับการแจ้งเตือนและล็อกอินด้วย LINE</p>
                         </div>
                     </div>
                     
                     {!isLineConnected ? (
                         <button 
                             onClick={() => setShowLineQR(!showLineQR)}
-                            className="px-5 py-2 rounded-xl bg-[#06C755] hover:bg-[#06C755]/90 text-white text-xs font-bold transition-all shadow-sm shrink-0"
+                            className="px-4 py-2 rounded-xl bg-[#06C755] hover:bg-[#06C755]/90 text-white text-xs font-bold transition-all shadow-sm shrink-0"
                         >
                             เชื่อมต่อ
                         </button>
@@ -138,22 +175,12 @@ export default function ProfileTab({ onClose }: { onClose: () => void }) {
                         </button>
                     </div>
                 )}
+            </div>
 
-                {/* Stats: Registration Date */}
-                <div className="p-4 sm:p-5 flex justify-between items-center text-sm">
-                    <span className="font-bold text-zinc-500">วันที่สมัครสมาชิก</span>
-                    <span className="font-medium text-zinc-900 dark:text-white">
-                        {user?.metadata?.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'ไม่ระบุ'}
-                    </span>
-                </div>
-
-                {/* Stats: Last Login */}
-                <div className="p-4 sm:p-5 flex justify-between items-center text-sm">
-                    <span className="font-bold text-zinc-500">เข้าสู่ระบบล่าสุด</span>
-                    <span className="font-medium text-zinc-900 dark:text-white">
-                        {user?.metadata?.lastSignInTime ? new Date(user.metadata.lastSignInTime).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'ไม่ระบุ'}
-                    </span>
-                </div>
+            {/* Dates (Outside of card, tiny text) */}
+            <div className="flex justify-between items-center px-4 pt-2 text-[9px] font-bold text-zinc-400 uppercase tracking-widest">
+                <span>สมัครสมาชิก: {user?.metadata?.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString('th-TH') : '-'}</span>
+                <span>ล็อกอินล่าสุด: {user?.metadata?.lastSignInTime ? new Date(user.metadata.lastSignInTime).toLocaleDateString('th-TH') : '-'}</span>
             </div>
 
         </div>

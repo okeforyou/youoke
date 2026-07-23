@@ -144,7 +144,7 @@ export const NotificationList = () => {
                                 {itemIsNew ? (
                                     <div className="relative">
                                         <Bell className="w-5 h-5 text-primary" />
-                                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-600 rounded-full border border-white animate-pulse" />
+                                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full border-2 border-white dark:border-zinc-900 animate-pulse" />
                                     </div>
                                 ) : (
                                     <Bell className="w-5 h-5 text-slate-300 dark:text-zinc-500" />
@@ -156,7 +156,7 @@ export const NotificationList = () => {
                                         {item.title}
                                     </h4>
                                     {itemIsNew && (
-                                        <span className="text-[8px] bg-red-50 dark:bg-red-900/40 text-red-600 dark:text-red-300 px-1.5 py-0.5 rounded-md font-black italic">NEW</span>
+                                        <span className="text-[8px] bg-primary/10 dark:bg-primary/20 text-primary px-1.5 py-0.5 rounded-md font-black italic">NEW</span>
                                     )}
                                 </div>
                                 <p className={cn("text-xs leading-relaxed", itemIsNew ? "text-slate-600 dark:text-zinc-200" : "text-slate-400 dark:text-zinc-500 line-clamp-1")}>

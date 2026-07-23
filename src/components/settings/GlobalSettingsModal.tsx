@@ -10,7 +10,6 @@ import {
     CloudArrowUpIcon
 } from '@heroicons/react/24/outline';
 import { useSystem } from '@/core/container/SystemContext';
-import GeneralSettingsTab from './tabs/GeneralSettingsTab';
 import ProfileTab from './tabs/ProfileTab';
 import CloudSyncTab from './tabs/CloudSyncTab';
 import PackagesTab from './tabs/PackagesTab';
@@ -21,21 +20,20 @@ interface GlobalSettingsModalProps {
     onClose: () => void;
 }
 
-export type SettingsTabId = 'general' | 'profile' | 'packages' | 'announcements' | 'cloudsync';
+export type SettingsTabId = 'profile' | 'packages' | 'announcements' | 'cloudsync';
 
 export default function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsModalProps) {
     const { user } = useSystem().auth();
-    const [activeTab, setActiveTab] = useState<SettingsTabId>('general');
+    const [activeTab, setActiveTab] = useState<SettingsTabId>('profile');
     const [mobileView, setMobileView] = useState<'list' | 'detail'>('list');
     const [isSaving, setIsSaving] = useState(false);
     const [status, setStatus] = useState<{ type: 'success' | 'error' | null; message: string }>({ type: null, message: '' });
 
     const sidebarItems = [
-        { id: 'general', label: 'ทั่วไป', icon: Cog6ToothIcon, group: 'บัญชี' },
-        { id: 'profile', label: 'โปรไฟล์บัญชี', icon: UserIcon, group: 'บัญชี' },
+        { id: 'profile', label: 'บัญชีและการแสดงผล', icon: UserIcon, group: 'บัญชีผู้ใช้' },
         { id: 'cloudsync', label: 'การสำรองข้อมูล', icon: CloudArrowUpIcon, group: 'ข้อมูล' },
-        { id: 'packages', label: 'แพ็กเกจ VIP', icon: SparklesIcon, group: 'คุณสมบัติ' },
-        { id: 'announcements', label: 'ประกาศข่าว', icon: CheckCircleIcon, group: 'ระบบ' },
+        { id: 'packages', label: 'แพ็กเกจ VIP', icon: SparklesIcon, group: 'ระบบสมาชิก' },
+        { id: 'announcements', label: 'ประกาศข่าว', icon: CheckCircleIcon, group: 'ข่าวสาร' },
     ];
 
     const groupedItems = sidebarItems.reduce((acc, item) => {
@@ -46,7 +44,6 @@ export default function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsM
 
     const renderContent = () => {
         switch (activeTab) {
-            case 'general': return <GeneralSettingsTab />;
             case 'profile': return <ProfileTab onClose={onClose} />;
             case 'packages': return <PackagesTab />;
             case 'announcements': return <AnnouncementsTab />;
