@@ -259,16 +259,20 @@ export const Sidebar = memo(() => {
                                                 if (status === 'pending') return 'รออนุมัติ';
                                                 if (status === 'expired') return 'หมดอายุ';
 
-                                                if (type === 'lifetime') return 'ตลอดชีพ (PRO)';
-                                                if (type === 'yearly') return 'รายปี (PRO)';
-                                                if (type === 'monthly') return 'รายเดือน';
-                                                if (type === 'day_pass') return 'รายวัน';
-                                                if (type === 'trial') return 'ทดลองใช้ (ACTIVE)';
+                                                let label = 'สมาชิกทั่วไป';
+                                                if (type === 'lifetime') label = 'ตลอดชีพ (PRO)';
+                                                else if (type === 'yearly') label = 'รายปี (PRO)';
+                                                else if (type === 'monthly') label = 'รายเดือน';
+                                                else if (type === 'day_pass') label = 'รายวัน';
+                                                else if (type === 'trial') label = 'ทดลองใช้ (ACTIVE)';
+                                                else if (user?.role === 'owner') label = 'เจ้าของระบบ';
+                                                else if (user?.role === 'admin') label = 'ผู้ดูแลระบบ';
 
-                                                if (user?.role === 'owner') return 'เจ้าของระบบ';
-                                                if (user?.role === 'admin') return 'ผู้ดูแลระบบ';
+                                                if (status === 'active' && user?.expiryStatus?.daysRemaining !== undefined && type !== 'lifetime' && type !== 'free') {
+                                                    return `${label} • เหลือ ${user.expiryStatus.daysRemaining} วัน`;
+                                                }
 
-                                                return 'สมาชิกทั่วไป';
+                                                return label;
                                             })()}
                                         </span>
                                     </div>
@@ -320,18 +324,11 @@ export const Sidebar = memo(() => {
                 {/* Expiry Banner (Expiring Soon) */}
                 {mounted && user?.expiryStatus?.isExpiringSoon && (
                     <Link href="/profile" className={clsx(
-                        "mt-3 flex items-center justify-between bg-orange-50 dark:bg-orange-500/10 border border-orange-200/50 dark:border-orange-500/20 rounded-xl p-2.5 transition-all hover:bg-orange-100 dark:hover:bg-orange-500/20 group",
+                        "mt-3 flex items-center justify-center gap-2 bg-orange-50 dark:bg-orange-500/10 border border-orange-200/50 dark:border-orange-500/20 rounded-xl p-2 transition-all hover:bg-orange-100 dark:hover:bg-orange-500/20 text-orange-600 dark:text-orange-400 shadow-sm",
                         isSidebarCollapsed ? "hidden" : "flex"
                     )}>
-                        <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-md bg-orange-100 dark:bg-orange-500/20 flex items-center justify-center text-orange-500 shrink-0">
-                                <Star className="w-3.5 h-3.5 animate-pulse" />
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-[10px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-tight">หมดอายุในอีก {user.expiryStatus.daysRemaining} วัน</span>
-                                <span className="text-[9px] text-orange-500/80 font-semibold group-hover:underline">คลิกเพื่อต่ออายุ</span>
-                            </div>
-                        </div>
+                        <Star className="w-3.5 h-3.5" />
+                        <span className="text-[10px] font-bold uppercase tracking-tight">ต่ออายุแพ็กเกจ</span>
                     </Link>
                 )}
 
