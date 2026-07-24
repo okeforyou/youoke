@@ -85,7 +85,7 @@ export const MobileBottomNav = () => {
                                         const photoURL = user?.photoURL || auth?.currentUser?.photoURL;
                                         
                                         if (photoURL && user) {
-                                            return <img src={photoURL} className={clsx("w-6 h-6 rounded-full border transition-transform duration-300", isActive ? "scale-110 border-primary" : "border-transparent")} alt="Profile" />;
+                                            return <img src={photoURL} className={clsx("w-6 h-6 rounded-full object-cover border transition-transform duration-300", isActive ? "scale-110 border-primary" : "border-transparent")} alt="Profile" />;
                                         }
                                         
                                         return (

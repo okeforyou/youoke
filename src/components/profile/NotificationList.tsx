@@ -166,7 +166,7 @@ export const NotificationList = () => {
                                 <p className={cn(
                                     "text-[13px] leading-relaxed mt-2 transition-all duration-300", 
                                     itemIsNew ? "text-slate-700 dark:text-zinc-200" : "text-slate-500 dark:text-zinc-400",
-                                    expandedId === item.id ? "line-clamp-none whitespace-pre-wrap" : "line-clamp-2"
+                                    expandedId === item.id ? "whitespace-pre-wrap block" : "line-clamp-2"
                                 )}>
                                     {item.body}
                                 </p>

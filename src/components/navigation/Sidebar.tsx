@@ -226,7 +226,7 @@ export const Sidebar = memo(() => {
                             >
                                 {user.photoURL ? 
                                     <div className="relative">
-                                        <img src={user.photoURL} className="w-10 h-10 rounded-full border border-gray-100 dark:border-zinc-800 group-hover:ring-2 ring-primary/20 transition-all shadow-sm" alt="" />
+                                        <img src={user.photoURL} className="w-10 h-10 rounded-full object-cover border border-gray-100 dark:border-zinc-800 group-hover:ring-2 ring-primary/20 transition-all shadow-sm" alt="" />
                                         {mounted && unreadCount > 0 && (
                                             <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-600 border-2 border-white rounded-full z-10 animate-pulse shadow-sm" />
                                         )}
