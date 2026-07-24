@@ -46,8 +46,7 @@ export default function ProfileTab({ onClose, onSwitchTab }: { onClose: () => vo
     // 1. Membership Level
     const planId = profile?.subscription?.plan || (user as any)?.membership?.type || (user as any)?.tier || (user?.role === 'admin' ? 'lifetime' : 'free');
     const pkg = DEFAULT_PRICING_PACKAGES.find(p => p.id === planId);
-    let membershipName = pkg ? pkg.name : (planId === 'free' ? 'ใช้งานฟรี' : planId);
-    if (user?.role === 'admin') membershipName = 'ผู้ดูแลระบบ (Admin)';
+    const membershipName = pkg ? pkg.name : (planId === 'free' ? 'ทดลองใช้งานฟรี' : String(planId));
     
     const isPremium = planId !== 'free' || user?.role === 'admin';
 
