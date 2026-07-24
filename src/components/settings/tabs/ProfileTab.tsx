@@ -48,12 +48,12 @@ export default function ProfileTab({ onClose, onSwitchTab }: { onClose: () => vo
     const rawPlanId = profile?.subscription?.plan || (user as any)?.membership?.type || (user as any)?.tier;
     const planId = (rawPlanId && typeof rawPlanId === 'string' && rawPlanId.trim() !== '') ? rawPlanId : 'free';
     
-    let membershipName = 'ใช้งานฟรี';
+    let membershipName = 'ทดลองใช้งานฟรี';
     if (userRole === 'admin') {
         membershipName = 'ผู้ดูแลระบบ (Admin)';
-    } else if (planId !== 'free') {
+    } else {
         const pkg = DEFAULT_PRICING_PACKAGES.find(p => p.id === planId);
-        membershipName = pkg ? pkg.name : String(planId);
+        membershipName = pkg ? pkg.name : (planId === 'free' ? 'ทดลองใช้งานฟรี' : String(planId));
     }
     
     const isPremium = userRole === 'admin' || planId !== 'free';
