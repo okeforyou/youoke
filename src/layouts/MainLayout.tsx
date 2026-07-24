@@ -913,7 +913,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     {mounted && user ? (
                         <div className="flex items-center justify-between gap-2 px-2 py-2">
                             <div onClick={() => { setNavOpen(false); useUIStore.getState().setProfileOpen(true); }} className="flex items-center gap-3 overflow-hidden flex-1 active:bg-gray-100 dark:active:bg-zinc-900 p-1 rounded-lg transition-colors">
-                                {user.photoURL ? <img src={user.photoURL} className="w-10 h-10 rounded-full object-cover" /> : <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center text-primary font-bold">{user.email?.[0]}</div>}
+                                {user.photoURL ? <img src={user.photoURL} className="w-10 h-10 rounded-full object-cover shrink-0" /> : <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center text-primary font-bold shrink-0">{user.email?.[0]}</div>}
                                 <div><p className="text-sm font-bold truncate text-gray-900 dark:text-white">{user.displayName}</p><p className="text-[10px] text-gray-500 dark:text-zinc-500 uppercase font-semibold">{isPremium ? 'สมาชิก Pro' : 'สมาชิกทั่วไป'}</p></div>
                             </div>
                             <button 

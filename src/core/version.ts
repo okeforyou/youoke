@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.189";
+export const SYSTEM_VERSION = "5.5.199";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -11,7 +11,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
  
 export const CHANGELOGS = [
     {
-        version: "5.5.188",
+        version: "5.5.199",
+        date: "2026-07-24",
+        changes: [
+            "fix(ui): Prevent profile image squishing by adding flex-shrink-0",
+            "fix(ui): Ensure announcement cards expand properly on click"
+        ]
+    },
+    {
+        version: "5.5.189",
         date: "2026-07-24",
         changes: [
             "fix(membership): Enforced strict active status checks across Player and Remote modules to ensure expired users lose access immediately.",
