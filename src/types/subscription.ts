@@ -111,7 +111,7 @@ export const DEFAULT_PRICING_PACKAGES: PricingPackage[] = [
   },
   {
     id: "monthly",
-    name: "รายเดือน (Premium)",
+    name: "รายเดือน",
     price: 99,
     duration: 30,
     features: [

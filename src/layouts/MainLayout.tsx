@@ -511,19 +511,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
             {/* Main Content Area - Single Divider Strategy */}
             <div className="flex-1 flex flex-col min-w-0 relative bg-white dark:bg-zinc-950 transition-colors">
                 
-                {/* 🛡️ Membership Expiry Banner (Expiring Soon) */}
-                {user && expiryStatus?.isExpiringSoon && (
-                    <div className="bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-500 text-white py-1.5 px-4 flex items-center justify-between z-[60] shadow-lg animate-in slide-in-from-top duration-500">
-                        <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-wider">
-                            <Star className="w-3.5 h-3.5 animate-pulse" />
-                            <span>พรีเมียมของคุณกำลังจะหมดอายุในอีก {expiryStatus.daysRemaining} วัน!</span>
-                        </div>
-                        <Link href="/profile" className="bg-white/20 hover:bg-white/40 px-3 py-1 rounded-full text-[10px] font-black transition-all border border-white/30">
-                            ต่ออายุเลย
-                        </Link>
-                    </div>
-                )}
-
                 {/* Desktop Header */}
                 <header className="hidden lg:flex h-20 items-center justify-between px-8 border-b border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-950 sticky top-0 z-20 transition-all">
                     <div className="flex-1 max-w-2xl relative group">

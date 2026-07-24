@@ -317,6 +317,22 @@ export const Sidebar = memo(() => {
                     )
                 )}
 
+                {/* Expiry Banner (Expiring Soon) */}
+                {mounted && user?.expiryStatus?.isExpiringSoon && (
+                    <div className={clsx(
+                        "mt-4 bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-500 rounded-xl p-3 text-white transition-all overflow-hidden flex flex-col items-center justify-center shadow-sm",
+                        isSidebarCollapsed ? "hidden" : "block"
+                    )}>
+                        <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider mb-2">
+                            <Star className="w-3.5 h-3.5 animate-pulse" />
+                            <span>หมดอายุในอีก {user.expiryStatus.daysRemaining} วัน!</span>
+                        </div>
+                        <Link href="/profile" className="block text-center bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg text-[10px] font-black transition-all border border-white/30 w-full">
+                            ต่ออายุเลย
+                        </Link>
+                    </div>
+                )}
+
                 {/* Version Info (Standard Gray & Linked) */}
                 <div className={clsx(
                     "mt-4 flex items-center transition-all duration-300 border-t border-gray-100 dark:border-zinc-800/40 pt-4 px-3",
