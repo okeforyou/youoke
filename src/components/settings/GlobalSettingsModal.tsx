@@ -11,6 +11,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useSystem } from '@/core/container/SystemContext';
 import ProfileTab from './tabs/ProfileTab';
+import CloudSyncTab from './tabs/CloudSyncTab';
 import PackagesTab from './tabs/PackagesTab';
 import AnnouncementsTab from './tabs/AnnouncementsTab';
 import GuideTab from './tabs/GuideTab';
@@ -20,7 +21,7 @@ interface GlobalSettingsModalProps {
     onClose: () => void;
 }
 
-export type SettingsTabId = 'profile' | 'packages' | 'announcements' | 'guide';
+export type SettingsTabId = 'profile' | 'packages' | 'announcements' | 'cloudsync' | 'guide';
 
 export default function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsModalProps) {
     const { user } = useSystem().auth();
@@ -30,6 +31,7 @@ export default function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsM
     const sidebarItems = [
         { id: 'profile', label: 'บัญชีและการแสดงผล', icon: UserIcon, group: 'บัญชีผู้ใช้' },
         { id: 'packages', label: 'แพ็กเกจ VIP', icon: SparklesIcon, group: 'ระบบสมาชิก' },
+        { id: 'cloudsync', label: 'พื้นที่จัดเก็บ & สำรองข้อมูล', icon: CloudArrowUpIcon, group: 'ข้อมูล' },
         { id: 'announcements', label: 'ประกาศข่าว', icon: CheckCircleIcon, group: 'ข่าวสาร' },
         { id: 'guide', label: 'คู่มือการใช้งาน YouOke', icon: BookOpenIcon, group: 'ช่วยเหลือ' },
     ];
@@ -45,6 +47,7 @@ export default function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsM
             case 'profile': return <ProfileTab onClose={onClose} onSwitchTab={setActiveTab} />;
             case 'packages': return <PackagesTab />;
             case 'announcements': return <AnnouncementsTab />;
+            case 'cloudsync': return <CloudSyncTab />;
             case 'guide': return <GuideTab />;
             default: return null;
         }
