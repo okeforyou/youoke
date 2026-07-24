@@ -1,39 +1,93 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { 
     CircleStackIcon, 
     ArrowDownTrayIcon, 
     ArrowUpTrayIcon, 
-    GlobeAltIcon,
-    ArrowPathIcon
 } from '@heroicons/react/24/outline';
-import { useAuthStore } from '@/modules/auth/useAuthStore';
 import { cn } from '@/lib/utils';
 
 export default function CloudSyncTab() {
-    const googleDriveAccessToken = useAuthStore(state => state.googleDriveAccessToken);
-    const connectGoogleDrive = useAuthStore(state => state.connectGoogleDrive);
-    const [isConnecting, setIsConnecting] = useState(false);
-    
-    // For demo purposes in this UI iteration, we'll pretend there's a last sync date
-    const lastSyncDate = googleDriveAccessToken ? new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' }) : null;
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isImporting, setIsImporting] = useState(false);
 
-    const handleConnectDrive = async () => {
-        setIsConnecting(true);
+    const handleExport = () => {
         try {
-            await connectGoogleDrive();
+            const playerState = localStorage.getItem('youoke-player-storage-v3');
+            const mixerState = localStorage.getItem('youoke-mixer-storage');
+            const aiVocalState = localStorage.getItem('youoke-ai-vocal');
+
+            const backupData = {
+                version: 1,
+                timestamp: new Date().toISOString(),
+                data: {
+                    player: playerState ? JSON.parse(playerState) : null,
+                    mixer: mixerState ? JSON.parse(mixerState) : null,
+                    aiVocal: aiVocalState ? JSON.parse(aiVocalState) : null,
+                }
+            };
+
+            const jsonString = JSON.stringify(backupData, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `youoke-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
         } catch (error) {
-            console.error("Failed to connect to Google Drive:", error);
-            alert("ไม่สามารถเชื่อมต่อ Google Drive ได้ กรุณาลองใหม่อีกครั้ง");
-        } finally {
-            setIsConnecting(false);
+            console.error('Export error:', error);
+            alert('เกิดข้อผิดพลาดในการดาวน์โหลดข้อมูล');
         }
     };
 
-    const isDriveConnected = !!googleDriveAccessToken;
+    const handleImportClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsImporting(true);
+        try {
+            const text = await file.text();
+            const backupData = JSON.parse(text);
+
+            if (!backupData.data || (!backupData.data.player && !backupData.data.mixer)) {
+                throw new Error('รูปแบบไฟล์ไม่ถูกต้อง');
+            }
+
+            if (window.confirm('ข้อมูลเดิมของคุณจะถูกแทนที่ด้วยข้อมูลจากไฟล์นี้ คุณแน่ใจหรือไม่?')) {
+                if (backupData.data.player) {
+                    localStorage.setItem('youoke-player-storage-v3', JSON.stringify(backupData.data.player));
+                }
+                if (backupData.data.mixer) {
+                    localStorage.setItem('youoke-mixer-storage', JSON.stringify(backupData.data.mixer));
+                }
+                if (backupData.data.aiVocal) {
+                    localStorage.setItem('youoke-ai-vocal', JSON.stringify(backupData.data.aiVocal));
+                }
+                
+                alert('นำเข้าข้อมูลสำเร็จ ระบบจะทำการรีโหลดเพื่อใช้งานข้อมูลใหม่');
+                window.location.reload();
+            }
+        } catch (error) {
+            console.error('Import error:', error);
+            alert('เกิดข้อผิดพลาดในการนำเข้าข้อมูล โปรดตรวจสอบไฟล์ .json');
+        } finally {
+            setIsImporting(false);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+        }
+    };
 
     return (
         <div className="space-y-6 animate-in fade-in duration-300">
-
             {/* Local Backup Card */}
             <div className="bg-white dark:bg-zinc-900/50 rounded-3xl border border-zinc-200 dark:border-zinc-800 p-6 md:p-8 shadow-sm">
                 
@@ -60,7 +114,10 @@ export default function CloudSyncTab() {
                                 รวบรวมการตั้งค่า คิวเพลง และข้อมูลเพลย์ลิสต์ทั้งหมด บีบอัดเป็นไฟล์ .json
                             </p>
                         </div>
-                        <button className="w-full py-3 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm">
+                        <button 
+                            onClick={handleExport}
+                            className="w-full py-3 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm"
+                        >
                             <ArrowDownTrayIcon className="w-4 h-4" />
                             เริ่มดาวน์โหลด
                         </button>
@@ -75,71 +132,27 @@ export default function CloudSyncTab() {
                                 คำเตือน: ข้อมูลที่มีอยู่ในระบบปัจจุบันจะถูกเขียนทับด้วยข้อมูลจากไฟล์ทั้งหมด
                             </p>
                         </div>
-                        <button className="w-full py-3 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2">
+                        <input 
+                            type="file" 
+                            accept=".json"
+                            className="hidden" 
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                        />
+                        <button 
+                            onClick={handleImportClick}
+                            disabled={isImporting}
+                            className={cn(
+                                "w-full py-3 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2",
+                                isImporting && "opacity-50 cursor-not-allowed"
+                            )}
+                        >
                             <ArrowUpTrayIcon className="w-4 h-4" />
-                            เลือกไฟล์กู้คืน (.json)
+                            {isImporting ? 'กำลังนำเข้า...' : 'เลือกไฟล์กู้คืน (.json)'}
                         </button>
                     </div>
 
                 </div>
-            </div>
-
-            {/* Google Drive Sync Card */}
-            <div className="bg-white dark:bg-zinc-900/50 rounded-3xl border border-zinc-200 dark:border-zinc-800 p-6 md:p-8 shadow-sm">
-                
-                {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0">
-                            <GlobeAltIcon className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-                        </div>
-                        <div>
-                            <h3 className="text-base font-bold text-zinc-900 dark:text-white">การซิงค์ผ่านคลาวด์ (Google Drive)</h3>
-                            <p className="text-sm font-medium text-zinc-500 mt-1">สำรองข้อมูลอัตโนมัติและเชื่อมต่อข้ามอุปกรณ์ได้ง่ายๆ</p>
-                        </div>
-                    </div>
-                    {isDriveConnected && (
-                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 text-xs font-bold shrink-0 self-start sm:self-center">
-                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                            เชื่อมต่อแล้ว
-                        </div>
-                    )}
-                </div>
-
-                {/* Inner Content */}
-                <div className="border border-zinc-100 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-900/20 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                    <div>
-                        <h4 className="text-sm font-bold text-zinc-900 dark:text-white">เชื่อมต่อคลาวด์แล้ว (Google Drive)</h4>
-                        {isDriveConnected ? (
-                            <p className="text-[11px] font-medium text-zinc-500 mt-1">ซิงค์ล่าสุดเมื่อ: {lastSyncDate}</p>
-                        ) : (
-                            <p className="text-[11px] font-medium text-zinc-500 mt-1">ยังไม่ได้เชื่อมต่อบัญชี Google Drive</p>
-                        )}
-                    </div>
-                    
-                    <div className="flex items-center gap-3 w-full md:w-auto">
-                        {isDriveConnected ? (
-                            <>
-                                <button className="flex-1 md:flex-none px-5 py-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm">
-                                    <ArrowPathIcon className="w-4 h-4" />
-                                    ซิงค์ทันที
-                                </button>
-                                <button className="flex-1 md:flex-none px-5 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 text-rose-600 border border-rose-100 dark:border-rose-500/20 text-xs font-bold transition-all flex items-center justify-center shadow-sm">
-                                    ตัดการเชื่อมต่อ
-                                </button>
-                            </>
-                        ) : (
-                            <button 
-                                onClick={handleConnectDrive}
-                                disabled={isConnecting}
-                                className={cn("w-full md:w-auto px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-all flex items-center justify-center shadow-sm", isConnecting && "opacity-50 cursor-not-allowed")}
-                            >
-                                {isConnecting ? 'กำลังเชื่อมต่อ...' : 'เชื่อมต่อบัญชี Google Drive'}
-                            </button>
-                        )}
-                    </div>
-                </div>
-
             </div>
         </div>
     );
