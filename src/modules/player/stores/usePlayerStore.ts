@@ -330,7 +330,7 @@ export const usePlayerStore = create<PlayerStore>()(
                     let currentUsed = authUser.quota?.used || 0;
                     let dailyLimit = authUser.quota?.daily_limit || 0;
 
-                    const isPremium = ['premium', 'monthly', 'yearly', 'lifetime', 'day_pass', 'trial'].includes(authUser.membership?.type || '') || authUser.role === 'admin';
+                    const isPremium = (['premium', 'monthly', 'yearly', 'lifetime', 'day_pass', 'trial'].includes(authUser.membership?.type || '') && authUser.membership?.status === 'active') || authUser.role === 'admin';
                     if (isPremium) dailyLimit = -1; // Unlimited
 
                     // Development / Preview Bypass
@@ -460,7 +460,7 @@ export const usePlayerStore = create<PlayerStore>()(
                 if (authUser) {
                     currentUsed = authUser.quota?.used || 0;
                     dailyLimit = authUser.quota?.daily_limit || 0;
-                    const isPremium = ['premium', 'monthly', 'yearly', 'lifetime', 'day_pass', 'trial'].includes(authUser.membership?.type || '') || authUser.role === 'admin';
+                    const isPremium = (['premium', 'monthly', 'yearly', 'lifetime', 'day_pass', 'trial'].includes(authUser.membership?.type || '') && authUser.membership?.status === 'active') || authUser.role === 'admin';
                     if (isPremium) dailyLimit = -1; // Unlimited
                 } else {
                     currentUsed = parseInt(localStorage.getItem(storageKey) || '0');

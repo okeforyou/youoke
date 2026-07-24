@@ -168,7 +168,7 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                 const currentMembership = userSnap.data()?.membership;
                                 if (!currentMembership || currentMembership.status !== 'active') {
                                     updates.membership = {
-                                        type: 'day_pass',
+                                        type: 'trial',
                                         status: 'active',
                                         startedAt: serverTimestamp(),
                                         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
@@ -271,19 +271,19 @@ export const useAuthStore = create<UserState & AuthActions>()(
                             // Self-healing: If profile missing in BOTH or just Firestore
                             if (!userSnap.exists()) {
                                 console.log('🩹 [AuthStore] Initializing missing Firestore profile...');
-                                const newProfile = {
-                                    uid: firebaseUser.uid,
-                                    email: firebaseUser.email,
-                                    displayName: rtdbData?.displayName || firebaseUser.displayName || safeSplit(firebaseUser.email || '', '@')[0] || 'User',
-                                    photoURL: rtdbData?.photoURL || firebaseUser.photoURL || null,
-                                    role: 'user',
-                                    membership: {
-                                        type: 'day_pass',
-                                        status: 'active',
-                                        startedAt: serverTimestamp(),
-                                        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-                                        showAds: false
-                                    },
+                                    const newProfile = {
+                                        uid: firebaseUser.uid,
+                                        email: firebaseUser.email,
+                                        displayName: rtdbData?.displayName || firebaseUser.displayName || safeSplit(firebaseUser.email || '', '@')[0] || 'User',
+                                        photoURL: rtdbData?.photoURL || firebaseUser.photoURL || null,
+                                        role: 'user',
+                                        membership: {
+                                            type: 'trial',
+                                            status: 'active',
+                                            startedAt: serverTimestamp(),
+                                            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+                                            showAds: false
+                                        },
                                     tier: 'free',
                                     isPremium: false,
                                     quota: {
@@ -446,7 +446,7 @@ export const useAuthStore = create<UserState & AuthActions>()(
                         photoURL: user.photoURL || null,
                         role: 'user',
                         membership: {
-                            type: 'day_pass',
+                            type: 'trial',
                             status: 'active',
                             startedAt: serverTimestamp(),
                             expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),

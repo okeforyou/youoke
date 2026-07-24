@@ -148,7 +148,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
     // Auth & Config
     const { user, signOut } = useSystem().auth();
-    const isPremium = user?.membership?.type !== 'free';
+    const isPremium = user?.membership?.type !== 'free' && user?.membership?.status === 'active';
     const { config } = useSystemConfig();
     const allowRemote = config?.membership?.[isPremium ? 'premium' : 'free']?.allow_remote;
 

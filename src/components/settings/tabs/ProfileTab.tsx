@@ -51,7 +51,8 @@ export default function ProfileTab({ onClose, onSwitchTab }: { onClose: () => vo
     const pkg = DEFAULT_PRICING_PACKAGES.find(p => p.id === planId);
     const membershipName = pkg ? pkg.name : (planId === 'free' ? 'ทดลองใช้งานฟรี' : String(planId));
     
-    const isPremium = userRole === 'admin' || planId !== 'free';
+    const userStatus = profile?.subscription?.status || (user as any)?.membership?.status;
+    const isPremium = userRole === 'admin' || (planId !== 'free' && userStatus === 'active');
 
     // 2. Expiration Date
     let expireDateStr = '-';
