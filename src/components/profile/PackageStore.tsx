@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { 
     CheckCircleIcon, 
     SparklesIcon, 
     ChevronRightIcon, 
-    ShieldCheckIcon
+    ShieldCheckIcon,
+    InformationCircleIcon
 } from '@heroicons/react/24/outline';
 import { useAuthStore } from '@/modules/auth/useAuthStore';
 import { cn } from '@/lib/utils';
@@ -174,7 +174,16 @@ export const PackageStore = () => {
                 </div>
             )}
 
-            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest px-2 pt-1">เลือกแพ็กเกจ VIP</p>
+            <div className="flex items-center justify-between px-2 pt-1 pb-1">
+                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">เลือกแพ็กเกจ VIP</p>
+                <button 
+                    onClick={() => router.push('/packages')} 
+                    className="text-[10px] font-bold text-blue-500 hover:text-blue-600 transition-colors flex items-center gap-0.5"
+                >
+                    ดูรายละเอียดสิทธิประโยชน์
+                    <ChevronRightIcon className="w-3 h-3" strokeWidth={3} />
+                </button>
+            </div>
 
             {/* Compact Package List */}
             <div className="bg-white dark:bg-zinc-950 rounded-3xl border border-zinc-200 dark:border-zinc-800 overflow-hidden divide-y divide-zinc-100 dark:divide-zinc-800/50 shadow-sm">
@@ -232,10 +241,10 @@ export const PackageStore = () => {
                 </div>
                 <button
                     onClick={() => router.push('/packages')}
-                    className="flex-1 px-4 py-3.5 rounded-2xl border border-dashed border-gray-200 dark:border-zinc-800 hover:border-zinc-400 text-[11px] font-bold text-zinc-900 dark:text-white transition-all flex items-center justify-center gap-2 shadow-sm"
+                    className="flex-1 px-4 py-3.5 rounded-2xl border border-dashed border-gray-200 dark:border-zinc-800 hover:border-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 text-[11px] font-bold text-zinc-900 dark:text-white transition-all flex items-center justify-center gap-2 shadow-sm"
                 >
-                    <QrCode className="w-4 h-4" /> 
-                    <span>รายละเอียดแพ็กเกจเต็ม</span>
+                    <InformationCircleIcon className="w-4 h-4 text-zinc-400" /> 
+                    <span>เปรียบเทียบแพ็กเกจทั้งหมด</span>
                 </button>
             </div>
 
