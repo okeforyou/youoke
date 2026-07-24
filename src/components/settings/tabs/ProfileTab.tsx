@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
 import { useSystem } from '@/core/container/SystemContext';
 import { useUIStore } from '@/stores/useUIStore';
 import { getUserProfile } from '@/services/userService';
-import { UserProfile } from '@/types/subscription';
-import { CalendarIcon, ClockIcon, KeyIcon, CheckBadgeIcon } from '@heroicons/react/24/outline';
-import { Sparkles } from 'lucide-react';
+import { UserProfile, DEFAULT_PRICING_PACKAGES } from '@/types/subscription';
+import { CalendarIcon, ClockIcon, EnvelopeIcon, ArrowRightOnRectangleIcon, CheckBadgeIcon, ChatBubbleOvalLeftEllipsisIcon } from '@heroicons/react/24/outline';
+import { Sparkles, Crown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export default function ProfileTab({ onClose }: { onClose: () => void }) {
+export default function ProfileTab({ onClose, onSwitchTab }: { onClose: () => void, onSwitchTab?: (tab: string) => void }) {
     const { user, signOut } = useSystem().auth();
-    const router = useRouter();
     const { showConfirm } = useUIStore();
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
@@ -34,7 +32,7 @@ export default function ProfileTab({ onClose }: { onClose: () => void }) {
             onConfirm: async () => {
                 await signOut();
                 onClose();
-                router.push('/login');
+                window.location.href = '/login';
             }
         });
     };
@@ -43,167 +41,160 @@ export default function ProfileTab({ onClose }: { onClose: () => void }) {
         return <div className="flex justify-center p-20"><div className="loading loading-spinner loading-lg text-primary"></div></div>;
     }
 
-    const providerId = user?.providerData?.[0]?.providerId || 'password';
-    const providerName = providerId.includes('google') ? 'Google' : providerId.includes('line') ? 'LINE' : 'Email';
+    // --- Prepare Real Data ---
+
+    // 1. Membership Level
+    const planId = profile?.subscription?.plan || (user?.role === 'admin' ? 'lifetime' : 'free');
+    const pkg = DEFAULT_PRICING_PACKAGES.find(p => p.id === planId);
+    let membershipName = pkg ? pkg.name : (planId === 'free' ? 'ใช้งานฟรี' : planId);
+    if (user?.role === 'admin') membershipName = 'ผู้ดูแลระบบ (Admin)';
+    
+    const isPremium = planId !== 'free' || user?.role === 'admin';
+
+    // 2. Expiration Date
+    let expireDateStr = '-';
+    if (user?.role === 'admin' || planId === 'lifetime') {
+        expireDateStr = 'ใช้งานได้ตลอดชีพ';
+    } else if (planId === 'free') {
+        expireDateStr = 'ไม่มีวันหมดอายุ (ใช้ฟรี)';
+    } else if (profile?.subscription?.endDate) {
+        const endDt = typeof (profile.subscription.endDate as any).toDate === 'function' 
+            ? (profile.subscription.endDate as any).toDate() 
+            : new Date(profile.subscription.endDate);
+        expireDateStr = endDt.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    // 3. Registration Date
+    const regDateStr = user?.metadata?.creationTime 
+        ? new Date(user.metadata.creationTime).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }) 
+        : '-';
+
+    // 4. LINE Connection
+    const isLineConnected = !!profile?.lineUserId || user?.providerData?.some(p => p.providerId === 'line.com');
+    const lineStatusStr = isLineConnected ? `เชื่อมต่อแล้ว ${profile?.lineDisplayName ? `(${profile.lineDisplayName})` : ''}` : 'ยังไม่เชื่อมต่อ';
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-300">
+        <div className="space-y-6 animate-in fade-in duration-300 pb-8">
             
-            {/* User Profile Section */}
-            <div>
-                <h3 className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest mb-3 px-1">ข้อมูลผู้ใช้ (USER PROFILE)</h3>
-                <div className="bg-white dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 md:p-8 shadow-sm relative">
-                    
-                    {/* Logout Button (Top Right in Card) */}
-                    <button
-                        onClick={handleLogout}
-                        className="absolute top-6 right-6 px-4 py-2 rounded-xl border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 hover:border-rose-300 dark:bg-rose-500/10 dark:border-rose-500/20 dark:hover:bg-rose-500/20 text-xs font-bold transition-all"
-                    >
-                        ออกจากระบบ
-                    </button>
-
-                    <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-                        {/* Avatar */}
+            {/* Header Profile Card (Dark Premium Look) */}
+            <div className="bg-zinc-900 dark:bg-zinc-950 rounded-3xl p-6 md:p-8 shadow-xl relative overflow-hidden border border-zinc-800">
+                {/* Background Decor */}
+                <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="flex items-center gap-5">
                         <div className="relative">
-                            <div className="w-20 h-20 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-800 border-2 border-white dark:border-zinc-900 shadow-sm flex items-center justify-center shrink-0">
+                            <div className="w-20 h-20 rounded-full overflow-hidden bg-zinc-800 border-2 border-zinc-700 shadow-inner flex items-center justify-center shrink-0">
                                 {user?.photoURL ? (
                                     <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
                                 ) : (
                                     <span className="text-zinc-400 font-black text-2xl">{user?.displayName?.charAt(0) || 'U'}</span>
                                 )}
                             </div>
-                            <div className="absolute bottom-0 right-0 w-6 h-6 bg-zinc-900 rounded-full flex items-center justify-center ring-2 ring-white">
-                                <UserIcon className="w-3.5 h-3.5 text-white" />
-                            </div>
+                            {isPremium && (
+                                <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-gradient-to-br from-amber-300 to-amber-500 rounded-full flex items-center justify-center ring-4 ring-zinc-900 shadow-md">
+                                    <Crown className="w-4 h-4 text-amber-950 fill-amber-950" />
+                                </div>
+                            )}
                         </div>
-
-                        {/* Name & Details */}
-                        <div className="flex-1 pt-1">
-                            <h2 className="text-xl font-black text-zinc-900 dark:text-white mb-1">
+                        <div>
+                            <h2 className="text-2xl font-black text-white mb-1">
                                 {user?.displayName || 'ผู้ใช้งานระบบ'}
                             </h2>
-                            <div className="flex items-center gap-2 text-sm text-zinc-500 font-medium mb-3">
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                            <div className="flex items-center gap-2 text-sm text-zinc-400 font-medium">
+                                <EnvelopeIcon className="w-4 h-4" />
                                 {user?.email || 'ไม่มีอีเมล'}
                             </div>
-                            <div className="inline-flex px-3 py-1 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-full text-[10px] font-bold tracking-widest uppercase">
-                                {user?.role === 'admin' ? 'ADMINISTRATOR' : 'MEMBER'}
-                            </div>
                         </div>
                     </div>
 
-                    {/* Info Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8 pt-8 border-t border-zinc-100 dark:border-zinc-800">
-                        
-                        <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-500/10 flex items-center justify-center shrink-0">
-                                <CalendarIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-bold text-zinc-400">วันที่สมัครสมาชิก</p>
-                                <p className="text-sm font-bold text-zinc-900 dark:text-zinc-200">
-                                    {user?.metadata?.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit' }) : '-'}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center shrink-0">
-                                <ClockIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-bold text-zinc-400">เข้าสู่ระบบล่าสุด</p>
-                                <p className="text-sm font-bold text-zinc-900 dark:text-zinc-200">
-                                    {user?.metadata?.lastSignInTime ? new Date(user.metadata.lastSignInTime).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit' }) : '-'}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center shrink-0">
-                                <KeyIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-bold text-zinc-400">เข้าสู่ระบบด้วย</p>
-                                <p className="text-sm font-bold text-zinc-900 dark:text-zinc-200">{providerName}</p>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-500/10 flex items-center justify-center shrink-0">
-                                <CheckBadgeIcon className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-bold text-zinc-400">สถานะอีเมล</p>
-                                <p className="text-sm font-bold text-zinc-900 dark:text-zinc-200">
-                                    {user?.emailVerified ? 'ยืนยันตัวตนแล้ว' : 'ยังไม่ยืนยัน'}
-                                </p>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-
-            {/* Note: Usage stats hidden per user request */}
-
-            {/* Membership Details */}
-            <div className="bg-white dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 md:p-8 shadow-sm">
-                <div className="flex items-center gap-3 mb-2">
-                    <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center">
-                        <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                    </div>
-                    <h3 className="text-sm font-bold text-zinc-900 dark:text-white">แพ็กเกจบัญชี (Membership Status)</h3>
-                </div>
-                <p className="text-xs text-zinc-500 font-medium mb-6 ml-11">
-                    ระบบ YouOke รองรับการอัปเกรดเพื่อเพิ่มขีดความสามารถในการร้องเพลงแบบไร้ขีดจำกัด
-                </p>
-
-                <div className="space-y-4 ml-11">
-                    <div className="flex items-center justify-between pb-4 border-b border-zinc-100 dark:border-zinc-800">
-                        <div>
-                            <p className="text-sm font-bold text-zinc-900 dark:text-white">แพ็กเกจปัจจุบัน</p>
-                            <p className="text-xs font-medium text-zinc-500">
-                                {user?.role === 'admin' ? 'ไม่มีวันหมดอายุ' :
-                                profile?.membership?.type === 'free' ? 'ใช้งานแบบจำกัด' :
-                                profile?.membership?.type === 'lifetime' ? 'ใช้งานได้ตลอดชีพ' :
-                                `หมดอายุ: ${profile?.membership?.expiresAt ? new Date(profile.membership.expiresAt).toLocaleDateString('th-TH') : '-'}`
-                                }
-                            </p>
-                        </div>
-                        <div className="font-black text-indigo-600 dark:text-indigo-400">
-                            {user?.role === 'admin' ? "ผู้ดูแลระบบ (ADMIN)" : (profile?.membership?.type === 'lifetime' ? "ตลอดชีพ (PRO)" : "ใช้งานฟรี")}
-                        </div>
-                    </div>
-                </div>
-
-                <div className="mt-6 ml-11 bg-indigo-50/50 dark:bg-indigo-500/5 rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 border border-indigo-100 dark:border-indigo-500/10">
-                    <div className="flex items-start gap-3 text-indigo-700 dark:text-indigo-300">
-                        <Sparkles className="w-5 h-5 shrink-0 mt-0.5" />
-                        <div className="text-xs font-medium leading-relaxed">
-                            <strong className="font-bold">เคล็ดลับความคุ้มค่า:</strong> อัปเกรดเป็น VIP เพื่อปลดล็อกฟีเจอร์แยกเสียงร้อง AI และร้องเพลงแบบไม่มีโฆษณาคั่น ร้องสนุกไม่สะดุด!
-                        </div>
-                    </div>
-                    <button 
-                        onClick={() => {
-                            onClose();
-                            router.push('/packages');
-                        }}
-                        className="w-full md:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm shrink-0 whitespace-nowrap"
+                    <button
+                        onClick={handleLogout}
+                        className="px-5 py-2.5 rounded-xl border border-rose-500/20 text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 hover:border-rose-500/30 text-xs font-bold transition-all w-full md:w-auto"
                     >
-                        ดูแพ็กเกจทั้งหมด
+                        ออกจากระบบ
                     </button>
                 </div>
             </div>
 
+            {/* Metrics Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                {/* 1. Membership Level */}
+                <div className="bg-white dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 shadow-sm flex items-start gap-4">
+                    <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center shrink-0", isPremium ? "bg-amber-50 dark:bg-amber-500/10" : "bg-zinc-100 dark:bg-zinc-800")}>
+                        <Crown className={cn("w-6 h-6", isPremium ? "text-amber-500" : "text-zinc-400")} />
+                    </div>
+                    <div>
+                        <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-0.5">ระดับสมาชิก</p>
+                        <p className={cn("text-base font-black", isPremium ? "text-amber-600 dark:text-amber-400" : "text-zinc-900 dark:text-white")}>
+                            {membershipName}
+                        </p>
+                    </div>
+                </div>
+
+                {/* 2. Expiration Date */}
+                <div className="bg-white dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 shadow-sm flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center shrink-0">
+                        <ClockIcon className="w-6 h-6 text-rose-500" />
+                    </div>
+                    <div>
+                        <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-0.5">วันหมดอายุ</p>
+                        <p className="text-base font-bold text-zinc-900 dark:text-white">
+                            {expireDateStr}
+                        </p>
+                    </div>
+                </div>
+
+                {/* 3. Registration Date */}
+                <div className="bg-white dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 shadow-sm flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-500/10 flex items-center justify-center shrink-0">
+                        <CalendarIcon className="w-6 h-6 text-purple-500" />
+                    </div>
+                    <div>
+                        <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-0.5">วันที่สมัคร</p>
+                        <p className="text-base font-bold text-zinc-900 dark:text-white">
+                            {regDateStr}
+                        </p>
+                    </div>
+                </div>
+
+                {/* 4. LINE Connection */}
+                <div className="bg-white dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 shadow-sm flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center shrink-0">
+                        <ChatBubbleOvalLeftEllipsisIcon className="w-6 h-6 text-emerald-500" />
+                    </div>
+                    <div>
+                        <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-0.5">การเชื่อมต่อ LINE</p>
+                        <p className="text-base font-bold text-zinc-900 dark:text-white">
+                            {lineStatusStr}
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+            {/* Upgrade / Packages CTA */}
+            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-2xl border border-indigo-100 dark:border-indigo-500/20 p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center shrink-0">
+                        <Sparkles className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                    </div>
+                    <div>
+                        <h4 className="text-sm font-bold text-indigo-900 dark:text-indigo-300">อัปเกรดเพื่อประสบการณ์ที่ดีกว่า</h4>
+                        <p className="text-xs text-indigo-700/70 dark:text-indigo-400/70 mt-0.5">ปลดล็อกฟีเจอร์แยกเสียงร้องด้วย AI และร้องเพลงแบบไม่มีโฆษณาคั่น</p>
+                    </div>
+                </div>
+                <button 
+                    onClick={() => {
+                        if (onSwitchTab) onSwitchTab('packages');
+                    }}
+                    className="w-full md:w-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-indigo-200 dark:shadow-none shrink-0"
+                >
+                    ดูแพ็กเกจทั้งหมด
+                </button>
+            </div>
+
         </div>
     );
-}
-
-function UserIcon(props: React.ComponentProps<'svg'>) {
-    return (
-        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" {...props}>
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-        </svg>
-    )
 }

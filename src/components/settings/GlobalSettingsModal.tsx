@@ -44,7 +44,7 @@ export default function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsM
 
     const renderContent = () => {
         switch (activeTab) {
-            case 'profile': return <ProfileTab onClose={onClose} />;
+            case 'profile': return <ProfileTab onClose={onClose} onSwitchTab={setActiveTab} />;
             case 'packages': return <PackagesTab />;
             case 'announcements': return <AnnouncementsTab />;
             case 'cloudsync': return <CloudSyncTab />;
