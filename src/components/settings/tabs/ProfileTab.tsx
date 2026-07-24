@@ -44,7 +44,7 @@ export default function ProfileTab({ onClose, onSwitchTab }: { onClose: () => vo
     // --- Prepare Real Data ---
 
     // 1. Membership Level
-    const planId = profile?.subscription?.plan || (user?.role === 'admin' ? 'lifetime' : 'free');
+    const planId = profile?.subscription?.plan || (user as any)?.membership?.type || (user as any)?.tier || (user?.role === 'admin' ? 'lifetime' : 'free');
     const pkg = DEFAULT_PRICING_PACKAGES.find(p => p.id === planId);
     let membershipName = pkg ? pkg.name : (planId === 'free' ? 'ใช้งานฟรี' : planId);
     if (user?.role === 'admin') membershipName = 'ผู้ดูแลระบบ (Admin)';
@@ -57,17 +57,25 @@ export default function ProfileTab({ onClose, onSwitchTab }: { onClose: () => vo
         expireDateStr = 'ใช้งานได้ตลอดชีพ';
     } else if (planId === 'free') {
         expireDateStr = 'ไม่มีวันหมดอายุ (ใช้ฟรี)';
-    } else if (profile?.subscription?.endDate) {
-        const endDt = typeof (profile.subscription.endDate as any).toDate === 'function' 
-            ? (profile.subscription.endDate as any).toDate() 
-            : new Date(profile.subscription.endDate);
-        expireDateStr = endDt.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+    } else {
+        const endDateRaw = profile?.subscription?.endDate || (user as any)?.membership?.expiresAt;
+        if (endDateRaw) {
+            const endDt = typeof endDateRaw.toDate === 'function' ? endDateRaw.toDate() : new Date(endDateRaw);
+            if (!isNaN(endDt.getTime())) {
+                expireDateStr = endDt.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+            }
+        }
     }
 
     // 3. Registration Date
-    const regDateStr = user?.metadata?.creationTime 
-        ? new Date(user.metadata.creationTime).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }) 
-        : '-';
+    let regDateStr = '-';
+    const createdAtRaw = (profile?.subscription as any)?.startDate || (user as any)?.membership?.createdAt || (profile as any)?.createdAt || (user as any)?.createdAt || user?.metadata?.creationTime;
+    if (createdAtRaw) {
+        const startDt = typeof createdAtRaw.toDate === 'function' ? createdAtRaw.toDate() : new Date(createdAtRaw);
+        if (!isNaN(startDt.getTime())) {
+            regDateStr = startDt.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+        }
+    }
 
     // 4. LINE Connection
     const isLineConnected = !!profile?.lineUserId || user?.providerData?.some(p => p.providerId === 'line.com');
