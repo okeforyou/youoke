@@ -17,13 +17,14 @@ import CloudSyncTab from './tabs/CloudSyncTab';
 import PackagesTab from './tabs/PackagesTab';
 import AnnouncementsTab from './tabs/AnnouncementsTab';
 import GuideTab from './tabs/GuideTab';
+import TutorialTab from './tabs/TutorialTab';
 
 interface GlobalSettingsModalProps {
     isOpen: boolean;
     onClose: () => void;
 }
 
-export type SettingsTabId = 'profile' | 'packages' | 'announcements' | 'cloudsync' | 'guide';
+export type SettingsTabId = 'profile' | 'packages' | 'announcements' | 'cloudsync' | 'guide' | 'tutorial';
 
 export default function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsModalProps) {
     const { user } = useSystem().auth();
@@ -37,7 +38,7 @@ export default function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsM
         { id: 'cloudsync', label: 'พื้นที่จัดเก็บ & สำรองข้อมูล', icon: CloudArrowUpIcon, group: 'ข้อมูล' },
         { id: 'announcements', label: 'ประกาศข่าว', icon: CheckCircleIcon, group: 'ข่าวสาร' },
         { id: 'guide', label: 'เกี่ยวกับ YouOke', icon: InformationCircleIcon, group: 'ช่วยเหลือ' },
-        { id: 'tutorial', label: 'คู่มือการใช้งาน', icon: BookOpenIcon, group: 'ช่วยเหลือ', action: () => { onClose(); router.push('/tutorial'); } },
+        { id: 'tutorial', label: 'คู่มือการใช้งาน', icon: BookOpenIcon, group: 'ช่วยเหลือ' },
     ];
 
     const groupedItems = sidebarItems.reduce((acc, item) => {
@@ -53,6 +54,7 @@ export default function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsM
             case 'announcements': return <AnnouncementsTab />;
             case 'cloudsync': return <CloudSyncTab />;
             case 'guide': return <GuideTab />;
+            case 'tutorial': return <TutorialTab />;
             default: return null;
         }
     };
@@ -116,10 +118,6 @@ export default function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsM
                                                         <button
                                                             key={item.id}
                                                             onClick={() => {
-                                                                if ('action' in item && typeof item.action === 'function') {
-                                                                    item.action();
-                                                                    return;
-                                                                }
                                                                 setActiveTab(item.id as SettingsTabId);
                                                                 setMobileView('detail');
                                                             }}
