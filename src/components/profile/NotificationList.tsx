@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { collection, onSnapshot, orderBy, query, limit, getFirestore } from "firebase/firestore";
 import { app } from "@/firebase";
-import { Bell, Clock } from "lucide-react";
+import { Bell, Clock, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/modules/auth/useAuthStore";
 
@@ -20,6 +20,7 @@ export const NotificationList = () => {
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [loading, setLoading] = useState(true);
     const [readIds, setReadIds] = useState<string[]>([]);
+    const [expandedId, setExpandedId] = useState<string | null>(null);
 
     useEffect(() => {
         if (!user?.uid || !db) {
@@ -132,12 +133,15 @@ export const NotificationList = () => {
                     return (
                         <div
                             key={item.id}
-                            onClick={() => markRead(item.id)}
+                            onClick={() => {
+                                if (itemIsNew) markRead(item.id);
+                                setExpandedId(expandedId === item.id ? null : item.id);
+                            }}
                             className={cn(
-                                "relative pl-11 pr-4 py-4 rounded-2xl transition-all cursor-pointer",
+                                "relative pl-11 pr-4 py-4 rounded-2xl transition-all cursor-pointer overflow-hidden",
                                 itemIsNew 
                                     ? "border border-primary/30 bg-primary/10 shadow-sm dark:bg-primary/20 dark:border-primary/40" 
-                                    : "border border-slate-100 bg-white opacity-40 dark:bg-zinc-800/50 dark:border-zinc-700"
+                                    : "border border-slate-200 bg-white dark:bg-zinc-900/50 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-800/80"
                             )}
                         >
                             <div className="absolute left-3.5 top-4">
@@ -159,23 +163,30 @@ export const NotificationList = () => {
                                         <span className="text-[8px] bg-primary/10 dark:bg-primary/20 text-primary px-1.5 py-0.5 rounded-md font-black italic">NEW</span>
                                     )}
                                 </div>
-                                <p className={cn("text-xs leading-relaxed", itemIsNew ? "text-slate-600 dark:text-zinc-200" : "text-slate-400 dark:text-zinc-500 line-clamp-1")}>
+                                <p className={cn(
+                                    "text-[13px] leading-relaxed mt-2 transition-all duration-300", 
+                                    itemIsNew ? "text-slate-700 dark:text-zinc-200" : "text-slate-500 dark:text-zinc-400",
+                                    expandedId === item.id ? "line-clamp-none whitespace-pre-wrap" : "line-clamp-2"
+                                )}>
                                     {item.body}
                                 </p>
                                 
-                                <div className="flex items-center justify-between mt-3">
-                                    <div className="flex items-center gap-1.5 text-[10px] font-medium text-slate-400 dark:text-zinc-500">
-                                        <Clock className="w-3 h-3" />
+                                <div className="flex items-center justify-between mt-4">
+                                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 dark:text-zinc-500">
+                                        <Clock className="w-3.5 h-3.5" />
                                         {formatDate(item.createdAt)}
                                     </div>
-                                    {itemIsNew && (
-                                        <button 
-                                          onClick={(e) => { e.stopPropagation(); markRead(item.id); }}
-                                          className="text-[10px] font-black text-primary dark:text-indigo-400 hover:text-primary/80 transition-colors uppercase tracking-widest text-right"
-                                        >
-                                          อ่านแล้ว
-                                        </button>
-                                    )}
+                                    <div className="flex items-center gap-2">
+                                        {itemIsNew && (
+                                            <button 
+                                              onClick={(e) => { e.stopPropagation(); markRead(item.id); }}
+                                              className="text-[10px] font-black text-primary dark:text-indigo-400 hover:text-primary/80 transition-colors uppercase tracking-widest"
+                                            >
+                                              อ่านแล้ว
+                                            </button>
+                                        )}
+                                        <ChevronDown className={cn("w-4 h-4 text-slate-400 transition-transform duration-300", expandedId === item.id ? "rotate-180" : "")} />
+                                    </div>
                                 </div>
                             </div>
                         </div>

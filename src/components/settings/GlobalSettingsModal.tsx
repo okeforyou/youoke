@@ -18,6 +18,7 @@ import PackagesTab from './tabs/PackagesTab';
 import AnnouncementsTab from './tabs/AnnouncementsTab';
 import GuideTab from './tabs/GuideTab';
 import TutorialTab from './tabs/TutorialTab';
+import { useUnreadNotifications } from '@/hooks/useUnreadNotifications';
 
 interface GlobalSettingsModalProps {
     isOpen: boolean;
@@ -31,6 +32,7 @@ export default function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsM
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<SettingsTabId>('profile');
     const [mobileView, setMobileView] = useState<'list' | 'detail'>('list');
+    const unreadCount = useUnreadNotifications();
 
     const sidebarItems = [
         { id: 'profile', label: 'บัญชีและการแสดงผล', icon: UserIcon, group: 'บัญชีผู้ใช้' },
@@ -121,14 +123,24 @@ export default function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsM
                                                                 setActiveTab(item.id as SettingsTabId);
                                                                 setMobileView('detail');
                                                             }}
-                                                            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm transition-all ${
+                                                            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl text-sm transition-all relative ${
                                                                 activeTab === item.id 
                                                                 ? 'bg-white dark:bg-zinc-800 text-primary font-bold shadow-sm ring-1 ring-black/5 dark:ring-white/5' 
                                                                 : 'bg-transparent text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 font-medium'
                                                             }`}
                                                         >
-                                                            <item.icon className={`w-5 h-5 ${activeTab === item.id ? 'stroke-[2px]' : 'stroke-[1.5px]'}`} />
+                                                            <div className="relative">
+                                                                <item.icon className={`w-5 h-5 ${activeTab === item.id ? 'stroke-[2px]' : 'stroke-[1.5px]'}`} />
+                                                                {item.id === 'announcements' && unreadCount > 0 && (
+                                                                    <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-zinc-900 animate-pulse" />
+                                                                )}
+                                                            </div>
                                                             <span className="flex-1 text-left">{item.label}</span>
+                                                            {item.id === 'announcements' && unreadCount > 0 && (
+                                                                <span className="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
+                                                                    {unreadCount}
+                                                                </span>
+                                                            )}
                                                         </button>
                                                     ))}
                                                 </div>
