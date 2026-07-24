@@ -44,15 +44,23 @@ export default function ProfileTab({ onClose, onSwitchTab }: { onClose: () => vo
     // --- Prepare Real Data ---
 
     // 1. Membership Level
-    const planId = profile?.subscription?.plan || (user as any)?.membership?.type || (user as any)?.tier || (user?.role === 'admin' ? 'lifetime' : 'free');
-    const pkg = DEFAULT_PRICING_PACKAGES.find(p => p.id === planId);
-    const membershipName = pkg ? pkg.name : (planId === 'free' ? 'ทดลองใช้งานฟรี' : String(planId));
+    const userRole = profile?.role || user?.role;
+    const rawPlanId = profile?.subscription?.plan || (user as any)?.membership?.type || (user as any)?.tier;
+    const planId = (rawPlanId && typeof rawPlanId === 'string' && rawPlanId.trim() !== '') ? rawPlanId : 'free';
     
-    const isPremium = planId !== 'free' || user?.role === 'admin';
+    let membershipName = 'ใช้งานฟรี';
+    if (userRole === 'admin') {
+        membershipName = 'ผู้ดูแลระบบ (Admin)';
+    } else if (planId !== 'free') {
+        const pkg = DEFAULT_PRICING_PACKAGES.find(p => p.id === planId);
+        membershipName = pkg ? pkg.name : String(planId);
+    }
+    
+    const isPremium = userRole === 'admin' || planId !== 'free';
 
     // 2. Expiration Date
     let expireDateStr = '-';
-    if (user?.role === 'admin' || planId === 'lifetime') {
+    if (userRole === 'admin' || planId === 'lifetime') {
         expireDateStr = 'ใช้งานได้ตลอดชีพ';
     } else if (planId === 'free') {
         expireDateStr = 'ไม่มีวันหมดอายุ (ใช้ฟรี)';
