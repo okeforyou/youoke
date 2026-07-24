@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.185";
+export const SYSTEM_VERSION = "5.5.186";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.186",
+        date: "2026-07-24",
+        changes: [
+            "fix(admin): Resolve data mismatch between User Profile showing Lifetime while Admin Panel shows expiry dates.",
+            "fix(admin): Ensure changing expiry dates unconditionally recalculates the correct tier (Monthly, Yearly).",
+            "fix(admin): Manual Group Override to 'Lifetime' now correctly clears the expiration date from the database."
+        ]
+    },
     {
         version: "5.5.185",
         date: "2026-07-24",

@@ -551,7 +551,7 @@ export const AdminService = {
         if (finalExpiresAt === null) {
             newType = 'lifetime';
             newTier = 'lifetime';
-        } else if (finalExpiresAt > new Date() && (currentTier === 'free' || currentType === 'free')) {
+        } else if (finalExpiresAt > new Date()) {
             // คำนวณช่วงวันเพื่อจำแนกประเภทแพ็กเกจจริง
             const diffDays = Math.ceil((finalExpiresAt.getTime() - (startedAt ? startedAt.getTime() : new Date().getTime())) / (1000 * 60 * 60 * 24));
             if (diffDays > 300) {
@@ -630,21 +630,33 @@ export const AdminService = {
     updateMembershipType: async (uid: string, type: string) => {
         if (!db) throw new Error("Firebase not initialized");
         const userRef = doc(db, "users", uid);
-        await updateDoc(userRef, {
+        const updates: any = {
             'membership.type': type,
             'tier': type,
             'updatedAt': new Date()
-        });
+        };
+
+        if (type === 'lifetime') {
+            updates['membership.expiresAt'] = null;
+        }
+
+        await updateDoc(userRef, updates);
 
         // Sync to Realtime Database
         if (realtimeDb) {
             try {
                 const rtdbUserRef = ref(realtimeDb, `users/${uid}`);
-                await update(rtdbUserRef, {
+                const rtdbUpdates: any = {
                     tier: type,
                     'subscription/plan': type,
                     updatedAt: rtdbServerTimestamp()
-                });
+                };
+                
+                if (type === 'lifetime') {
+                    rtdbUpdates['subscription/endDate'] = null;
+                }
+                
+                await update(rtdbUserRef, rtdbUpdates);
             } catch (e) {
                 console.error("❌ Failed to sync membership type to RealtimeDB:", e);
             }
