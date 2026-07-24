@@ -137,7 +137,7 @@ export default function ProfileTab({ onClose, onSwitchTab }: { onClose: () => vo
                     </div>
                     <div>
                         <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-0.5">ระดับสมาชิก</p>
-                        <p className={cn("text-base font-black", isPremium ? "text-amber-600 dark:text-amber-400" : "text-zinc-900 dark:text-white")}>
+                        <p className={cn("text-base font-black", isPremium ? "text-amber-500 dark:text-amber-400" : "text-zinc-900 dark:text-white")}>
                             {membershipName}
                         </p>
                     </div>

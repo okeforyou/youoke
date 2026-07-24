@@ -417,24 +417,9 @@ export const useAuthStore = create<UserState & AuthActions>()(
                     const firebaseUser = userCredential.user;
                     console.log('⚡ SignIn: Auth Success', firebaseUser.uid);
 
-                    // Optimistic Update: Set user immediately to trigger redirect
-                    set({
-                        user: {
-                            uid: firebaseUser.uid,
-                            email: firebaseUser.email,
-                            displayName: firebaseUser.displayName,
-                            photoURL: firebaseUser.photoURL,
-                            role: 'user',
-                            isAdmin: false,
-                            isPremium: false,
-                            tier: 'free',
-                            membership: DEFAULT_MEMBERSHIP,
-                            installed_modules: [],
-                            quota: undefined
-                        },
-                        isLoading: false
-                    });
-                    console.log('⚡ SignIn: State Updated');
+                    // We intentionally DO NOT perform an Optimistic Update here to prevent "free tier" flashing.
+                    // The onIdTokenChanged listener will catch this login and fetch the REAL user tier from the DB.
+                    console.log('⚡ SignIn: Waiting for onIdTokenChanged to sync user profile...');
                 } catch (error: any) {
                     console.error('⚡ SignIn: Error', error);
                     set({ error: error.message, isLoading: false });
@@ -620,23 +605,8 @@ export const useAuthStore = create<UserState & AuthActions>()(
                     const firebaseUser = userCredential.user;
                     console.log('⚡ CustomToken SignIn: Success', firebaseUser.uid);
 
-                    // Optimistic Update: Skip waiting for global listener to trigger instant redirect
-                    set({
-                        user: {
-                            uid: firebaseUser.uid,
-                            email: firebaseUser.email,
-                            displayName: firebaseUser.displayName,
-                            photoURL: firebaseUser.photoURL,
-                            role: 'user',
-                            isAdmin: false,
-                            isPremium: false,
-                            tier: 'free',
-                            membership: DEFAULT_MEMBERSHIP,
-                            installed_modules: [],
-                            quota: undefined
-                        },
-                        isLoading: false
-                    });
+                    // We intentionally DO NOT perform an Optimistic Update here to prevent "free tier" flashing.
+                    // The onIdTokenChanged listener will catch this login and fetch the REAL user tier from the DB.
                 } catch (error: any) {
                     set({ error: error.message, isLoading: false });
                     throw error;

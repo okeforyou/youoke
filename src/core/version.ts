@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.186";
+export const SYSTEM_VERSION = "5.5.187";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.187",
+        date: "2026-07-24",
+        changes: [
+            "fix(ui): Resolved an issue in ProfileTab where 'Lifetime' tier text was invisible due to a CSS class resolution error (changed text-amber-600 to text-amber-500).",
+            "fix(auth): Removed optimistic UI state updates during login that caused users to temporarily flash to the 'free' tier when logging in or after reconnecting."
+        ]
+    },
     {
         version: "5.5.186",
         date: "2026-07-24",
