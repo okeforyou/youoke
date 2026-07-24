@@ -319,18 +319,20 @@ export const Sidebar = memo(() => {
 
                 {/* Expiry Banner (Expiring Soon) */}
                 {mounted && user?.expiryStatus?.isExpiringSoon && (
-                    <div className={clsx(
-                        "mt-4 bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-500 rounded-xl p-3 text-white transition-all overflow-hidden flex flex-col items-center justify-center shadow-sm",
-                        isSidebarCollapsed ? "hidden" : "block"
+                    <Link href="/profile" className={clsx(
+                        "mt-3 flex items-center justify-between bg-orange-50 dark:bg-orange-500/10 border border-orange-200/50 dark:border-orange-500/20 rounded-xl p-2.5 transition-all hover:bg-orange-100 dark:hover:bg-orange-500/20 group",
+                        isSidebarCollapsed ? "hidden" : "flex"
                     )}>
-                        <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider mb-2">
-                            <Star className="w-3.5 h-3.5 animate-pulse" />
-                            <span>หมดอายุในอีก {user.expiryStatus.daysRemaining} วัน!</span>
+                        <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-md bg-orange-100 dark:bg-orange-500/20 flex items-center justify-center text-orange-500 shrink-0">
+                                <Star className="w-3.5 h-3.5 animate-pulse" />
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[10px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-tight">หมดอายุในอีก {user.expiryStatus.daysRemaining} วัน</span>
+                                <span className="text-[9px] text-orange-500/80 font-semibold group-hover:underline">คลิกเพื่อต่ออายุ</span>
+                            </div>
                         </div>
-                        <Link href="/profile" className="block text-center bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg text-[10px] font-black transition-all border border-white/30 w-full">
-                            ต่ออายุเลย
-                        </Link>
-                    </div>
+                    </Link>
                 )}
 
                 {/* Version Info (Standard Gray & Linked) */}
