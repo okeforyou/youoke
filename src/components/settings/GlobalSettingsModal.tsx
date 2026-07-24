@@ -1,4 +1,5 @@
 import React, { useState, Fragment } from 'react';
+import { useRouter } from 'next/router';
 import { Dialog, Transition } from '@headlessui/react';
 import { 
     XMarkIcon, 
@@ -7,7 +8,8 @@ import {
     ChevronLeftIcon,
     CheckCircleIcon,
     CloudArrowUpIcon,
-    BookOpenIcon
+    BookOpenIcon,
+    InformationCircleIcon
 } from '@heroicons/react/24/outline';
 import { useSystem } from '@/core/container/SystemContext';
 import ProfileTab from './tabs/ProfileTab';
@@ -25,6 +27,7 @@ export type SettingsTabId = 'profile' | 'packages' | 'announcements' | 'cloudsyn
 
 export default function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsModalProps) {
     const { user } = useSystem().auth();
+    const router = useRouter();
     const [activeTab, setActiveTab] = useState<SettingsTabId>('profile');
     const [mobileView, setMobileView] = useState<'list' | 'detail'>('list');
 
@@ -33,7 +36,8 @@ export default function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsM
         { id: 'packages', label: 'แพ็กเกจ VIP', icon: SparklesIcon, group: 'ระบบสมาชิก' },
         { id: 'cloudsync', label: 'พื้นที่จัดเก็บ & สำรองข้อมูล', icon: CloudArrowUpIcon, group: 'ข้อมูล' },
         { id: 'announcements', label: 'ประกาศข่าว', icon: CheckCircleIcon, group: 'ข่าวสาร' },
-        { id: 'guide', label: 'คู่มือการใช้งาน YouOke', icon: BookOpenIcon, group: 'ช่วยเหลือ' },
+        { id: 'guide', label: 'เกี่ยวกับ YouOke', icon: InformationCircleIcon, group: 'ช่วยเหลือ' },
+        { id: 'tutorial', label: 'คู่มือการใช้งาน', icon: BookOpenIcon, group: 'ช่วยเหลือ', action: () => { onClose(); router.push('/tutorial'); } },
     ];
 
     const groupedItems = sidebarItems.reduce((acc, item) => {
@@ -112,6 +116,10 @@ export default function GlobalSettingsModal({ isOpen, onClose }: GlobalSettingsM
                                                         <button
                                                             key={item.id}
                                                             onClick={() => {
+                                                                if ('action' in item && typeof item.action === 'function') {
+                                                                    item.action();
+                                                                    return;
+                                                                }
                                                                 setActiveTab(item.id as SettingsTabId);
                                                                 setMobileView('detail');
                                                             }}
