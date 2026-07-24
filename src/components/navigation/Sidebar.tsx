@@ -253,22 +253,22 @@ export const Sidebar = memo(() => {
                                                         (user?.role === 'admin' || user?.role === 'owner') ? "text-primary" : "text-gray-500 dark:text-zinc-500"
                                         )}>
                                             {(() => {
-                                                if (user?.role === 'owner') return 'เจ้าของ';
-                                                if (user?.role === 'admin') return 'ผู้ดูแล';
-
                                                 const status = user?.membership?.status;
                                                 const type = user?.membership?.type;
 
                                                 if (status === 'pending') return 'รออนุมัติ';
                                                 if (status === 'expired') return 'หมดอายุ';
 
-                                                if (type === 'lifetime') return 'ตผช. (PRO)';
+                                                if (type === 'lifetime') return 'ตลอดชีพ (PRO)';
                                                 if (type === 'yearly') return 'รายปี (PRO)';
                                                 if (type === 'monthly') return 'รายเดือน';
                                                 if (type === 'day_pass') return 'รายวัน';
                                                 if (type === 'trial') return 'ทดลองใช้ (ACTIVE)';
 
-                                                return 'สมาชิก';
+                                                if (user?.role === 'owner') return 'เจ้าของระบบ';
+                                                if (user?.role === 'admin') return 'ผู้ดูแลระบบ';
+
+                                                return 'สมาชิกทั่วไป';
                                             })()}
                                         </span>
                                     </div>
