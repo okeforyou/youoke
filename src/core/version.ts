@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.184";
+export const SYSTEM_VERSION = "5.5.185";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.185",
+        date: "2026-07-24",
+        changes: [
+            "fix: Removed aggressive auto-downgrade logic in useAuthStore to prevent premium users from falling to free tier.",
+            "fix: Ensure Guest users are prompted with LimitModal when attempting to play songs without login."
+        ]
+    },
     {
         version: "5.5.184",
         date: "2026-07-23",

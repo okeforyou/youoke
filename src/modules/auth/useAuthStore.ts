@@ -300,245 +300,56 @@ export const useAuthStore = create<UserState & AuthActions>()(
 
                             if (userSnap.exists()) {
                                 const userData = userSnap.data();
+                                
+                                // Basic data mapping
+                                let role = userData.role || 'user';
+                                const isOwnerEmail = firebaseUser.email === 'boonyanone@gmail.com' || firebaseUser.email === 'youoke.okeforyou@gmail.com';
+                                if (isOwnerEmail) role = 'owner';
+                                const isAdmin = role === 'admin' || role === 'owner';
+
+                                // Determine Premium Status
+                                // Trust the database: if they are marked as premium, they are premium.
+                                // If they are admin, they are inherently premium.
+                                const isPremium = userData.isPremium === true || isAdmin;
+                                
+                                // Membership data mapping
                                 let membership = userData.membership || DEFAULT_MEMBERSHIP;
+                                let tier = userData.tier || (isPremium ? 'premium' : 'free');
 
-                                // --- START: DUAL-DATABASE MEMBERSHIP RECONCILIATION ---
-                                const fsExpiresAt = parseDateVal(membership?.expiresAt);
-                                const rtdbExpiresAt = parseDateVal(rtdbData?.subscription?.endDate);
-                                
-                                const isFsLifetime = membership?.type === 'lifetime' || membership?.type === 'permanent' || userData.tier === 'lifetime' || (membership?.expiresAt === null && membership?.type && !['free', 'trial', 'day_pass'].includes(membership.type));
-                                const isRtdbLifetime = rtdbData?.tier === 'lifetime' || rtdbData?.subscription?.plan === 'lifetime';
-                                
-                                const trueIsLifetime = isFsLifetime || isRtdbLifetime;
-                                
-                                if (!trueIsLifetime && rtdbExpiresAt) {
-                                    // If RTDB has a valid expiry that is fresher than Firestore
-                                    if (!fsExpiresAt || rtdbExpiresAt > fsExpiresAt) {
-                                        if (rtdbExpiresAt > new Date()) {
-                                            console.log('🩹 [AuthStore] RTDB has fresher active subscription. Reconciling in-memory...');
-                                            membership = {
-                                                type: rtdbData.subscription?.plan || rtdbData.tier || 'monthly',
-                                                status: 'active',
-                                                startedAt: membership?.startedAt || new Date().toISOString(),
-                                                expiresAt: rtdbExpiresAt,
-                                                showAds: false
-                                            };
-                                            userData.tier = membership.type;
-                                            userData.isPremium = true;
-                                        }
-                                    }
-                                }
-                                // --- END: DUAL-DATABASE MEMBERSHIP RECONCILIATION ---
+                                // Check Expiry ONLY to show UI alerts, DO NOT downgrade their actual tier or block them aggressively
+                                // We trust the backend/admin to manage the `isPremium` flag properly.
+                                let expiryStatus = {
+                                    isExpiringSoon: false,
+                                    daysRemaining: 0,
+                                    isExpired: false
+                                };
 
-                                // 👑 [HARDENED LIFETIME SHIELD] - Ultimate active self-healing
-                                const isLifetime = trueIsLifetime;
+                                if (membership.expiresAt) {
+                                    const expiry = parseDateVal(membership.expiresAt);
+                                    if (expiry) {
+                                        const now = new Date();
+                                        const isExpired = now > expiry;
+                                        const diffMs = expiry.getTime() - now.getTime();
+                                        const daysRemaining = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
-                                if (isLifetime) {
-                                    console.log('👑 [AuthStore] Lifetime Member Shield Activated. Auto-healing...');
-                                    
-                                    // 1. Force the correct values in client-side state memory
-                                    membership = {
-                                        ...membership,
-                                        type: 'lifetime',
-                                        status: 'active',
-                                        expiresAt: null
-                                    };
-                                    userData.isPremium = true;
-                                    userData.tier = 'lifetime';
-                                    if (userData.role !== 'admin' && userData.role !== 'owner') {
-                                        userData.role = 'premium';
-                                    }
+                                        expiryStatus = {
+                                            isExpiringSoon: !isExpired && daysRemaining <= 3 && daysRemaining >= 0,
+                                            daysRemaining,
+                                            isExpired
+                                        };
 
-                                    // 2. Self-heal Firestore if out of sync
-                                    const needsFirestoreHealing = 
-                                        userData.membership?.type !== 'lifetime' ||
-                                        userData.membership?.status !== 'active' ||
-                                        userData.membership?.expiresAt !== null ||
-                                        userData.isPremium !== true ||
-                                        userData.tier !== 'lifetime' ||
-                                        (userData.role !== 'admin' && userData.role !== 'owner' && userData.role !== 'premium');
-
-                                    if (needsFirestoreHealing) {
-                                        console.log('🩹 [AuthStore] Healing Lifetime data in Firestore...');
-                                        const { updateDoc } = await import('firebase/firestore');
-                                        updateDoc(userRef, {
-                                            'membership.type': 'lifetime',
-                                            'membership.status': 'active',
-                                            'membership.expiresAt': null,
-                                            isPremium: true,
-                                            tier: 'lifetime',
-                                            role: userData.role
-                                        }).catch(e => console.error('Firestore lifetime repair failed', e));
-                                    }
-
-                                    // 3. Self-heal Realtime DB if out of sync
-                                    if (realtimeDb) {
-                                        const rtdbPath = `users/${firebaseUser.uid}`;
-                                        const needsRtdbHealing = 
-                                            !rtdbData ||
-                                            rtdbData.role !== userData.role ||
-                                            rtdbData.tier !== 'lifetime' ||
-                                            rtdbData.subscription?.plan !== 'lifetime' ||
-                                            rtdbData.subscription?.status !== 'active' ||
-                                            rtdbData.subscription?.endDate !== null;
-
-                                        if (needsRtdbHealing) {
-                                            console.log('🩹 [AuthStore] Healing Lifetime data in RealtimeDB...');
-                                            rtdbUpdate(ref(realtimeDb, rtdbPath), {
-                                                role: userData.role,
-                                                tier: 'lifetime',
-                                                'subscription/plan': 'lifetime',
-                                                'subscription/status': 'active',
-                                                'subscription/endDate': null
-                                            }).catch(e => console.error('RTDB lifetime repair failed', e));
-                                        }
-                                    }
-                                } else if (membership.expiresAt) {
-                                    const expiry = parseDateVal(membership.expiresAt) || new Date(0);
-                                    const now = new Date();
-                                    const isExpired = now > expiry;
-
-                                    // Calculate days remaining
-                                    const diffMs = expiry.getTime() - now.getTime();
-                                    const daysRemaining = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-
-                                    // 🛡️ [ACTIVE SUB SHIELD] - Self-heal Firestore and RTDB for active monthly/yearly
-                                    if (!isExpired) {
-                                        const expectedType = membership.type || 'monthly';
-                                        
-                                        // 1. Force state memory correctly
-                                        userData.isPremium = true;
-                                        userData.tier = expectedType;
-                                        if (userData.role !== 'admin' && userData.role !== 'owner') {
-                                            userData.role = 'premium';
-                                        }
-
-                                        // 2. Heal Firestore if out of sync
-                                        const needsFsHealing = 
-                                            userData.membership?.type !== expectedType ||
-                                            userData.membership?.status !== 'active' ||
-                                            !userData.membership?.expiresAt ||
-                                            userData.isPremium !== true ||
-                                            userData.tier !== expectedType ||
-                                            (userData.role !== 'admin' && userData.role !== 'owner' && userData.role !== 'premium');
-
-                                        if (needsFsHealing) {
-                                            console.log('🩹 [AuthStore] Healing Active Sub data in Firestore...');
-                                            const { updateDoc } = await import('firebase/firestore');
-                                            updateDoc(userRef, {
-                                                'membership.type': expectedType,
-                                                'membership.status': 'active',
-                                                'membership.expiresAt': expiry,
-                                                isPremium: true,
-                                                tier: expectedType,
-                                                role: userData.role
-                                            }).catch(e => console.error('Firestore sub repair failed', e));
-                                        }
-
-                                        // 3. Heal RTDB if out of sync
-                                        if (realtimeDb) {
-                                            const rtdbPath = `users/${firebaseUser.uid}`;
-                                            const needsRtdbHealing = 
-                                                !rtdbData ||
-                                                rtdbData.role !== userData.role ||
-                                                rtdbData.tier !== expectedType ||
-                                                rtdbData.subscription?.plan !== expectedType ||
-                                                rtdbData.subscription?.status !== 'active' ||
-                                                parseDateVal(rtdbData.subscription?.endDate)?.getTime() !== expiry.getTime();
-
-                                            if (needsRtdbHealing) {
-                                                console.log('🩹 [AuthStore] Healing Active Sub data in RealtimeDB...');
-                                                rtdbUpdate(ref(realtimeDb, rtdbPath), {
-                                                    role: userData.role,
-                                                    tier: expectedType,
-                                                    'subscription/plan': expectedType,
-                                                    'subscription/status': 'active',
-                                                    'subscription/endDate': expiry.toISOString()
-                                                }).catch(e => console.error('RTDB sub repair failed', e));
-                                            }
-                                        }
-                                    }
-
-                                    if (isExpired && membership.status !== 'expired') {
-                                        // 👑 v4.9.140: NEVER Downgrade Admins/Owners
-                                        if (userData.role === 'admin' || userData.role === 'owner' || firebaseUser.email === 'boonyanone@gmail.com' || firebaseUser.email === 'youoke.okeforyou@gmail.com') {
-                                            console.log('🛡️ [AuthStore] Admin detected. Skipping expiry downgrade.');
-                                            membership.status = 'active'; // Force active
-                                            membership.type = 'lifetime'; // Force lifetime view
-                                        } else {
-                                            console.warn('⚠️ Membership Expired! Downgrading to Free (In-Memory Only)...');
-                                            membership = {
-                                                ...EXPIRED_MEMBERSHIP
-                                            };
-                                            // ปรับแก้เฉพาะ State ในหน่วยความจำบราวเซอร์ (ไม่เขียนทับฐานข้อมูลหลัก)
-                                            userData.isPremium = false;
-                                            userData.tier = 'free';
-                                            userData.role = 'user';
-
-                                            // Show Alert for recently expired users
+                                        if (expiryStatus.isExpiringSoon || (isExpired && !isAdmin)) {
                                             set({ showExpiryAlert: true });
                                         }
-                                    } else if (!isExpired && daysRemaining <= 3 && daysRemaining >= 0) {
-                                        // 🔔 Warn user if expiring soon (last 3 days)
-                                        set({ showExpiryAlert: true });
-                                    }
-
-                                    // Store status in UserData for UI consumption
-                                    userData.expiryStatus = {
-                                        isExpiringSoon: !isExpired && daysRemaining <= 3 && daysRemaining >= 0,
-                                        daysRemaining: daysRemaining,
-                                        isExpired: isExpired
-                                    };
-                                }
-
-                                // 👑 [HARDENED ROLE SECURITY] - v4.10.140
-                                // Always prioritize 'admin' or 'owner' roles if present in database OR email
-                                let role = userData.role || 'user';
-                                let isAdmin = false;
-
-                                const isOwnerEmail = firebaseUser.email === 'boonyanone@gmail.com' || firebaseUser.email === 'youoke.okeforyou@gmail.com';
-
-                                if (role === 'admin' || role === 'owner' || isOwnerEmail) {
-                                    if (isOwnerEmail) {
-                                        role = 'owner';
-                                    } else if (role !== 'owner') {
-                                        role = 'admin';
-                                    }
-                                    isAdmin = true;
-
-                                    const requiredMembership = {
-                                        ...membership,
-                                        type: 'lifetime',
-                                        status: 'active',
-                                        expiresAt: null
-                                    };
-
-                                    // 🛡️ v5.3.34: Pure Flat Shield - Force sync to Firestore to fix UI discrepancies in Admin Panel
-                                    if (userData.role !== role || userData.membership?.status !== 'active') {
-                                        console.log('🛡️ [AuthStore] Auto-Healing Admin Role & Lifetime Data in Firestore...');
-                                        const { updateDoc } = await import('firebase/firestore');
-                                        updateDoc(userRef, { 
-                                            role: role, 
-                                            membership: requiredMembership 
-                                        }).catch(e => console.warn('Admin self-healing failed', e));
-
-                                        if (realtimeDb) {
-                                            rtdbUpdate(ref(realtimeDb, `users/${firebaseUser.uid}`), {
-                                                role: role,
-                                            }).catch(e => console.warn('Admin RTDB self-healing failed', e));
-                                            rtdbUpdate(ref(realtimeDb, `users/${firebaseUser.uid}/subscription`), {
-                                                status: 'active',
-                                                plan: 'lifetime'
-                                            }).catch(e => console.warn('Admin RTDB sub healing failed', e));
+                                        
+                                        // Update memory status only (do not rewrite database)
+                                        if (isExpired && !isAdmin) {
+                                            membership.status = 'expired';
                                         }
                                     }
-
-                                    membership = requiredMembership;
-
-                                    console.log(`👑 [AuthStore] ${role.toUpperCase()} Identified: Shielded Session Active`);
                                 }
 
-                                // 🛡️ SELF-HEALING: SYNC MISSING photoURL FROM AUTH PROVIDER
+                                // Handle Missing photoURL
                                 if (!userData.photoURL && firebaseUser.photoURL) {
                                     console.log('🩹 [AuthStore] Healing missing photoURL in Firestore...');
                                     const { updateDoc } = await import('firebase/firestore');
@@ -554,9 +365,10 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                             `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.displayName || firebaseUser.displayName || 'YouOke')}&background=000&color=fff&bold=true`,
                                         role: role,
                                         isAdmin: isAdmin,
-                                        isPremium: userData.isPremium || !!isAdmin,
-                                        tier: userData.tier || (isAdmin ? 'lifetime' : 'free'),
+                                        isPremium: isPremium,
+                                        tier: tier,
                                         membership: membership,
+                                        expiryStatus: expiryStatus,
                                         installed_modules: userData.installed_modules || [],
                                         quota: userData.quota || undefined,
                                         isYouTubeConnected: userData.isYouTubeConnected || firebaseUser.providerData.some(p => p.providerId === 'google.com'),
@@ -839,6 +651,8 @@ export const useAuthStore = create<UserState & AuthActions>()(
                     photoURL: null,
                     role: 'admin',
                     isAdmin: true,
+                    isPremium: true,
+                    tier: 'yearly',
                     membership: {
                         type: 'yearly',
                         status: 'active',
