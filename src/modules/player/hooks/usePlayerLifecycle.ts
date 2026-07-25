@@ -76,7 +76,7 @@ export const usePlayerLifecycle = (currentSource: string | null, showDjOverlay: 
         if (user) {
             // Logged in user: use their quota from profile
             currentCount = user.quota?.used || 0;
-            limit = user.quota?.daily_limit || maxDailySongs; // Fallback to plan limit
+            limit = user.quota?.daily_limit !== undefined ? user.quota.daily_limit : maxDailySongs; // Fallback to plan limit
             
             // 🛡️ UNLIMITED CHECK: If they are on any premium plan or are Admin
             const isUnlimited = 
@@ -104,8 +104,8 @@ export const usePlayerLifecycle = (currentSource: string | null, showDjOverlay: 
 
         // 2. Check Limit (Block if zero or reached)
         // If limit is -1, it's unlimited. If limit is 0, it's blocked.
-        if (limit !== -1 && currentCount >= limit && limit > 0) {
-            console.log("⛔ Daily limit reached! Blocking playback.");
+        if (limit !== -1 && currentCount >= limit) {
+            console.log(`⛔ Daily limit reached! Blocking playback. (${currentCount}/${limit})`);
             usePlayerStore.setState({ isPlaying: false });
             setLimitModalOpen(true);
             return;

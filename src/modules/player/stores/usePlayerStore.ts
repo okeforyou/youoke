@@ -328,7 +328,7 @@ export const usePlayerStore = create<PlayerStore>()(
                     }
                     
                     let currentUsed = authUser.quota?.used || 0;
-                    let dailyLimit = authUser.quota?.daily_limit || 0;
+                    let dailyLimit = authUser.quota?.daily_limit !== undefined ? authUser.quota.daily_limit : 0;
 
                     const isPremium = (['premium', 'monthly', 'yearly', 'lifetime', 'day_pass', 'trial'].includes(authUser.membership?.type || '') && authUser.membership?.status === 'active') || authUser.role === 'admin';
                     if (isPremium) dailyLimit = -1; // Unlimited
@@ -339,8 +339,9 @@ export const usePlayerStore = create<PlayerStore>()(
                     }
 
                     // If limit reached for the logged-in user, block adding and show modal
-                    if (dailyLimit !== -1 && currentUsed >= dailyLimit && dailyLimit > 0) {
-                        console.warn("🚫 Global Gatekeeper: Daily limit reached on Host. Blocking addition.");
+                    // We remove `&& dailyLimit > 0` because if dailyLimit is 0, they should be blocked immediately.
+                    if (dailyLimit !== -1 && currentUsed >= dailyLimit) {
+                        console.warn(`🚫 Global Gatekeeper: Daily limit reached on Host (${currentUsed}/${dailyLimit}). Blocking addition.`);
                         useUIStore.getState().setLimitModalOpen(true);
                         return {};
                     }

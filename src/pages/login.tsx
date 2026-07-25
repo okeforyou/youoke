@@ -217,15 +217,15 @@ export default function LoginPage() {
                     <div className="max-w-xl mx-auto lg:mx-0">
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full text-[10px] font-black uppercase tracking-widest mb-6">
                             <Zap size={14} fill="currentColor" />
-                            <span>{user ? 'เชื่อมบัญชี YouTube รับสิทธิเพิ่ม' : 'ทดลองใช้ฟรี 1 วัน'}</span>
+                            <span>{user ? 'เชื่อมบัญชี YouTube รับสิทธิเพิ่ม' : 'ระบบค้นหาและจัดการคิวเพลง'}</span>
                         </div>
 
                         <h2 className="text-3xl lg:text-5xl font-black text-zinc-950 leading-[1.1] tracking-tighter mb-6">
-                            ร้องคาราโอเกะ<br/>แบบมืออาชีพที่บ้านคุณ
+                            สนุกกับคาราโอเกะ<br/>ด้วย YouTube
                         </h2>
 
-                        <p className="text-zinc-950 text-sm lg:text-base font-black mb-10 leading-relaxed max-w-md opacity-70">
-                           เข้าสู่ระบบเพื่อจัดการคิวเพลงโปรดผ่านสมาร์ทโฟน และร้องเพลงจากคลัง YouTube ที่ใหญ่ที่สุดในโลก
+                        <p className="text-zinc-950 text-xs lg:text-sm font-bold mb-10 leading-relaxed max-w-md opacity-70">
+                           เราเป็นเพียงระบบค้นหา จัดการคิวเพลง และตัดเสียงร้องด้วย AI เราไม่ได้เป็นผู้อัปโหลดหรือจัดเก็บเนื้อหา การดึงข้อมูลอ้างอิงจากกฎของ YouTube โดยตรง ผู้ใช้งานต้องรับผิดชอบด้วยตนเองในกรณีที่นำไปใช้ในเชิงพาณิชย์
                         </p>
 
                         <div className="grid grid-cols-2 gap-x-4 lg:gap-x-10 gap-y-6 lg:gap-y-8 mb-12">
@@ -243,7 +243,7 @@ export default function LoginPage() {
                         </div>
 
                         <div className="lg:hidden space-y-3">
-                            <button onClick={() => { setIsLogin(false); setShowIntro(false); }} className="w-full h-14 bg-zinc-900 text-white font-black rounded-3xl active:scale-95 transition-all text-base border-none shadow-none">สมัครสมาชิกฟรี</button>
+                            <button onClick={() => { setIsLogin(false); setShowIntro(false); }} className="w-full h-14 bg-zinc-900 text-white font-black rounded-3xl active:scale-95 transition-all text-base border-none shadow-none">สร้างบัญชีใหม่</button>
                             <button onClick={() => { setIsLogin(true); setShowIntro(false); }} className="w-full h-14 bg-white border border-zinc-200 text-zinc-900 font-black rounded-3xl active:scale-95 transition-all text-base shadow-none">เข้าสู่ระบบ</button>
                         </div>
                     </div>
