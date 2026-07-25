@@ -109,11 +109,11 @@ export default function GuideTab() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-white dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 shadow-sm flex flex-col justify-center">
                     <div className="flex items-center gap-2 mb-2">
-                        <CheckCircleIcon className="w-5 h-5 text-emerald-500" />
-                        <h4 className="text-xs font-bold text-zinc-900 dark:text-white">เริ่มต้นใช้งานได้ฟรี</h4>
+                        <ExclamationCircleIcon className="w-5 h-5 text-amber-500" />
+                        <h4 className="text-xs font-bold text-zinc-900 dark:text-white">ข้อจำกัดความรับผิดชอบ</h4>
                     </div>
                     <p className="text-[10px] text-zinc-500 font-medium leading-relaxed ml-7">
-                        ออกแบบมาเพื่อปาร์ตี้เล็กๆ ในบ้าน สามารถใช้งานพื้นฐานได้ฟรีตลอดชีพ หากต้องการฟีเจอร์ AI ค่อยอัปเกรด
+                        ระบบทำหน้าที่ค้นหา จัดการคิวเพลง และมี AI ช่วยตัดเสียงร้องเท่านั้น เราไม่ได้เป็นผู้อัปโหลดเนื้อหา โดยระบบดึงข้อมูลผ่านบัญชีของคุณเอง ผู้ใช้ต้องรับผิดชอบหากนำไปใช้เชิงพาณิชย์ตามกฎของ YouTube
                     </p>
                 </div>
                 
