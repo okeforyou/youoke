@@ -702,31 +702,56 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
             </p>
             <a 
               href="youoke://start" 
-              className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg shadow-red-500/30 transition-all hover:-translate-y-0.5 active:translate-y-0"
+              className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg shadow-red-500/30 transition-all hover:-translate-y-0.5 active:translate-y-0 mb-4"
             >
               เปิดโปรแกรมเบื้องหลัง (คลิกที่นี่)
             </a>
+            
+            <div className="flex gap-3 text-xs text-red-700/80 dark:text-red-300/80 items-center justify-center">
+              <span>ยังไม่มีโปรแกรมติดตั้งในเครื่อง?</span>
+              <a href="/api/download-plugin?os=win" target="_blank" className="hover:underline font-bold">โหลดสำหรับ Windows</a>
+              <span>|</span>
+              <a href="/api/download-plugin?os=mac" target="_blank" className="hover:underline font-bold">โหลดสำหรับ Mac</a>
+            </div>
           </div>
         ) : activeIndex === 3 && bridgeStatus === 'outdated' ? (
-          <div className="mx-4 flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-orange-100 dark:border-orange-900/30 rounded-3xl bg-orange-50/50 dark:bg-orange-900/10 transition-colors">
-            <a 
-              href="youoke://start" 
-              className="w-20 h-20 bg-white dark:bg-zinc-900 rounded-full flex items-center justify-center mb-6 shadow-sm hover:scale-110 transition-transform cursor-pointer"
+          <div className="mx-4 flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-orange-100 dark:border-orange-900/30 rounded-3xl bg-orange-50/50 dark:bg-orange-900/10 transition-colors">
+            <div 
+              className="w-20 h-20 bg-white dark:bg-zinc-900 rounded-full flex items-center justify-center mb-6 shadow-sm"
             >
               <CpuChipIcon className="w-8 h-8 text-orange-500" />
-            </a>
+            </div>
             <h3 className="text-xl font-black text-orange-600 dark:text-orange-400 leading-tight">
               โปรแกรมเบื้องหลังเป็นเวอร์ชันเก่า
             </h3>
-            <p className="text-gray-500 dark:text-zinc-500 mt-2 mb-6 max-w-sm text-sm font-medium">
-              ฟีเจอร์คลังเพลง AI ต้องการ YouOke Server เวอร์ชันล่าสุด
+            <p className="text-gray-500 dark:text-zinc-500 mt-2 mb-6 max-w-md text-sm font-medium">
+              คุณจำเป็นต้องดาวน์โหลดและติดตั้ง YouOke Plugin เวอร์ชันล่าสุด<br/>
+              เพื่อใช้งานฟีเจอร์นี้ได้อย่างสมบูรณ์แบบ
             </p>
-            <a 
-              href="youoke://start" 
-              className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 transition-all hover:-translate-y-0.5 active:translate-y-0"
-            >
-              เปิดโปรแกรมเบื้องหลัง (เวอร์ชันใหม่)
-            </a>
+            <div className="flex flex-col sm:flex-row gap-4 w-full px-6 sm:px-0 sm:w-auto">
+              <a 
+                href="/api/download-plugin?os=win" 
+                target="_blank"
+                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center"
+              >
+                ดาวน์โหลดสำหรับ Windows
+              </a>
+              <a 
+                href="/api/download-plugin?os=mac" 
+                target="_blank"
+                className="px-6 py-2.5 bg-zinc-800 hover:bg-black dark:bg-zinc-700 dark:hover:bg-zinc-600 text-white font-bold rounded-xl shadow-lg shadow-zinc-500/30 transition-all hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center"
+              >
+                ดาวน์โหลดสำหรับ Mac
+              </a>
+            </div>
+            <div className="text-xs text-orange-700/80 dark:text-orange-300/80 mt-8 max-w-sm text-left bg-orange-100/50 dark:bg-orange-900/20 p-4 rounded-xl">
+              <p className="font-bold mb-1">คำแนะนำการอัปเดต:</p>
+              <ul className="list-disc pl-4 space-y-1">
+                <li><span className="font-semibold">Windows:</span> กดติดตั้งทับเวอร์ชันเดิมได้เลย</li>
+                <li><span className="font-semibold">Mac:</span> ลากแอปลงโฟลเดอร์ Applications เพื่อลงทับ</li>
+              </ul>
+              <p className="mt-2 text-[10px] text-orange-600/60 dark:text-orange-400/60">* กรุณาปิดแอปเก่าที่ค้างอยู่ (คลิกขวา Quit ที่เมนูบาร์) ก่อนติดตั้งใหม่</p>
+            </div>
           </div>
         ) : (
           <>
