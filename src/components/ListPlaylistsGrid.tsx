@@ -330,6 +330,23 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
         });
         const enriched = await Promise.all(enrichedPromises);
         setAiCacheList(enriched);
+        
+        // Sync actual modes to AI store so it shows 4CH correctly in Queue
+        const currentJobs = useAIVocalStore.getState().jobs;
+        const updates: Record<string, any> = {};
+        enriched.forEach(item => {
+          if (currentJobs[item.video_id]?.mode !== item.mode || currentJobs[item.video_id]?.status !== 'ready') {
+            updates[item.video_id] = { 
+              status: 'ready', 
+              progress: 100, 
+              message: 'ดึงข้อมูลจากแคชสำเร็จ!', 
+              mode: item.mode 
+            };
+          }
+        });
+        if (Object.keys(updates).length > 0) {
+          useAIVocalStore.setState(prev => ({ jobs: { ...prev.jobs, ...updates } }));
+        }
       }
     } catch (e) {
       console.error("Failed to fetch AI Cache", e);
@@ -732,8 +749,14 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
                       badgeColor={item.mode === 'pro' ? 'bg-gradient-to-r from-purple-500 to-indigo-500' : 'bg-primary'}
                       onClick={() => {
                         const playerStore = usePlayerStore.getState();
-                        playerStore.setSearchTerm(item.video_id);
-                        playerStore.setActiveIndex(0); 
+                        playerStore.addToQueue({
+                          id: item.video_id,
+                          videoId: item.video_id,
+                          title: item.title,
+                          author: item.author || 'Unknown',
+                          thumbnail: item.thumbnail,
+                          sourceType: 'youtube'
+                        });
                       }}
                       onDelete={() => deleteAiCache(item.video_id)}
                     />
