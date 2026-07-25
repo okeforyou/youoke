@@ -219,6 +219,55 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
         }
     }, [isPlaying, isAiReady, aiMode]);
 
+    // Continuous Sync Loop for AI Audio to prevent drift
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (isPlaying && isAiReady) {
+            interval = setInterval(() => {
+                try {
+                    const ytPlayer = ytPlayerRef.current;
+                    if (!ytPlayer || typeof ytPlayer.getPlayerState !== 'function') return;
+                    
+                    const state = ytPlayer.getPlayerState();
+                    // If YouTube is buffering or paused internally, ensure AI tracks pause!
+                    if (state !== 1) {
+                        vocalRef.current?.pause();
+                        instrumentalRef.current?.pause();
+                        drumsRef.current?.pause();
+                        bassRef.current?.pause();
+                        otherRef.current?.pause();
+                        return;
+                    }
+                    
+                    const ytTime = ytPlayer.getCurrentTime();
+                    if (typeof ytTime !== 'number' || ytTime === 0) return;
+                    
+                    const syncRef = (ref: React.RefObject<HTMLAudioElement>) => {
+                        if (!ref.current) return;
+                        // If drift is more than 0.3s, force sync
+                        if (Math.abs(ref.current.currentTime - ytTime) > 0.3) {
+                            console.log(`⏱️ Syncing Audio Drift: ${ref.current.currentTime} -> ${ytTime}`);
+                            ref.current.currentTime = ytTime;
+                        }
+                        if (ref.current.paused) {
+                            ref.current.play().catch(()=>{});
+                        }
+                    };
+
+                    syncRef(vocalRef);
+                    if (aiMode === 'pro') {
+                        syncRef(drumsRef);
+                        syncRef(bassRef);
+                        syncRef(otherRef);
+                    } else {
+                        syncRef(instrumentalRef);
+                    }
+                } catch (e) {}
+            }, 500); // Check twice a second
+        }
+        return () => clearInterval(interval);
+    }, [isPlaying, isAiReady, aiMode]);
+
     // --- RENDERERS ---
 
     // 1. MIDI
@@ -327,26 +376,33 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
             } catch (e) {}
         }
 
-        if (isReady && (event.data === 1 || event.data === 3)) {
+        if (isReady && (event.data === 1 || event.data === 3 || event.data === 2)) {
             try { if (event.target.getIframe()) event.target.mute(); } catch (e) {}
             
-            // Event-driven sync on seek/buffering/play transition
             const ytTime = event.target.getCurrentTime();
-            if (typeof ytTime === 'number' && ytTime > 0) {
-                const syncRefPlay = (ref: React.RefObject<HTMLAudioElement>) => {
-                    if (!ref.current) return;
+            const shouldPlay = event.data === 1;
+
+            const syncRefAction = (ref: React.RefObject<HTMLAudioElement>) => {
+                if (!ref.current) return;
+                if (typeof ytTime === 'number' && ytTime > 0) {
                     if (Math.abs(ref.current.currentTime - ytTime) > 0.1) {
                         ref.current.currentTime = ytTime;
                     }
-                };
-                syncRefPlay(vocalRef);
-                if (aiMode === 'pro') {
-                    syncRefPlay(drumsRef);
-                    syncRefPlay(bassRef);
-                    syncRefPlay(otherRef);
-                } else {
-                    syncRefPlay(instrumentalRef);
                 }
+                if (shouldPlay) {
+                    if (ref.current.paused) ref.current.play().catch(()=>{});
+                } else {
+                    if (!ref.current.paused) ref.current.pause();
+                }
+            };
+
+            syncRefAction(vocalRef);
+            if (aiMode === 'pro') {
+                syncRefAction(drumsRef);
+                syncRefAction(bassRef);
+                syncRefAction(otherRef);
+            } else {
+                syncRefAction(instrumentalRef);
             }
         }
 
