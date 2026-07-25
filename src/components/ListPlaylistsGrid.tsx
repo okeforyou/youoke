@@ -89,6 +89,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
   const [youtubePlaylists, setYoutubePlaylists] = useState<any[]>([]);
   const [suggestPlaylists, setSuggestPlaylists] = useState<PlaylistItem[]>([]);
   const [latestPlaylists, setLatestPlaylists] = useState<PlaylistItem[]>([]);
+  const [aiCacheList, setAiCacheList] = useState<any[]>([]);
 
   // Use Player Store Actions
   const { clearQueue, reorderQueue, setCurrentIndex } = usePlayerStore();
@@ -127,8 +128,10 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
       getSuggestPlaylists();
     } else if (activeIndex === 2 && youtubePlaylists.length === 0 && user?.googleAccessToken) {
       getYoutubePlaylists();
+    } else if (activeIndex === 3 && aiCacheList.length === 0) {
+      getAiCacheList();
     }
-  }, [activeIndex, isLoadPlaylist, user, youtubePlaylists.length]);
+  }, [activeIndex, isLoadPlaylist, user, youtubePlaylists.length, aiCacheList.length]);
 
   // Update playlists when data changes OR when switching tabs
   useEffect(() => {
@@ -267,6 +270,58 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
       console.error("[YouTube Shell] 💥 Fetch Crash:", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const getAiCacheList = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("http://127.0.0.1:5050/cache/list");
+      const data = await res.json();
+      if (data.status === "success" && data.results) {
+        // Fetch metadata via noembed
+        const enrichedPromises = data.results.map(async (r: any) => {
+          try {
+            const ytRes = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${r.video_id}`);
+            const ytData = await ytRes.json();
+            return {
+              ...r,
+              title: ytData.title || r.video_id,
+              author: ytData.author_name || "Unknown",
+              thumbnail: `https://img.youtube.com/vi/${r.video_id}/mqdefault.jpg`
+            };
+          } catch (err) {
+            return {
+              ...r,
+              title: r.video_id,
+              author: "Unknown",
+              thumbnail: `https://img.youtube.com/vi/${r.video_id}/mqdefault.jpg`
+            };
+          }
+        });
+        const enriched = await Promise.all(enrichedPromises);
+        setAiCacheList(enriched);
+      }
+    } catch (e) {
+      console.error("Failed to fetch AI Cache", e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const deleteAiCache = async (videoId: string) => {
+    if (!confirm("ลบไฟล์เพลงที่แยกเสียงไว้นี้ออกจากเครื่องใช่หรือไม่?")) return;
+    try {
+      const res = await fetch(`http://127.0.0.1:5050/cache/${videoId}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.status === "success") {
+        setAiCacheList(prev => prev.filter(item => item.video_id !== videoId));
+        alertRef.current?.open();
+      } else {
+        alert(`Failed to delete: ${data.message}`);
+      }
+    } catch (e) {
+      alert("Error deleting file.");
     }
   };
 
@@ -499,12 +554,12 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
       <div className="flex flex-col md:flex-row items-center justify-between gap-6 px-4 py-4 mb-6">
         {/* Tabs - Animated Switch */}
         {user?.uid ? (
-          <div className="relative flex items-center bg-gray-100 dark:bg-zinc-900 rounded-2xl p-1 h-12 w-full max-w-[400px]">
-            {/* Sliding Active Background - Updated for 2 Tabs */}
+          <div className="relative flex items-center bg-gray-100 dark:bg-zinc-900 rounded-2xl p-1 h-12 w-full max-w-[500px]">
+            {/* Sliding Active Background - Updated for 3 Tabs */}
             <div
-              className="absolute top-1.5 bottom-1.5 w-[calc(50%-4px)] bg-white dark:bg-zinc-800 rounded-xl shadow-sm transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+              className="absolute top-1.5 bottom-1.5 w-[calc(33.33%-4px)] bg-white dark:bg-zinc-800 rounded-xl shadow-sm transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
               style={{
-                left: `calc(${activeIndex * 50}% + ${activeIndex === 0 ? '4px' : '0px'})`
+                left: `calc(${(activeIndex === 3 ? 2 : activeIndex) * 33.33}% + ${activeIndex === 0 ? '4px' : '2px'})`
               }}
             />
 
@@ -528,6 +583,17 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
             >
               <RectangleStackIcon className="w-4 h-4" />
               <span>ของฉัน</span>
+            </button>
+
+            <button
+              onClick={() => setActiveIndex(3)}
+              className={clsx(
+                "relative flex-1 flex items-center justify-center gap-2 h-full rounded-xl text-[12px] sm:text-[13px] font-bold transition-colors z-10",
+                activeIndex === 3 ? "text-gray-900 dark:text-white" : "text-gray-400 dark:text-zinc-600 hover:text-gray-600 dark:hover:text-zinc-400"
+              )}
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              <span>ไฟล์ AI</span>
             </button>
           </div>
         ) : (
@@ -574,14 +640,18 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
           </div>
         ) : (
           <>
-            {(activeIndex === 2 ? youtubePlaylists?.length === 0 : playlists?.length === 0) ? (
+            {(activeIndex === 3 ? aiCacheList?.length === 0 : (activeIndex === 2 ? youtubePlaylists?.length === 0 : playlists?.length === 0)) ? (
               <div className="mx-4 flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-gray-100 dark:border-zinc-800 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/20 transition-colors">
                 <div className="w-20 h-20 bg-white dark:bg-zinc-900 rounded-full flex items-center justify-center mb-6 shadow-sm">
                   <RectangleStackIcon className="w-8 h-8 text-gray-300 dark:text-zinc-700" />
                 </div>
-                <h3 className="text-xl font-black text-black dark:text-white leading-tight">ยังไม่มีเพลย์ลิสต์</h3>
+                <h3 className="text-xl font-black text-black dark:text-white leading-tight">
+                  {activeIndex === 3 ? "ยังไม่มีไฟล์ AI ในเครื่อง" : "ยังไม่มีเพลย์ลิสต์"}
+                </h3>
                 <p className="text-gray-500 dark:text-zinc-500 mt-2 mb-8 max-w-sm text-sm font-medium">
-                  {activeIndex === 2 
+                  {activeIndex === 3
+                    ? "คุณยังไม่มีไฟล์เพลงที่แยกเสียงเก็บไว้ในเครื่อง ลองค้นหาเพลงแล้วกดแยกเสียงดูนะครับ"
+                    : activeIndex === 2 
                     ? "เราไม่พบเพลย์ลิสต์ในบัญชี YouTube ของคุณ ลองสร้างเพลย์ลิสต์ใน YouTube ก่อนนะครับ"
                     : "เริ่มสร้างคอลเลกชันเพลงโปรดของคุณได้ง่ายๆ แค่กดปุ่มสร้างด้านล่าง"}
                 </p>
@@ -593,7 +663,28 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-x-6 gap-y-10 px-4">
-                {activeIndex === 2 ? (
+                {activeIndex === 3 ? (
+                  aiCacheList.map((item) => (
+                    <PlaylistCard
+                      key={item.video_id}
+                      id={item.video_id}
+                      name={item.title}
+                      count={1}
+                      thumbnail={item.thumbnail}
+                      videoId={item.video_id}
+                      type="ai_cache"
+                      activeIndex={activeIndex}
+                      badgeText={item.mode === 'pro' ? '4CH' : '2CH'}
+                      badgeColor={item.mode === 'pro' ? 'bg-gradient-to-r from-purple-500 to-indigo-500' : 'bg-primary'}
+                      onClick={() => {
+                        const playerStore = usePlayerStore.getState();
+                        playerStore.setSearchTerm(item.video_id);
+                        playerStore.setActiveIndex(0); 
+                      }}
+                      onDelete={() => deleteAiCache(item.video_id)}
+                    />
+                  ))
+                ) : activeIndex === 2 ? (
                   youtubePlaylists.map((item) => (
                     <PlaylistCard
                       key={item.id}

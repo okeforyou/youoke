@@ -25,6 +25,8 @@ interface CardV2Props {
     onLike?: () => void;
     activeIndex?: number;
     isRecommended?: boolean;
+    badgeText?: string;
+    badgeColor?: string;
 }
 
 export default function CardV2({
@@ -39,6 +41,8 @@ export default function CardV2({
     onLike,
     activeIndex = 0,
     isRecommended = false,
+    badgeText,
+    badgeColor = "bg-primary",
 }: CardV2Props) {
 
     // Logic: Image source or fallback - Use sddefault (640x480) for better quality than hq (480x360)
@@ -91,6 +95,14 @@ export default function CardV2({
                         </div>
                     </div>
                 )}
+
+                {badgeText && (
+                    <div className="absolute top-4 right-4 z-30 m-2">
+                        <div className={`badge ${badgeColor} shadow-md font-bold border-none text-white gap-1 h-6 px-3`}>
+                            {badgeText}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* 7. Info Section */}
@@ -109,13 +121,15 @@ export default function CardV2({
                 {/* 8. Action Buttons (Right) - SQUARES ONLY */}
                 {!isRecommended && (
                     <div className="flex items-center gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
-                        {activeIndex === 1 ? (
+                        {activeIndex === 1 || activeIndex === 3 ? (
                             <div className="dropdown dropdown-end dropdown-top">
                                 <button tabIndex={0} className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg text-gray-400 dark:text-zinc-500 hover:text-gray-900 dark:hover:text-white transition-colors">
                                     <EllipsisVerticalIcon className="w-5 h-5" />
                                 </button>
                                 <ul tabIndex={0} className="dropdown-content z-[50] menu p-1 shadow-xl bg-white dark:bg-zinc-900 rounded-xl w-32 border border-gray-100 dark:border-zinc-800 text-xs font-bold">
-                                    <li><a onClick={onEdit} className="dark:text-zinc-300 dark:hover:bg-zinc-800"><PencilIcon className="w-4 h-4" /> แก้ไข</a></li>
+                                    {activeIndex === 1 && (
+                                        <li><a onClick={onEdit} className="dark:text-zinc-300 dark:hover:bg-zinc-800"><PencilIcon className="w-4 h-4" /> แก้ไข</a></li>
+                                    )}
                                     <li><a onClick={onDelete} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10"><TrashIcon className="w-4 h-4" /> ลบ</a></li>
                                 </ul>
                             </div>

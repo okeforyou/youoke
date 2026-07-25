@@ -81,6 +81,62 @@ def search_youtube(q: str, limit: int = 5):
     except Exception as e:
         return {"status": "error", "message": f"Search failed: {str(e)}"}
 
+@app.get("/cache/list")
+def list_cache():
+    try:
+        if not os.path.exists(CACHE_DIR):
+            return {"status": "success", "results": []}
+        
+        results = []
+        for vid in os.listdir(CACHE_DIR):
+            song_dir = os.path.join(CACHE_DIR, vid)
+            if not os.path.isdir(song_dir):
+                continue
+                
+            vocal_m4a = os.path.join(song_dir, "vocals.m4a")
+            if not os.path.exists(vocal_m4a):
+                continue
+                
+            # Get folder size
+            total_size = sum(os.path.getsize(os.path.join(song_dir, f)) for f in os.listdir(song_dir) if os.path.isfile(os.path.join(song_dir, f)))
+            size_mb = total_size / (1024 * 1024)
+            
+            # Determine mode
+            mode = "basic"
+            if os.path.exists(os.path.join(song_dir, "drums.m4a")):
+                mode = "pro"
+                
+            # Get created time
+            created_at = os.path.getctime(vocal_m4a)
+            
+            results.append({
+                "video_id": vid,
+                "mode": mode,
+                "size_mb": round(size_mb, 2),
+                "created_at": created_at
+            })
+            
+        results.sort(key=lambda x: x["created_at"], reverse=True)
+        return {"status": "success", "results": results}
+    except Exception as e:
+        return {"status": "error", "message": f"Failed to list cache: {str(e)}"}
+
+@app.delete("/cache/{video_id}")
+def delete_cache(video_id: str):
+    try:
+        # validate video_id format to prevent directory traversal
+        if not video_id or ".." in video_id or "/" in video_id:
+            raise HTTPException(status_code=400, detail="Invalid video_id")
+            
+        song_dir = os.path.join(CACHE_DIR, video_id)
+        if os.path.exists(song_dir):
+            shutil.rmtree(song_dir)
+            return {"status": "success", "message": f"Deleted cache for {video_id}"}
+        else:
+            return {"status": "error", "message": "Cache not found"}
+    except Exception as e:
+        return {"status": "error", "message": f"Failed to delete cache: {str(e)}"}
+
 def get_ffmpeg_path():
     try:
         import imageio_ffmpeg
