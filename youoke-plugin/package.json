@@ -1,6 +1,6 @@
 {
   "name": "youoke-plugin",
-  "version": "1.0.29",
+  "version": "1.0.30",
   "description": "YouOke AI Vocal Separator Desktop Plugin",
   "main": "main.js",
   "scripts": {
@@ -15,7 +15,10 @@
     "productName": "YouOke Plugin",
     "mac": {
       "category": "public.app-category.music",
-      "target": ["dmg", "zip"],
+      "target": [
+        "dmg",
+        "zip"
+      ],
       "identity": "-"
     },
     "win": {
