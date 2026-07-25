@@ -26,10 +26,20 @@ function getServerExecutablePath() {
 
 function killExistingServer(callback) {
   const isWin = process.platform === 'win32';
-  const killCmd = isWin ? 'taskkill /F /IM youoke-server.exe /T' : 'killall -9 youoke-server';
-  exec(killCmd, (err) => {
-    // Ignore errors, call the callback when done
-    callback();
+  
+  // 1. Kill by process name
+  const killByName = isWin ? 'taskkill /F /IM youoke-server.exe /T' : 'killall -9 youoke-server';
+  
+  // 2. Kill whatever is holding port 5050
+  const killByPort = isWin 
+    ? 'for /f "tokens=5" %a in (\'netstat -aon ^| find ":5050" ^| find "LISTENING"\') do taskkill /F /PID %a'
+    : 'lsof -t -i:5050 | xargs kill -9';
+
+  // Run them sequentially and ignore errors
+  exec(killByName, () => {
+    exec(killByPort, () => {
+      callback();
+    });
   });
 }
 
