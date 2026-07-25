@@ -8,6 +8,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+import urllib.request
+import time
+import signal
+import socket
+import threading
+
+VERSION = "1.1.0"
+
 app = FastAPI()
 
 app.add_middleware(
@@ -136,6 +144,18 @@ def delete_cache(video_id: str):
             return {"status": "error", "message": "Cache not found"}
     except Exception as e:
         return {"status": "error", "message": f"Failed to delete cache: {str(e)}"}
+
+@app.get("/version")
+def get_version():
+    return {"status": "success", "version": VERSION}
+
+@app.post("/shutdown")
+def shutdown_server():
+    def kill_it():
+        time.sleep(0.5)
+        os.kill(os.getpid(), signal.SIGTERM)
+    threading.Thread(target=kill_it).start()
+    return {"status": "success", "message": "Shutting down old server instance..."}
 
 def get_ffmpeg_path():
     try:
@@ -380,4 +400,20 @@ if __name__ == "__main__":
         sys.exit(0)
 
     import uvicorn
+    
+    def check_and_kill_old_instance():
+        port = 5050
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            in_use = s.connect_ex(('127.0.0.1', port)) == 0
+        if in_use:
+            print(f"Port {port} is in use. Attempting to shutdown old instance...")
+            try:
+                req = urllib.request.Request("http://127.0.0.1:5050/shutdown", method="POST")
+                urllib.request.urlopen(req, timeout=2)
+                print("Shutdown command sent. Waiting for it to exit...")
+                time.sleep(2) # wait for old instance to die
+            except Exception as e:
+                print(f"Could not gracefully shutdown old instance: {e}")
+
+    check_and_kill_old_instance()
     uvicorn.run(app, host="127.0.0.1", port=5050)

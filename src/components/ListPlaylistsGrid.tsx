@@ -30,7 +30,8 @@ import {
   LockClosedIcon,
   PlayIcon,
   GlobeAltIcon,
-  XMarkIcon
+  XMarkIcon,
+  CpuChipIcon
 } from "@heroicons/react/24/solid";
 
 import { useAuthStore } from "@/modules/auth/useAuthStore";
@@ -90,6 +91,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
   const [suggestPlaylists, setSuggestPlaylists] = useState<PlaylistItem[]>([]);
   const [latestPlaylists, setLatestPlaylists] = useState<PlaylistItem[]>([]);
   const [aiCacheList, setAiCacheList] = useState<any[]>([]);
+  const [bridgeStatus, setBridgeStatus] = useState<'checking' | 'running' | 'outdated' | 'offline'>('checking');
 
   // Use Player Store Actions
   const { clearQueue, reorderQueue, setCurrentIndex } = usePlayerStore();
@@ -275,11 +277,38 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
 
   const getAiCacheList = async () => {
     setIsLoading(true);
+    setBridgeStatus('checking');
     try {
+      // 1. Check version first
+      let isOutdated = false;
+      try {
+        const verRes = await fetch("http://127.0.0.1:5050/version", { signal: AbortSignal.timeout(2000) });
+        if (verRes.ok) {
+          const verData = await verRes.json();
+          if (verData.version !== "1.1.0") {
+            isOutdated = true;
+          }
+        } else {
+          isOutdated = true; // /version doesn't exist in older versions
+        }
+      } catch (err) {
+        setBridgeStatus('offline');
+        setIsLoading(false);
+        return;
+      }
+
+      if (isOutdated) {
+        setBridgeStatus('outdated');
+        setIsLoading(false);
+        return;
+      }
+
+      setBridgeStatus('running');
+
+      // 2. Fetch cache list
       const res = await fetch("http://127.0.0.1:5050/cache/list");
       const data = await res.json();
       if (data.status === "success" && data.results) {
-        // Fetch metadata via noembed
         const enrichedPromises = data.results.map(async (r: any) => {
           try {
             const ytRes = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${r.video_id}`);
@@ -304,6 +333,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
       }
     } catch (e) {
       console.error("Failed to fetch AI Cache", e);
+      setBridgeStatus('offline');
     } finally {
       setIsLoading(false);
     }
@@ -592,7 +622,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
                 activeIndex === 3 ? "text-gray-900 dark:text-white" : "text-gray-400 dark:text-zinc-600 hover:text-gray-600 dark:hover:text-zinc-400"
               )}
             >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              <CpuChipIcon className="w-4 h-4" />
               <span>ไฟล์ AI</span>
             </button>
           </div>
@@ -637,6 +667,30 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
                 <div className="h-3 w-1/2 bg-gray-100 rounded animate-pulse"></div>
               </div>
             ))}
+          </div>
+        ) : activeIndex === 3 && bridgeStatus === 'offline' ? (
+          <div className="mx-4 flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-red-100 dark:border-red-900/30 rounded-3xl bg-red-50/50 dark:bg-red-900/10 transition-colors">
+            <div className="w-20 h-20 bg-white dark:bg-zinc-900 rounded-full flex items-center justify-center mb-6 shadow-sm">
+              <XMarkIcon className="w-8 h-8 text-red-500" />
+            </div>
+            <h3 className="text-xl font-black text-red-600 dark:text-red-400 leading-tight">
+              ไม่สามารถเชื่อมต่อโปรแกรมเบื้องหลังได้
+            </h3>
+            <p className="text-gray-500 dark:text-zinc-500 mt-2 mb-8 max-w-sm text-sm font-medium">
+              คุณจำเป็นต้องเปิดโปรแกรม YouOke Server (หรือ server.py) ในเครื่องของคุณ เพื่อดึงข้อมูลไฟล์ AI ที่แยกเสียงไว้
+            </p>
+          </div>
+        ) : activeIndex === 3 && bridgeStatus === 'outdated' ? (
+          <div className="mx-4 flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-orange-100 dark:border-orange-900/30 rounded-3xl bg-orange-50/50 dark:bg-orange-900/10 transition-colors">
+            <div className="w-20 h-20 bg-white dark:bg-zinc-900 rounded-full flex items-center justify-center mb-6 shadow-sm">
+              <CpuChipIcon className="w-8 h-8 text-orange-500" />
+            </div>
+            <h3 className="text-xl font-black text-orange-600 dark:text-orange-400 leading-tight">
+              โปรแกรมเบื้องหลังเป็นเวอร์ชันเก่า
+            </h3>
+            <p className="text-gray-500 dark:text-zinc-500 mt-2 mb-8 max-w-sm text-sm font-medium">
+              ฟีเจอร์คลังเพลง AI ต้องการ YouOke Server เวอร์ชันล่าสุด กรุณาดาวน์โหลดหรืออัปเดตโปรแกรมในเครื่องของคุณใหม่ครับ
+            </p>
           </div>
         ) : (
           <>
