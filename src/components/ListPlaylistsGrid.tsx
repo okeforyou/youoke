@@ -687,27 +687,46 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
           </div>
         ) : activeIndex === 3 && bridgeStatus === 'offline' ? (
           <div className="mx-4 flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-red-100 dark:border-red-900/30 rounded-3xl bg-red-50/50 dark:bg-red-900/10 transition-colors">
-            <div className="w-20 h-20 bg-white dark:bg-zinc-900 rounded-full flex items-center justify-center mb-6 shadow-sm">
+            <a 
+              href="youoke://start" 
+              className="w-20 h-20 bg-white dark:bg-zinc-900 rounded-full flex items-center justify-center mb-6 shadow-sm hover:scale-110 transition-transform cursor-pointer"
+              title="คลิกเพื่อเปิดโปรแกรม"
+            >
               <XMarkIcon className="w-8 h-8 text-red-500" />
-            </div>
+            </a>
             <h3 className="text-xl font-black text-red-600 dark:text-red-400 leading-tight">
               ไม่สามารถเชื่อมต่อโปรแกรมเบื้องหลังได้
             </h3>
-            <p className="text-gray-500 dark:text-zinc-500 mt-2 mb-8 max-w-sm text-sm font-medium">
-              คุณจำเป็นต้องเปิดโปรแกรม YouOke Server (หรือ server.py) ในเครื่องของคุณ เพื่อดึงข้อมูลไฟล์ AI ที่แยกเสียงไว้
+            <p className="text-gray-500 dark:text-zinc-500 mt-2 mb-6 max-w-sm text-sm font-medium">
+              คุณจำเป็นต้องเปิดโปรแกรม YouOke Server ในเครื่องของคุณ เพื่อดึงข้อมูลไฟล์ AI
             </p>
+            <a 
+              href="youoke://start" 
+              className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg shadow-red-500/30 transition-all hover:-translate-y-0.5 active:translate-y-0"
+            >
+              เปิดโปรแกรมเบื้องหลัง (คลิกที่นี่)
+            </a>
           </div>
         ) : activeIndex === 3 && bridgeStatus === 'outdated' ? (
           <div className="mx-4 flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-orange-100 dark:border-orange-900/30 rounded-3xl bg-orange-50/50 dark:bg-orange-900/10 transition-colors">
-            <div className="w-20 h-20 bg-white dark:bg-zinc-900 rounded-full flex items-center justify-center mb-6 shadow-sm">
+            <a 
+              href="youoke://start" 
+              className="w-20 h-20 bg-white dark:bg-zinc-900 rounded-full flex items-center justify-center mb-6 shadow-sm hover:scale-110 transition-transform cursor-pointer"
+            >
               <CpuChipIcon className="w-8 h-8 text-orange-500" />
-            </div>
+            </a>
             <h3 className="text-xl font-black text-orange-600 dark:text-orange-400 leading-tight">
               โปรแกรมเบื้องหลังเป็นเวอร์ชันเก่า
             </h3>
-            <p className="text-gray-500 dark:text-zinc-500 mt-2 mb-8 max-w-sm text-sm font-medium">
-              ฟีเจอร์คลังเพลง AI ต้องการ YouOke Server เวอร์ชันล่าสุด กรุณาดาวน์โหลดหรืออัปเดตโปรแกรมในเครื่องของคุณใหม่ครับ
+            <p className="text-gray-500 dark:text-zinc-500 mt-2 mb-6 max-w-sm text-sm font-medium">
+              ฟีเจอร์คลังเพลง AI ต้องการ YouOke Server เวอร์ชันล่าสุด
             </p>
+            <a 
+              href="youoke://start" 
+              className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 transition-all hover:-translate-y-0.5 active:translate-y-0"
+            >
+              เปิดโปรแกรมเบื้องหลัง (เวอร์ชันใหม่)
+            </a>
           </div>
         ) : (
           <>

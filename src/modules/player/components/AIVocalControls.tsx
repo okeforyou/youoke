@@ -124,39 +124,67 @@ export const AIVocalControls = ({ mobile }: AIVocalControlsProps) => {
             {/* Mode Selection Popover */}
             {showModeSelect && (!isActive || currentJob?.status === 'error') && (
                 <div className="absolute bottom-full right-1/2 translate-x-1/2 mb-3 bg-white/95 backdrop-blur-xl border border-gray-200 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] rounded-2xl p-4 w-[240px] z-50 animate-in fade-in zoom-in-95 duration-200">
-                    <h4 className="text-sm font-black text-gray-900 mb-2">เลือกระดับการแยกเสียง</h4>
-                    <div className="space-y-2">
-                        <button 
-                            onClick={async () => {
-                                if (currentJob?.mode === 'pro') return; // Prevent downgrading to basic
-                                setShowModeSelect(false);
-                                if (currentVideoId) {
-                                    if (!isActive) usePlayerStore.getState().updateQueueItem(currentVideo!.uuid, { aiVocalRequested: true });
-                                    aiVocal.setDefaultMode('basic');
-                                    await aiVocal.processAudio(currentVideoId, 'basic');
-                                }
-                            }}
-                            disabled={currentJob?.mode === 'pro'}
-                            className={`w-full text-left p-3 rounded-xl transition-colors ${currentJob?.mode === 'pro' ? 'bg-gray-100 opacity-50 cursor-not-allowed' : 'bg-gray-50 hover:bg-primary/10 hover:text-primary'}`}
-                        >
-                            <div className={`font-bold text-sm ${currentJob?.mode === 'pro' ? 'text-gray-400' : ''}`}>Basic Mode (2CH)</div>
-                            <div className="text-[10px] text-gray-500">แยก 2 แทร็ก (เสียงร้อง/ดนตรี)</div>
-                        </button>
-                        <button 
-                            onClick={async () => {
-                                setShowModeSelect(false);
-                                if (currentVideoId) {
-                                    if (!isActive) usePlayerStore.getState().updateQueueItem(currentVideo!.uuid, { aiVocalRequested: true });
-                                    aiVocal.setDefaultMode('pro');
-                                    await aiVocal.processAudio(currentVideoId, 'pro');
-                                }
-                            }}
-                            className="w-full text-left p-3 rounded-xl bg-gray-50 hover:bg-primary/10 hover:text-primary transition-colors border border-yellow-200 relative overflow-hidden"
-                        >
-                            <div className="font-bold text-sm flex justify-between">Pro Mode <Sparkles size={12} className="text-yellow-500" /></div>
-                            <div className="text-[10px] text-gray-500">แยก 4 แทร็ก (ร้อง/กลอง/เบส/อื่นๆ)</div>
-                        </button>
-                    </div>
+                    {currentJob?.status === 'error' && currentJob?.message.includes('เชื่อมต่อ') ? (
+                        <div className="flex flex-col items-center text-center">
+                            <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mb-3">
+                                <MicVocal className="w-5 h-5 text-red-600" />
+                            </div>
+                            <h4 className="text-sm font-black text-red-600 mb-1">ไม่สามารถเชื่อมต่อได้</h4>
+                            <p className="text-[10px] text-gray-500 mb-4 leading-relaxed">
+                                คุณจำเป็นต้องเปิดโปรแกรม YouOke Server ในเครื่องของคุณก่อน
+                            </p>
+                            <a 
+                                href="youoke://start" 
+                                className="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg shadow-red-500/30 transition-all hover:-translate-y-0.5 active:translate-y-0 text-xs"
+                            >
+                                เปิดโปรแกรม (คลิกที่นี่)
+                            </a>
+                            <button onClick={() => setShowModeSelect(false)} className="mt-3 text-[10px] text-gray-400 hover:text-gray-600 font-medium">
+                                ปิดหน้าต่างนี้
+                            </button>
+                        </div>
+                    ) : (
+                        <>
+                            <h4 className="text-sm font-black text-gray-900 mb-2">เลือกระดับการแยกเสียง</h4>
+                            <div className="space-y-2">
+                                <button 
+                                    onClick={async () => {
+                                        if (currentJob?.mode === 'pro') return;
+                                        setShowModeSelect(false);
+                                        if (currentVideoId) {
+                                            if (!isActive) usePlayerStore.getState().updateQueueItem(currentVideo!.uuid, { aiVocalRequested: true });
+                                            aiVocal.setDefaultMode('basic');
+                                            await aiVocal.processAudio(currentVideoId, 'basic');
+                                        }
+                                    }}
+                                    disabled={currentJob?.mode === 'pro'}
+                                    className={`w-full text-left p-3 rounded-xl transition-colors ${currentJob?.mode === 'pro' ? 'bg-gray-100 opacity-50 cursor-not-allowed' : 'bg-gray-50 hover:bg-primary/10 hover:text-primary'}`}
+                                >
+                                    <div className={`font-bold text-sm ${currentJob?.mode === 'pro' ? 'text-gray-400' : ''}`}>Basic Mode (2CH)</div>
+                                    <div className="text-[10px] text-gray-500">แยก 2 แทร็ก (เสียงร้อง/ดนตรี)</div>
+                                </button>
+                                <button 
+                                    onClick={async () => {
+                                        setShowModeSelect(false);
+                                        if (currentVideoId) {
+                                            if (!isActive) usePlayerStore.getState().updateQueueItem(currentVideo!.uuid, { aiVocalRequested: true });
+                                            aiVocal.setDefaultMode('pro');
+                                            await aiVocal.processAudio(currentVideoId, 'pro');
+                                        }
+                                    }}
+                                    className="w-full text-left p-3 rounded-xl bg-gray-50 hover:bg-primary/10 hover:text-primary transition-colors border border-yellow-200 relative overflow-hidden"
+                                >
+                                    <div className="font-bold text-sm flex justify-between">Pro Mode <Sparkles size={12} className="text-yellow-500" /></div>
+                                    <div className="text-[10px] text-gray-500">แยก 4 แทร็ก (ร้อง/กลอง/เบส/อื่นๆ)</div>
+                                </button>
+                            </div>
+                            {currentJob?.status === 'error' && (
+                                <div className="mt-3 p-2 bg-red-50 rounded-lg text-red-600 text-[10px] font-medium leading-tight">
+                                    {currentJob.message}
+                                </div>
+                            )}
+                        </>
+                    )}
                 </div>
             )}
 
