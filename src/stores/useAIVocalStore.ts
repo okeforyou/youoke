@@ -163,11 +163,19 @@ export const useAIVocalStore = create<AIVocalState>()(
                         [videoId]: { ...state.jobs[videoId], status: 'ready', message: 'พร้อมเล่น!', progress: 100, mode: data.mode || targetMode }
                     }
                 }));
-            } else {
+            } else if (data.status === 'error') {
+                isPolling = false;
+                let errorMessage = data.detail || data.message || 'เกิดข้อผิดพลาดในการแยกเสียง';
+                
+                // Detect PyInstaller temp folder deletion issue
+                if (errorMessage.includes('Failed to start embedded python interpreter') || errorMessage.includes("No module named 'encodings'")) {
+                    errorMessage = '🚨 กรุณา ปิดแล้วเปิดโปรแกรม YouOke Plugin ใหม่ (ไฟล์ชั่วคราวถูกลบโดยระบบ)';
+                }
+
                 set((state) => ({
                     jobs: {
                         ...state.jobs,
-                        [videoId]: { ...state.jobs[videoId], status: 'error', message: data.detail || data.message || 'เกิดข้อผิดพลาดในการแยกเสียง' }
+                        [videoId]: { ...state.jobs[videoId], status: 'error', message: errorMessage }
                     }
                 }));
             }
@@ -194,7 +202,14 @@ export const useAIVocalStore = create<AIVocalState>()(
                 // Use HEAD request to quickly check if the file exists
                 const res = await fetch(`http://127.0.0.1:5050/files/${id}/vocals.m4a`, { method: 'HEAD' });
                 if (res.ok) {
-                    updates[id] = { status: 'ready', message: 'พร้อมเล่น!', progress: 100, mode: defaultMode };
+                    let actualMode: 'basic' | 'pro' = 'basic';
+                    try {
+                        const drumsRes = await fetch(`http://127.0.0.1:5050/files/${id}/drums.m4a`, { method: 'HEAD' });
+                        if (drumsRes.ok) actualMode = 'pro';
+                    } catch (e) {
+                        // ignore
+                    }
+                    updates[id] = { status: 'ready', message: 'พร้อมเล่น!', progress: 100, mode: actualMode };
                 }
             } catch (e) {
                 // Ignore errors (server offline or file doesn't exist)
