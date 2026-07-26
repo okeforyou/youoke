@@ -9,9 +9,9 @@ import {
     PencilIcon,
     EllipsisVerticalIcon,
     HandThumbUpIcon,
-    MusicalNoteIcon,
-    SparklesIcon
+    MusicalNoteIcon
 } from "@heroicons/react/24/solid";
+import { MicVocal, Drum, Guitar, Piano, Music } from "lucide-react";
 
 interface CardV2Props {
     id: string;
@@ -99,15 +99,32 @@ export default function CardV2({
 
                 {badgeText && (
                     <div className="absolute top-2 left-2 z-30">
-                        <div className={`flex items-center gap-1 px-2 py-1 rounded-md backdrop-blur-md shadow-sm border ${
-                            badgeText === '4CH' 
-                                ? 'bg-black/50 text-amber-400 border-amber-500/30' 
-                                : 'bg-black/50 text-blue-400 border-blue-500/30'
-                        }`}>
-                            <SparklesIcon className="w-3 h-3" />
-                            <span className="text-[9px] font-bold tracking-wide">
-                                แยกเสียงแล้ว {badgeText}
-                            </span>
+                        <div className="flex items-center gap-1">
+                            {badgeText === '4CH' ? (
+                                <>
+                                    <div className="w-5 h-5 rounded-full bg-pink-500/90 text-white flex items-center justify-center shadow-sm backdrop-blur-md">
+                                        <MicVocal size={11} strokeWidth={2.5} />
+                                    </div>
+                                    <div className="w-5 h-5 rounded-full bg-orange-500/90 text-white flex items-center justify-center shadow-sm backdrop-blur-md">
+                                        <Drum size={11} strokeWidth={2.5} />
+                                    </div>
+                                    <div className="w-5 h-5 rounded-full bg-purple-500/90 text-white flex items-center justify-center shadow-sm backdrop-blur-md">
+                                        <Guitar size={11} strokeWidth={2.5} />
+                                    </div>
+                                    <div className="w-5 h-5 rounded-full bg-blue-500/90 text-white flex items-center justify-center shadow-sm backdrop-blur-md">
+                                        <Piano size={11} strokeWidth={2.5} />
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="w-5 h-5 rounded-full bg-pink-500/90 text-white flex items-center justify-center shadow-sm backdrop-blur-md">
+                                        <MicVocal size={11} strokeWidth={2.5} />
+                                    </div>
+                                    <div className="w-5 h-5 rounded-full bg-blue-500/90 text-white flex items-center justify-center shadow-sm backdrop-blur-md">
+                                        <Music size={11} strokeWidth={2.5} />
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                 )}
