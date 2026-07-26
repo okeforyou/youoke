@@ -1,4 +1,4 @@
-const { app, Tray, Menu, dialog, nativeImage } = require('electron');
+const { app, Tray, Menu, dialog, nativeImage, shell } = require('electron');
 const { autoUpdater } = require('electron-updater');
 const { spawn, exec } = require('child_process');
 const path = require('path');
@@ -158,29 +158,25 @@ app.whenReady().then(() => {
 
   // Auto updater config
   // Point to our Vercel API proxy so it can securely access private GitHub releases!
+  autoUpdater.autoDownload = false;
   autoUpdater.setFeedURL({
     provider: 'generic',
     url: 'https://youoke.vercel.app/api/updates'
   });
 
-  autoUpdater.on('update-available', () => {
+  autoUpdater.on('update-available', (info) => {
     dialog.showMessageBox({
       type: 'info',
       title: 'มีอัปเดตใหม่!',
-      message: 'ตรวจพบเวอร์ชันใหม่ล่าสุด กำลังดาวน์โหลดอัปเดตอยู่เบื้องหลัง...'
-    });
-  });
-
-  autoUpdater.on('update-downloaded', () => {
-    dialog.showMessageBox({
-      type: 'info',
-      title: 'ดาวน์โหลดอัปเดตเสร็จสิ้น',
-      message: 'ระบบพร้อมสำหรับการอัปเดตแล้ว กรุณากด "รีสตาร์ทตอนนี้" เพื่อทำการติดตั้งอัตโนมัติ',
-      buttons: ['รีสตาร์ทตอนนี้', 'ไว้ทีหลัง']
+      message: `พบ YouOke Plugin เวอร์ชันใหม่ (${info.version}) แนะนำให้อัปเดตเพื่อการทำงานที่สมบูรณ์ที่สุด\nกรุณากดปุ่ม "ดาวน์โหลด" เพื่อไปรับไฟล์เวอร์ชันล่าสุดครับ`,
+      buttons: ['ไปหน้าดาวน์โหลด', 'ไว้ทีหลัง']
     }).then((result) => {
       if (result.response === 0) {
-        stopServer();
-        autoUpdater.quitAndInstall();
+        const downloadUrl = process.platform === 'darwin' 
+          ? 'https://youoke.vercel.app/api/download-plugin?os=mac'
+          : 'https://youoke.vercel.app/api/download-plugin?os=win';
+        shell.openExternal(downloadUrl);
+        // We do not quit automatically. User downloads and installs manually.
       }
     });
   });
