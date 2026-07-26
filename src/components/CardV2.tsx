@@ -97,8 +97,8 @@ export default function CardV2({
                 )}
 
                 {badgeText && (
-                    <div className="absolute top-4 right-4 z-30 m-2">
-                        <div className={`badge ${badgeColor} shadow-md font-bold border-none text-white gap-1 h-6 px-3`}>
+                    <div className="absolute top-2 right-2 z-30">
+                        <div className={`${badgeColor} bg-opacity-90 backdrop-blur-sm shadow-sm font-black text-white px-2 py-0.5 rounded-full text-[10px] tracking-wider border border-white/20`}>
                             {badgeText}
                         </div>
                     </div>
@@ -112,9 +112,16 @@ export default function CardV2({
                         {name}
                     </h3>
                     <p className="text-[11px] font-medium text-gray-500 dark:text-zinc-500 mt-1 flex items-center gap-2">
-                        <span className="inline-block px-2 py-0.5 rounded-md bg-gray-100 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800">
-                            {count} เพลง
-                        </span>
+                        {activeIndex !== 3 && (
+                            <span className="inline-block px-2 py-0.5 rounded-md bg-gray-100 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800">
+                                {count} เพลง
+                            </span>
+                        )}
+                        {activeIndex === 3 && (
+                            <span className="inline-block px-2 py-0.5 rounded-md bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-100 dark:border-blue-800/50">
+                                พร้อมเล่น
+                            </span>
+                        )}
                     </p>
                 </div>
 
