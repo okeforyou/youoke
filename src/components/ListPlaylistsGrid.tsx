@@ -686,53 +686,67 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
             ))}
           </div>
         ) : activeIndex === 3 && bridgeStatus === 'offline' ? (
-          <div className="mx-4 flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-red-100 dark:border-red-900/30 rounded-3xl bg-red-50/50 dark:bg-red-900/10 transition-colors">
-            <a 
-              href="youoke://start" 
-              className="w-20 h-20 bg-white dark:bg-zinc-900 rounded-full flex items-center justify-center mb-6 shadow-sm hover:scale-110 transition-transform cursor-pointer"
-              title="คลิกเพื่อเปิดโปรแกรม"
+          <div className="mx-4 flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-blue-200 dark:border-blue-900/30 rounded-3xl bg-blue-50/30 dark:bg-blue-900/10 transition-colors">
+            <div 
+              className="w-20 h-20 bg-white dark:bg-zinc-900 rounded-full flex items-center justify-center mb-6 shadow-sm"
             >
-              <XMarkIcon className="w-8 h-8 text-red-500" />
-            </a>
-            <h3 className="text-xl font-black text-red-600 dark:text-red-400 leading-tight">
-              ไม่สามารถเชื่อมต่อโปรแกรมเบื้องหลังได้
+              <CpuChipIcon className="w-10 h-10 text-blue-500" />
+            </div>
+            <h3 className="text-xl font-black text-gray-800 dark:text-gray-200 leading-tight">
+              เชื่อมต่อ YouOke Plugin
             </h3>
-            <p className="text-gray-500 dark:text-zinc-500 mt-2 mb-6 max-w-sm text-sm font-medium">
-              คุณจำเป็นต้องเปิดโปรแกรม YouOke Server ในเครื่องของคุณ เพื่อดึงข้อมูลไฟล์ AI
+            <p className="text-gray-500 dark:text-zinc-400 mt-2 mb-6 max-w-sm text-sm font-medium">
+              ฟีเจอร์ AI แยกเสียงร้อง จำเป็นต้องใช้งานร่วมกับโปรแกรม YouOke Plugin ในเครื่องของคุณ
             </p>
-            <div className="flex gap-2 mb-6">
+            <div className="flex flex-col sm:flex-row gap-3 mb-8 w-full max-w-xs sm:max-w-none justify-center px-4">
               <a 
                 href="youoke://start" 
-                className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg shadow-red-500/30 transition-all hover:-translate-y-0.5 active:translate-y-0"
+                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-0.5 active:translate-y-0 flex-1 sm:flex-none text-center"
               >
-                เปิดโปรแกรมเบื้องหลัง
+                เปิด YouOke Plugin
               </a>
               <button 
-                onClick={() => window.location.reload()}
-                className="px-6 py-2.5 bg-zinc-800 hover:bg-black dark:bg-zinc-700 dark:hover:bg-zinc-600 text-white font-bold rounded-xl shadow-lg shadow-zinc-500/30 transition-all hover:-translate-y-0.5 active:translate-y-0"
+                onClick={() => {
+                  setBridgeStatus('checking');
+                  setTimeout(() => window.location.reload(), 500);
+                }}
+                className="px-6 py-2.5 bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-300 font-bold rounded-xl border border-gray-200 dark:border-zinc-700 shadow-sm hover:bg-gray-50 dark:hover:bg-zinc-700 transition-all active:scale-95 flex-1 sm:flex-none"
               >
-                รีเฟรชหน้าเว็บ
+                โหลดใหม่
               </button>
             </div>
             
-            <div className="flex gap-3 text-sm text-red-700/80 dark:text-red-300/80 items-center justify-center mb-4">
-              <span className="font-bold">ยังไม่มีโปรแกรมติดตั้งในเครื่อง?</span>
-              <a href="/api/download-plugin?os=win" target="_blank" className="hover:underline font-black bg-blue-100 text-blue-700 px-3 py-1 rounded-lg">โหลดสำหรับ Windows</a>
-              <a href="/api/download-plugin?os=mac" target="_blank" className="hover:underline font-black bg-zinc-200 text-zinc-800 px-3 py-1 rounded-lg">โหลดสำหรับ Mac</a>
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 text-sm items-center justify-center bg-white dark:bg-zinc-800/50 px-6 py-3 rounded-2xl border border-gray-100 dark:border-zinc-800">
+              <span className="text-gray-500 font-medium">ยังไม่ได้ติดตั้ง?</span>
+              <div className="flex gap-2">
+                <a href="/api/download-plugin?os=win" target="_blank" className="font-bold text-blue-600 hover:text-blue-700 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.951-1.801"/></svg>
+                  Windows
+                </a>
+                <a href="/api/download-plugin?os=mac" target="_blank" className="font-bold text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white bg-gray-100 dark:bg-zinc-700 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.25 15.25c-.25.25-1.5-1-2.5-1.5-.75-.5-1.5-1-2.25-1-.75 0-1.5.5-2.25 1s-2.25 1.75-2.5 1.5c-.25-.25 0-2 .5-3 .5-1 1.5-2 3-2h1c1.5 0 2.5 1 3 2 .5 1 .75 2.75.5 3zM14 8c-.5.5-1.5.5-2 .5s-1.5 0-2-.5c-.5-.5-.5-1.5.5-2 .75-.5 1.25-.5 2-.5s1.25 0 2 .5c1 1 1 2 .5 2z"/></svg>
+                  Mac
+                </a>
+              </div>
             </div>
 
-            <div className="text-xs text-red-800/80 dark:text-red-300/80 max-w-md text-left bg-red-100/50 dark:bg-red-900/20 p-4 rounded-xl mt-4 w-full">
-              <p className="font-bold mb-2">🍎 วิธีติดตั้งและอัปเดตสำหรับ Mac (แก้ปัญหา Gatekeeper):</p>
-              <ul className="list-decimal pl-4 space-y-2">
-                <li>โหลดไฟล์ <strong>.dmg</strong> แล้วลากแอป <strong>YouOke Plugin</strong> ลงโฟลเดอร์ <strong>Applications</strong></li>
-                <li>คลิกที่กล่องโค้ดด้านล่างเพื่อคัดลอก:
-                  <code className="block bg-gray-900 text-green-400 p-2.5 rounded-lg text-xs font-mono mt-1 mb-1 select-all cursor-pointer shadow-inner" onClick={(e) => {navigator.clipboard.writeText('xattr -cr /Applications/YouOke\\ Plugin.app && open /Applications/YouOke\\ Plugin.app'); const el = e.currentTarget; el.style.outline='2px solid #22c55e'; setTimeout(()=>el.style.outline='',1000);}}>
-                    xattr -cr /Applications/YouOke\ Plugin.app && open /Applications/YouOke\ Plugin.app
-                  </code>
-                </li>
-                <li>เปิดแอป <strong>Terminal</strong> ใน Mac วางโค้ดลงไปแล้วกด Enter แอปจะเปิดขึ้นมาพร้อมใช้งานทันที</li>
-              </ul>
-            </div>
+            <details className="mt-4 max-w-md w-full text-left group">
+              <summary className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer text-center list-none outline-none">
+                <span className="border-b border-dashed border-gray-300 pb-0.5">คู่มือติดตั้งสำหรับผู้ใช้ Mac (หากเปิดแอปไม่ได้)</span>
+              </summary>
+              <div className="text-xs text-gray-600 dark:text-gray-400 bg-white dark:bg-zinc-800/80 p-4 rounded-xl mt-3 border border-gray-100 dark:border-zinc-800 shadow-sm">
+                <p className="font-bold mb-2">วิธีแก้ปัญหา Gatekeeper (แอปเปิดไม่ได้):</p>
+                <ol className="list-decimal pl-4 space-y-2">
+                  <li>โหลดไฟล์ <strong>.dmg</strong> แล้วลากแอป <strong>YouOke Plugin</strong> ลงโฟลเดอร์ <strong>Applications</strong></li>
+                  <li>คลิกที่กล่องโค้ดด้านล่างเพื่อคัดลอก:
+                    <code className="block bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 text-green-600 dark:text-green-400 p-2.5 rounded-lg text-[11px] font-mono mt-1 mb-1 select-all cursor-pointer shadow-inner" onClick={(e) => {navigator.clipboard.writeText('xattr -cr /Applications/YouOke\\ Plugin.app && open /Applications/YouOke\\ Plugin.app'); const el = e.currentTarget; el.style.outline='2px solid #22c55e'; setTimeout(()=>el.style.outline='',1000);}}>
+                      xattr -cr /Applications/YouOke\ Plugin.app && open /Applications/YouOke\ Plugin.app
+                    </code>
+                  </li>
+                  <li>เปิดแอป <strong>Terminal</strong> ใน Mac วางโค้ดลงไปแล้วกด Enter</li>
+                </ol>
+              </div>
+            </details>
           </div>
         ) : activeIndex === 3 && bridgeStatus === 'outdated' ? (
           <div className="mx-4 flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-orange-100 dark:border-orange-900/30 rounded-3xl bg-orange-50/50 dark:bg-orange-900/10 transition-colors">
