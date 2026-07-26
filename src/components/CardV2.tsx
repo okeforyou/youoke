@@ -98,8 +98,8 @@ export default function CardV2({
                 )}
 
                 {badgeText && (
-                    <div className="absolute bottom-2 left-2 z-30">
-                        <div className="px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wider backdrop-blur-md bg-black/60 text-white shadow-sm border border-white/10">
+                    <div className="absolute bottom-3 left-3 z-30">
+                        <div className="px-2 py-0.5 rounded bg-black/90 text-white text-[10px] font-bold shadow-sm">
                             {badgeText}
                         </div>
                     </div>
