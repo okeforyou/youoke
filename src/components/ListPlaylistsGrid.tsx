@@ -707,8 +707,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
               </a>
               <button 
                 onClick={() => {
-                  setBridgeStatus('checking');
-                  setTimeout(() => window.location.reload(), 500);
+                  getAiCacheList();
                 }}
                 className="px-6 py-2.5 bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-300 font-bold rounded-xl border border-gray-200 dark:border-zinc-700 shadow-sm hover:bg-gray-50 dark:hover:bg-zinc-700 transition-all active:scale-95 flex-1 sm:flex-none"
               >
