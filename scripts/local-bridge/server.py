@@ -238,8 +238,6 @@ def separate(req: SeparateRequest):
     m4a_path = os.path.join(song_dir, f"{vid}.m4a")
     yt_url = f"https://www.youtube.com/watch?v={vid}"
     
-    download_success = False
-    
     # 1. Try yt-dlp_macos first as primary
     try:
         yt_dlp_exe = os.path.join(os.path.dirname(__file__), 'yt-dlp_macos')
@@ -247,42 +245,58 @@ def separate(req: SeparateRequest):
             yt_dlp_exe = "yt-dlp"
 
         out_template = os.path.join(song_dir, f"{vid}.%(ext)s")
-        cmd = [
-            yt_dlp_exe,
-            "-f", "140/m4a/bestaudio/best",
-            "-o", out_template,
-            "--no-warnings",
-            yt_url
-        ]
-        print(f"Executing yt-dlp standalone: {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        if result.returncode == 0:
-            downloaded_files = [f for f in os.listdir(song_dir) if f.startswith(vid) and f != "vocals.m4a" and f != "no_vocals.m4a" and not f.endswith(".wav")]
-            if downloaded_files:
-                downloaded_files.sort(key=lambda x: os.path.getmtime(os.path.join(song_dir, x)), reverse=True)
-                candidate = os.path.join(song_dir, downloaded_files[0])
-                if os.path.getsize(candidate) > 0:
-                    m4a_path = candidate
-                    download_success = True
+        
+        # Try with Chrome cookies, then Safari, then without cookies
+        cookie_sources = ["chrome", "safari", None]
+        for source in cookie_sources:
+            cmd = [
+                yt_dlp_exe,
+                "-f", "140/bestaudio/best",
+                "-o", out_template,
+                "--no-warnings",
+            ]
+            if source:
+                cmd += ["--cookies-from-browser", source]
+            cmd.append(yt_url)
+            
+            print(f"Executing yt-dlp standalone (cookies: {source}): {' '.join(cmd)}")
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            if result.returncode == 0:
+                downloaded_files = [f for f in os.listdir(song_dir) if f.startswith(vid) and f != "vocals.m4a" and f != "no_vocals.m4a" and not f.endswith(".wav")]
+                if downloaded_files:
+                    downloaded_files.sort(key=lambda x: os.path.getmtime(os.path.join(song_dir, x)), reverse=True)
+                    candidate = os.path.join(song_dir, downloaded_files[0])
+                    if os.path.getsize(candidate) > 0:
+                        m4a_path = candidate
+                        download_success = True
+                        print(f"yt-dlp download success using cookies: {source}")
+                        break
+            else:
+                print(f"yt-dlp failed with cookies={source}: {result.stderr}")
     except Exception as e:
-        print(f"yt-dlp download failed: {e}")
+        print(f"yt-dlp download process failed: {e}")
 
     # 2. Fallback to pytubefix if yt-dlp failed
     if not download_success:
-        try:
-            # Clean up any leftover empty files
-            if os.path.exists(m4a_path) and os.path.getsize(m4a_path) == 0:
-                os.remove(m4a_path)
-            from pytubefix import YouTube
-            yt = YouTube(yt_url, client='MWEB')
-            stream = yt.streams.get_audio_only()
-            if stream:
-                stream.download(output_path=song_dir, filename=f"{vid}.m4a")
-                m4a_path = os.path.join(song_dir, f"{vid}.m4a")
-                if os.path.exists(m4a_path) and os.path.getsize(m4a_path) > 0:
-                    download_success = True
-        except Exception as py_err:
-            print(f"pytubefix fallback failed: {py_err}")
+        # Try multiple clients in pytubefix to bypass blocks
+        for client_name in ['MWEB', 'WEB', 'TV']:
+            try:
+                # Clean up any leftover empty files
+                if os.path.exists(m4a_path) and os.path.getsize(m4a_path) == 0:
+                    os.remove(m4a_path)
+                from pytubefix import YouTube
+                print(f"Trying pytubefix fallback with client: {client_name}")
+                yt = YouTube(yt_url, client=client_name)
+                stream = yt.streams.get_audio_only()
+                if stream:
+                    stream.download(output_path=song_dir, filename=f"{vid}.m4a")
+                    m4a_path = os.path.join(song_dir, f"{vid}.m4a")
+                    if os.path.exists(m4a_path) and os.path.getsize(m4a_path) > 0:
+                        download_success = True
+                        print(f"pytubefix download success using client: {client_name}")
+                        break
+            except Exception as py_err:
+                print(f"pytubefix fallback failed with client {client_name}: {py_err}")
 
     if not download_success or not os.path.exists(m4a_path) or os.path.getsize(m4a_path) == 0:
         if os.path.exists(m4a_path) and os.path.getsize(m4a_path) == 0:
