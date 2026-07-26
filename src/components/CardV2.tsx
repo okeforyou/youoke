@@ -9,7 +9,8 @@ import {
     PencilIcon,
     EllipsisVerticalIcon,
     HandThumbUpIcon,
-    MusicalNoteIcon
+    MusicalNoteIcon,
+    SparklesIcon
 } from "@heroicons/react/24/solid";
 
 interface CardV2Props {
@@ -97,25 +98,31 @@ export default function CardV2({
                 )}
 
                 {badgeText && (
-                    <div className="absolute top-0 left-0 z-30">
-                        <div className={`${badgeColor} shadow-md font-black text-white px-3 py-1 rounded-br-xl text-[10px] tracking-wider`}>
-                            {badgeText}
+                    <div className="absolute top-2 left-2 z-30">
+                        <div className={`flex items-center gap-1 px-2 py-1 rounded-md backdrop-blur-md shadow-sm border ${
+                            badgeText === '4CH' 
+                                ? 'bg-black/50 text-amber-400 border-amber-500/30' 
+                                : 'bg-black/50 text-blue-400 border-blue-500/30'
+                        }`}>
+                            <SparklesIcon className="w-3 h-3" />
+                            <span className="text-[9px] font-bold tracking-wide">
+                                แยกเสียงแล้ว {badgeText}
+                            </span>
                         </div>
                     </div>
                 )}
 
-                {/* 6. Action Button Overlay (Bottom Left) */}
+                {/* 6. Action Button Overlay (Center) */}
                 {activeIndex === 3 && (
-                    <div className="absolute bottom-2 left-2 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-2 group-hover:translate-y-0">
+                    <div className="absolute inset-0 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20">
                         <button 
                             onClick={(e) => {
                                 e.stopPropagation();
                                 if (onClick) onClick();
                             }}
-                            className="flex items-center gap-1.5 bg-black/70 hover:bg-primary text-white px-2.5 py-1.5 rounded-lg backdrop-blur-md transition-all shadow-lg active:scale-95"
+                            className="flex items-center justify-center w-12 h-12 bg-primary/90 hover:bg-primary text-white rounded-full backdrop-blur-md transition-all shadow-xl hover:scale-110 active:scale-95"
                         >
-                            <PlayIcon className="w-3.5 h-3.5" />
-                            <span className="text-[10px] font-bold">เล่นเพลงนี้</span>
+                            <PlayIcon className="w-6 h-6 ml-1" />
                         </button>
                     </div>
                 )}
