@@ -16,6 +16,7 @@ import Image from "next/image";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { useUIStore } from "../stores/useUIStore";
+import { useAIVocalStore } from "../stores/useAIVocalStore";
 import clsx from "clsx";
 
 import {
@@ -134,6 +135,25 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
       getAiCacheList();
     }
   }, [activeIndex, isLoadPlaylist, user, youtubePlaylists.length, aiCacheList.length]);
+
+  // Auto-reconnect polling for AI Vocal tab
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (activeIndex === 3 && bridgeStatus === 'offline') {
+      interval = setInterval(async () => {
+        try {
+          const res = await fetch("http://127.0.0.1:5050/version", { signal: AbortSignal.timeout(2000) });
+          if (res.ok) {
+            clearInterval(interval);
+            getAiCacheList();
+          }
+        } catch (e) {
+          // Still offline, ignore
+        }
+      }, 3000);
+    }
+    return () => clearInterval(interval);
+  }, [activeIndex, bridgeStatus]);
 
   // Update playlists when data changes OR when switching tabs
   useEffect(() => {
