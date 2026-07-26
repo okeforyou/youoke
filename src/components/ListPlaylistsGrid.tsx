@@ -660,7 +660,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
               )}
             >
               <CpuChipIcon className="w-4 h-4" />
-              <span>ไฟล์ AI</span>
+              <span>แยกเสียงแล้ว</span>
             </button>
           </div>
         ) : (
