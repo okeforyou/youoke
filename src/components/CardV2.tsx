@@ -99,32 +99,8 @@ export default function CardV2({
 
                 {badgeText && (
                     <div className="absolute bottom-2 left-2 z-30">
-                        <div className="flex items-center gap-1">
-                            {badgeText === '4CH' ? (
-                                <>
-                                    <div className="w-5 h-5 rounded flex items-center justify-center shadow-sm backdrop-blur-md bg-pink-50/90 dark:bg-pink-900/40 text-pink-500">
-                                        <MicVocal size={11} strokeWidth={2.5} />
-                                    </div>
-                                    <div className="w-5 h-5 rounded flex items-center justify-center shadow-sm backdrop-blur-md bg-orange-50/90 dark:bg-orange-900/40 text-orange-500">
-                                        <Drum size={11} strokeWidth={2.5} />
-                                    </div>
-                                    <div className="w-5 h-5 rounded flex items-center justify-center shadow-sm backdrop-blur-md bg-purple-50/90 dark:bg-purple-900/40 text-purple-500">
-                                        <Guitar size={11} strokeWidth={2.5} />
-                                    </div>
-                                    <div className="w-5 h-5 rounded flex items-center justify-center shadow-sm backdrop-blur-md bg-blue-50/90 dark:bg-blue-900/40 text-blue-500">
-                                        <Piano size={11} strokeWidth={2.5} />
-                                    </div>
-                                </>
-                            ) : (
-                                <>
-                                    <div className="w-5 h-5 rounded flex items-center justify-center shadow-sm backdrop-blur-md bg-pink-50/90 dark:bg-pink-900/40 text-pink-500">
-                                        <MicVocal size={11} strokeWidth={2.5} />
-                                    </div>
-                                    <div className="w-5 h-5 rounded flex items-center justify-center shadow-sm backdrop-blur-md bg-blue-50/90 dark:bg-blue-900/40 text-blue-500">
-                                        <Music size={11} strokeWidth={2.5} />
-                                    </div>
-                                </>
-                            )}
+                        <div className="px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wider backdrop-blur-md bg-black/60 text-white shadow-sm border border-white/10">
+                            {badgeText}
                         </div>
                     </div>
                 )}
