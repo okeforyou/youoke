@@ -98,29 +98,29 @@ export default function CardV2({
                 )}
 
                 {badgeText && (
-                    <div className="absolute top-2 left-2 z-30">
+                    <div className="absolute bottom-2 left-2 z-30">
                         <div className="flex items-center gap-1">
                             {badgeText === '4CH' ? (
                                 <>
-                                    <div className="w-5 h-5 rounded-full bg-pink-500/90 text-white flex items-center justify-center shadow-sm backdrop-blur-md">
+                                    <div className="w-5 h-5 rounded flex items-center justify-center shadow-sm backdrop-blur-md bg-pink-50/90 dark:bg-pink-900/40 text-pink-500">
                                         <MicVocal size={11} strokeWidth={2.5} />
                                     </div>
-                                    <div className="w-5 h-5 rounded-full bg-orange-500/90 text-white flex items-center justify-center shadow-sm backdrop-blur-md">
+                                    <div className="w-5 h-5 rounded flex items-center justify-center shadow-sm backdrop-blur-md bg-orange-50/90 dark:bg-orange-900/40 text-orange-500">
                                         <Drum size={11} strokeWidth={2.5} />
                                     </div>
-                                    <div className="w-5 h-5 rounded-full bg-purple-500/90 text-white flex items-center justify-center shadow-sm backdrop-blur-md">
+                                    <div className="w-5 h-5 rounded flex items-center justify-center shadow-sm backdrop-blur-md bg-purple-50/90 dark:bg-purple-900/40 text-purple-500">
                                         <Guitar size={11} strokeWidth={2.5} />
                                     </div>
-                                    <div className="w-5 h-5 rounded-full bg-blue-500/90 text-white flex items-center justify-center shadow-sm backdrop-blur-md">
+                                    <div className="w-5 h-5 rounded flex items-center justify-center shadow-sm backdrop-blur-md bg-blue-50/90 dark:bg-blue-900/40 text-blue-500">
                                         <Piano size={11} strokeWidth={2.5} />
                                     </div>
                                 </>
                             ) : (
                                 <>
-                                    <div className="w-5 h-5 rounded-full bg-pink-500/90 text-white flex items-center justify-center shadow-sm backdrop-blur-md">
+                                    <div className="w-5 h-5 rounded flex items-center justify-center shadow-sm backdrop-blur-md bg-pink-50/90 dark:bg-pink-900/40 text-pink-500">
                                         <MicVocal size={11} strokeWidth={2.5} />
                                     </div>
-                                    <div className="w-5 h-5 rounded-full bg-blue-500/90 text-white flex items-center justify-center shadow-sm backdrop-blur-md">
+                                    <div className="w-5 h-5 rounded flex items-center justify-center shadow-sm backdrop-blur-md bg-blue-50/90 dark:bg-blue-900/40 text-blue-500">
                                         <Music size={11} strokeWidth={2.5} />
                                     </div>
                                 </>
@@ -131,13 +131,13 @@ export default function CardV2({
 
                 {/* 6. Action Button Overlay (Center) */}
                 {activeIndex === 3 && (
-                    <div className="absolute inset-0 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20">
+                    <div className="absolute inset-0 z-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/10">
                         <button 
                             onClick={(e) => {
                                 e.stopPropagation();
                                 if (onClick) onClick();
                             }}
-                            className="flex items-center justify-center w-12 h-12 bg-primary/90 hover:bg-primary text-white rounded-full backdrop-blur-md transition-all shadow-xl hover:scale-110 active:scale-95"
+                            className="flex items-center justify-center w-12 h-12 bg-white/20 hover:bg-white/30 text-white rounded-full backdrop-blur-md transition-all shadow-lg hover:scale-110 active:scale-95 border border-white/30"
                         >
                             <PlayIcon className="w-6 h-6 ml-1" />
                         </button>
