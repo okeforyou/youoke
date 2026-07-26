@@ -33,7 +33,7 @@ interface AIVocalState {
     toggleSolo: (type: 'vocals' | 'instrumental' | 'drums' | 'bass' | 'other') => void;
     
     // API Actions
-    processAudio: (videoId: string, mode?: 'basic' | 'pro') => Promise<void>;
+    processAudio: (videoId: string, titleOrMode?: string, modeOverride?: 'basic' | 'pro') => Promise<void>;
     checkCachedStatus: (videoIds: string[]) => Promise<void>;
     reset: () => void;
     setCurrentVideoId: (id: string | null) => void;
@@ -99,9 +99,21 @@ export const useAIVocalStore = create<AIVocalState>()(
         }
     }),
 
-    processAudio: async (videoId: string, mode?: 'basic' | 'pro') => {
+    processAudio: async (videoId: string, titleOrMode?: string, modeOverride?: 'basic' | 'pro') => {
         const { jobs, defaultMode } = get();
-        const targetMode = mode || defaultMode;
+        
+        let title = "Unknown Title";
+        let targetMode = defaultMode;
+
+        if (titleOrMode === 'basic' || titleOrMode === 'pro') {
+            targetMode = titleOrMode;
+        } else if (titleOrMode) {
+            title = titleOrMode;
+            if (modeOverride) {
+                targetMode = modeOverride;
+            }
+        }
+
         const currentJob = jobs[videoId];
         
         // Prevent duplicate calls if already processing
@@ -150,7 +162,7 @@ export const useAIVocalStore = create<AIVocalState>()(
             const res = await fetch("http://127.0.0.1:5050/separate", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ video_id: videoId, mode: targetMode })
+                body: JSON.stringify({ video_id: videoId, title: title, mode: targetMode })
             });
             
             isPolling = false;

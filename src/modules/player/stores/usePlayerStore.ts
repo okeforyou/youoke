@@ -358,7 +358,7 @@ export const usePlayerStore = create<PlayerStore>()(
                     if (item.aiVocalRequested) {
                         const vidId = item.videoId || item.id;
                         if (vidId && !aiVocalStore.jobs[vidId]) {
-                            aiVocalStore.processAudio(vidId, aiVocalStore.defaultMode).catch(console.error);
+                            aiVocalStore.processAudio(vidId, item.title, aiVocalStore.defaultMode).catch(console.error);
                         }
                     }
                 });
@@ -497,7 +497,7 @@ export const usePlayerStore = create<PlayerStore>()(
                 const aiVocalStore = useAIVocalStore.getState();
                 if (video.aiVocalRequested && source) {
                     console.log(`🎤 AI Vocal requested for ${source}, starting processing...`);
-                    aiVocalStore.processAudio(source, aiVocalStore.defaultMode).catch(console.error);
+                    aiVocalStore.processAudio(source, video.title, aiVocalStore.defaultMode).catch(console.error);
                 } else if (aiVocalStore.isActive) {
                     console.log(`🎤 AI Vocal not requested, resetting...`);
                     aiVocalStore.reset();

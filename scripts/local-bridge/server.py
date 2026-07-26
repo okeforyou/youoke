@@ -3,6 +3,8 @@ import subprocess
 import shutil
 import sys
 import torch
+import json
+from datetime import datetime
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -45,10 +47,48 @@ async def add_pna_headers(request, call_next):
 
 class SeparateRequest(BaseModel):
     video_id: str
+    title: str = "Unknown Title"
     mode: str = "basic"  # "basic" or "pro"
 
 CACHE_DIR = os.path.expanduser("~/Library/Application Support/YouOke/Cache")
 os.makedirs(CACHE_DIR, exist_ok=True)
+
+HISTORY_FILE = os.path.join(CACHE_DIR, "download_history.json")
+
+def log_download_attempt(video_id: str, title: str, attempts: list, status: str):
+    try:
+        history = []
+        if os.path.exists(HISTORY_FILE):
+            with open(HISTORY_FILE, "r", encoding="utf-8") as f:
+                try:
+                    history = json.load(f)
+                except:
+                    history = []
+        
+        new_entry = {
+            "timestamp": datetime.now().isoformat(),
+            "video_id": video_id,
+            "title": title,
+            "status": status,
+            "attempts": attempts
+        }
+        history.insert(0, new_entry)
+        history = history[:100]  # Keep last 100 entries
+        
+        with open(HISTORY_FILE, "w", encoding="utf-8") as f:
+            json.dump(history, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"Failed to log download history: {e}")
+
+@app.get("/download/history")
+def get_download_history():
+    try:
+        if os.path.exists(HISTORY_FILE):
+            with open(HISTORY_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        return []
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/health")
 def health():
@@ -238,6 +278,9 @@ def separate(req: SeparateRequest):
     m4a_path = os.path.join(song_dir, f"{vid}.m4a")
     yt_url = f"https://www.youtube.com/watch?v={vid}"
     
+    download_success = False
+    attempts = []
+    
     # 1. Try yt-dlp_macos first as primary
     try:
         yt_dlp_exe = os.path.join(os.path.dirname(__file__), 'yt-dlp_macos')
@@ -269,11 +312,19 @@ def separate(req: SeparateRequest):
                     if os.path.getsize(candidate) > 0:
                         m4a_path = candidate
                         download_success = True
+                        attempts.append({"method": f"yt-dlp ({source or 'no cookies'})", "status": "success"})
                         print(f"yt-dlp download success using cookies: {source}")
                         break
+                    else:
+                        attempts.append({"method": f"yt-dlp ({source or 'no cookies'})", "status": "failed", "error": "Empty downloaded file"})
+                else:
+                    attempts.append({"method": f"yt-dlp ({source or 'no cookies'})", "status": "failed", "error": "No downloaded file found"})
             else:
+                err_msg = result.stderr.strip() if result.stderr else "Unknown error"
+                attempts.append({"method": f"yt-dlp ({source or 'no cookies'})", "status": "failed", "error": err_msg})
                 print(f"yt-dlp failed with cookies={source}: {result.stderr}")
     except Exception as e:
+        attempts.append({"method": "yt-dlp process", "status": "error", "error": str(e)})
         print(f"yt-dlp download process failed: {e}")
 
     # 2. Fallback to pytubefix if yt-dlp failed
@@ -293,10 +344,20 @@ def separate(req: SeparateRequest):
                     m4a_path = os.path.join(song_dir, f"{vid}.m4a")
                     if os.path.exists(m4a_path) and os.path.getsize(m4a_path) > 0:
                         download_success = True
+                        attempts.append({"method": f"pytubefix ({client_name})", "status": "success"})
                         print(f"pytubefix download success using client: {client_name}")
                         break
+                    else:
+                        attempts.append({"method": f"pytubefix ({client_name})", "status": "failed", "error": "Empty downloaded file"})
+                else:
+                    attempts.append({"method": f"pytubefix ({client_name})", "status": "failed", "error": "Audio stream not found"})
             except Exception as py_err:
+                attempts.append({"method": f"pytubefix ({client_name})", "status": "failed", "error": str(py_err)})
                 print(f"pytubefix fallback failed with client {client_name}: {py_err}")
+
+    # Log results to download_history.json
+    status = "success" if download_success else "failed"
+    log_download_attempt(vid, req.title, attempts, status)
 
     if not download_success or not os.path.exists(m4a_path) or os.path.getsize(m4a_path) == 0:
         if os.path.exists(m4a_path) and os.path.getsize(m4a_path) == 0:

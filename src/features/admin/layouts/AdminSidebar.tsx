@@ -35,6 +35,7 @@ const mainMenuItems = [
   { title: "รายการสั่งซื้อ", icon: CreditCard, path: "/admin/payments", id: 'orders', badgeColor: "warning" },
   { title: "ตั้งค่าระบบ", icon: Settings, path: "/admin/config" },
   { title: "สิทธิ์การใช้งาน", icon: Banknote, path: "/admin/plans" },
+  { title: "Log แยกเสียง AI", icon: FileText, path: "#vocal-logs", action: 'vocal-logs' },
 ];
 
 export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) => {
@@ -109,6 +110,23 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) 
           <div className="space-y-1">
             {mainMenuItems.map((item) => {
               const isActive = router.pathname === item.path;
+              if (item.action === 'vocal-logs') {
+                return (
+                  <button
+                    key={item.path}
+                    onClick={() => {
+                      useUIStore.getState().showDownloadHistoryModal();
+                      if (window.innerWidth < 1024 && onToggle) {
+                        onToggle();
+                      }
+                    }}
+                    className="w-full text-left group flex items-center gap-3 px-4 py-3 mb-1 rounded-2xl transition-all duration-200 font-bold text-sm text-gray-700 hover:bg-gray-100/50 hover:text-gray-900 border border-transparent hover:border-gray-200"
+                  >
+                    <item.icon className="h-[22px] w-[22px] text-gray-500 group-hover:text-gray-700" />
+                    <span>{item.title}</span>
+                  </button>
+                );
+              }
               return (
                 <Link
                   key={item.path}

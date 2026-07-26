@@ -2,7 +2,7 @@ import React from 'react';
 import { useUIStore } from '../stores/useUIStore';
 import { useAIVocalStore } from '../stores/useAIVocalStore';
 import { usePlayerStore } from '../modules/player/stores/usePlayerStore';
-import { Sparkles, Mic, X } from 'lucide-react';
+import { Sparkles, Mic, X, AlertCircle } from 'lucide-react';
 import clsx from 'clsx';
 
 export const VocalModeModal = () => {
@@ -18,8 +18,10 @@ export const VocalModeModal = () => {
     const handleSelectMode = (mode: 'basic' | 'pro') => {
         // Update queue item
         updateQueueItem(videoUuid, { aiVocalRequested: true });
+        // Find title
+        const songTitle = usePlayerStore.getState().queue.find(item => item.uuid === videoUuid)?.title || "Unknown Title";
         // Start processing
-        processAudio(videoId, mode).catch(console.error);
+        processAudio(videoId, songTitle, mode).catch(console.error);
         hideVocalModeModal();
     };
 
@@ -95,6 +97,18 @@ export const VocalModeModal = () => {
                                     แยก 4 แทร็ก: ร้อง, กลอง, เบส, ดนตรีอื่นๆ (ปรับแต่งอิสระได้ทุกชิ้นดนตรี)
                                 </p>
                             </div>
+                        </button>
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-gray-100 dark:border-zinc-800/60 flex justify-center">
+                        <button
+                            onClick={() => {
+                                useUIStore.getState().showDownloadHistoryModal();
+                            }}
+                            className="text-xs font-bold text-gray-500 hover:text-primary dark:text-zinc-400 dark:hover:text-white flex items-center gap-1.5 transition-colors"
+                        >
+                            <AlertCircle className="w-3.5 h-3.5" />
+                            ดูประวัติการแยกเสียงร้อง AI
                         </button>
                     </div>
                 </div>

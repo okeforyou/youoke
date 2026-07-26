@@ -79,6 +79,12 @@ interface UIState {
     showVocalModeModal: (videoUuid: string, videoId: string) => void;
     hideVocalModeModal: () => void;
 
+    downloadHistoryModal: {
+        isOpen: boolean;
+    };
+    showDownloadHistoryModal: () => void;
+    hideDownloadHistoryModal: () => void;
+
     config: SystemConfig;
     setConfig: (config: SystemConfig) => void;
 }
@@ -179,6 +185,12 @@ export const useUIStore = create<UIState>((set, get) => ({
     hideVocalModeModal: () => set({
         vocalModeModal: { isOpen: false, videoUuid: null, videoId: null }
     }),
+
+    downloadHistoryModal: {
+        isOpen: false
+    },
+    showDownloadHistoryModal: () => set({ downloadHistoryModal: { isOpen: true } }),
+    hideDownloadHistoryModal: () => set({ downloadHistoryModal: { isOpen: false } }),
 
     config: DEFAULT_CONFIG,
     setConfig: (config) => set({ config }),

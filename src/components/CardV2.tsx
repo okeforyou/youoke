@@ -99,7 +99,7 @@ export default function CardV2({
 
                 {badgeText && (
                     <div className="absolute bottom-3 left-3 z-30">
-                        <div className="w-fit inline-block px-2.5 py-0.5 rounded-full bg-black/35 backdrop-blur-md text-white text-[10px] font-black shadow-sm border border-white/10">
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center bg-black/35 backdrop-blur-md text-white text-[9px] font-black shadow-sm border border-white/10">
                             {badgeText}
                         </div>
                     </div>

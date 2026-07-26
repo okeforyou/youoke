@@ -1,0 +1,120 @@
+INFO:     Started server process [61311]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:5050 (Press CTRL+C to quit)
+INFO:     127.0.0.1:59848 - "GET /version HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59861 - "GET /files/hBK29bbOLS4/no_vocals.m4a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59860 - "GET /files/hBK29bbOLS4/vocals.m4a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59863 - "HEAD /files/hBK29bbOLS4/vocals.m4a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59864 - "HEAD /files/hBK29bbOLS4/no_vocals.m4a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59865 - "GET /version HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59865 - "GET /cache/list HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59883 - "HEAD /files/Gh7H665em94/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59884 - "HEAD /files/rrXVl_9ioD8/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59886 - "HEAD /files/IXblaf5OCOw/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59885 - "HEAD /files/cbzjDwDgqEQ/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59882 - "HEAD /files/aM2kcjL1Bbw/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59887 - "HEAD /files/CkZ6U48CGF8/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59882 - "HEAD /files/D6vD26AgFes/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59883 - "HEAD /files/O9or-_kkSPs/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59885 - "HEAD /files/HhdUqxyyRZo/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59891 - "HEAD /files/hBK29bbOLS4/no_vocals.m4a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59890 - "HEAD /files/hBK29bbOLS4/vocals.m4a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59891 - "HEAD /files/hBK29bbOLS4/no_vocals.m4a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59890 - "HEAD /files/hBK29bbOLS4/vocals.m4a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59896 - "GET /version HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59896 - "GET /cache/list HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59908 - "HEAD /files/A2xUV3-Byak/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59907 - "HEAD /files/nvXYhDksvOo/vocals.m4a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59911 - "HEAD /files/pBI7whQiqSM/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59909 - "HEAD /files/aM2kcjL1Bbw/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59910 - "HEAD /files/Qxe3isUc1XA/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59912 - "HEAD /files/UTHYKyze2I0/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59907 - "HEAD /files/AI0zRvIqlk0/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59908 - "HEAD /files/nK5uRjCZCM4/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59912 - "HEAD /files/nvXYhDksvOo/drums.m4a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59910 - "HEAD /files/bh9xdQ-OVZE/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59911 - "HEAD /files/mPoFEcMIl0Q/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59916 - "GET /version HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59916 - "GET /cache/list HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59917 - "HEAD /files/Gh7H665em94/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59918 - "HEAD /files/rrXVl_9ioD8/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59919 - "HEAD /files/cbzjDwDgqEQ/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59916 - "HEAD /files/aM2kcjL1Bbw/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59921 - "HEAD /files/CkZ6U48CGF8/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59920 - "HEAD /files/IXblaf5OCOw/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59917 - "HEAD /files/O9or-_kkSPs/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59916 - "HEAD /files/D6vD26AgFes/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59918 - "HEAD /files/HhdUqxyyRZo/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59924 - "GET /version HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59924 - "GET /cache/list HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59927 - "HEAD /files/CB8qGOuc9wA/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59926 - "HEAD /files/Z-qjxO_ZJKM/vocals.m4a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59929 - "HEAD /files/aRkwHkquXqE/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59930 - "HEAD /files/w4lJda9CuPI/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59931 - "HEAD /files/tv4qstr5DZo/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59928 - "HEAD /files/u9W24uWppmc/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59929 - "HEAD /files/46wBr_33MSw/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59930 - "HEAD /files/GOfhURt2xyQ/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59927 - "HEAD /files/VR5HzhgQIZ8/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59928 - "HEAD /files/NB5OVkqsELE/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59931 - "HEAD /files/O6PZahrWUo0/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59926 - "HEAD /files/oVAp02X8oJ8/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59927 - "HEAD /files/QYf81dBGN2E/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59930 - "HEAD /files/Z-qjxO_ZJKM/drums.m4a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59929 - "HEAD /files/qvNcMrWfe5g/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59941 - "HEAD /files/g6ZHa9b6V7o/drums.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59944 - "GET /version HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59944 - "GET /cache/list HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59947 - "HEAD /files/Kp188eMWETw/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59948 - "HEAD /files/gkIQnF36cpc/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59950 - "HEAD /files/4hBzH39IURk/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59949 - "HEAD /files/Tpo96gNuJbM/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59952 - "HEAD /files/1BETsYvi77I/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59947 - "HEAD /files/7-M7aBpDAIs/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59951 - "HEAD /files/2WXUKSvIzXk/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59948 - "HEAD /files/ao9tJskY-F4/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59949 - "HEAD /files/9KKIRCljruM/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59952 - "HEAD /files/YgVT_SQfSxk/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59950 - "HEAD /files/xNBpt--rgDs/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59947 - "HEAD /files/OnqwIcqWA4Q/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59948 - "HEAD /files/ovmSHCplUqs/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59951 - "HEAD /files/_JNVJBKY3ko/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59952 - "HEAD /files/2uSDIi_SBRM/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59950 - "HEAD /files/qNzDtv0Gddw/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59948 - "HEAD /files/nYFrRTVm3jE/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59949 - "HEAD /files/JcY3ToLr1cQ/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59960 - "GET /files/RjUSnPUlkjc/vocals.m4a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59961 - "GET /files/RjUSnPUlkjc/no_vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59962 - "HEAD /files/RjUSnPUlkjc/vocals.m4a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59963 - "HEAD /files/RjUSnPUlkjc/no_vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59970 - "GET /files/Z-qjxO_ZJKM/vocals.m4a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59971 - "GET /files/Z-qjxO_ZJKM/drums.m4a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59972 - "GET /files/Z-qjxO_ZJKM/bass.m4a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59973 - "GET /files/Z-qjxO_ZJKM/other.m4a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59976 - "HEAD /files/Z-qjxO_ZJKM/bass.m4a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59974 - "HEAD /files/Z-qjxO_ZJKM/vocals.m4a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59975 - "HEAD /files/Z-qjxO_ZJKM/drums.m4a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59977 - "HEAD /files/Z-qjxO_ZJKM/other.m4a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59980 - "GET /cache/list HTTP/1.1" 200 OK
+WARNING:  Invalid HTTP request received.
+INFO:     127.0.0.1:59993 - "HEAD /files/nvXYhDksvOo/drums.m4a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61043 - "HEAD /files/Z-qjxO_ZJKM/vocals.m4a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61044 - "HEAD /files/Z-qjxO_ZJKM/drums.m4a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61045 - "HEAD /files/Z-qjxO_ZJKM/bass.m4a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61046 - "HEAD /files/Z-qjxO_ZJKM/other.m4a HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61253 - "HEAD /files/xOlAJ_ny34A/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61293 - "HEAD /files/79qwUtFnpJs/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61294 - "HEAD /files/SghPVAhwxa0/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61329 - "HEAD /files/xOlAJ_ny34A/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61329 - "GET /version HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61329 - "GET /cache/list HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61341 - "HEAD /files/xOlAJ_ny34A/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61341 - "GET /version HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61341 - "GET /cache/list HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61506 - "HEAD /files/xOlAJ_ny34A/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61506 - "GET /version HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61506 - "GET /cache/list HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61523 - "HEAD /files/xOlAJ_ny34A/vocals.m4a HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61523 - "GET /version HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61523 - "GET /cache/list HTTP/1.1" 200 OK

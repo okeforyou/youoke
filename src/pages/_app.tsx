@@ -21,6 +21,7 @@ import { ToastProvider } from '@/context/ToastContext'
 import { MidiEngineProvider } from '@/context/MidiEngineContext'
 import { FontLoader } from '../components/FontLoader';
 import { VocalModeModal } from "../components/VocalModeModal";
+import { DownloadHistoryModal } from "../components/DownloadHistoryModal";
 import GlobalErrorBoundary from '../components/GlobalErrorBoundary';
 import { GlobalConfirmModal } from '../components/common/GlobalConfirmModal';
 
@@ -186,6 +187,7 @@ function App({ Component, pageProps }: AppProps) {
           <Analytics />
           <GlobalConfirmModal />
           <VocalModeModal />
+          <DownloadHistoryModal />
         </GlobalErrorBoundary>
       </AuthContextProvider >
     </ToastProvider >
