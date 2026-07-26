@@ -700,18 +700,38 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
             <p className="text-gray-500 dark:text-zinc-500 mt-2 mb-6 max-w-sm text-sm font-medium">
               คุณจำเป็นต้องเปิดโปรแกรม YouOke Server ในเครื่องของคุณ เพื่อดึงข้อมูลไฟล์ AI
             </p>
-            <a 
-              href="youoke://start" 
-              className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg shadow-red-500/30 transition-all hover:-translate-y-0.5 active:translate-y-0 mb-4"
-            >
-              เปิดโปรแกรมเบื้องหลัง (คลิกที่นี่)
-            </a>
+            <div className="flex gap-2 mb-6">
+              <a 
+                href="youoke://start" 
+                className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg shadow-red-500/30 transition-all hover:-translate-y-0.5 active:translate-y-0"
+              >
+                เปิดโปรแกรมเบื้องหลัง
+              </a>
+              <button 
+                onClick={() => window.location.reload()}
+                className="px-6 py-2.5 bg-zinc-800 hover:bg-black dark:bg-zinc-700 dark:hover:bg-zinc-600 text-white font-bold rounded-xl shadow-lg shadow-zinc-500/30 transition-all hover:-translate-y-0.5 active:translate-y-0"
+              >
+                รีเฟรชหน้าเว็บ
+              </button>
+            </div>
             
-            <div className="flex gap-3 text-xs text-red-700/80 dark:text-red-300/80 items-center justify-center">
-              <span>ยังไม่มีโปรแกรมติดตั้งในเครื่อง?</span>
-              <a href="/api/download-plugin?os=win" target="_blank" className="hover:underline font-bold">โหลดสำหรับ Windows</a>
-              <span>|</span>
-              <a href="/api/download-plugin?os=mac" target="_blank" className="hover:underline font-bold">โหลดสำหรับ Mac</a>
+            <div className="flex gap-3 text-sm text-red-700/80 dark:text-red-300/80 items-center justify-center mb-4">
+              <span className="font-bold">ยังไม่มีโปรแกรมติดตั้งในเครื่อง?</span>
+              <a href="/api/download-plugin?os=win" target="_blank" className="hover:underline font-black bg-blue-100 text-blue-700 px-3 py-1 rounded-lg">โหลดสำหรับ Windows</a>
+              <a href="/api/download-plugin?os=mac" target="_blank" className="hover:underline font-black bg-zinc-200 text-zinc-800 px-3 py-1 rounded-lg">โหลดสำหรับ Mac</a>
+            </div>
+
+            <div className="text-xs text-red-800/80 dark:text-red-300/80 max-w-md text-left bg-red-100/50 dark:bg-red-900/20 p-4 rounded-xl mt-4 w-full">
+              <p className="font-bold mb-2">🍎 วิธีติดตั้งและอัปเดตสำหรับ Mac (แก้ปัญหา Gatekeeper):</p>
+              <ul className="list-decimal pl-4 space-y-2">
+                <li>โหลดไฟล์ <strong>.dmg</strong> แล้วลากแอป <strong>YouOke Plugin</strong> ลงโฟลเดอร์ <strong>Applications</strong></li>
+                <li>คลิกที่กล่องโค้ดด้านล่างเพื่อคัดลอก:
+                  <code className="block bg-gray-900 text-green-400 p-2.5 rounded-lg text-xs font-mono mt-1 mb-1 select-all cursor-pointer shadow-inner" onClick={(e) => {navigator.clipboard.writeText('xattr -cr /Applications/YouOke\\ Plugin.app && open /Applications/YouOke\\ Plugin.app'); const el = e.currentTarget; el.style.outline='2px solid #22c55e'; setTimeout(()=>el.style.outline='',1000);}}>
+                    xattr -cr /Applications/YouOke\ Plugin.app && open /Applications/YouOke\ Plugin.app
+                  </code>
+                </li>
+                <li>เปิดแอป <strong>Terminal</strong> ใน Mac วางโค้ดลงไปแล้วกด Enter แอปจะเปิดขึ้นมาพร้อมใช้งานทันที</li>
+              </ul>
             </div>
           </div>
         ) : activeIndex === 3 && bridgeStatus === 'outdated' ? (
