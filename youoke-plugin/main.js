@@ -176,7 +176,9 @@ app.whenReady().then(() => {
           ? 'https://youoke.vercel.app/api/download-plugin?os=mac'
           : 'https://youoke.vercel.app/api/download-plugin?os=win';
         shell.openExternal(downloadUrl);
-        // We do not quit automatically. User downloads and installs manually.
+        // Auto-close the app so the user can overwrite the file without "File in use" error
+        stopServer();
+        setTimeout(() => app.quit(), 1000);
       }
     });
   });
