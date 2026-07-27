@@ -161,11 +161,18 @@ def list_cache():
             if os.path.exists(os.path.join(song_dir, "drums.m4a")):
                 mode = "pro"
                 
+            title = f"ไฟล์เพลง {vid}"
+            title_path = os.path.join(song_dir, "title.txt")
+            if os.path.exists(title_path):
+                with open(title_path, "r", encoding="utf-8") as f:
+                    title = f.read().strip()
+                
             # Get created time
             created_at = os.path.getctime(vocal_m4a)
             
             results.append({
                 "video_id": vid,
+                "title": title,
                 "mode": mode,
                 "size_mb": round(size_mb, 2),
                 "created_at": created_at
@@ -456,6 +463,11 @@ def separate(req: SeparateRequest):
     # Save mode flag for client checks
     with open(os.path.join(song_dir, "mode.txt"), "w") as f:
         f.write(mode)
+        
+    # Save title for cache listing
+    with open(os.path.join(song_dir, "title.txt"), "w", encoding="utf-8") as f:
+        f.write(req.title)
+
         
     # Cleanup temporary files (WAV is huge)
     for tmp_file in [m4a_path, wav_path]:

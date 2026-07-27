@@ -136,25 +136,8 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
     }
   }, [activeIndex, isLoadPlaylist, user, youtubePlaylists.length, aiCacheList.length]);
 
-  // Auto-reconnect polling for AI Vocal tab
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (activeIndex === 3 && bridgeStatus === 'offline') {
-      interval = setInterval(async () => {
-        try {
-          const res = await fetch("http://127.0.0.1:5050/version", { signal: AbortSignal.timeout(2000) });
-          if (res.ok) {
-            clearInterval(interval);
-            getAiCacheList();
-          }
-        } catch (e) {
-          // Still offline, ignore
-        }
-      }, 3000);
-    }
-    return () => clearInterval(interval);
-  }, [activeIndex, bridgeStatus]);
-
+  // Auto-reconnect polling for AI Vocal tab removed to prevent flashing offline states.
+  // Polling is now handled directly inside getAiCacheList.
   // Update playlists when data changes OR when switching tabs
   useEffect(() => {
     if (!isLoading) {
@@ -299,30 +282,39 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
     setIsLoading(true);
     setBridgeStatus('checking');
     try {
-      // 1. Check version first with retry mechanism
       let isOutdated = false;
       let bridgeRunning = false;
       
-      for (let attempt = 1; attempt <= 5; attempt++) {
+      const checkPort = async () => {
+         let res5050;
+         try { res5050 = await fetch("http://127.0.0.1:5050/version", { signal: AbortSignal.timeout(2000) }); } catch(e){}
+         if (res5050?.ok) return res5050;
+         
+         let res8055;
+         try { res8055 = await fetch("http://127.0.0.1:8055/version", { signal: AbortSignal.timeout(2000) }); } catch(e){}
+         if (res8055?.ok) return res8055;
+         
+         if (res5050) return res5050;
+         if (res8055) return res8055;
+         return null;
+      };
+
+      for (let attempt = 1; attempt <= 15; attempt++) {
         if (attempt > 1) setBridgeStatus('waking_up');
-        try {
-          const verRes = await fetch("http://127.0.0.1:5050/version", { signal: AbortSignal.timeout(2000) });
-          if (verRes.ok) {
-            const verData = await verRes.json();
-            if (verData.version !== "1.1.0") {
-              isOutdated = true;
+        const verRes = await checkPort();
+        if (verRes) {
+            if (verRes.ok) {
+                const verData = await verRes.json().catch(() => ({version: "unknown"}));
+                if (verData.version !== "1.1.0") isOutdated = true;
+                bridgeRunning = true;
+                break;
+            } else {
+                isOutdated = true; // older versions or weird airplay proxy
+                bridgeRunning = true;
+                break;
             }
-            bridgeRunning = true;
-            break;
-          } else {
-            isOutdated = true; // /version doesn't exist in older versions
-            bridgeRunning = true;
-            break;
-          }
-        } catch (err) {
-          if (attempt === 5) break;
-          await new Promise(r => setTimeout(r, 1000));
         }
+        if (attempt < 15) await new Promise(r => setTimeout(r, 1000));
       }
 
       if (!bridgeRunning) {
@@ -339,24 +331,36 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
 
       setBridgeStatus('running');
 
-      // 2. Fetch cache list
-      const res = await fetch("http://127.0.0.1:5050/cache/list");
+      const fetchListWithFallback = async () => {
+          let res5050;
+          try { res5050 = await fetch("http://127.0.0.1:5050/cache/list"); } catch(e){}
+          if (res5050?.ok) return res5050;
+          
+          let res8055;
+          try { res8055 = await fetch("http://127.0.0.1:8055/cache/list"); } catch(e){}
+          if (res8055?.ok) return res8055;
+          
+          return res5050 || res8055;
+      };
+
+      const res = await fetchListWithFallback();
+      if (!res) throw new Error("Failed to fetch list");
+      
       const data = await res.json();
       if (data.status === "success" && data.results) {
         const enriched = data.results.map((r: any) => {
           return {
             ...r,
-            title: `ไฟล์เพลง ${r.video_id}`,
+            title: r.title || `ไฟล์เพลง ${r.video_id}`,
             author: "Local Cache",
             thumbnail: `https://img.youtube.com/vi/${r.video_id}/mqdefault.jpg`
           };
         });
         setAiCacheList(enriched);
         
-        // Sync actual modes to AI store so it shows 4CH correctly in Queue
         const currentJobs = useAIVocalStore.getState().jobs;
         const updates: Record<string, any> = {};
-        enriched.forEach(item => {
+        enriched.forEach((item: any) => {
           if (currentJobs[item.video_id]?.mode !== item.mode || currentJobs[item.video_id]?.status !== 'ready') {
             updates[item.video_id] = { 
               status: 'ready', 
