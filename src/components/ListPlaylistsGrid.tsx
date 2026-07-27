@@ -348,14 +348,24 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
       
       const data = await res.json();
       if (data.status === "success" && data.results) {
-        const enriched = data.results.map((r: any) => {
+        const enriched = await Promise.all(data.results.map(async (r: any) => {
+          let title = r.title;
+          if (!title) {
+            try {
+              const noembedRes = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${r.video_id}`, { signal: AbortSignal.timeout(3000) });
+              if (noembedRes.ok) {
+                const noembedData = await noembedRes.json();
+                title = noembedData.title;
+              }
+            } catch (e) {}
+          }
           return {
             ...r,
-            title: r.title || `ไฟล์เพลง ${r.video_id}`,
+            title: title || `ไฟล์เพลง ${r.video_id}`,
             author: "Local Cache",
             thumbnail: `https://img.youtube.com/vi/${r.video_id}/mqdefault.jpg`
           };
-        });
+        }));
         setAiCacheList(enriched);
         
         const currentJobs = useAIVocalStore.getState().jobs;
