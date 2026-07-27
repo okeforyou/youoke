@@ -727,23 +727,22 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
               </div>
             ))}
           </div>
-        ) : activeIndex === 3 && bridgeStatus === 'offline' ? (
-          <div className="mx-4 flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-blue-200 dark:border-blue-900/30 rounded-3xl bg-blue-50/30 dark:bg-blue-900/10 transition-colors">
+          <div className="mx-4 flex flex-col items-center justify-center py-12 text-center border-2 border-dashed border-gray-100 dark:border-zinc-800 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/20 transition-colors">
             <div 
-              className="w-20 h-20 bg-white dark:bg-zinc-900 rounded-full flex items-center justify-center mb-6 shadow-sm"
+              className="w-16 h-16 bg-white dark:bg-zinc-900 rounded-full flex items-center justify-center mb-5 shadow-sm"
             >
-              <CpuChipIcon className="w-10 h-10 text-blue-500" />
+              <CpuChipIcon className="w-8 h-8 text-gray-400 dark:text-zinc-600" />
             </div>
-            <h3 className="text-xl font-black text-gray-800 dark:text-gray-200 leading-tight">
+            <h3 className="text-lg font-black text-gray-900 dark:text-white leading-tight">
               เชื่อมต่อ YouOke Plugin
             </h3>
-            <p className="text-gray-500 dark:text-zinc-400 mt-2 mb-6 max-w-sm text-sm font-medium">
+            <p className="text-gray-500 dark:text-zinc-500 mt-2 mb-6 max-w-sm text-[13px] font-medium">
               ฟีเจอร์ AI แยกเสียงร้อง จำเป็นต้องใช้งานร่วมกับโปรแกรม YouOke Plugin ในเครื่องของคุณ
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 mb-8 w-full max-w-xs sm:max-w-none justify-center px-4">
+            <div className="flex flex-col sm:flex-row gap-3 mb-6 w-full max-w-xs sm:max-w-none justify-center px-4">
               <a 
                 href="youoke://start" 
-                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-0.5 active:translate-y-0 flex-1 sm:flex-none text-center"
+                className="px-6 py-2.5 bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-100 text-white dark:text-black font-bold rounded-full shadow-md transition-all hover:scale-105 active:scale-95 flex-1 sm:flex-none text-center text-[13px]"
               >
                 เปิด YouOke Plugin
               </a>
@@ -751,21 +750,21 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
                 onClick={() => {
                   getAiCacheList();
                 }}
-                className="px-6 py-2.5 bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-300 font-bold rounded-xl border border-gray-200 dark:border-zinc-700 shadow-sm hover:bg-gray-50 dark:hover:bg-zinc-700 transition-all active:scale-95 flex-1 sm:flex-none"
+                className="px-6 py-2.5 bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-300 font-bold rounded-full border border-gray-200 dark:border-zinc-700 shadow-sm hover:bg-gray-50 dark:hover:bg-zinc-700 transition-all active:scale-95 flex-1 sm:flex-none text-[13px]"
               >
                 โหลดใหม่
               </button>
             </div>
             
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 text-sm items-center justify-center bg-white dark:bg-zinc-800/50 px-6 py-3 rounded-2xl border border-gray-100 dark:border-zinc-800">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 text-[12px] items-center justify-center bg-white dark:bg-zinc-800/50 px-5 py-2.5 rounded-2xl border border-gray-100 dark:border-zinc-800">
               <span className="text-gray-500 font-medium">ยังไม่ได้ติดตั้ง?</span>
               <div className="flex gap-2">
-                <a href="/api/download-plugin?os=win" target="_blank" className="font-bold text-blue-600 hover:text-blue-700 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.951-1.801"/></svg>
+                <a href="/api/download-plugin?os=win" target="_blank" className="font-bold text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white bg-gray-100 dark:bg-zinc-700 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.951-1.801"/></svg>
                   Windows
                 </a>
                 <a href="/api/download-plugin?os=mac" target="_blank" className="font-bold text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white bg-gray-100 dark:bg-zinc-700 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.25 15.25c-.25.25-1.5-1-2.5-1.5-.75-.5-1.5-1-2.25-1-.75 0-1.5.5-2.25 1s-2.25 1.75-2.5 1.5c-.25-.25 0-2 .5-3 .5-1 1.5-2 3-2h1c1.5 0 2.5 1 3 2 .5 1 .75 2.75.5 3zM14 8c-.5.5-1.5.5-2 .5s-1.5 0-2-.5c-.5-.5-.5-1.5.5-2 .75-.5 1.25-.5 2-.5s1.25 0 2 .5c1 1 1 2 .5 2z"/></svg>
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.25 15.25c-.25.25-1.5-1-2.5-1.5-.75-.5-1.5-1-2.25-1-.75 0-1.5.5-2.25 1s-2.25 1.75-2.5 1.5c-.25-.25 0-2 .5-3 .5-1 1.5-2 3-2h1c1.5 0 2.5 1 3 2 .5 1 .75 2.75.5 3zM14 8c-.5.5-1.5.5-2 .5s-1.5 0-2-.5c-.5-.5-.5-1.5.5-2 .75-.5 1.25-.5 2-.5s1.25 0 2 .5c1 1 1 2 .5 2z"/></svg>
                   Mac
                 </a>
               </div>
