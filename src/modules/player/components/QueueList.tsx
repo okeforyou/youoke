@@ -129,15 +129,12 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                                                     useUIStore.getState().showVocalModeModal(video.uuid || video.id, video.videoId || video.id);
                                                 });
                                             }}
-                                            className={`relative group/badge pl-1.5 pr-2 py-0.5 rounded-md flex items-center justify-center transition-all ${
-                                                aiJob.mode === 'pro' 
-                                                    ? 'bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 text-amber-600 dark:text-amber-400 cursor-default' 
-                                                    : 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 text-blue-600 dark:text-blue-400 cursor-pointer hover:shadow-sm'
+                                            className={`relative group/badge px-1.5 py-0.5 rounded-[4px] bg-black/60 dark:bg-black/50 text-white text-[9px] font-bold border border-white/10 flex items-center justify-center transition-colors ${
+                                                aiJob.mode !== 'pro' ? 'cursor-pointer hover:bg-black/80 dark:hover:bg-black/70' : 'cursor-default'
                                             }`}
                                         >
-                                            <Sparkles className={`w-[10px] h-[10px] mr-1 shrink-0 ${aiJob.mode === 'pro' ? 'text-amber-500' : 'text-blue-500'}`} />
-                                            <span className="text-[9.5px] font-bold uppercase tracking-wide">
-                                                {aiJob.mode === 'pro' ? 'แยกเสียงแล้ว 4CH' : 'แยกเสียงแล้ว 2CH'}
+                                            <span className="uppercase tracking-wide">
+                                                {aiJob.mode === 'pro' ? '4CH' : '2CH'}
                                             </span>
                                             <div className="absolute -top-7 left-1/2 -translate-x-1/2 px-2 py-1 bg-black/80 dark:bg-white/90 text-white dark:text-black text-[10px] font-medium rounded opacity-0 group-hover/badge:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
                                                 {aiJob.mode === 'pro' ? 'แยกเสียงแล้ว (4 แทร็ก)' : 'แยกเสียงแล้ว (2 แทร็ก) - คลิกเพื่ออัปเกรดเป็น 4 แทร็ก'}
