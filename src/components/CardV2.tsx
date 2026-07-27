@@ -26,7 +26,7 @@ interface CardV2Props {
     onLike?: () => void;
     activeIndex?: number;
     isRecommended?: boolean;
-    badgeText?: string;
+    aiBadgeText?: string;
     badgeColor?: string;
 }
 
@@ -42,7 +42,7 @@ export default function CardV2({
     onLike,
     activeIndex = 0,
     isRecommended = false,
-    badgeText,
+    aiBadgeText,
     badgeColor = "bg-primary",
 }: CardV2Props) {
 
@@ -97,20 +97,20 @@ export default function CardV2({
                     </div>
                 )}
 
-                {badgeText && (
+                {aiBadgeText && (
                     <div style={{ position: 'absolute', top: '8px', left: '8px', zIndex: 30 }}>
                         <span style={{ 
                             display: 'inline-block', 
                             padding: '4px 8px', 
-                            borderRadius: '4px', 
-                            backgroundColor: 'rgba(0,0,0,0.7)', 
+                            borderRadius: '6px', 
+                            backgroundColor: 'rgba(0,0,0,0.85)', 
                             color: 'white', 
-                            fontSize: '10px', 
+                            fontSize: '11px', 
                             fontWeight: 'bold',
-                            backdropFilter: 'blur(4px)',
-                            border: '1px solid rgba(255,255,255,0.1)'
+                            border: '1px solid rgba(255,255,255,0.2)',
+                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)'
                         }}>
-                            {badgeText}
+                            {aiBadgeText}
                         </span>
                     </div>
                 )}
