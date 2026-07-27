@@ -98,17 +98,16 @@ export default function CardV2({
                 )}
 
                 {aiBadgeText && (
-                    <div style={{ position: 'absolute', top: '8px', left: '8px', zIndex: 30 }}>
+                    <div style={{ position: 'absolute', top: '6px', left: '6px', zIndex: 30 }}>
                         <span style={{ 
                             display: 'inline-block', 
-                            padding: '4px 8px', 
-                            borderRadius: '6px', 
-                            backgroundColor: 'rgba(0,0,0,0.85)', 
+                            padding: '2px 6px', 
+                            borderRadius: '4px', 
+                            backgroundColor: 'rgba(0,0,0,0.5)', 
                             color: 'white', 
-                            fontSize: '11px', 
+                            fontSize: '9px', 
                             fontWeight: 'bold',
-                            border: '1px solid rgba(255,255,255,0.2)',
-                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)'
+                            border: '1px solid rgba(255,255,255,0.15)'
                         }}>
                             {aiBadgeText}
                         </span>
@@ -131,10 +130,10 @@ export default function CardV2({
                 )}
             </div>
 
-            {/* 7. Info Section */}
-            <div className="flex justify-between items-start px-1">
+            {/* Footer Data */}
+            <div className="flex items-start justify-between gap-3 p-3">
                 <div className="flex-1 min-w-0 pr-2">
-                    <h3 className="font-bold text-gray-900 dark:text-zinc-200 truncate group-hover:text-primary transition-colors text-[14px] leading-tight">
+                    <h3 className="font-bold text-gray-900 dark:text-zinc-200 truncate group-hover:text-primary text-[12px] sm:text-[13px] leading-tight">
                         {name}
                     </h3>
                     {activeIndex !== 3 && (

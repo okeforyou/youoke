@@ -323,7 +323,7 @@ export const Sidebar = memo(() => {
                 )}
 
                 {/* Expiry Banner (Expiring Soon) */}
-                {mounted && user?.expiryStatus?.isExpiringSoon && (
+                {mounted && user?.expiryStatus?.isExpiringSoon && user?.role !== 'admin' && user?.role !== 'owner' && (
                     <Link href="/profile" className={clsx(
                         "mt-3 flex items-center justify-center gap-2 bg-orange-50 dark:bg-orange-500/10 border border-orange-200/50 dark:border-orange-500/20 rounded-xl p-2 transition-all hover:bg-orange-100 dark:hover:bg-orange-500/20 text-orange-600 dark:text-orange-400 shadow-sm",
                         isSidebarCollapsed ? "hidden" : "flex"
