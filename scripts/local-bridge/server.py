@@ -23,7 +23,7 @@ try:
 except AttributeError:
     pass
 
-VERSION = "1.1.0"
+VERSION = "1.2.0"
 
 app = FastAPI()
 
@@ -287,102 +287,218 @@ def separate(req: SeparateRequest):
             except:
                 pass
 
-    # 1. Download with pytubefix (bypasses YouTube SABR block), fallback to yt-dlp
+    # --- DOWNLOAD PHASE (Multi-strategy, resilient) ---
+    # Strategy order: yt-dlp binary (new clients) → yt-dlp Python module → pytubefix (many clients) → innertube+ffmpeg
     progress_store[vid] = {"status": "downloading", "percent": 10, "message": "กำลังดาวน์โหลดวิดีโอจาก YouTube..."}
     m4a_path = os.path.join(song_dir, f"{vid}.m4a")
     yt_url = f"https://www.youtube.com/watch?v={vid}"
-    
+
     download_success = False
     attempts = []
-    
-    # 1. Try yt-dlp_macos first as primary
+    YTDLP_TIMEOUT = 90  # seconds per yt-dlp attempt
+    PYTUBEFIX_TIMEOUT = 60  # seconds per pytubefix attempt
+
+    def _find_downloaded_file(song_dir, vid):
+        """Scan song_dir for any successfully downloaded audio file for this video."""
+        exclude = {"vocals.m4a", "no_vocals.m4a", "drums.m4a", "bass.m4a", "other.m4a"}
+        candidates = [
+            f for f in os.listdir(song_dir)
+            if f.startswith(vid) and f not in exclude and not f.endswith(".wav")
+        ]
+        if candidates:
+            candidates.sort(key=lambda x: os.path.getmtime(os.path.join(song_dir, x)), reverse=True)
+            path = os.path.join(song_dir, candidates[0])
+            if os.path.getsize(path) > 0:
+                return path
+        return None
+
+    # ── Strategy 1: yt-dlp BINARY (bundled) with new 2026 player_clients ──────
     try:
-        # Resolve correct path for yt-dlp_macos inside PyInstaller bundle or local script
         if hasattr(sys, '_MEIPASS'):
             yt_dlp_exe = os.path.join(sys._MEIPASS, 'yt-dlp_macos')
         else:
             yt_dlp_exe = os.path.join(os.path.dirname(__file__), 'yt-dlp_macos')
-
         if not os.path.exists(yt_dlp_exe):
             yt_dlp_exe = "yt-dlp"
 
         out_template = os.path.join(song_dir, f"{vid}.%(ext)s")
-        
-        # Try with Chrome cookies, then Safari, then without cookies
-        cookie_sources = ["chrome", "safari", None]
+        # 2026-era client list: web_creator & ios bypass most SABR blocks
+        extractor_args = "youtube:player_client=web_creator,ios,mweb,web_safari"
+        cookie_sources = ["chrome", "safari", "firefox", None]
+
         for source in cookie_sources:
+            if download_success:
+                break
             cmd = [
                 yt_dlp_exe,
                 "-f", "140/bestaudio/best",
                 "-o", out_template,
                 "--no-warnings",
+                "--extractor-args", extractor_args,
             ]
             if source:
                 cmd += ["--cookies-from-browser", source]
             cmd.append(yt_url)
-            
-            print(f"Executing yt-dlp standalone (cookies: {source}): {' '.join(cmd)}")
-            result = subprocess.run(cmd, capture_output=True, text=True)
-            if result.returncode == 0:
-                downloaded_files = [f for f in os.listdir(song_dir) if f.startswith(vid) and f != "vocals.m4a" and f != "no_vocals.m4a" and not f.endswith(".wav")]
-                if downloaded_files:
-                    downloaded_files.sort(key=lambda x: os.path.getmtime(os.path.join(song_dir, x)), reverse=True)
-                    candidate = os.path.join(song_dir, downloaded_files[0])
-                    if os.path.getsize(candidate) > 0:
-                        m4a_path = candidate
-                        download_success = True
-                        attempts.append({"method": f"yt-dlp ({source or 'no cookies'})", "status": "success"})
-                        print(f"yt-dlp download success using cookies: {source}")
-                        break
-                    else:
-                        attempts.append({"method": f"yt-dlp ({source or 'no cookies'})", "status": "failed", "error": "Empty downloaded file"})
-                else:
-                    attempts.append({"method": f"yt-dlp ({source or 'no cookies'})", "status": "failed", "error": "No downloaded file found"})
-            else:
-                err_msg = result.stderr.strip() if result.stderr else "Unknown error"
-                attempts.append({"method": f"yt-dlp ({source or 'no cookies'})", "status": "failed", "error": err_msg})
-                print(f"yt-dlp failed with cookies={source}: {result.stderr}")
-    except Exception as e:
-        attempts.append({"method": "yt-dlp process", "status": "error", "error": str(e)})
-        print(f"yt-dlp download process failed: {e}")
 
-    # 2. Fallback to pytubefix if yt-dlp failed
-    if not download_success:
-        # Try multiple clients in pytubefix to bypass blocks
-        for client_name in ['MWEB', 'WEB', 'TV']:
+            print(f"[Strategy 1] yt-dlp binary | client=web_creator,ios,mweb | cookies={source}")
             try:
-                # Clean up any leftover empty files
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=YTDLP_TIMEOUT)
+                if result.returncode == 0:
+                    found = _find_downloaded_file(song_dir, vid)
+                    if found:
+                        m4a_path = found
+                        download_success = True
+                        attempts.append({"method": f"yt-dlp-binary (cookies={source})", "status": "success"})
+                        print(f"[Strategy 1] SUCCESS with cookies={source}")
+                    else:
+                        attempts.append({"method": f"yt-dlp-binary (cookies={source})", "status": "failed", "error": "No file found"})
+                else:
+                    err = (result.stderr or "").strip()[:300]
+                    attempts.append({"method": f"yt-dlp-binary (cookies={source})", "status": "failed", "error": err})
+                    print(f"[Strategy 1] FAILED cookies={source}: {err}")
+            except subprocess.TimeoutExpired:
+                attempts.append({"method": f"yt-dlp-binary (cookies={source})", "status": "failed", "error": f"Timeout after {YTDLP_TIMEOUT}s"})
+                print(f"[Strategy 1] TIMEOUT cookies={source}")
+    except Exception as e:
+        attempts.append({"method": "yt-dlp-binary", "status": "error", "error": str(e)})
+        print(f"[Strategy 1] ERROR: {e}")
+
+    # ── Strategy 2: yt-dlp PYTHON MODULE (may be newer than bundled binary) ────
+    if not download_success:
+        try:
+            import yt_dlp as yt_dlp_mod
+            out_template = os.path.join(song_dir, f"{vid}.%(ext)s")
+            ydl_opts = {
+                "format": "140/bestaudio/best",
+                "outtmpl": out_template,
+                "quiet": True,
+                "no_warnings": True,
+                "extractor_args": {"youtube": {"player_client": ["web_creator", "ios", "mweb"]}},
+            }
+            print(f"[Strategy 2] yt-dlp Python module v{yt_dlp_mod.version.__version__}")
+            # Run in thread to enforce timeout
+            import concurrent.futures
+            def _ytdlp_mod_download():
+                with yt_dlp_mod.YoutubeDL(ydl_opts) as ydl:
+                    ydl.download([yt_url])
+
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as ex:
+                future = ex.submit(_ytdlp_mod_download)
+                try:
+                    future.result(timeout=YTDLP_TIMEOUT)
+                    found = _find_downloaded_file(song_dir, vid)
+                    if found:
+                        m4a_path = found
+                        download_success = True
+                        attempts.append({"method": "yt-dlp-python-module", "status": "success"})
+                        print("[Strategy 2] SUCCESS")
+                    else:
+                        attempts.append({"method": "yt-dlp-python-module", "status": "failed", "error": "No file found"})
+                except concurrent.futures.TimeoutError:
+                    future.cancel()
+                    attempts.append({"method": "yt-dlp-python-module", "status": "failed", "error": f"Timeout after {YTDLP_TIMEOUT}s"})
+                    print("[Strategy 2] TIMEOUT")
+        except Exception as e:
+            attempts.append({"method": "yt-dlp-python-module", "status": "error", "error": str(e)})
+            print(f"[Strategy 2] ERROR: {e}")
+
+    # ── Strategy 3: pytubefix (expanded client list) ──────────────────────────
+    if not download_success:
+        for client_name in ['MWEB', 'IOS', 'ANDROID', 'WEB', 'TV']:
+            if download_success:
+                break
+            try:
                 if os.path.exists(m4a_path) and os.path.getsize(m4a_path) == 0:
                     os.remove(m4a_path)
                 from pytubefix import YouTube
-                print(f"Trying pytubefix fallback with client: {client_name}")
-                yt = YouTube(yt_url, client=client_name)
-                stream = yt.streams.get_audio_only()
-                if stream:
-                    stream.download(output_path=song_dir, filename=f"{vid}.m4a")
-                    m4a_path = os.path.join(song_dir, f"{vid}.m4a")
-                    if os.path.exists(m4a_path) and os.path.getsize(m4a_path) > 0:
-                        download_success = True
-                        attempts.append({"method": f"pytubefix ({client_name})", "status": "success"})
-                        print(f"pytubefix download success using client: {client_name}")
-                        break
-                    else:
-                        attempts.append({"method": f"pytubefix ({client_name})", "status": "failed", "error": "Empty downloaded file"})
-                else:
-                    attempts.append({"method": f"pytubefix ({client_name})", "status": "failed", "error": "Audio stream not found"})
+                print(f"[Strategy 3] pytubefix client={client_name}")
+
+                def _pytubefix_download():
+                    yt = YouTube(yt_url, client=client_name)
+                    stream = yt.streams.get_audio_only()
+                    if stream:
+                        stream.download(output_path=song_dir, filename=f"{vid}.m4a")
+                        return True
+                    return False
+
+                import concurrent.futures
+                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as ex:
+                    future = ex.submit(_pytubefix_download)
+                    try:
+                        ok = future.result(timeout=PYTUBEFIX_TIMEOUT)
+                        dl_path = os.path.join(song_dir, f"{vid}.m4a")
+                        if ok and os.path.exists(dl_path) and os.path.getsize(dl_path) > 0:
+                            m4a_path = dl_path
+                            download_success = True
+                            attempts.append({"method": f"pytubefix ({client_name})", "status": "success"})
+                            print(f"[Strategy 3] SUCCESS client={client_name}")
+                        else:
+                            attempts.append({"method": f"pytubefix ({client_name})", "status": "failed", "error": "Empty or missing file"})
+                    except concurrent.futures.TimeoutError:
+                        future.cancel()
+                        attempts.append({"method": f"pytubefix ({client_name})", "status": "failed", "error": f"Timeout after {PYTUBEFIX_TIMEOUT}s"})
+                        print(f"[Strategy 3] TIMEOUT client={client_name}")
             except Exception as py_err:
                 attempts.append({"method": f"pytubefix ({client_name})", "status": "failed", "error": str(py_err)})
-                print(f"pytubefix fallback failed with client {client_name}: {py_err}")
+                print(f"[Strategy 3] ERROR client={client_name}: {py_err}")
 
-    # Log results to download_history.json
-    status = "success" if download_success else "failed"
-    log_download_attempt(vid, req.title, attempts, status)
+    # ── Strategy 4: innertube library → ffmpeg stream pipe ───────────────────
+    if not download_success:
+        try:
+            import innertube
+            import urllib.request as urlreq
+            print("[Strategy 4] innertube + ffmpeg stream")
+            client = innertube.InnerTube("ANDROID")
+            player_data = client.player(video_id=vid)
+            formats = player_data.get("streamingData", {}).get("adaptiveFormats", [])
+            # Prefer audio/mp4 (m4a) stream
+            audio_formats = [f for f in formats if f.get("mimeType", "").startswith("audio/mp4")]
+            if not audio_formats:
+                audio_formats = [f for f in formats if "audio" in f.get("mimeType", "")]
+            audio_formats.sort(key=lambda f: f.get("bitrate", 0), reverse=True)
+
+            if audio_formats:
+                stream_url = audio_formats[0].get("url")
+                if stream_url:
+                    ffmpeg_exe = get_ffmpeg_path()
+                    out_path = os.path.join(song_dir, f"{vid}.m4a")
+                    result = subprocess.run(
+                        [ffmpeg_exe, "-y", "-i", stream_url, "-c", "copy", out_path],
+                        capture_output=True, text=True, timeout=YTDLP_TIMEOUT
+                    )
+                    if result.returncode == 0 and os.path.exists(out_path) and os.path.getsize(out_path) > 0:
+                        m4a_path = out_path
+                        download_success = True
+                        attempts.append({"method": "innertube+ffmpeg", "status": "success"})
+                        print("[Strategy 4] SUCCESS via innertube+ffmpeg")
+                    else:
+                        attempts.append({"method": "innertube+ffmpeg", "status": "failed", "error": result.stderr[:200]})
+                else:
+                    attempts.append({"method": "innertube+ffmpeg", "status": "failed", "error": "No stream URL in response"})
+            else:
+                attempts.append({"method": "innertube+ffmpeg", "status": "failed", "error": "No audio format found"})
+        except ImportError:
+            attempts.append({"method": "innertube+ffmpeg", "status": "skipped", "error": "innertube not installed"})
+            print("[Strategy 4] SKIPPED (innertube not installed)")
+        except subprocess.TimeoutExpired:
+            attempts.append({"method": "innertube+ffmpeg", "status": "failed", "error": f"Timeout after {YTDLP_TIMEOUT}s"})
+            print("[Strategy 4] TIMEOUT")
+        except Exception as e:
+            attempts.append({"method": "innertube+ffmpeg", "status": "error", "error": str(e)})
+            print(f"[Strategy 4] ERROR: {e}")
+
+    # Log all attempts to download_history.json
+    log_download_attempt(vid, req.title, attempts, "success" if download_success else "failed")
+    print(f"[Download] Final status: {'SUCCESS' if download_success else 'FAILED'} | Attempts: {len(attempts)}")
 
     if not download_success or not os.path.exists(m4a_path) or os.path.getsize(m4a_path) == 0:
         if os.path.exists(m4a_path) and os.path.getsize(m4a_path) == 0:
-            os.remove(m4a_path)
-        progress_store[vid] = {"status": "error", "percent": 0, "message": "ดาวน์โหลดล้มเหลว"}
-        return {"status": "error", "message": "Download failed from all sources"}
+            try:
+                os.remove(m4a_path)
+            except:
+                pass
+        progress_store[vid] = {"status": "error", "percent": 0, "message": "ดาวน์โหลดล้มเหลวจากทุกช่องทาง"}
+        return {"status": "error", "message": f"Download failed from all {len(attempts)} sources. Check /download/history for details."}
         
     # 2. Convert to WAV for demucs
     progress_store[vid] = {"status": "converting", "percent": 20, "message": "เตรียมไฟล์สำหรับ AI..."}

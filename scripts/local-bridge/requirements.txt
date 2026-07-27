@@ -8,3 +8,4 @@ imageio-ffmpeg
 torchcodec
 soundfile
 pytubefix
+innertube
