@@ -625,7 +625,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
       {/* Banner Header */}
       <div className="px-4 pt-4 pb-6">
         <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-zinc-900 dark:to-zinc-800 p-5 sm:p-8 rounded-2xl relative overflow-hidden min-h-[130px] flex flex-col justify-center border border-gray-200/50 dark:border-zinc-800 shadow-sm">
-           <h2 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white leading-tight">คลังเพลย์ลิสต์ <span className="text-[12px] font-normal text-green-500 bg-green-100 px-2 py-1 rounded-full align-top ml-2">อัปเดตล่าสุด v208</span></h2>
+           <h2 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white leading-tight">คลังเพลย์ลิสต์ <span className="text-[12px] font-normal text-green-500 bg-green-100 px-2 py-1 rounded-full align-top ml-2">อัปเดตล่าสุด v209</span></h2>
            <p className="text-[13px] sm:text-base !text-black dark:!text-zinc-400 mt-2 font-black">แหล่งรวมความบันเทิงที่คุณสร้างสรรค์เองได้</p>
            <div className="absolute bottom-6 right-8 opacity-10">
               <RectangleStackIcon className="w-20 h-20 text-black dark:text-white" />

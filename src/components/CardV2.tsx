@@ -98,10 +98,20 @@ export default function CardV2({
                 )}
 
                 {badgeText && (
-                    <div className="absolute top-2 left-2 z-30">
-                        <div className="px-2 py-1 rounded bg-black/70 text-white text-[10px] font-bold shadow-sm backdrop-blur-sm border border-white/10 flex items-center justify-center">
+                    <div style={{ position: 'absolute', top: '8px', left: '8px', zIndex: 30 }}>
+                        <span style={{ 
+                            display: 'inline-block', 
+                            padding: '4px 8px', 
+                            borderRadius: '4px', 
+                            backgroundColor: 'rgba(0,0,0,0.7)', 
+                            color: 'white', 
+                            fontSize: '10px', 
+                            fontWeight: 'bold',
+                            backdropFilter: 'blur(4px)',
+                            border: '1px solid rgba(255,255,255,0.1)'
+                        }}>
                             {badgeText}
-                        </div>
+                        </span>
                     </div>
                 )}
 
