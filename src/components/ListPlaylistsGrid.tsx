@@ -727,6 +727,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
               </div>
             ))}
           </div>
+        ) : activeIndex === 3 && bridgeStatus === 'offline' ? (
           <div className="mx-4 flex flex-col items-center justify-center py-12 text-center border-2 border-dashed border-gray-100 dark:border-zinc-800 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/20 transition-colors">
             <div 
               className="w-16 h-16 bg-white dark:bg-zinc-900 rounded-full flex items-center justify-center mb-5 shadow-sm"
