@@ -2,12 +2,21 @@ import { useEffect } from 'react';
 import { usePlayerStore } from '../modules/player/stores/usePlayerStore';
 
 const fetchWithFallback = async (endpoint: string, options?: RequestInit) => {
+    let res5050;
     try {
-        const res = await fetch(`http://127.0.0.1:5050${endpoint}`, options);
-        return res;
-    } catch (e) {
-        return fetch(`http://127.0.0.1:8055${endpoint}`, options);
-    }
+        res5050 = await fetch(`http://127.0.0.1:5050${endpoint}`, options);
+        if (res5050.ok) return res5050;
+    } catch (e) {}
+
+    let res8055;
+    try {
+        res8055 = await fetch(`http://127.0.0.1:8055${endpoint}`, options);
+        if (res8055.ok) return res8055;
+    } catch (e) {}
+
+    if (res5050) return res5050;
+    if (res8055) return res8055;
+    throw new Error("AI Server is unreachable.");
 };
 export function useAiProcessor() {
   const queue = usePlayerStore((state) => state.queue);
