@@ -713,9 +713,9 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
       <div className="min-h-[400px]">
         {isLoading && bridgeStatus === 'waking_up' ? (
           <div className="flex flex-col items-center justify-center min-h-[300px]">
-            <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+            <div className="w-12 h-12 border-[3px] border-gray-200 dark:border-zinc-800 border-t-gray-800 dark:border-t-zinc-400 rounded-full animate-spin mb-4"></div>
             <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">กำลังปลุก YouOke Plugin...</h3>
-            <p className="text-gray-500 text-sm mt-2">อาจใช้เวลา 3-10 วินาทีในครั้งแรก</p>
+            <p className="text-gray-500 text-[13px] mt-1">อาจใช้เวลา 3-10 วินาทีในครั้งแรก</p>
           </div>
         ) : isLoading ? (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6 gap-y-10 px-4">
@@ -790,55 +790,55 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
             </details>
           </div>
         ) : activeIndex === 3 && bridgeStatus === 'outdated' ? (
-          <div className="mx-4 flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-orange-100 dark:border-orange-900/30 rounded-3xl bg-orange-50/50 dark:bg-orange-900/10 transition-colors">
+          <div className="mx-4 flex flex-col items-center justify-center py-12 text-center border-2 border-dashed border-gray-100 dark:border-zinc-800 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/20 transition-colors">
             <div 
-              className="w-20 h-20 bg-white dark:bg-zinc-900 rounded-full flex items-center justify-center mb-6 shadow-sm"
+              className="w-16 h-16 bg-white dark:bg-zinc-900 rounded-full flex items-center justify-center mb-5 shadow-sm"
             >
-              <CpuChipIcon className="w-8 h-8 text-orange-500" />
+              <CpuChipIcon className="w-8 h-8 text-gray-400 dark:text-zinc-600" />
             </div>
-            <h3 className="text-xl font-black text-orange-600 dark:text-orange-400 leading-tight">
+            <h3 className="text-lg font-black text-gray-900 dark:text-white leading-tight">
               โปรแกรมเบื้องหลังเป็นเวอร์ชันเก่า
             </h3>
-            <p className="text-gray-500 dark:text-zinc-500 mt-2 mb-6 max-w-md text-sm font-medium">
+            <p className="text-gray-500 dark:text-zinc-500 mt-2 mb-6 max-w-md text-[13px] font-medium">
               คุณจำเป็นต้องดาวน์โหลดและติดตั้ง YouOke Plugin เวอร์ชันล่าสุด<br/>
               เพื่อใช้งานฟีเจอร์นี้ได้อย่างสมบูรณ์แบบ
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 w-full px-6 sm:px-0 sm:w-auto">
+            <div className="flex flex-col sm:flex-row gap-3 w-full px-6 sm:px-0 sm:w-auto justify-center">
               <a 
                 href="/api/download-plugin?os=win" 
                 target="_blank"
-                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center"
+                className="px-6 py-2.5 bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-100 text-white dark:text-black font-bold rounded-full shadow-md transition-all hover:scale-105 active:scale-95 flex items-center justify-center text-[13px]"
               >
                 ดาวน์โหลดสำหรับ Windows
               </a>
               <a 
                 href="/api/download-plugin?os=mac" 
                 target="_blank"
-                className="px-6 py-2.5 bg-zinc-800 hover:bg-black dark:bg-zinc-700 dark:hover:bg-zinc-600 text-white font-bold rounded-xl shadow-lg shadow-zinc-500/30 transition-all hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center"
+                className="px-6 py-2.5 bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-300 font-bold rounded-full border border-gray-200 dark:border-zinc-700 shadow-sm hover:bg-gray-50 dark:hover:bg-zinc-700 transition-all active:scale-95 flex items-center justify-center text-[13px]"
               >
                 ดาวน์โหลดสำหรับ Mac
               </a>
             </div>
-            <div className="text-xs text-orange-700/80 dark:text-orange-300/80 mt-8 max-w-sm text-left bg-orange-100/50 dark:bg-orange-900/20 p-4 rounded-xl">
+            <div className="text-[12px] text-gray-600 dark:text-gray-400 mt-8 max-w-sm text-left bg-white dark:bg-zinc-800/80 p-4 rounded-xl border border-gray-100 dark:border-zinc-800 shadow-sm">
               <p className="font-bold mb-1">คำแนะนำการอัปเดต:</p>
               <ul className="list-disc pl-4 space-y-1">
                 <li><span className="font-semibold">Windows:</span> กดติดตั้งทับเวอร์ชันเดิมได้เลย</li>
                 <li><span className="font-semibold">Mac:</span> ลากแอปลงโฟลเดอร์ Applications เพื่อลงทับ</li>
               </ul>
-              <p className="mt-2 text-[10px] text-orange-600/60 dark:text-orange-400/60">* กรุณาปิดแอปเก่าที่ค้างอยู่ (คลิกขวา Quit ที่เมนูบาร์) ก่อนติดตั้งใหม่</p>
+              <p className="mt-2 text-[10px] text-gray-400">* กรุณาปิดแอปเก่าที่ค้างอยู่ (คลิกขวา Quit ที่เมนูบาร์) ก่อนติดตั้งใหม่</p>
             </div>
           </div>
         ) : (
           <>
             {(activeIndex === 3 ? aiCacheList?.length === 0 : (activeIndex === 2 ? youtubePlaylists?.length === 0 : playlists?.length === 0)) ? (
-              <div className="mx-4 flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-gray-100 dark:border-zinc-800 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/20 transition-colors">
-                <div className="w-20 h-20 bg-white dark:bg-zinc-900 rounded-full flex items-center justify-center mb-6 shadow-sm">
-                  <RectangleStackIcon className="w-8 h-8 text-gray-300 dark:text-zinc-700" />
+              <div className="mx-4 flex flex-col items-center justify-center py-12 text-center border-2 border-dashed border-gray-100 dark:border-zinc-800 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/20 transition-colors">
+                <div className="w-16 h-16 bg-white dark:bg-zinc-900 rounded-full flex items-center justify-center mb-5 shadow-sm">
+                  <RectangleStackIcon className="w-8 h-8 text-gray-400 dark:text-zinc-600" />
                 </div>
-                <h3 className="text-xl font-black text-black dark:text-white leading-tight">
+                <h3 className="text-lg font-black text-gray-900 dark:text-white leading-tight">
                   {activeIndex === 3 ? "ยังไม่มีไฟล์ AI ในเครื่อง" : "ยังไม่มีเพลย์ลิสต์"}
                 </h3>
-                <p className="text-gray-500 dark:text-zinc-500 mt-2 mb-8 max-w-sm text-sm font-medium">
+                <p className="text-gray-500 dark:text-zinc-500 mt-2 mb-6 max-w-sm text-[13px] font-medium">
                   {activeIndex === 3
                     ? "คุณยังไม่มีไฟล์เพลงที่แยกเสียงเก็บไว้ในเครื่อง ลองค้นหาเพลงแล้วกดแยกเสียงดูนะครับ"
                     : activeIndex === 2 
@@ -846,8 +846,8 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
                     : "เริ่มสร้างคอลเลกชันเพลงโปรดของคุณได้ง่ายๆ แค่กดปุ่มสร้างด้านล่าง"}
                 </p>
                 {activeIndex === 1 && (
-                  <button onClick={openCreateModal} className="btn btn-primary rounded-full px-8 text-white shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95">
-                    <PlusIcon className="w-5 h-5 mr-2" /> สร้างเพลย์ลิสต์แรก
+                  <button onClick={openCreateModal} className="flex items-center gap-2 px-6 py-2.5 bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-100 text-white dark:text-black rounded-full text-[13px] font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 active:scale-95">
+                    <PlusIcon className="w-4 h-4" /> สร้างเพลย์ลิสต์แรก
                   </button>
                 )}
               </div>
