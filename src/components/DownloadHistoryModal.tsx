@@ -76,6 +76,10 @@ export const DownloadHistoryModal = () => {
         setError(null);
         try {
             const res = await fetch('http://127.0.0.1:5050/download/history');
+            if (res.status === 404) {
+                setError("YouOke Server ที่รันอยู่เป็นเวอร์ชันเก่า (ไม่พบคลังประวัติ) กรุณาปิดโปรแกรมตัวเดิม และเปิด YouOke Server ตัวใหม่ล่าสุด");
+                return;
+            }
             if (!res.ok) {
                 throw new Error(`HTTP error! status: ${res.status}`);
             }

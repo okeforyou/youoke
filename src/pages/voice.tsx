@@ -10,6 +10,15 @@ import { useAuthStore } from '@/modules/auth/useAuthStore';
 import { HomePageContent } from '../components/home/HomePageContent';
 import { usePlayerStore } from '../modules/player/stores/usePlayerStore';
 
+const fetchWithFallback = async (endpoint: string, options?: RequestInit) => {
+    try {
+        const res = await fetch(`http://127.0.0.1:5050${endpoint}`, options);
+        return res;
+    } catch (e) {
+        return fetch(`http://127.0.0.1:8055${endpoint}`, options);
+    }
+};
+
 interface QueueItem {
   id: string;
   title: string;
@@ -248,7 +257,7 @@ export default function PocKaraoke() {
       const pollProgress = async () => {
         while (isPolling) {
           try {
-            const res = await fetch(`http://127.0.0.1:5050/progress/${pendingItem.id}`);
+            const res = await fetchWithFallback(`/progress/${pendingItem.id}`);
             if (res.ok) {
               const data = await res.json();
               setQueue(prev => prev.map(q => q.id === pendingItem.id ? { ...q, message: data.message, percent: data.percent } : q));
@@ -260,7 +269,7 @@ export default function PocKaraoke() {
       pollProgress();
 
       try {
-        const res = await fetch("http://127.0.0.1:5050/separate", {
+        const res = await fetchWithFallback("/separate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ video_id: pendingItem.id })

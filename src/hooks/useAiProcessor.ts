@@ -1,8 +1,14 @@
 import { useEffect } from 'react';
 import { usePlayerStore } from '../modules/player/stores/usePlayerStore';
 
-const AI_API_BASE = 'http://127.0.0.1:5050';
-
+const fetchWithFallback = async (endpoint: string, options?: RequestInit) => {
+    try {
+        const res = await fetch(`http://127.0.0.1:5050${endpoint}`, options);
+        return res;
+    } catch (e) {
+        return fetch(`http://127.0.0.1:8055${endpoint}`, options);
+    }
+};
 export function useAiProcessor() {
   const queue = usePlayerStore((state) => state.queue);
   const updateQueueItem = usePlayerStore((state) => state.updateQueueItem);
@@ -18,7 +24,7 @@ export function useAiProcessor() {
       updateQueueItem(pendingItem.uuid, { aiStatus: 'processing' });
 
       // Start processing
-      fetch(`${AI_API_BASE}/separate`, {
+      fetchWithFallback('/separate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

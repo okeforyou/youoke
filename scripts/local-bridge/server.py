@@ -15,6 +15,13 @@ import time
 import signal
 import socket
 import threading
+import ssl
+
+# Bypass SSL Verification issues on macOS (resolves pytubefix SSL errors)
+try:
+    ssl._create_default_https_context = ssl._create_unverified_context
+except AttributeError:
+    pass
 
 VERSION = "1.1.0"
 
@@ -283,7 +290,12 @@ def separate(req: SeparateRequest):
     
     # 1. Try yt-dlp_macos first as primary
     try:
-        yt_dlp_exe = os.path.join(os.path.dirname(__file__), 'yt-dlp_macos')
+        # Resolve correct path for yt-dlp_macos inside PyInstaller bundle or local script
+        if hasattr(sys, '_MEIPASS'):
+            yt_dlp_exe = os.path.join(sys._MEIPASS, 'yt-dlp_macos')
+        else:
+            yt_dlp_exe = os.path.join(os.path.dirname(__file__), 'yt-dlp_macos')
+
         if not os.path.exists(yt_dlp_exe):
             yt_dlp_exe = "yt-dlp"
 

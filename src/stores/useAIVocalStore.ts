@@ -1,6 +1,15 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+const fetchWithFallback = async (endpoint: string, options?: RequestInit) => {
+    try {
+        const res = await fetch(`http://127.0.0.1:5050${endpoint}`, options);
+        return res;
+    } catch (e) {
+        return fetch(`http://127.0.0.1:8055${endpoint}`, options);
+    }
+};
+
 interface AIVocalJob {
     status: 'idle' | 'processing' | 'ready' | 'error';
     progress: number;
@@ -138,7 +147,7 @@ export const useAIVocalStore = create<AIVocalState>()(
         const pollProgress = async () => {
             while (isPolling) {
                 try {
-                    const res = await fetch(`http://127.0.0.1:5050/progress/${videoId}`);
+                    const res = await fetchWithFallback(`/progress/${videoId}`);
                     if (res.ok) {
                         const data = await res.json();
                         set((state) => ({
@@ -159,7 +168,7 @@ export const useAIVocalStore = create<AIVocalState>()(
         pollProgress();
 
         try {
-            const res = await fetch("http://127.0.0.1:5050/separate", {
+            const res = await fetchWithFallback("/separate", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ video_id: videoId, title: title, mode: targetMode })
@@ -212,11 +221,11 @@ export const useAIVocalStore = create<AIVocalState>()(
             
             try {
                 // Use HEAD request to quickly check if the file exists
-                const res = await fetch(`http://127.0.0.1:5050/files/${id}/vocals.m4a`, { method: 'HEAD' });
+                const res = await fetchWithFallback(`/files/${id}/vocals.m4a`, { method: 'HEAD' });
                 if (res.ok) {
                     let actualMode: 'basic' | 'pro' = 'basic';
                     try {
-                        const drumsRes = await fetch(`http://127.0.0.1:5050/files/${id}/drums.m4a`, { method: 'HEAD' });
+                        const drumsRes = await fetchWithFallback(`/files/${id}/drums.m4a`, { method: 'HEAD' });
                         if (drumsRes.ok) actualMode = 'pro';
                     } catch (e) {
                         // ignore

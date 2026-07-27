@@ -256,6 +256,9 @@ export const Sidebar = memo(() => {
                                                 const status = user?.membership?.status;
                                                 const type = user?.membership?.type;
 
+                                                if (user?.role === 'owner') return 'เจ้าของระบบ';
+                                                if (user?.role === 'admin') return 'ผู้ดูแลระบบ';
+
                                                 if (status === 'pending') return 'รออนุมัติ';
                                                 if (status === 'expired') return 'หมดอายุ';
 
@@ -265,8 +268,6 @@ export const Sidebar = memo(() => {
                                                 else if (type === 'monthly') label = 'รายเดือน';
                                                 else if (type === 'day_pass') label = 'รายวัน';
                                                 else if (type === 'trial') label = 'ทดลองใช้ (ACTIVE)';
-                                                else if (user?.role === 'owner') label = 'เจ้าของระบบ';
-                                                else if (user?.role === 'admin') label = 'ผู้ดูแลระบบ';
 
                                                 if (status === 'active' && user?.expiryStatus?.daysRemaining !== undefined && type !== 'lifetime' && type !== 'free') {
                                                     return `${label} • เหลือ ${user.expiryStatus.daysRemaining} วัน`;

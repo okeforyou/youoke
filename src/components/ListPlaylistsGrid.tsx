@@ -92,7 +92,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
   const [suggestPlaylists, setSuggestPlaylists] = useState<PlaylistItem[]>([]);
   const [latestPlaylists, setLatestPlaylists] = useState<PlaylistItem[]>([]);
   const [aiCacheList, setAiCacheList] = useState<any[]>([]);
-  const [bridgeStatus, setBridgeStatus] = useState<'checking' | 'running' | 'outdated' | 'offline'>('checking');
+  const [bridgeStatus, setBridgeStatus] = useState<'checking' | 'running' | 'outdated' | 'offline' | 'waking_up'>('checking');
 
   // Use Player Store Actions
   const { clearQueue, reorderQueue, setCurrentIndex } = usePlayerStore();
@@ -299,19 +299,33 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
     setIsLoading(true);
     setBridgeStatus('checking');
     try {
-      // 1. Check version first
+      // 1. Check version first with retry mechanism
       let isOutdated = false;
-      try {
-        const verRes = await fetch("http://127.0.0.1:5050/version", { signal: AbortSignal.timeout(2000) });
-        if (verRes.ok) {
-          const verData = await verRes.json();
-          if (verData.version !== "1.1.0") {
-            isOutdated = true;
+      let bridgeRunning = false;
+      
+      for (let attempt = 1; attempt <= 5; attempt++) {
+        if (attempt > 1) setBridgeStatus('waking_up');
+        try {
+          const verRes = await fetch("http://127.0.0.1:5050/version", { signal: AbortSignal.timeout(2000) });
+          if (verRes.ok) {
+            const verData = await verRes.json();
+            if (verData.version !== "1.1.0") {
+              isOutdated = true;
+            }
+            bridgeRunning = true;
+            break;
+          } else {
+            isOutdated = true; // /version doesn't exist in older versions
+            bridgeRunning = true;
+            break;
           }
-        } else {
-          isOutdated = true; // /version doesn't exist in older versions
+        } catch (err) {
+          if (attempt === 5) break;
+          await new Promise(r => setTimeout(r, 1000));
         }
-      } catch (err) {
+      }
+
+      if (!bridgeRunning) {
         setBridgeStatus('offline');
         setIsLoading(false);
         return;
@@ -329,26 +343,14 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
       const res = await fetch("http://127.0.0.1:5050/cache/list");
       const data = await res.json();
       if (data.status === "success" && data.results) {
-        const enrichedPromises = data.results.map(async (r: any) => {
-          try {
-            const ytRes = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${r.video_id}`);
-            const ytData = await ytRes.json();
-            return {
-              ...r,
-              title: ytData.title || r.video_id,
-              author: ytData.author_name || "Unknown",
-              thumbnail: `https://img.youtube.com/vi/${r.video_id}/mqdefault.jpg`
-            };
-          } catch (err) {
-            return {
-              ...r,
-              title: r.video_id,
-              author: "Unknown",
-              thumbnail: `https://img.youtube.com/vi/${r.video_id}/mqdefault.jpg`
-            };
-          }
+        const enriched = data.results.map((r: any) => {
+          return {
+            ...r,
+            title: `ไฟล์เพลง ${r.video_id}`,
+            author: "Local Cache",
+            thumbnail: `https://img.youtube.com/vi/${r.video_id}/mqdefault.jpg`
+          };
         });
-        const enriched = await Promise.all(enrichedPromises);
         setAiCacheList(enriched);
         
         // Sync actual modes to AI store so it shows 4CH correctly in Queue
@@ -695,7 +697,13 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
 
       {/* Grid Content */}
       <div className="min-h-[400px]">
-        {isLoading ? (
+        {isLoading && bridgeStatus === 'waking_up' ? (
+          <div className="flex flex-col items-center justify-center min-h-[300px]">
+            <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+            <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">กำลังปลุก YouOke Plugin...</h3>
+            <p className="text-gray-500 text-sm mt-2">อาจใช้เวลา 3-10 วินาทีในครั้งแรก</p>
+          </div>
+        ) : isLoading ? (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6 gap-y-10 px-4">
             {getSkeletonItems(10).map((i) => (
               <div key={i} className="flex flex-col gap-3">
