@@ -115,6 +115,16 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                         </div>
                         <span className="text-[10px] font-black text-blue-500 w-7 text-right">{aiJob.progress.toFixed(0)}%</span>
                     </div>
+                ) : video.aiVocalRequested && aiJob && aiJob.status === 'error' ? (
+                    <div className="flex items-center gap-2 w-full shrink-0">
+                        <span className="shrink-0 text-[11px] text-red-500 font-bold flex items-center gap-1.5">
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            เกิดข้อผิดพลาด
+                        </span>
+                        <span className="text-[10px] text-red-500 line-clamp-1" title={aiJob.message}>{aiJob.message}</span>
+                    </div>
                 ) : (
                     <div className="flex items-center w-full">
                         {!isKaraoke && (
