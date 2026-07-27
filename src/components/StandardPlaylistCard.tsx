@@ -45,11 +45,11 @@ export default function PlaylistCard({
     return (
         <div
             onClick={onClick}
-            className="group relative flex flex-col gap-3 cursor-pointer select-none"
+            className="group relative flex flex-col gap-1.5 cursor-pointer select-none"
         >
             {/* Cover Image - Unified Premium Card Style */}
             {/* Fixed: White Background + Border to prevent "Gray Circle" visual glitch */}
-            <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-white dark:bg-zinc-950 shadow-sm group-hover:shadow-xl transition-all duration-500 ease-out group-hover:-translate-y-1.5 isolation-isolate border-2 border-gray-100 dark:border-zinc-900 group-hover:border-primary/20">
+            <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-white dark:bg-zinc-950 isolation-isolate border border-gray-100 dark:border-zinc-900 group-hover:border-primary/20 transition-all duration-300">
 
                 {/* Fallback Background (Visible if image missing/error) */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100 dark:bg-zinc-900 text-gray-400 dark:text-zinc-600">
@@ -89,7 +89,7 @@ export default function PlaylistCard({
             </div>
 
             {/* Content */}
-            <div className="flex justify-between items-start px-1 mt-1">
+            <div className="flex justify-between items-start px-1 pt-1.5">
                 <div className="min-w-0 flex-1 pr-2">
                     <h3 className="font-bold text-[11px] sm:text-[12px] text-gray-800 dark:text-zinc-200 truncate group-hover:text-primary transition-colors leading-tight">
                         {name}

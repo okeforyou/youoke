@@ -53,10 +53,10 @@ export default function CardV2({
     return (
         <div
             onClick={onClick}
-            className="group relative flex flex-col gap-3 cursor-pointer select-none"
+            className="group relative flex flex-col gap-1.5 cursor-pointer select-none"
         >
             {/* 1. Card Container: Explicitly 16:9, White Bg, Rounded */}
-            <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-white dark:bg-zinc-950 shadow-sm border-2 border-gray-100 dark:border-zinc-900 group-hover:border-primary/50 group-hover:shadow-xl transition-all duration-300 group-hover:-translate-y-1">
+            <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-white dark:bg-zinc-950 border border-gray-100 dark:border-zinc-900 group-hover:border-primary/50 transition-all duration-300">
 
                 {/* 2. FALLBACK Layer (Bottom) */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100/50 dark:bg-zinc-900/50 text-gray-300 dark:text-zinc-600 z-0">
@@ -131,7 +131,7 @@ export default function CardV2({
             </div>
 
             {/* Footer Data */}
-            <div className="flex items-start justify-between gap-3 p-3">
+            <div className="flex items-start justify-between gap-2 px-1 pt-1.5 pb-0">
                 <div className="flex-1 min-w-0 pr-2">
                     <h3 className="font-bold text-gray-900 dark:text-zinc-200 truncate group-hover:text-primary text-[12px] sm:text-[13px] leading-tight">
                         {name}
