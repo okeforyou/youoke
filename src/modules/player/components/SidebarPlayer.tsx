@@ -11,8 +11,6 @@ import { useSystemConfig } from "../../../hooks/useSystemConfig";
 import { useUIStore } from "../../../stores/useUIStore";
 import { safeSplit } from '@/utils/stringUtils';
 import { useAIVocalStore } from '../../../stores/useAIVocalStore';
-
-
 import { useShallow } from 'zustand/react/shallow';
 import { QuotaIndicator } from "./QuotaIndicator";
 
@@ -57,9 +55,6 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
     const controlsTimerRef = useRef<NodeJS.Timeout | null>(null);
     const [showMiniControls, setShowMiniControls] = useState(false);
     const cast = useCast();
-
-    // AI Vocal Store
-    const aiVocal = useAIVocalStore();
 
 
 
