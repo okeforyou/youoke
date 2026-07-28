@@ -17,7 +17,11 @@
 ## 📝 Recent Context (Last Session)
 - **Vocal Separation & YouOke Plugin (v1.0.5):** We created a local AI bridge Desktop app (using PyInstaller, FastAPI, and `yt-dlp` for download, `demucs` for AI separation). This allows the frontend to send separation requests locally without server costs.
 - **Vocal UI (`src/pages/vocal.tsx`):** We built a dedicated page for testing the vocal separation queue. It detects OS (Mac/Win) and directly downloads the `v1.0.5` plugin binary from GitHub Releases for authenticated users. We also added "Vocals" and "Instrumental" quick-mute toggles on the player bar.
-- **Plugin Release Rule:** Remember that any code changes in the `youoke-plugin/` directory or `scripts/local-bridge/` require bumping the version in `youoke-plugin/package.json` and triggering a GitHub Release (`gh release create v<VERSION> --target <BRANCH>`) to let GitHub Actions compile the new installer.
+- **Unified Versioning Rule:** ANY changes to `youoke-plugin/` or `scripts/local-bridge/` MUST trigger a version bump. **DO NOT modify versions manually.** You MUST use `node scripts/bump-version.js <NEW_VERSION>` to synchronize versions across:
+  1. `youoke-plugin/package.json`
+  2. `scripts/local-bridge/server.py`
+  3. `src/components/ListPlaylistsGrid.tsx` (Frontend version check)
+  After bumping, commit the changes and trigger a GitHub Release (`gh release create v<VERSION> --target <BRANCH>`) so GitHub Actions compiles the new `.exe`/`.dmg`.
 - **Download Resilience Upgrade (2026-07-27) — Plugin v1.0.32 / Server v1.2.0:**
   - **Problem:** YouTube SABR block caused `/separate` to hang indefinitely. UI stuck at 0%.
   - **Fix 1:** Added 10s fetch timeout in `useAIVocalStore.ts` so UI shows error instead of hanging.

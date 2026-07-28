@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-const fetchWithFallback = async (endpoint: string, options?: RequestInit) => {
+const fetchWithFallback = async (endpoint: string, options?: RequestInit, maxRetries = 0) => {
     const fetchWithTimeout = async (url: string) => {
         const controller = new AbortController();
         const id = setTimeout(() => controller.abort(), 10000); // 10s timeout
@@ -15,21 +15,37 @@ const fetchWithFallback = async (endpoint: string, options?: RequestInit) => {
         }
     };
 
-    let res5050;
-    try {
-        res5050 = await fetchWithTimeout(`http://127.0.0.1:5050${endpoint}`);
-        if (res5050.ok) return res5050;
-    } catch (e) {}
+    let delayMs = 1000;
+    let lastError = null;
 
-    let res8055;
-    try {
-        res8055 = await fetchWithTimeout(`http://127.0.0.1:8055${endpoint}`);
-        if (res8055.ok) return res8055;
-    } catch (e) {}
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        let res5050;
+        try {
+            res5050 = await fetchWithTimeout(`http://127.0.0.1:5050${endpoint}`);
+            if (res5050.ok) return res5050;
+        } catch (e) {
+            lastError = e;
+        }
 
-    if (res5050) return res5050;
-    if (res8055) return res8055;
-    throw new Error("AI Server is unreachable.");
+        let res8055;
+        try {
+            res8055 = await fetchWithTimeout(`http://127.0.0.1:8055${endpoint}`);
+            if (res8055.ok) return res8055;
+        } catch (e) {
+            lastError = e;
+        }
+
+        if (res5050) return res5050;
+        if (res8055) return res8055;
+
+        if (attempt < maxRetries) {
+            console.warn(`[YouOke Plugin] Connection attempt ${attempt + 1} failed. Retrying in ${delayMs}ms...`);
+            await new Promise(resolve => setTimeout(resolve, delayMs));
+            delayMs *= 2;
+        }
+    }
+
+    throw new Error(`AI Server is unreachable. Last error: ${lastError}`);
 };
 
 interface AIVocalJob {
@@ -194,7 +210,7 @@ export const useAIVocalStore = create<AIVocalState>()(
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ video_id: videoId, title: title, mode: targetMode })
-            });
+            }, 4); // 4 retries = wait up to ~15s (1+2+4+8) for the bridge to start
             
             isPolling = false;
             const data = await res.json();

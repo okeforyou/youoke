@@ -314,12 +314,25 @@ def separate(req: SeparateRequest):
 
     # ── Strategy 1: yt-dlp BINARY (bundled) with new 2026 player_clients ──────
     try:
-        if hasattr(sys, '_MEIPASS'):
-            yt_dlp_exe = os.path.join(sys._MEIPASS, 'yt-dlp_macos')
+        binary_name = 'yt-dlp.exe' if sys.platform == 'win32' else 'yt-dlp_macos'
+        if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+            bundle_dir = sys._MEIPASS
+            if sys.platform == 'darwin' and bundle_dir.endswith('MacOS'):
+                yt_dlp_exe = os.path.join(os.path.dirname(bundle_dir), 'Resources', binary_name)
+                if not os.path.exists(yt_dlp_exe):
+                    yt_dlp_exe = os.path.join(bundle_dir, binary_name)
+            else:
+                yt_dlp_exe = os.path.join(bundle_dir, binary_name)
         else:
-            yt_dlp_exe = os.path.join(os.path.dirname(__file__), 'yt-dlp_macos')
+            yt_dlp_exe = os.path.join(os.path.dirname(__file__), binary_name)
+
         if not os.path.exists(yt_dlp_exe):
             yt_dlp_exe = "yt-dlp"
+        elif sys.platform != 'win32':
+            try:
+                os.chmod(yt_dlp_exe, 0o755)
+            except Exception:
+                pass
 
         out_template = os.path.join(song_dir, f"{vid}.%(ext)s")
         # 2026-era client list: web_creator & ios bypass most SABR blocks
@@ -367,37 +380,49 @@ def separate(req: SeparateRequest):
     if not download_success:
         try:
             import yt_dlp as yt_dlp_mod
-            out_template = os.path.join(song_dir, f"{vid}.%(ext)s")
-            ydl_opts = {
-                "format": "140/bestaudio/best",
-                "outtmpl": out_template,
-                "quiet": True,
-                "no_warnings": True,
-                "extractor_args": {"youtube": {"player_client": ["web_creator", "ios", "mweb"]}},
-            }
-            print(f"[Strategy 2] yt-dlp Python module v{yt_dlp_mod.version.__version__}")
-            # Run in thread to enforce timeout
             import concurrent.futures
-            def _ytdlp_mod_download():
-                with yt_dlp_mod.YoutubeDL(ydl_opts) as ydl:
-                    ydl.download([yt_url])
+            out_template = os.path.join(song_dir, f"{vid}.%(ext)s")
+            cookie_sources = ["chrome", "safari", "firefox", None]
+            
+            for source in cookie_sources:
+                if download_success:
+                    break
+                ydl_opts = {
+                    "format": "140/bestaudio/best",
+                    "outtmpl": out_template,
+                    "quiet": True,
+                    "no_warnings": True,
+                    "extractor_args": {"youtube": {"player_client": ["web_creator", "ios", "mweb", "web_safari"]}},
+                }
+                if source:
+                    ydl_opts["cookiesfrombrowser"] = (source,)
+                
+                print(f"[Strategy 2] yt-dlp Python module v{yt_dlp_mod.version.__version__} | cookies={source}")
+                
+                def _ytdlp_mod_download(opts):
+                    with yt_dlp_mod.YoutubeDL(opts) as ydl:
+                        ydl.download([yt_url])
 
-            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as ex:
-                future = ex.submit(_ytdlp_mod_download)
-                try:
-                    future.result(timeout=YTDLP_TIMEOUT)
-                    found = _find_downloaded_file(song_dir, vid)
-                    if found:
-                        m4a_path = found
-                        download_success = True
-                        attempts.append({"method": "yt-dlp-python-module", "status": "success"})
-                        print("[Strategy 2] SUCCESS")
-                    else:
-                        attempts.append({"method": "yt-dlp-python-module", "status": "failed", "error": "No file found"})
-                except concurrent.futures.TimeoutError:
-                    future.cancel()
-                    attempts.append({"method": "yt-dlp-python-module", "status": "failed", "error": f"Timeout after {YTDLP_TIMEOUT}s"})
-                    print("[Strategy 2] TIMEOUT")
+                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as ex:
+                    future = ex.submit(_ytdlp_mod_download, ydl_opts)
+                    try:
+                        future.result(timeout=YTDLP_TIMEOUT)
+                        found = _find_downloaded_file(song_dir, vid)
+                        if found:
+                            m4a_path = found
+                            download_success = True
+                            attempts.append({"method": f"yt-dlp-python-module (cookies={source})", "status": "success"})
+                            print(f"[Strategy 2] SUCCESS cookies={source}")
+                        else:
+                            attempts.append({"method": f"yt-dlp-python-module (cookies={source})", "status": "failed", "error": "No file found"})
+                    except concurrent.futures.TimeoutError:
+                        future.cancel()
+                        attempts.append({"method": f"yt-dlp-python-module (cookies={source})", "status": "failed", "error": f"Timeout after {YTDLP_TIMEOUT}s"})
+                        print(f"[Strategy 2] TIMEOUT cookies={source}")
+                    except Exception as e:
+                        err_str = str(e)[:300]
+                        attempts.append({"method": f"yt-dlp-python-module (cookies={source})", "status": "error", "error": err_str})
+                        print(f"[Strategy 2] ERROR cookies={source}: {e}")
         except Exception as e:
             attempts.append({"method": "yt-dlp-python-module", "status": "error", "error": str(e)})
             print(f"[Strategy 2] ERROR: {e}")
