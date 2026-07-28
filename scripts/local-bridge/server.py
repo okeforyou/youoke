@@ -312,6 +312,40 @@ def separate(req: SeparateRequest):
                 return path
         return None
 
+    # ── Strategy 0: EXTERNAL API FALLBACK ─────────────────────────────────────
+    # Reads from YOUOKE_API_URL if user sets up an external Cobalt or RapidAPI server.
+    api_url = os.environ.get("YOUOKE_API_URL")
+    if api_url and not download_success:
+        try:
+            print(f"[Strategy 0] Trying External API: {api_url}")
+            import urllib.request
+            import json
+            import ssl
+            ctx = ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+            
+            # Assuming Cobalt API format for the external URL
+            req_data = json.dumps({"url": yt_url, "isAudioOnly": True, "aFormat": "mp3"}).encode('utf-8')
+            req = urllib.request.Request(
+                api_url,
+                data=req_data,
+                headers={'Accept': 'application/json', 'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0'}
+            )
+            with urllib.request.urlopen(req, context=ctx, timeout=30) as response:
+                res_data = json.loads(response.read().decode('utf-8'))
+                if "url" in res_data:
+                    direct_url = res_data["url"]
+                    print(f"[Strategy 0] Found direct URL. Downloading...")
+                    urllib.request.urlretrieve(direct_url, m4a_path)
+                    if os.path.getsize(m4a_path) > 0:
+                        download_success = True
+                        attempts.append({"method": "external-api", "status": "success"})
+                        print("[Strategy 0] SUCCESS!")
+        except Exception as e:
+            attempts.append({"method": "external-api", "status": "failed", "error": str(e)})
+            print(f"[Strategy 0] FAILED: {e}")
+
     # ── Strategy 1: yt-dlp BINARY (bundled) with new 2026 player_clients ──────
     try:
         binary_name = 'yt-dlp.exe' if sys.platform == 'win32' else 'yt-dlp_macos'
@@ -573,57 +607,61 @@ def separate(req: SeparateRequest):
         progress_store[vid] = {"status": "error", "percent": 0, "message": "การแยกเสียงล้มเหลว"}
         return {"status": "error", "message": f"Demucs separation failed: {str(e)}"}
         
-    demucs_out_dir = os.path.join(song_dir, "htdemucs_ft", vid)
-    vocal_wav = os.path.join(demucs_out_dir, "vocals.wav")
-    
-    if not os.path.exists(vocal_wav):
-        progress_store[vid] = {"status": "error", "percent": 0, "message": "ไม่พบไฟล์ผลลัพธ์จาก AI"}
-        return {"status": "error", "message": "Demucs output files not found."}
+        demucs_out_dir = os.path.join(song_dir, "htdemucs_ft", vid)
+        vocal_wav = os.path.join(demucs_out_dir, "vocals.wav")
         
-    # 4. Convert back to M4A to save space
-    progress_store[vid] = {"status": "compressing", "percent": 95, "message": "กำลังบีบอัดไฟล์ขั้นสุดท้าย..."}
-    
-    # Always convert vocals
-    convert_audio(vocal_wav, vocal_m4a, fmt="m4a")
-    
-    if mode == "basic":
-        no_vocal_wav = os.path.join(demucs_out_dir, "no_vocals.wav")
-        if os.path.exists(no_vocal_wav):
-            convert_audio(no_vocal_wav, no_vocal_m4a, fmt="m4a")
-    else:
-        # Pro mode (4 stems)
-        stems = ["drums", "bass", "other"]
-        for stem in stems:
-            stem_wav = os.path.join(demucs_out_dir, f"{stem}.wav")
-            stem_m4a = os.path.join(song_dir, f"{stem}.m4a")
-            if os.path.exists(stem_wav):
-                convert_audio(stem_wav, stem_m4a, fmt="m4a")
-    
-    # Save mode flag for client checks
-    with open(os.path.join(song_dir, "mode.txt"), "w") as f:
-        f.write(mode)
-        
-    # Save title for cache listing
-    with open(os.path.join(song_dir, "title.txt"), "w", encoding="utf-8") as f:
-        f.write(req.title)
-
-        
-    # Cleanup temporary files (WAV is huge)
-    for tmp_file in [m4a_path, wav_path]:
-        try:
-            if os.path.exists(tmp_file):
-                os.remove(tmp_file)
-        except Exception as e:
-            print(f"Failed to remove {tmp_file}: {e}")
+        if not os.path.exists(vocal_wav):
+            raise Exception("Demucs output files not found.")
             
-    try:
-        demucs_dir = os.path.join(song_dir, "htdemucs_ft")
-        if os.path.exists(demucs_dir):
-            shutil.rmtree(demucs_dir)
-    except Exception as e:
-        print(f"Failed to remove demucs dir: {e}")
+        # 4. Convert back to M4A to save space
+        progress_store[vid] = {"status": "compressing", "percent": 95, "message": "กำลังบีบอัดไฟล์ขั้นสุดท้าย..."}
         
-    progress_store[vid] = {"status": "success", "percent": 100, "message": "เสร็จสมบูรณ์!", "mode": mode}
+        # Always convert vocals
+        convert_audio(vocal_wav, vocal_m4a, fmt="m4a")
+        
+        if mode == "basic":
+            no_vocal_wav = os.path.join(demucs_out_dir, "no_vocals.wav")
+            if os.path.exists(no_vocal_wav):
+                convert_audio(no_vocal_wav, no_vocal_m4a, fmt="m4a")
+        else:
+            # Pro mode (4 stems)
+            stems = ["drums", "bass", "other"]
+            for stem in stems:
+                stem_wav = os.path.join(demucs_out_dir, f"{stem}.wav")
+                stem_m4a = os.path.join(song_dir, f"{stem}.m4a")
+                if os.path.exists(stem_wav):
+                    convert_audio(stem_wav, stem_m4a, fmt="m4a")
+        
+        # Save mode flag for client checks
+        with open(os.path.join(song_dir, "mode.txt"), "w") as f:
+            f.write(mode)
+            
+        # Save title for cache listing
+        with open(os.path.join(song_dir, "title.txt"), "w", encoding="utf-8") as f:
+            f.write(req.title)
+            
+        progress_store[vid] = {"status": "success", "percent": 100, "message": "เสร็จสมบูรณ์!", "mode": mode}
+            
+    except Exception as e:
+        progress_store[vid] = {"status": "error", "percent": 0, "message": "การแยกเสียงล้มเหลว"}
+        return {"status": "error", "message": f"Demucs separation failed: {str(e)}"}
+        
+    finally:
+        # Cleanup temporary files (WAV is huge) MUST run even if there's an error
+        for tmp_file in [m4a_path, wav_path]:
+            try:
+                if os.path.exists(tmp_file):
+                    os.remove(tmp_file)
+            except Exception as e:
+                print(f"Failed to remove {tmp_file}: {e}")
+                
+        try:
+            demucs_dir = os.path.join(song_dir, "htdemucs_ft")
+            if os.path.exists(demucs_dir):
+                shutil.rmtree(demucs_dir)
+        except Exception as e:
+            print(f"Failed to remove demucs dir: {e}")
+            
     return {"status": "success", "video_id": vid, "mode": mode}
 
 # Mount cache directory for robust static file serving with range request support
