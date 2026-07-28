@@ -23,7 +23,7 @@ try:
 except AttributeError:
     pass
 
-VERSION = "1.0.35"
+VERSION = "1.0.36"
 
 app = FastAPI()
 
@@ -316,13 +316,7 @@ def separate(req: SeparateRequest):
     try:
         binary_name = 'yt-dlp.exe' if sys.platform == 'win32' else 'yt-dlp_macos'
         if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-            bundle_dir = sys._MEIPASS
-            if sys.platform == 'darwin' and bundle_dir.endswith('MacOS'):
-                yt_dlp_exe = os.path.join(os.path.dirname(bundle_dir), 'Resources', binary_name)
-                if not os.path.exists(yt_dlp_exe):
-                    yt_dlp_exe = os.path.join(bundle_dir, binary_name)
-            else:
-                yt_dlp_exe = os.path.join(bundle_dir, binary_name)
+            yt_dlp_exe = os.path.join(sys._MEIPASS, binary_name)
         else:
             yt_dlp_exe = os.path.join(os.path.dirname(__file__), binary_name)
 
@@ -388,11 +382,15 @@ def separate(req: SeparateRequest):
                 if download_success:
                     break
                 ydl_opts = {
-                    "format": "140/bestaudio/best",
+                    "format": "bestaudio/best",
                     "outtmpl": out_template,
                     "quiet": True,
                     "no_warnings": True,
                     "extractor_args": {"youtube": {"player_client": ["web_creator", "ios", "mweb", "web_safari"]}},
+                    "postprocessors": [{
+                        "key": "FFmpegExtractAudio",
+                        "preferredcodec": "m4a",
+                    }],
                 }
                 if source:
                     ydl_opts["cookiesfrombrowser"] = (source,)
