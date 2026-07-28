@@ -312,38 +312,61 @@ def separate(req: SeparateRequest):
                 return path
         return None
 
-    # ── Strategy 0: EXTERNAL API FALLBACK ─────────────────────────────────────
-    # Reads from YOUOKE_API_URL if user sets up an external Cobalt or RapidAPI server.
-    api_url = os.environ.get("YOUOKE_API_URL")
-    if api_url and not download_success:
+    # ── Strategy 0: EXTERNAL API FALLBACK (RapidAPI) ──────────────────────────
+    # Reads from RapidAPI using the user's provided key.
+    RAPIDAPI_KEY = os.environ.get("RAPIDAPI_KEY", "25ac343bd9msh2fee41bd574ab7bp1f00fejsnd6ee8e4e096a")
+    if RAPIDAPI_KEY and not download_success:
         try:
-            print(f"[Strategy 0] Trying External API: {api_url}")
+            print(f"[Strategy 0] Trying RapidAPI (youtube-mp3-audio-video-downloader)...")
             import urllib.request
+            import urllib.parse
             import json
             import ssl
-            ctx = ssl.create_default_context()
-            ctx.check_hostname = False
-            ctx.verify_mode = ssl.CERT_NONE
             
-            # Assuming Cobalt API format for the external URL
-            req_data = json.dumps({"url": yt_url, "isAudioOnly": True, "aFormat": "mp3"}).encode('utf-8')
-            req = urllib.request.Request(
-                api_url,
-                data=req_data,
-                headers={'Accept': 'application/json', 'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0'}
-            )
-            with urllib.request.urlopen(req, context=ctx, timeout=30) as response:
-                res_data = json.loads(response.read().decode('utf-8'))
-                if "url" in res_data:
-                    direct_url = res_data["url"]
-                    print(f"[Strategy 0] Found direct URL. Downloading...")
-                    urllib.request.urlretrieve(direct_url, m4a_path)
-                    if os.path.getsize(m4a_path) > 0:
-                        download_success = True
-                        attempts.append({"method": "external-api", "status": "success"})
-                        print("[Strategy 0] SUCCESS!")
+            # Extract Video ID from URL
+            parsed = urllib.parse.urlparse(yt_url)
+            video_id = ""
+            if "youtu.be" in parsed.netloc:
+                video_id = parsed.path.lstrip('/')
+            else:
+                query = urllib.parse.parse_qs(parsed.query)
+                video_id = query.get("v", [""])[0]
+
+            if video_id:
+                api_url = f"https://youtube-mp3-audio-video-downloader.p.rapidapi.com/get_m4a_download_link/{video_id}"
+                
+                ctx = ssl.create_default_context()
+                ctx.check_hostname = False
+                ctx.verify_mode = ssl.CERT_NONE
+                
+                req = urllib.request.Request(
+                    api_url,
+                    headers={
+                        'Accept': 'application/json',
+                        'x-rapidapi-host': 'youtube-mp3-audio-video-downloader.p.rapidapi.com',
+                        'x-rapidapi-key': RAPIDAPI_KEY,
+                        'User-Agent': 'Mozilla/5.0'
+                    }
+                )
+                
+                with urllib.request.urlopen(req, context=ctx, timeout=30) as response:
+                    res_data = json.loads(response.read().decode('utf-8'))
+                    print(f"[Strategy 0] API Response: {res_data}")
+                    
+                    # Extract the actual download link (the key might be 'link', 'url', 'download_link', etc.)
+                    direct_url = res_data.get("url") or res_data.get("link") or res_data.get("download_url") or res_data.get("download_link") or (res_data.get("data") and res_data.get("data", {}).get("url"))
+                    
+                    if direct_url:
+                        print(f"[Strategy 0] Found direct URL. Downloading...")
+                        urllib.request.urlretrieve(direct_url, m4a_path)
+                        if os.path.getsize(m4a_path) > 0:
+                            download_success = True
+                            attempts.append({"method": "rapidapi", "status": "success"})
+                            print("[Strategy 0] SUCCESS!")
+                    else:
+                        print("[Strategy 0] FAILED: Could not find download URL in API response.")
         except Exception as e:
-            attempts.append({"method": "external-api", "status": "failed", "error": str(e)})
+            attempts.append({"method": "rapidapi", "status": "failed", "error": str(e)})
             print(f"[Strategy 0] FAILED: {e}")
 
     # ── Strategy 1: yt-dlp BINARY (bundled) with new 2026 player_clients ──────
