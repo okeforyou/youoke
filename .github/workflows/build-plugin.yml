@@ -38,14 +38,17 @@ jobs:
       - name: Build Python Backend (macOS)
         if: matrix.os == 'macos-latest'
         run: |
-          pyinstaller --name youoke-server --onefile --collect-data demucs --collect-binaries imageio_ffmpeg --exclude-module torchcodec --hidden-import soundfile scripts/local-bridge/server.py
+          curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos -o scripts/local-bridge/yt-dlp_macos
+          chmod +x scripts/local-bridge/yt-dlp_macos
+          pyinstaller --name youoke-server --onefile --add-data "scripts/local-bridge/yt-dlp_macos:." --collect-data demucs --collect-binaries imageio_ffmpeg --exclude-module torchcodec --hidden-import soundfile scripts/local-bridge/server.py
           mkdir -p youoke-plugin/bin
           cp dist/youoke-server youoke-plugin/bin/
 
       - name: Build Python Backend (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          pyinstaller --name youoke-server --onefile --collect-data demucs --collect-binaries imageio_ffmpeg --exclude-module torchcodec --hidden-import soundfile scripts\local-bridge\server.py
+          curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe -o scripts\local-bridge\yt-dlp.exe
+          pyinstaller --name youoke-server --onefile --add-data "scripts\local-bridge\yt-dlp.exe;." --collect-data demucs --collect-binaries imageio_ffmpeg --exclude-module torchcodec --hidden-import soundfile scripts\local-bridge\server.py
           mkdir youoke-plugin\bin
           copy dist\youoke-server.exe youoke-plugin\bin\
 
