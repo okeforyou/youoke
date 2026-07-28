@@ -2,26 +2,13 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 const fetchWithFallback = async (endpoint: string, options?: RequestInit, maxRetries = 0) => {
-    const fetchWithTimeout = async (url: string) => {
-        const controller = new AbortController();
-        const id = setTimeout(() => controller.abort(), 10000); // 10s timeout
-        try {
-            const response = await fetch(url, { ...options, signal: controller.signal });
-            clearTimeout(id);
-            return response;
-        } catch (error) {
-            clearTimeout(id);
-            throw error;
-        }
-    };
-
     let delayMs = 1000;
     let lastError = null;
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
         let res5050;
         try {
-            res5050 = await fetchWithTimeout(`http://127.0.0.1:5050${endpoint}`);
+            res5050 = await fetch(`http://127.0.0.1:5050${endpoint}`, options);
             if (res5050.ok) return res5050;
         } catch (e) {
             lastError = e;
@@ -29,7 +16,7 @@ const fetchWithFallback = async (endpoint: string, options?: RequestInit, maxRet
 
         let res8055;
         try {
-            res8055 = await fetchWithTimeout(`http://127.0.0.1:8055${endpoint}`);
+            res8055 = await fetch(`http://127.0.0.1:8055${endpoint}`, options);
             if (res8055.ok) return res8055;
         } catch (e) {
             lastError = e;
