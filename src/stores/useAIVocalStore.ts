@@ -1,6 +1,35 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+const BRIDGE_PORTS = [5050, 8055];
+let _activeBridgePort: number | null = null;
+let _serverCheckTime = 0;
+const SERVER_CACHE_TTL = 10_000; // 10 seconds
+
+async function getActiveBridgePort(): Promise<number | null> {
+    const now = Date.now();
+    // Return cached port if still valid
+    if (_activeBridgePort && now - _serverCheckTime < SERVER_CACHE_TTL) {
+        return _activeBridgePort;
+    }
+    // Check which port is available
+    for (const port of BRIDGE_PORTS) {
+        try {
+            const res = await fetch(`http://127.0.0.1:${port}/health`, { signal: AbortSignal.timeout(2000) });
+            if (res.status < 500) { // 200, 404, 405 all count as "server is up"
+                _activeBridgePort = port;
+                _serverCheckTime = now;
+                return port;
+            }
+        } catch {
+            // ignore
+        }
+    }
+    _activeBridgePort = null;
+    _serverCheckTime = now;
+    return null;
+}
+
 const fetchWithFallback = async (endpoint: string, options?: RequestInit, maxRetries = 0) => {
     let delayMs = 1000;
     let lastError = null;
@@ -34,6 +63,10 @@ const fetchWithFallback = async (endpoint: string, options?: RequestInit, maxRet
 
     throw new Error(`AI Server is unreachable. Last error: ${lastError}`);
 };
+
+// Throttle: track last check time per batch (keyed by sorted videoIds)
+const _cacheCheckThrottle = new Map<string, number>();
+const CACHE_CHECK_INTERVAL = 30_000; // 30 seconds
 
 interface AIVocalJob {
     status: 'idle' | 'processing' | 'ready' | 'error';
@@ -237,30 +270,52 @@ export const useAIVocalStore = create<AIVocalState>()(
     },
 
     checkCachedStatus: async (videoIds: string[]) => {
-        const { jobs, defaultMode } = get();
+        if (!videoIds || videoIds.length === 0) return;
+        const { jobs } = get();
+
+        // Filter out already-known videos
+        const unknownIds = videoIds.filter(id => {
+            const s = jobs[id]?.status;
+            return s !== 'ready' && s !== 'processing';
+        });
+        if (unknownIds.length === 0) return;
+
+        // Throttle: use sorted IDs as key to avoid duplicate batches
+        const batchKey = unknownIds.slice().sort().join(',');
+        const lastCheck = _cacheCheckThrottle.get(batchKey) ?? 0;
+        if (Date.now() - lastCheck < CACHE_CHECK_INTERVAL) return;
+        _cacheCheckThrottle.set(batchKey, Date.now());
+
+        // Check if server is available before sending batch
+        const port = await getActiveBridgePort();
+        if (!port) return; // Server offline, skip silently
+
         const updates: Record<string, AIVocalJob> = {};
-        
-        await Promise.all(videoIds.map(async (id) => {
-            // Skip if already tracked as ready or processing
-            if (jobs[id]?.status === 'ready' || jobs[id]?.status === 'processing') return;
-            
+
+        // Check one by one (sequentially) to avoid overwhelming server
+        for (const id of unknownIds) {
             try {
-                // Use HEAD request to quickly check if the file exists
-                const res = await fetchWithFallback(`/files/${id}/vocals.m4a`, { method: 'HEAD' });
+                const res = await fetch(`http://127.0.0.1:${port}/files/${id}/vocals.m4a`, {
+                    method: 'HEAD',
+                    signal: AbortSignal.timeout(3000),
+                });
                 if (res.ok) {
                     let actualMode: 'basic' | 'pro' = 'basic';
                     try {
-                        const drumsRes = await fetchWithFallback(`/files/${id}/drums.m4a`, { method: 'HEAD' });
+                        const drumsRes = await fetch(`http://127.0.0.1:${port}/files/${id}/drums.m4a`, {
+                            method: 'HEAD',
+                            signal: AbortSignal.timeout(2000),
+                        });
                         if (drumsRes.ok) actualMode = 'pro';
-                    } catch (e) {
+                    } catch {
                         // ignore
                     }
                     updates[id] = { status: 'ready', message: 'พร้อมเล่น!', progress: 100, mode: actualMode };
                 }
-            } catch (e) {
-                // Ignore errors (server offline or file doesn't exist)
+            } catch {
+                // Ignore: file not found or server offline
             }
-        }));
+        }
 
         if (Object.keys(updates).length > 0) {
             set(state => ({
