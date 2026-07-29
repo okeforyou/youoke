@@ -23,7 +23,7 @@ try:
 except AttributeError:
     pass
 
-VERSION = "1.0.36"
+VERSION = "1.0.39"
 
 app = FastAPI()
 
