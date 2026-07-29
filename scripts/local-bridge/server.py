@@ -23,13 +23,14 @@ try:
 except AttributeError:
     pass
 
-VERSION = "1.0.44"
+VERSION = "1.0.45"
 
 app = FastAPI()
 
 import uuid
 
-LIBRARY_DIR = os.path.join(base_dir, 'library')
+APP_SUPPORT_DIR = os.path.expanduser("~/Library/Application Support/YouOke")
+LIBRARY_DIR = os.path.join(APP_SUPPORT_DIR, 'Library')
 os.makedirs(LIBRARY_DIR, exist_ok=True)
 LIBRARY_DB_PATH = os.path.join(LIBRARY_DIR, 'library.json')
 
@@ -146,7 +147,7 @@ class SeparateRequest(BaseModel):
     rapidapi_key: Optional[str] = None
     use_manual_upload: Optional[bool] = False
 
-CACHE_DIR = os.path.expanduser("~/Library/Application Support/YouOke/Cache")
+CACHE_DIR = os.path.join(APP_SUPPORT_DIR, 'Cache')
 os.makedirs(CACHE_DIR, exist_ok=True)
 
 HISTORY_FILE = os.path.join(CACHE_DIR, "download_history.json")

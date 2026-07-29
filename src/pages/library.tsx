@@ -5,6 +5,7 @@ import { getActiveBridgeBaseUrl } from '../stores/useAIVocalStore';
 import { usePlayerStore } from '../modules/player/stores/usePlayerStore';
 import { MobileBottomNav } from '../components/navigation/MobileBottomNav';
 import { Music, Upload, Trash2, Play } from 'lucide-react';
+import StudioEditor from '../components/studio/StudioEditor';
 
 interface LocalSong {
     id: string;
@@ -20,7 +21,7 @@ export default function LocalLibraryPage() {
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const addToQueue = usePlayerStore(state => state.addToQueue);
+    const [activeStudioSong, setActiveStudioSong] = useState<LocalSong | null>(null);
 
     const fetchSongs = async () => {
         try {
@@ -103,15 +104,7 @@ export default function LocalLibraryPage() {
     };
 
     const handlePlay = (song: LocalSong) => {
-        addToQueue({
-            id: song.id, // local_...
-            videoId: song.id,
-            title: song.title,
-            artist: song.artist,
-            sourceType: 'youoke_ai', // It will trigger AI separation via bridge!
-            thumbnail: 'https://via.placeholder.com/300x300.png?text=Local+Audio',
-            duration: 0
-        });
+        setActiveStudioSong(song);
     };
 
     return (
@@ -200,6 +193,15 @@ export default function LocalLibraryPage() {
             <div className="md:hidden">
                 <MobileBottomNav />
             </div>
+
+            {activeStudioSong && (
+                <StudioEditor 
+                    songId={activeStudioSong.id}
+                    title={activeStudioSong.title}
+                    artist={activeStudioSong.artist}
+                    onClose={() => setActiveStudioSong(null)}
+                />
+            )}
         </div>
     );
 }
