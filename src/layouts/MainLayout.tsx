@@ -518,6 +518,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             <Search className="h-5 w-5 text-gray-300 dark:text-zinc-600 group-focus-within:text-primary transition-colors" />
                         </div>
                         <DebounceInput
+                            autoComplete="off"
+                            name="search"
                             minLength={2}
                             debounceTimeout={300}
                             placeholder={activeIndex === 3 ? "ค้นหาเพลงยาว หรือ รวมเพลง..." : (isKaraoke ? "ค้นหาคาราโอเกะ..." : "ค้นหาเพลง หรือ ศิลปิน...")}
@@ -709,7 +711,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                             <div className="flex-1 relative flex items-center bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl px-4 h-10 transition-all focus-within:bg-white dark:focus-within:bg-zinc-800 focus-within:border-black/10 dark:focus-within:border-white/10 shadow-sm">
                                                 <Search className="h-4.5 w-4.5 text-gray-400 dark:text-zinc-600 shrink-0" />
                                                 <DebounceInput
-                                                    minLength={2}
+                            autoComplete="off"
+                            name="search"
+                            minLength={2}
                                                     debounceTimeout={300}
                                                     placeholder={activeIndex === 3 ? "ค้นหาเพลงยาว หรือ รวมเพลง..." : (isKaraoke ? "ค้นหาคาราโอเกะ..." : "ค้นหาเพลง หรือ ศิลปิน...")}
                                                     className="w-full bg-transparent pl-3 pr-2 text-[14px] font-bold text-black dark:text-white placeholder-gray-400 dark:placeholder-zinc-500 focus:outline-none"

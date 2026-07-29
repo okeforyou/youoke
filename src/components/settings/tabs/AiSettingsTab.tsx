@@ -64,6 +64,8 @@ export default function AiSettingsTab() {
                                 <div className="relative flex-1">
                                     <input 
                                         type={showKey ? "text" : "password"} 
+                                        name="rapidapi-key"
+                                        autoComplete="new-password" 
                                         value={isMounted ? inputValue : ""}
                                         onChange={(e) => setInputValue(e.target.value)}
                                         placeholder="ใส่ X-RapidAPI-Key ของคุณที่นี่..."
