@@ -305,7 +305,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
         if (verRes) {
             if (verRes.ok) {
                 const verData = await verRes.json().catch(() => ({version: "unknown"}));
-                if (verData.version !== "1.0.39") isOutdated = true;
+                if (verData.version !== "1.0.40") isOutdated = true;
                 bridgeRunning = true;
                 break;
             } else {
