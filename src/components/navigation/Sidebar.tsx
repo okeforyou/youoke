@@ -148,6 +148,20 @@ export const Sidebar = memo(() => {
                     </span>
                 </button>
 
+                <Link href="/library" 
+                    className={clsx(
+                        "w-full flex items-center transition-all font-bold duration-300 text-sm mt-2",
+                        isSidebarCollapsed ? "justify-center p-3 rounded-xl" : "gap-3 px-4 py-3 rounded-2xl",
+                        (router.pathname === '/library') ? "bg-primary text-white translate-x-1" : "text-black dark:text-zinc-400 hover:bg-gray-100/50 dark:hover:bg-zinc-900/50 hover:text-black dark:hover:text-white"
+                    )}
+                    title={isSidebarCollapsed ? "คลังส่วนตัว" : ""}
+                >
+                    <Sparkles className={clsx("w-[22px] h-[22px]", (router.pathname === '/library') ? "text-white" : "text-black dark:text-zinc-400")} /> 
+                    <span className={clsx("transition-all duration-300 whitespace-nowrap", isSidebarCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100")}>
+                        คลังส่วนตัว
+                    </span>
+                </Link>
+
 
 
                 <div className={clsx(
