@@ -5,7 +5,7 @@ import sys
 import torch
 import json
 from datetime import datetime
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -59,6 +59,7 @@ class SeparateRequest(BaseModel):
     title: str = "Unknown Title"
     mode: str = "basic"  # "basic" or "pro"
     rapidapi_key: Optional[str] = None
+    use_manual_upload: Optional[bool] = False
 
 CACHE_DIR = os.path.expanduser("~/Library/Application Support/YouOke/Cache")
 os.makedirs(CACHE_DIR, exist_ok=True)
@@ -251,6 +252,20 @@ def get_progress(video_id: str):
         return progress_store[video_id]
     return {"status": "unknown", "percent": 0, "message": "รอคิว..."}
 
+@app.post("/upload/{video_id}")
+async def upload_audio(video_id: str, file: UploadFile = File(...)):
+    try:
+        song_dir = os.path.join(CACHE_DIR, video_id)
+        os.makedirs(song_dir, exist_ok=True)
+        # We save it as .manual.m4a so the normal cleanup loop won't delete it
+        file_location = os.path.join(song_dir, f"{video_id}.manual.m4a")
+        with open(file_location, "wb+") as file_object:
+            import shutil
+            shutil.copyfileobj(file.file, file_object)
+        return {"info": f"file '{file.filename}' saved at '{file_location}'"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/separate")
 def separate(req: SeparateRequest):
     vid = req.video_id
@@ -295,9 +310,20 @@ def separate(req: SeparateRequest):
     progress_store[vid] = {"status": "downloading", "percent": 10, "message": "กำลังดาวน์โหลดวิดีโอจาก YouTube..."}
     m4a_path = os.path.join(song_dir, f"{vid}.m4a")
     yt_url = f"https://www.youtube.com/watch?v={vid}"
-
     download_success = False
     attempts = []
+
+    if req.use_manual_upload:
+        manual_path = os.path.join(song_dir, f"{vid}.manual.m4a")
+        if os.path.exists(manual_path) and os.path.getsize(manual_path) > 0:
+            m4a_path = manual_path
+            download_success = True
+            attempts.append({"method": "manual_upload", "status": "success"})
+            progress_store[vid]["percent"] = 20
+            progress_store[vid]["message"] = "ใช้ออดิโอไฟล์ที่อัปโหลด..."
+            print(f"[Manual Upload] Using uploaded file: {manual_path}")
+
+
     YTDLP_TIMEOUT = 90  # seconds per yt-dlp attempt
     PYTUBEFIX_TIMEOUT = 60  # seconds per pytubefix attempt
 

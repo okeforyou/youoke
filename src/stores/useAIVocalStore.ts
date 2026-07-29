@@ -106,7 +106,8 @@ interface AIVocalState {
     toggleSolo: (type: 'vocals' | 'instrumental' | 'drums' | 'bass' | 'other') => void;
     
     // API Actions
-    processAudio: (videoId: string, titleOrMode?: string, modeOverride?: 'basic' | 'pro') => Promise<void>;
+    processAudio: (videoId: string, titleOrMode?: string, modeOverride?: 'basic' | 'pro', useManualUpload?: boolean) => Promise<void>;
+    uploadAudioFile: (videoId: string, file: File) => Promise<boolean>;
     checkCachedStatus: (videoIds: string[]) => Promise<void>;
     reset: () => void;
     setCurrentVideoId: (id: string | null) => void;
@@ -175,7 +176,7 @@ export const useAIVocalStore = create<AIVocalState>()(
         }
     }),
 
-    processAudio: async (videoId: string, titleOrMode?: string, modeOverride?: 'basic' | 'pro') => {
+    processAudio: async (videoId: string, titleOrMode?: string, modeOverride?: 'basic' | 'pro', useManualUpload?: boolean) => {
         const { jobs, defaultMode, rapidapiKey } = get();
         
         let title = "Unknown Title";
@@ -238,7 +239,7 @@ export const useAIVocalStore = create<AIVocalState>()(
             const res = await fetchWithFallback("/separate", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ video_id: videoId, title: title, mode: targetMode, rapidapi_key: rapidapiKey || "" })
+                body: JSON.stringify({ video_id: videoId, title: title, mode: targetMode, rapidapi_key: rapidapiKey || "", use_manual_upload: useManualUpload })
             }, 4); // 4 retries = wait up to ~15s (1+2+4+8) for the bridge to start
             
             isPolling = false;
@@ -335,6 +336,6 @@ export const useAIVocalStore = create<AIVocalState>()(
 }),
     {
         name: 'ai-vocal-storage',
-        partialize: (state) => ({ jobs: state.jobs, defaultMode: state.defaultMode }), // Persist jobs and user's default mode preference
+        partialize: (state) => ({ jobs: state.jobs, defaultMode: state.defaultMode, rapidapiKey: state.rapidapiKey }), // Persist jobs, mode preference, and API key
     }
 ));
