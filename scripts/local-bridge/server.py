@@ -23,7 +23,7 @@ try:
 except AttributeError:
     pass
 
-VERSION = "1.0.41"
+VERSION = "1.0.42"
 
 app = FastAPI()
 
@@ -52,11 +52,13 @@ async def add_pna_headers(request, call_next):
     response.headers["Access-Control-Allow-Private-Network"] = "true"
     return response
 
+from typing import Optional
+
 class SeparateRequest(BaseModel):
     video_id: str
     title: str = "Unknown Title"
     mode: str = "basic"  # "basic" or "pro"
-    rapidapi_key: str = None
+    rapidapi_key: Optional[str] = None
 
 CACHE_DIR = os.path.expanduser("~/Library/Application Support/YouOke/Cache")
 os.makedirs(CACHE_DIR, exist_ok=True)

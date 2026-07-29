@@ -238,7 +238,7 @@ export const useAIVocalStore = create<AIVocalState>()(
             const res = await fetchWithFallback("/separate", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ video_id: videoId, title: title, mode: targetMode, rapidapi_key: rapidapiKey })
+                body: JSON.stringify({ video_id: videoId, title: title, mode: targetMode, rapidapi_key: rapidapiKey || "" })
             }, 4); // 4 retries = wait up to ~15s (1+2+4+8) for the bridge to start
             
             isPolling = false;
