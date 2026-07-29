@@ -344,7 +344,7 @@ def separate(req: SeparateRequest):
     # ── Strategy 0: EXTERNAL API FALLBACK (RapidAPI) ──────────────────────────
     # Reads from RapidAPI using the user's provided key.
     # Fallback to hardcoded free key if the user didn't provide one.
-    RAPIDAPI_KEY = req.rapidapi_key or os.environ.get("RAPIDAPI_KEY", "25ac343bd9msh2fee41bd574ab7bp1f00fejsnd6ee8e4e096a")
+    RAPIDAPI_KEY = req.rapidapi_key
     if RAPIDAPI_KEY and not download_success:
         try:
             print(f"[Strategy 0] Trying RapidAPI (youtube-mp3-audio-video-downloader)... Using Custom Key: {bool(req.rapidapi_key)}")
