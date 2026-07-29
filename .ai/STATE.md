@@ -2,7 +2,7 @@
 *Last Updated: 2026-07-29 11:18*
 
 ## 🚀 Current Objective
-- [ ] Stabilize AI Vocal local bridge with minimal, compatibility-preserving fixes validated on localhost first.
+- [x] Stabilize AI Vocal local bridge with minimal, compatibility-preserving fixes validated on localhost first.
 
 ## 📋 Action Plan
 - [x] Write `.ai/docs/ai-vocal-v2-architecture.md`.
@@ -12,7 +12,7 @@
 - [x] Start the repo version of `scripts/local-bridge/server.py` and compare behavior with the currently running bridge.
 - [x] Fix only the confirmed minimal issues in bridge processing and player/bridge integration.
 - [x] Re-test localhost after each focused fix before any version bump.
-- [ ] Bump plugin version only if `scripts/local-bridge/` or `youoke-plugin/` changes are finalized.
+- [x] Bump plugin version only if `scripts/local-bridge/` or `youoke-plugin/` changes are finalized.
 
 ## ⚠️ Blockers
 - Existing uncommitted changes are present in `scripts/local-bridge/server.py`, so runtime edits must stay minimal and deliberate.
@@ -27,4 +27,4 @@
   - restore the post-Demucs success path in `server.py`
   - parse RapidAPI `file` responses
   - make `UniversalPlayer.tsx` resolve the active bridge base URL instead of hardcoding `5050`
-- [ ] Run one more end-to-end localhost separation test on a video that is known to pass acquisition reliably after restarting the repo bridge.
+- [x] Run one more end-to-end localhost separation test on a video that is known to pass acquisition reliably after restarting the repo bridge.

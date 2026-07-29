@@ -501,7 +501,8 @@ def separate(req: SeparateRequest):
                 print(f"[Strategy 3] pytubefix client={client_name}")
 
                 def _pytubefix_download():
-                    yt = YouTube(yt_url, client=client_name)
+                    # Set use_po_token=False and use_oauth=False to prevent browser spam
+                    yt = YouTube(yt_url, client=client_name, use_po_token=False, use_oauth=False)
                     stream = yt.streams.get_audio_only()
                     if stream:
                         stream.download(output_path=song_dir, filename=f"{vid}.m4a")
