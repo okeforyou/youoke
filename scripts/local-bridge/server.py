@@ -23,7 +23,7 @@ try:
 except AttributeError:
     pass
 
-VERSION = "1.0.40"
+VERSION = "1.0.41"
 
 app = FastAPI()
 
@@ -56,6 +56,7 @@ class SeparateRequest(BaseModel):
     video_id: str
     title: str = "Unknown Title"
     mode: str = "basic"  # "basic" or "pro"
+    rapidapi_key: str = None
 
 CACHE_DIR = os.path.expanduser("~/Library/Application Support/YouOke/Cache")
 os.makedirs(CACHE_DIR, exist_ok=True)
@@ -314,10 +315,11 @@ def separate(req: SeparateRequest):
 
     # ── Strategy 0: EXTERNAL API FALLBACK (RapidAPI) ──────────────────────────
     # Reads from RapidAPI using the user's provided key.
-    RAPIDAPI_KEY = os.environ.get("RAPIDAPI_KEY", "25ac343bd9msh2fee41bd574ab7bp1f00fejsnd6ee8e4e096a")
+    # Fallback to hardcoded free key if the user didn't provide one.
+    RAPIDAPI_KEY = req.rapidapi_key or os.environ.get("RAPIDAPI_KEY", "25ac343bd9msh2fee41bd574ab7bp1f00fejsnd6ee8e4e096a")
     if RAPIDAPI_KEY and not download_success:
         try:
-            print(f"[Strategy 0] Trying RapidAPI (youtube-mp3-audio-video-downloader)...")
+            print(f"[Strategy 0] Trying RapidAPI (youtube-mp3-audio-video-downloader)... Using Custom Key: {bool(req.rapidapi_key)}")
             import urllib.request
             import urllib.parse
             import json

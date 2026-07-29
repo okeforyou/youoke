@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useSystem } from '@/core/container/SystemContext';
 import { useUIStore } from '@/stores/useUIStore';
+import { useAIVocalStore } from '@/stores/useAIVocalStore';
 import { getUserProfile } from '@/services/userService';
 import { UserProfile, DEFAULT_PRICING_PACKAGES } from '@/types/subscription';
-import { CalendarIcon, ClockIcon, EnvelopeIcon, ArrowRightOnRectangleIcon, CheckBadgeIcon, ChatBubbleOvalLeftEllipsisIcon } from '@heroicons/react/24/outline';
+import { CalendarIcon, ClockIcon, EnvelopeIcon, ArrowRightOnRectangleIcon, CheckBadgeIcon, ChatBubbleOvalLeftEllipsisIcon, KeyIcon } from '@heroicons/react/24/outline';
 import { Sparkles, Crown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function ProfileTab({ onClose, onSwitchTab }: { onClose: () => void, onSwitchTab?: (tab: string) => void }) {
     const { user, signOut } = useSystem().auth();
     const { showConfirm } = useUIStore();
+    const { rapidapiKey, setRapidapiKey } = useAIVocalStore();
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -183,6 +185,36 @@ export default function ProfileTab({ onClose, onSwitchTab }: { onClose: () => vo
                     </div>
                 </div>
 
+            </div>
+            
+            {/* Advanced Settings */}
+            <div className="bg-white dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-sm">
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center shrink-0">
+                        <KeyIcon className="w-5 h-5 text-blue-500" />
+                    </div>
+                    <div>
+                        <h3 className="text-base font-bold text-zinc-900 dark:text-white">ตั้งค่าขั้นสูง (Advanced Settings)</h3>
+                        <p className="text-[12px] text-zinc-500">ตั้งค่าส่วนเสริมสำหรับการใช้งานระบบ AI Vocal</p>
+                    </div>
+                </div>
+                
+                <div className="space-y-3">
+                    <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300">
+                        Custom RapidAPI Key
+                        <span className="ml-2 text-xs font-normal text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full">Optional</span>
+                    </label>
+                    <input 
+                        type="password" 
+                        value={rapidapiKey || ''}
+                        onChange={(e) => setRapidapiKey(e.target.value)}
+                        placeholder="ใส่ API Key ของคุณที่นี่..."
+                        className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white text-sm rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                    />
+                    <p className="text-[11px] text-zinc-500 leading-relaxed">
+                        ระบบจะใช้ Key พิเศษนี้ในการดาวน์โหลดเพลงเพื่อทะลุการบล็อกของ YouTube หากไม่กรอก ระบบจะใช้ Key เริ่มต้นซึ่งอาจจะถูกบล็อกการใช้งานได้
+                    </p>
+                </div>
             </div>
 
             {/* Upgrade / Packages CTA */}

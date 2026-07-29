@@ -84,6 +84,7 @@ interface AIVocalState {
     isActive: boolean; // Is the currently playing song using AI Vocal?
     currentVideoId: string | null;
     defaultMode: 'basic' | 'pro';
+    rapidapiKey: string | null;
     
     // Background jobs
     jobs: Record<string, AIVocalJob>;
@@ -110,6 +111,7 @@ interface AIVocalState {
     reset: () => void;
     setCurrentVideoId: (id: string | null) => void;
     setDefaultMode: (mode: 'basic' | 'pro') => void;
+    setRapidapiKey: (key: string | null) => void;
 }
 
 export const useAIVocalStore = create<AIVocalState>()(
@@ -118,6 +120,7 @@ export const useAIVocalStore = create<AIVocalState>()(
     isActive: false,
     currentVideoId: null,
     defaultMode: 'basic',
+    rapidapiKey: null,
     jobs: {},
 
     volumes: { vocals: 100, instrumental: 100, drums: 100, bass: 100, other: 100 },
@@ -132,6 +135,7 @@ export const useAIVocalStore = create<AIVocalState>()(
     setIsActive: (active) => set({ isActive: active }),
     setCurrentVideoId: (id) => set({ currentVideoId: id }),
     setDefaultMode: (mode) => set({ defaultMode: mode }),
+    setRapidapiKey: (key) => set({ rapidapiKey: key }),
 
     setVolume: (type, val) => set((state) => ({
         volumes: { ...state.volumes, [type]: val }
@@ -172,7 +176,7 @@ export const useAIVocalStore = create<AIVocalState>()(
     }),
 
     processAudio: async (videoId: string, titleOrMode?: string, modeOverride?: 'basic' | 'pro') => {
-        const { jobs, defaultMode } = get();
+        const { jobs, defaultMode, rapidapiKey } = get();
         
         let title = "Unknown Title";
         let targetMode = defaultMode;
@@ -234,7 +238,7 @@ export const useAIVocalStore = create<AIVocalState>()(
             const res = await fetchWithFallback("/separate", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ video_id: videoId, title: title, mode: targetMode })
+                body: JSON.stringify({ video_id: videoId, title: title, mode: targetMode, rapidapi_key: rapidapiKey })
             }, 4); // 4 retries = wait up to ~15s (1+2+4+8) for the bridge to start
             
             isPolling = false;
