@@ -395,7 +395,7 @@ def separate(req: SeparateRequest):
         out_template = os.path.join(song_dir, f"{vid}.%(ext)s")
         # 2026-era client list: web_creator & ios bypass most SABR blocks
         extractor_args = "youtube:player_client=web_creator,ios,mweb,web_safari"
-        cookie_sources = ["chrome", "safari", "firefox", None]
+        cookie_sources = [None, "chrome", "safari", "firefox"]
 
         for source in cookie_sources:
             if download_success:
@@ -440,7 +440,7 @@ def separate(req: SeparateRequest):
             import yt_dlp as yt_dlp_mod
             import concurrent.futures
             out_template = os.path.join(song_dir, f"{vid}.%(ext)s")
-            cookie_sources = ["chrome", "safari", "firefox", None]
+            cookie_sources = [None, "chrome", "safari", "firefox"]
             
             for source in cookie_sources:
                 if download_success:
@@ -491,7 +491,7 @@ def separate(req: SeparateRequest):
 
     # ── Strategy 3: pytubefix (expanded client list) ──────────────────────────
     if not download_success:
-        for client_name in ['MWEB', 'IOS', 'ANDROID', 'WEB', 'TV']:
+        for client_name in ['WEB_CREATOR', 'TV_EMBED', 'MWEB', 'IOS', 'ANDROID', 'WEB', 'TV']:
             if download_success:
                 break
             try:
@@ -684,7 +684,7 @@ def separate(req: SeparateRequest):
         try:
             demucs_dir = os.path.join(song_dir, "htdemucs_ft")
             if os.path.exists(demucs_dir):
-                shutil.rmtree(demucs_dir)
+                shutil.rmtree(demucs_dir, ignore_errors=True)
         except Exception as e:
             print(f"Failed to remove demucs dir: {e}")
             
