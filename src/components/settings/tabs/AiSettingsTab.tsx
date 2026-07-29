@@ -1,9 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAIVocalStore } from '@/stores/useAIVocalStore';
-import { CpuChipIcon, KeyIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
+import { CpuChipIcon, KeyIcon, ArrowTopRightOnSquareIcon, EyeIcon, EyeSlashIcon, CheckIcon } from '@heroicons/react/24/outline';
 
 export default function AiSettingsTab() {
     const { rapidapiKey, setRapidapiKey } = useAIVocalStore();
+    const [inputValue, setInputValue] = useState(rapidapiKey || '');
+    const [showKey, setShowKey] = useState(false);
+    const [isSaved, setIsSaved] = useState(false);
+
+    useEffect(() => {
+        setInputValue(rapidapiKey || '');
+    }, [rapidapiKey]);
+
+    const handleSave = () => {
+        setRapidapiKey(inputValue);
+        setIsSaved(true);
+        setTimeout(() => setIsSaved(false), 2000);
+    };
 
     return (
         <div className="flex-1 overflow-y-auto p-4 md:p-8">
@@ -42,13 +55,30 @@ export default function AiSettingsTab() {
                             <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-2">
                                 X-RapidAPI-Key ของคุณ
                             </label>
-                            <input 
-                                type="password" 
-                                value={rapidapiKey || ''}
-                                onChange={(e) => setRapidapiKey(e.target.value)}
-                                placeholder="ใส่ X-RapidAPI-Key ของคุณที่นี่..."
-                                className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white text-sm rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                            />
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                                <div className="relative flex-1">
+                                    <input 
+                                        type={showKey ? "text" : "password"} 
+                                        value={inputValue}
+                                        onChange={(e) => setInputValue(e.target.value)}
+                                        placeholder="ใส่ X-RapidAPI-Key ของคุณที่นี่..."
+                                        className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white text-sm rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                                    />
+                                    <button 
+                                        type="button"
+                                        onClick={() => setShowKey(!showKey)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors p-1"
+                                    >
+                                        {showKey ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                                    </button>
+                                </div>
+                                <button 
+                                    onClick={handleSave}
+                                    className="px-5 py-3 bg-primary hover:bg-primary/90 text-white rounded-xl text-sm font-bold transition-all shadow-md shrink-0 flex items-center justify-center gap-2"
+                                >
+                                    {isSaved ? <><CheckIcon className="w-4 h-4" /> บันทึกแล้ว</> : 'บันทึก'}
+                                </button>
+                            </div>
                         </div>
 
                         <div className="bg-zinc-50 dark:bg-zinc-900 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800">
