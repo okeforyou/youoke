@@ -15,6 +15,24 @@
 - **Important Notes:** [Any critical context the AI should not forget across sessions, e.g., "We have 126 RAG files processed"]
 
 ## 📝 Recent Context (Last Session)
+- **Localhost Runtime Mismatch (2026-07-29):** During diagnosis, the active bridge on `127.0.0.1:5050` responded with version `1.0.36`, while the checked-in `scripts/local-bridge/server.py` currently declares version `1.0.39`. Any debugging must distinguish between the already running plugin instance and the repo source file.
+- **Confirmed Minimal Fix Targets (2026-07-29):**
+  1. `scripts/local-bridge/server.py` has a post-Demucs output/compression block placed after an early `return` inside the exception area, making the success-path conversion logic unreachable.
+  2. `src/modules/player/components/UniversalPlayer.tsx` still hardcodes bridge asset URLs to port `5050`, while `src/stores/useAIVocalStore.ts` supports active-port detection and fallback ports.
+- **Minimal Fixes Applied (2026-07-29):**
+  1. Restored the post-Demucs success path in `scripts/local-bridge/server.py` so output validation, M4A compression, cache metadata writes, and success progress can execute after Demucs finishes.
+  2. Expanded RapidAPI response parsing to accept the returned `file` field; this improved parsing, but the sampled direct download still returned `403 Forbidden`, so RapidAPI is not yet a reliable primary path.
+  3. Exported active bridge base URL resolution from `useAIVocalStore.ts` and updated `UniversalPlayer.tsx` to load AI stem files from the detected bridge base URL instead of hardcoding port `5050`.
+- **AI Vocal v2 Direction (2026-07-29):** The team confirmed that YouTube remains the core playback source and AI Vocal is a strategic differentiator. We documented a new local-first architecture in `.ai/docs/ai-vocal-v2-architecture.md`.
+- **AI Vocal v2 Core Decision:** Direct YouTube download is now treated as a fast path only. The long-term reliable fallback will be browser/tab audio capture feeding the local bridge, while keeping processing local to avoid server cost.
+- **Safe Rollout Rule:** Do not refactor the whole playback system to ship AI Vocal. First stabilize the current local bridge pipeline, keep changes isolated, and only then expand to upload/capture-based separation.
+- **Current Technical Concern:** The existing `scripts/local-bridge/server.py` likely has a broken post-Demucs block placement, so failures may happen even after download succeeds. There is also a bridge port consistency risk between the AI store and player playback URLs.
+- **Localhost Diagnosis (2026-07-29):** The local bridge is running successfully on port `5050` and reports device `mps`. Recent failures are currently dominated by YouTube acquisition issues rather than bridge startup issues:
+  1. `yt-dlp` can still succeed for some videos when Chrome cookies work.
+  2. Some videos fail with `Requested format is not available`.
+  3. No-cookie fallback fails with `Please sign in`.
+  4. `pytubefix` WEB path hits `PoToken PENDING` / SABR issues.
+  5. `innertube+ffmpeg` currently fails with `400 Bad Request: Precondition check failed.`
 - **Vocal Separation & YouOke Plugin (v1.0.5):** We created a local AI bridge Desktop app (using PyInstaller, FastAPI, and `yt-dlp` for download, `demucs` for AI separation). This allows the frontend to send separation requests locally without server costs.
 - **Vocal UI (`src/pages/vocal.tsx`):** We built a dedicated page for testing the vocal separation queue. It detects OS (Mac/Win) and directly downloads the `v1.0.5` plugin binary from GitHub Releases for authenticated users. We also added "Vocals" and "Instrumental" quick-mute toggles on the player bar.
 - **Unified Versioning Rule:** ANY changes to `youoke-plugin/` or `scripts/local-bridge/` MUST trigger a version bump. **DO NOT modify versions manually.** You MUST use `node scripts/bump-version.js <NEW_VERSION>` to synchronize versions across:

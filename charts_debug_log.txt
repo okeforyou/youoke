@@ -1,3 +1,43 @@
 [2026-07-11T03:22:05.645Z] [START] API Handler Invoked. Query: {}, Method: GET
 [2026-07-11T03:22:05.646Z] [CONFIG] force = false, adminFirestore exists = true
 [2026-07-11T03:22:05.999Z] [SETTINGS] Loaded 0 YouTube API Keys.
+[2026-07-28T09:27:24.215Z] [START] API Handler Invoked. Query: {}, Method: GET
+[2026-07-28T09:27:24.216Z] [CONFIG] force = false, adminFirestore exists = true
+[2026-07-28T09:27:24.652Z] ❌ Failed to read settings config: 16 UNAUTHENTICATED: Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.
+[2026-07-28T09:27:27.498Z] [FINAL] totalSongs = 256, finalCharts count = 4
+[2026-07-28T09:27:27.605Z] ❌ Failed to cache to Firestore: 16 UNAUTHENTICATED: Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.
+[2026-07-28T09:27:40.828Z] [START] API Handler Invoked. Query: {}, Method: GET
+[2026-07-28T09:27:40.828Z] [CONFIG] force = false, adminFirestore exists = true
+[2026-07-28T09:27:40.872Z] ❌ Failed to read settings config: 16 UNAUTHENTICATED: Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.
+[2026-07-28T09:27:41.467Z] [FINAL] totalSongs = 256, finalCharts count = 4
+[2026-07-28T09:27:41.547Z] ❌ Failed to cache to Firestore: 16 UNAUTHENTICATED: Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.
+[2026-07-28T12:34:39.672Z] [START] API Handler Invoked. Query: {}, Method: GET
+[2026-07-28T12:34:39.677Z] [CONFIG] force = false, adminFirestore exists = true
+[2026-07-28T12:34:40.222Z] ❌ Failed to read settings config: 16 UNAUTHENTICATED: Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.
+[2026-07-28T12:34:40.990Z] [FINAL] totalSongs = 256, finalCharts count = 4
+[2026-07-28T12:34:41.143Z] ❌ Failed to cache to Firestore: 16 UNAUTHENTICATED: Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.
+[2026-07-28T12:39:41.855Z] [START] API Handler Invoked. Query: {}, Method: GET
+[2026-07-28T12:39:41.871Z] [CONFIG] force = false, adminFirestore exists = true
+[2026-07-28T12:39:42.343Z] ❌ Failed to read settings config: 16 UNAUTHENTICATED: Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.
+[2026-07-28T12:39:43.704Z] [FINAL] totalSongs = 256, finalCharts count = 4
+[2026-07-28T12:39:44.083Z] ❌ Failed to cache to Firestore: 16 UNAUTHENTICATED: Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.
+[2026-07-28T12:40:49.842Z] [START] API Handler Invoked. Query: {}, Method: GET
+[2026-07-28T12:40:49.847Z] [CONFIG] force = false, adminFirestore exists = true
+[2026-07-28T12:40:49.977Z] ❌ Failed to read settings config: 16 UNAUTHENTICATED: Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.
+[2026-07-28T12:40:50.847Z] [FINAL] totalSongs = 256, finalCharts count = 4
+[2026-07-28T12:40:50.945Z] ❌ Failed to cache to Firestore: 16 UNAUTHENTICATED: Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.
+[2026-07-28T13:07:28.407Z] [START] API Handler Invoked. Query: {}, Method: GET
+[2026-07-28T13:07:28.408Z] [CONFIG] force = false, adminFirestore exists = true
+[2026-07-28T13:07:28.807Z] ❌ Failed to read settings config: 16 UNAUTHENTICATED: Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.
+[2026-07-28T13:07:29.576Z] [FINAL] totalSongs = 256, finalCharts count = 4
+[2026-07-28T13:07:29.739Z] ❌ Failed to cache to Firestore: 16 UNAUTHENTICATED: Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.
+[2026-07-29T02:07:30.648Z] [START] API Handler Invoked. Query: {}, Method: GET
+[2026-07-29T02:07:30.651Z] [CONFIG] force = false, adminFirestore exists = true
+[2026-07-29T02:07:31.061Z] ❌ Failed to read settings config: 16 UNAUTHENTICATED: Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.
+[2026-07-29T02:07:34.928Z] [FINAL] totalSongs = 256, finalCharts count = 4
+[2026-07-29T02:07:35.033Z] ❌ Failed to cache to Firestore: 16 UNAUTHENTICATED: Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.
+[2026-07-29T02:07:35.055Z] [START] API Handler Invoked. Query: {}, Method: GET
+[2026-07-29T02:07:35.055Z] [CONFIG] force = false, adminFirestore exists = true
+[2026-07-29T02:07:35.098Z] ❌ Failed to read settings config: 16 UNAUTHENTICATED: Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.
+[2026-07-29T02:07:35.507Z] [FINAL] totalSongs = 256, finalCharts count = 4
+[2026-07-29T02:07:35.605Z] ❌ Failed to cache to Firestore: 16 UNAUTHENTICATED: Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.

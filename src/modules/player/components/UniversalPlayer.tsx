@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import YouTube from 'react-youtube';
-import { useAIVocalStore } from '../../../stores/useAIVocalStore';
+import { getActiveBridgeBaseUrl, useAIVocalStore } from '../../../stores/useAIVocalStore';
 import { usePlayerStore } from '../stores/usePlayerStore';
 import { MidiCanvasRenderer } from './MidiCanvasRenderer';
 import { LyricsOverlay } from './LyricsOverlay';
@@ -52,6 +52,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
     const bassRef = useRef<HTMLAudioElement>(null);
     const otherRef = useRef<HTMLAudioElement>(null);
     const ytPlayerRef = useRef<any>(null);
+    const [bridgeBaseUrl, setBridgeBaseUrl] = useState('http://127.0.0.1:5050');
 
     const { trackStates, volumes } = useMixerStore(
         useShallow(state => ({
@@ -268,6 +269,45 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
         return () => clearInterval(interval);
     }, [isPlaying, isAiReady, aiMode]);
 
+    useEffect(() => {
+        if (currentVideo?.sourceType === 'vcd' && videoRef.current) {
+            if (isPlaying) {
+                videoRef.current.play().catch(e => console.warn("VCD Play failed:", e));
+            } else {
+                videoRef.current.pause();
+            }
+        }
+    }, [isPlaying, currentVideo?.sourceType]);
+
+    useEffect(() => {
+        if (isAiReady && ytPlayerRef.current) {
+            try {
+                if (typeof ytPlayerRef.current.getIframe === 'function' && ytPlayerRef.current.getIframe()) {
+                    ytPlayerRef.current.mute();
+                }
+            } catch (e) {}
+        }
+    }, [isAiReady]);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const syncBridgeUrl = async () => {
+            const activeBaseUrl = await getActiveBridgeBaseUrl();
+            if (isMounted && activeBaseUrl) {
+                setBridgeBaseUrl(activeBaseUrl);
+            }
+        };
+
+        if (isAiReady) {
+            syncBridgeUrl();
+        }
+
+        return () => {
+            isMounted = false;
+        };
+    }, [isAiReady, activeVideoId]);
+
     // --- RENDERERS ---
 
     // 1. MIDI
@@ -281,16 +321,6 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
     }
 
     // 2. VCD (HTML5 Video)
-    useEffect(() => {
-        if (currentVideo?.sourceType === 'vcd' && videoRef.current) {
-            if (isPlaying) {
-                videoRef.current.play().catch(e => console.warn("VCD Play failed:", e));
-            } else {
-                videoRef.current.pause();
-            }
-        }
-    }, [isPlaying, currentVideo?.sourceType]);
-
     if (currentVideo?.sourceType === 'vcd' && currentVideo.filePath) {
         return (
             <div className={`relative w-full h-full bg-black ${className}`}>
@@ -410,16 +440,6 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
         if (onStateChange) onStateChange(event);
     };
 
-    useEffect(() => {
-        if (isAiReady && ytPlayerRef.current) {
-            try {
-                if (typeof ytPlayerRef.current.getIframe === 'function' && ytPlayerRef.current.getIframe()) {
-                    ytPlayerRef.current.mute();
-                }
-            } catch (e) {}
-        }
-    }, [isAiReady]);
-
     return (
         <div className={`relative w-full h-full ${className} youtube-player-wrapper`}>
             {/* AI Audio Elements */}
@@ -427,20 +447,20 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                 <div className="hidden" key={`${activeVideoId}-${aiMode}`}>
                     <audio 
                         ref={vocalRef} 
-                        src={`http://127.0.0.1:5050/files/${activeVideoId}/vocals.m4a`} 
+                        src={`${bridgeBaseUrl}/files/${activeVideoId}/vocals.m4a`} 
                         preload="auto" 
                         onLoadedData={(e) => { e.currentTarget.volume = (volumes?.vocals ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} 
                     />
                     {aiMode === 'pro' ? (
                         <>
-                            <audio ref={drumsRef} src={`http://127.0.0.1:5050/files/${activeVideoId}/drums.m4a`} preload="auto" onLoadedData={(e) => { e.currentTarget.volume = (volumes?.drums ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} />
-                            <audio ref={bassRef} src={`http://127.0.0.1:5050/files/${activeVideoId}/bass.m4a`} preload="auto" onLoadedData={(e) => { e.currentTarget.volume = (volumes?.bass ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} />
-                            <audio ref={otherRef} src={`http://127.0.0.1:5050/files/${activeVideoId}/other.m4a`} preload="auto" onLoadedData={(e) => { e.currentTarget.volume = (volumes?.other ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} />
+                            <audio ref={drumsRef} src={`${bridgeBaseUrl}/files/${activeVideoId}/drums.m4a`} preload="auto" onLoadedData={(e) => { e.currentTarget.volume = (volumes?.drums ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} />
+                            <audio ref={bassRef} src={`${bridgeBaseUrl}/files/${activeVideoId}/bass.m4a`} preload="auto" onLoadedData={(e) => { e.currentTarget.volume = (volumes?.bass ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} />
+                            <audio ref={otherRef} src={`${bridgeBaseUrl}/files/${activeVideoId}/other.m4a`} preload="auto" onLoadedData={(e) => { e.currentTarget.volume = (volumes?.other ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} />
                         </>
                     ) : (
                         <audio 
                             ref={instrumentalRef} 
-                            src={`http://127.0.0.1:5050/files/${activeVideoId}/no_vocals.m4a`} 
+                            src={`${bridgeBaseUrl}/files/${activeVideoId}/no_vocals.m4a`} 
                             preload="auto" 
                             onLoadedData={(e) => { e.currentTarget.volume = (volumes?.instrumental ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} 
                         />

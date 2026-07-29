@@ -30,6 +30,11 @@ async function getActiveBridgePort(): Promise<number | null> {
     return null;
 }
 
+export async function getActiveBridgeBaseUrl(): Promise<string | null> {
+    const port = await getActiveBridgePort();
+    return port ? `http://127.0.0.1:${port}` : null;
+}
+
 const fetchWithFallback = async (endpoint: string, options?: RequestInit, maxRetries = 0) => {
     let delayMs = 1000;
     let lastError = null;

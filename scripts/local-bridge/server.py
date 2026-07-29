@@ -339,7 +339,7 @@ def separate(req: SeparateRequest):
                 ctx.check_hostname = False
                 ctx.verify_mode = ssl.CERT_NONE
                 
-                req = urllib.request.Request(
+                api_req = urllib.request.Request(
                     api_url,
                     headers={
                         'Accept': 'application/json',
@@ -349,12 +349,19 @@ def separate(req: SeparateRequest):
                     }
                 )
                 
-                with urllib.request.urlopen(req, context=ctx, timeout=30) as response:
+                with urllib.request.urlopen(api_req, context=ctx, timeout=30) as response:
                     res_data = json.loads(response.read().decode('utf-8'))
                     print(f"[Strategy 0] API Response: {res_data}")
                     
                     # Extract the actual download link (the key might be 'link', 'url', 'download_link', etc.)
-                    direct_url = res_data.get("url") or res_data.get("link") or res_data.get("download_url") or res_data.get("download_link") or (res_data.get("data") and res_data.get("data", {}).get("url"))
+                    direct_url = (
+                        res_data.get("url")
+                        or res_data.get("link")
+                        or res_data.get("file")
+                        or res_data.get("download_url")
+                        or res_data.get("download_link")
+                        or (res_data.get("data") and res_data.get("data", {}).get("url"))
+                    )
                     
                     if direct_url:
                         print(f"[Strategy 0] Found direct URL. Downloading...")
@@ -597,14 +604,14 @@ def separate(req: SeparateRequest):
         demucs_args = ["-n", "htdemucs_ft", "--shifts=0", "-d", device, "-o", song_dir, wav_path]
         if mode == "basic":
             demucs_args = ["-n", "htdemucs_ft", "--shifts=0", "-d", device, "--two-stems=vocals", "-o", song_dir, wav_path]
-            
+
         if getattr(sys, 'frozen', False):
             cmd = [sys.executable, "demucs_worker"] + demucs_args
         else:
             cmd = [sys.executable, "-m", "demucs.separate"] + demucs_args
 
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True)
-        
+
         buffer = ""
         full_log = ""
         while True:
@@ -621,27 +628,23 @@ def separate(req: SeparateRequest):
                 buffer = ""
             else:
                 buffer += char
-                
+
         process.wait()
         if process.returncode != 0:
             raise Exception(f"Exit code {process.returncode}. Log: {full_log[-1000:]}")
-            
-    except Exception as e:
-        progress_store[vid] = {"status": "error", "percent": 0, "message": "การแยกเสียงล้มเหลว"}
-        return {"status": "error", "message": f"Demucs separation failed: {str(e)}"}
-        
+
         demucs_out_dir = os.path.join(song_dir, "htdemucs_ft", vid)
         vocal_wav = os.path.join(demucs_out_dir, "vocals.wav")
-        
+
         if not os.path.exists(vocal_wav):
             raise Exception("Demucs output files not found.")
-            
+
         # 4. Convert back to M4A to save space
         progress_store[vid] = {"status": "compressing", "percent": 95, "message": "กำลังบีบอัดไฟล์ขั้นสุดท้าย..."}
-        
+
         # Always convert vocals
         convert_audio(vocal_wav, vocal_m4a, fmt="m4a")
-        
+
         if mode == "basic":
             no_vocal_wav = os.path.join(demucs_out_dir, "no_vocals.wav")
             if os.path.exists(no_vocal_wav):
@@ -654,17 +657,17 @@ def separate(req: SeparateRequest):
                 stem_m4a = os.path.join(song_dir, f"{stem}.m4a")
                 if os.path.exists(stem_wav):
                     convert_audio(stem_wav, stem_m4a, fmt="m4a")
-        
+
         # Save mode flag for client checks
         with open(os.path.join(song_dir, "mode.txt"), "w") as f:
             f.write(mode)
-            
+
         # Save title for cache listing
         with open(os.path.join(song_dir, "title.txt"), "w", encoding="utf-8") as f:
             f.write(req.title)
-            
+
         progress_store[vid] = {"status": "success", "percent": 100, "message": "เสร็จสมบูรณ์!", "mode": mode}
-            
+
     except Exception as e:
         progress_store[vid] = {"status": "error", "percent": 0, "message": "การแยกเสียงล้มเหลว"}
         return {"status": "error", "message": f"Demucs separation failed: {str(e)}"}
