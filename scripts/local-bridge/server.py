@@ -23,7 +23,7 @@ try:
 except AttributeError:
     pass
 
-VERSION = "1.0.42"
+VERSION = "1.0.44"
 
 app = FastAPI()
 
@@ -369,7 +369,12 @@ def separate(req: SeparateRequest):
                     
                     if direct_url:
                         print(f"[Strategy 0] Found direct URL. Downloading...")
-                        urllib.request.urlretrieve(direct_url, m4a_path)
+                        
+                        dl_req = urllib.request.Request(direct_url, headers={'User-Agent': 'Mozilla/5.0'})
+                        with urllib.request.urlopen(dl_req, context=ctx, timeout=120) as dl_res, open(m4a_path, 'wb') as out_file:
+                            import shutil
+                            shutil.copyfileobj(dl_res, out_file)
+                            
                         if os.path.getsize(m4a_path) > 0:
                             download_success = True
                             attempts.append({"method": "rapidapi", "status": "success"})
