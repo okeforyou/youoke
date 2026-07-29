@@ -324,8 +324,8 @@ def separate(req: SeparateRequest):
             print(f"[Manual Upload] Using uploaded file: {manual_path}")
 
 
-    YTDLP_TIMEOUT = 90  # seconds per yt-dlp attempt
-    PYTUBEFIX_TIMEOUT = 60  # seconds per pytubefix attempt
+    YTDLP_TIMEOUT = 45  # seconds per yt-dlp attempt
+    PYTUBEFIX_TIMEOUT = 30  # seconds per pytubefix attempt
 
     def _find_downloaded_file(song_dir, vid):
         """Scan song_dir for any successfully downloaded audio file for this video."""
@@ -430,7 +430,7 @@ def separate(req: SeparateRequest):
         out_template = os.path.join(song_dir, f"{vid}.%(ext)s")
         # 2026-era client list: web_creator & ios bypass most SABR blocks
         extractor_args = "youtube:player_client=web_creator,ios,mweb,web_safari"
-        cookie_sources = [None, "chrome", "safari", "firefox"]
+        cookie_sources = [None, "chrome"]
 
         for source in cookie_sources:
             if download_success:
@@ -475,7 +475,7 @@ def separate(req: SeparateRequest):
             import yt_dlp as yt_dlp_mod
             import concurrent.futures
             out_template = os.path.join(song_dir, f"{vid}.%(ext)s")
-            cookie_sources = [None, "chrome", "safari", "firefox"]
+            cookie_sources = [None, "chrome"]
             
             for source in cookie_sources:
                 if download_success:
@@ -526,7 +526,7 @@ def separate(req: SeparateRequest):
 
     # ── Strategy 3: pytubefix (expanded client list) ──────────────────────────
     if not download_success:
-        for client_name in ['WEB_CREATOR', 'TV_EMBED', 'MWEB', 'IOS', 'ANDROID', 'WEB', 'TV']:
+        for client_name in ['WEB_CREATOR', 'IOS', 'ANDROID']:
             if download_success:
                 break
             try:
