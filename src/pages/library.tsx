@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Head from 'next/head';
-import Sidebar from '../components/navigation/Sidebar';
+import { Sidebar } from '../components/navigation/Sidebar';
 import { getActiveBridgeBaseUrl } from '../stores/useAIVocalStore';
 import { usePlayerStore } from '../modules/player/stores/usePlayerStore';
-import MobileTabBar from '../components/navigation/MobileTabBar';
-import { IconMusic, IconUpload, IconTrash, IconPlay } from '@tabler/icons-react';
+import { MobileBottomNav } from '../components/navigation/MobileBottomNav';
+import { Music, Upload, Trash2, Play } from 'lucide-react';
 
 interface LocalSong {
     id: string;
@@ -145,7 +145,7 @@ export default function LocalLibraryPage() {
                                 disabled={isUploading || !!error}
                                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-600 rounded-lg font-medium transition-colors"
                             >
-                                <IconUpload size={20} />
+                                <Upload className="w-5 h-5" />
                                 {isUploading ? 'กำลังอัปโหลด...' : 'เพิ่มไฟล์เพลง'}
                             </button>
                         </div>
@@ -163,7 +163,7 @@ export default function LocalLibraryPage() {
                         </div>
                     ) : songs.length === 0 && !error ? (
                         <div className="text-center py-20 bg-gray-800/30 rounded-2xl border border-gray-700/50">
-                            <IconMusic size={64} className="mx-auto text-gray-600 mb-4" />
+                            <Music size={64} className="mx-auto text-gray-600 mb-4" />
                             <h3 className="text-xl font-medium text-gray-300">ยังไม่มีเพลงในคลังส่วนตัว</h3>
                             <p className="text-gray-500 mt-2 max-w-md mx-auto">
                                 กดปุ่ม "เพิ่มไฟล์เพลง" ด้านบนเพื่อนำเข้าเพลง (MP3, M4A, MP4) แล้วใช้ AI แยกเสียงร้องและดนตรีได้ทันที
@@ -177,7 +177,7 @@ export default function LocalLibraryPage() {
                                         className="w-12 h-12 rounded-lg bg-gray-700 flex items-center justify-center cursor-pointer flex-shrink-0 group-hover:bg-blue-600/20"
                                         onClick={() => handlePlay(song)}
                                     >
-                                        <IconPlay size={24} className="text-gray-400 group-hover:text-blue-400" />
+                                        <Play size={24} className="text-gray-400 group-hover:text-blue-400" />
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <h4 className="font-medium text-gray-200 truncate">{song.title}</h4>
@@ -188,7 +188,7 @@ export default function LocalLibraryPage() {
                                         className="p-2 text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
                                         title="ลบเพลงนี้"
                                     >
-                                        <IconTrash size={20} />
+                                        <Trash2 size={20} />
                                     </button>
                                 </div>
                             ))}
@@ -198,7 +198,7 @@ export default function LocalLibraryPage() {
             </div>
             
             <div className="md:hidden">
-                <MobileTabBar />
+                <MobileBottomNav />
             </div>
         </div>
     );
