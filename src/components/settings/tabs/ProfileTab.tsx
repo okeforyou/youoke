@@ -187,35 +187,7 @@ export default function ProfileTab({ onClose, onSwitchTab }: { onClose: () => vo
 
             </div>
             
-            {/* Advanced Settings */}
-            <div className="bg-white dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-sm">
-                <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center shrink-0">
-                        <KeyIcon className="w-5 h-5 text-blue-500" />
-                    </div>
-                    <div>
-                        <h3 className="text-base font-bold text-zinc-900 dark:text-white">ตั้งค่าขั้นสูง (Advanced Settings)</h3>
-                        <p className="text-[12px] text-zinc-500">ตั้งค่าส่วนเสริมสำหรับการใช้งานระบบ AI Vocal</p>
-                    </div>
-                </div>
-                
-                <div className="space-y-3">
-                    <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300">
-                        Custom RapidAPI Key
-                        <span className="ml-2 text-xs font-normal text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full">Optional</span>
-                    </label>
-                    <input 
-                        type="password" 
-                        value={rapidapiKey || ''}
-                        onChange={(e) => setRapidapiKey(e.target.value)}
-                        placeholder="ใส่ API Key ของคุณที่นี่..."
-                        className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white text-sm rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-                    />
-                    <p className="text-[11px] text-zinc-500 leading-relaxed">
-                        ระบบจะใช้ Key พิเศษนี้ในการดาวน์โหลดเพลงเพื่อทะลุการบล็อกของ YouTube หากไม่กรอก ระบบจะใช้ Key เริ่มต้นซึ่งอาจจะถูกบล็อกการใช้งานได้
-                    </p>
-                </div>
-            </div>
+            {/* Advanced Settings removed and moved to AiSettingsTab */}
 
             {/* Upgrade / Packages CTA */}
             <div className="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-2xl border border-indigo-100 dark:border-indigo-500/20 p-6 flex flex-col md:flex-row items-center justify-between gap-4">
