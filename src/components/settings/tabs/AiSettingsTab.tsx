@@ -51,7 +51,7 @@ export default function AiSettingsTab() {
                         </div>
                         <div>
                             <h3 className="text-base font-bold text-zinc-900 dark:text-white">เชื่อมต่อ RapidAPI (Custom API Key)</h3>
-                            <p className="text-[12px] text-zinc-500">สำหรับผู้ที่ต้องการใช้งาน API ฟรีด้วยตัวเองเพื่อหลีกเลี่ยงการถูกจำกัดโควต้าส่วนกลาง</p>
+                            <p className="text-[12px] text-zinc-500">ตั้งค่าคีย์ API เพื่อเปิดใช้งานฟังก์ชัน AI แยกเสียงร้อง ให้ระบบสามารถประมวลผลแยกแทร็กเสียงดนตรีได้อย่างสมบูรณ์</p>
                         </div>
                     </div>
                     
