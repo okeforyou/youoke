@@ -484,7 +484,7 @@ export const usePlayerStore = create<PlayerStore>()(
                 let source = video.id;
                 const type = video.sourceType || 'youtube';
 
-                if (type === 'youtube') {
+                if (type === 'youtube' || type === 'youoke_ai') {
                     source = video.videoId || video.id;
                     if (!source) console.error("❌ PlayerStore: YouTube ID missing for item", video);
                 } else if (type === 'vcd') {
@@ -530,7 +530,7 @@ export const usePlayerStore = create<PlayerStore>()(
                         let source = nextVideo.id;
                         const type = nextVideo.sourceType || 'youtube';
 
-                        if (type === 'youtube') {
+                        if (type === 'youtube' || type === 'youoke_ai') {
                             source = nextVideo.videoId || nextVideo.id;
                             if (!source) console.error("❌ PlayerStore: YouTube ID missing for item", nextVideo);
                         } else if (type === 'vcd') {

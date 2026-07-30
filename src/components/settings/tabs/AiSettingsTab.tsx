@@ -95,8 +95,8 @@ export default function AiSettingsTab() {
                                     สมัครสมาชิกเว็บไซต์ <a href="https://rapidapi.com" target="_blank" rel="noreferrer" className="text-primary hover:underline inline-flex items-center gap-1">RapidAPI <ArrowTopRightOnSquareIcon className="w-3 h-3" /></a>
                                 </li>
                                 <li>
-                                    <a href="https://rapidapi.com/search/youtube-mp3-audio-video-downloader" target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 px-4 py-2 mt-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl font-bold text-sm shadow-md hover:scale-105 transition-transform">
-                                        👉 ค้นหาและสมัคร API "YouTube MP3 Audio Video Downloader" ฟรี (100 เพลง/เดือน)
+                                    <a href="https://rapidapi.com/search?sortBy=ByRelevance" target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 px-4 py-2 mt-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl font-bold text-sm shadow-md hover:scale-105 transition-transform">
+                                        👉 ค้นหา API "YouTube MP3 Audio Video Downloader"
                                     </a>
                                 </li>
                                 <li>กดปุ่ม <strong>Subscribe to Test</strong> และเลือกแพ็กเกจ <strong>Basic (Free)</strong></li>
