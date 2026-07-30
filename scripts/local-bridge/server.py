@@ -309,6 +309,19 @@ def get_ffmpeg_path():
     except:
         return "ffmpeg"
 
+def is_valid_audio(filepath):
+    if not os.path.exists(filepath) or os.path.getsize(filepath) == 0:
+        return False
+    # If the file is extremely small (< 50KB), it's highly likely an HTML error page or JSON
+    if os.path.getsize(filepath) < 50000:
+        return False
+    try:
+        ffmpeg_exe = get_ffmpeg_path()
+        res = subprocess.run([ffmpeg_exe, "-v", "error", "-i", filepath, "-f", "null", "-"], stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
+        return res.returncode == 0
+    except:
+        return os.path.getsize(filepath) > 50000
+
 def convert_audio(input_path, output_path, fmt="wav"):
     ffmpeg_exe = get_ffmpeg_path()
     try:
@@ -515,10 +528,14 @@ def separate(req: SeparateRequest):
                             import shutil
                             shutil.copyfileobj(dl_res, out_file)
                             
-                        if os.path.getsize(m4a_path) > 0:
+                        if is_valid_audio(m4a_path):
                             download_success = True
                             attempts.append({"method": "rapidapi", "status": "success"})
                             print("[Strategy 0] SUCCESS!")
+                        else:
+                            print(f"[Strategy 0] FAILED: File is not a valid audio file (size: {os.path.getsize(m4a_path)} bytes)")
+                            try: os.remove(m4a_path)
+                            except: pass
                     else:
                         print("[Strategy 0] FAILED: Could not find download URL in API response.")
         except Exception as e:
