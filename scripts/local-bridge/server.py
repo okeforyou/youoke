@@ -190,7 +190,7 @@ def get_download_history():
 @app.get("/health")
 def health():
     device = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
-    return {"status": "ok", "message": "YouOke Local AI Bridge is running.", "device": device}
+    return {"status": "ok", "message": "YouOke Local AI Bridge is running.", "device": device, "quota": rapidapi_quota}
 
 @app.get("/config")
 def get_config():
@@ -481,6 +481,18 @@ def separate(req: SeparateRequest):
                 )
                 
                 with urllib.request.urlopen(api_req, context=ctx, timeout=30) as response:
+                    # Catch rate limit headers
+                    global rapidapi_quota
+                    remaining = response.getheader('x-ratelimit-requests-remaining')
+                    limit = response.getheader('x-ratelimit-requests-limit')
+                    if remaining is not None and limit is not None:
+                        try:
+                            rapidapi_quota['remaining'] = int(remaining)
+                            rapidapi_quota['limit'] = int(limit)
+                            print(f"[RapidAPI Quota] {remaining}/{limit}")
+                        except ValueError:
+                            pass
+
                     res_data = json.loads(response.read().decode('utf-8'))
                     print(f"[Strategy 0] API Response: {res_data}")
                     

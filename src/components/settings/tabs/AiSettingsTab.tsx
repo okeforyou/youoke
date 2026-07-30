@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAIVocalStore } from '@/stores/useAIVocalStore';
-import { CpuChipIcon, KeyIcon, ArrowTopRightOnSquareIcon, EyeIcon, EyeSlashIcon, CheckIcon } from '@heroicons/react/24/outline';
+import { CpuChipIcon, KeyIcon, ArrowTopRightOnSquareIcon, EyeIcon, EyeSlashIcon, CheckIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 
 export default function AiSettingsTab() {
-    const { rapidapiKey, setRapidapiKey } = useAIVocalStore();
+    const { rapidapiKey, setRapidapiKey, rapidapiQuota } = useAIVocalStore();
     const [inputValue, setInputValue] = useState(rapidapiKey || '');
     const [showKey, setShowKey] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
@@ -95,7 +95,9 @@ export default function AiSettingsTab() {
                                     สมัครสมาชิกเว็บไซต์ <a href="https://rapidapi.com" target="_blank" rel="noreferrer" className="text-primary hover:underline inline-flex items-center gap-1">RapidAPI <ArrowTopRightOnSquareIcon className="w-3 h-3" /></a>
                                 </li>
                                 <li>
-                                    ค้นหา API ชื่อ <strong>YouTube MP3 Audio/Video Downloader</strong> หรือ <a href="https://rapidapi.com/search/youtube-mp3-audio-video-downloader" target="_blank" rel="noreferrer" className="text-primary hover:underline inline-flex items-center gap-1">คลิกที่นี่ <ArrowTopRightOnSquareIcon className="w-3 h-3" /></a>
+                                    <a href="https://rapidapi.com/s02213197/api/youtube-mp3-audio-video-downloader" target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 px-4 py-2 mt-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl font-bold text-sm shadow-md hover:scale-105 transition-transform">
+                                        👉 สมัครรับ API Key ฟรี (100 เพลง/เดือน)
+                                    </a>
                                 </li>
                                 <li>กดปุ่ม <strong>Subscribe to Test</strong> และเลือกแพ็กเกจ <strong>Basic (Free)</strong></li>
                                 <li>กลับมาที่หน้า Endpoints (หรือหน้าทดสอบ API) คัดลอกรหัสตรงช่อง <code>X-RapidAPI-Key</code> มาวางที่ช่องด้านบน</li>
@@ -104,6 +106,47 @@ export default function AiSettingsTab() {
                                 </li>
                             </ol>
                         </div>
+                    </div>
+                </div>
+
+                {/* Quota Section */}
+                <div className="bg-white dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-sm">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center shrink-0">
+                            <ChartBarIcon className="w-5 h-5 text-emerald-500" />
+                        </div>
+                        <div>
+                            <h3 className="text-base font-bold text-zinc-900 dark:text-white">ข้อมูลโควต้า (API Quota)</h3>
+                            <p className="text-[12px] text-zinc-500">จำนวนครั้งที่เหลือในการแยกเสียงร้องสำหรับเดือนนี้</p>
+                        </div>
+                    </div>
+
+                    <div className="bg-zinc-50 dark:bg-zinc-950 p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 flex flex-col items-center justify-center text-center">
+                        {rapidapiQuota ? (
+                            <>
+                                <div className="text-4xl font-black text-emerald-500 mb-2">
+                                    {rapidapiQuota.remaining} <span className="text-xl text-zinc-400 font-medium">/ {rapidapiQuota.limit}</span>
+                                </div>
+                                <p className="text-sm text-zinc-500 font-medium">สิทธิ์คงเหลือในเดือนนี้</p>
+                                
+                                {/* Progress Bar */}
+                                <div className="w-full max-w-xs h-2 bg-zinc-200 dark:bg-zinc-800 rounded-full mt-4 overflow-hidden">
+                                    <div 
+                                        className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                                        style={{ width: `${Math.max(0, Math.min(100, (rapidapiQuota.remaining / rapidapiQuota.limit) * 100))}%` }}
+                                    ></div>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="py-4">
+                                <p className="text-zinc-500 dark:text-zinc-400 font-medium">
+                                    ยังไม่มีข้อมูลการใช้งาน
+                                </p>
+                                <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">
+                                    (ข้อมูลจะแสดงเมื่อคุณแยกเสียงเพลงแรกหลังจากใส่ Key)
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </div>
 

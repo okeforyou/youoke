@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.211";
+export const SYSTEM_VERSION = "5.5.212";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.212",
+        date: "2026-07-30",
+        changes: [
+            "feat(settings): Added RapidAPI quota display to show remaining song extraction credits.",
+            "feat(settings): Added direct signup link for RapidAPI in AI settings.",
+            "feat(local-bridge): Updated server.py to extract and serve RapidAPI rate limits via /health endpoint."
+        ]
+    },
     {
         version: "5.5.211",
         date: "2026-07-29",

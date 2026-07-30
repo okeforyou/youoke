@@ -85,6 +85,7 @@ interface AIVocalState {
     currentVideoId: string | null;
     defaultMode: 'basic' | 'pro';
     rapidapiKey: string | null;
+    rapidapiQuota: { remaining: number; limit: number } | null;
     
     // Background jobs
     jobs: Record<string, AIVocalJob>;
@@ -122,6 +123,7 @@ export const useAIVocalStore = create<AIVocalState>()(
     currentVideoId: null,
     defaultMode: 'basic',
     rapidapiKey: null,
+    rapidapiQuota: null,
     jobs: {},
 
     volumes: { vocals: 100, instrumental: 100, drums: 100, bass: 100, other: 100 },
