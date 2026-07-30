@@ -131,6 +131,7 @@ export const VocalModeModal = () => {
                     </div>
 
 
+{/*
                     <div className="mt-4 pt-3 border-t border-gray-100 dark:border-zinc-800/60">
                         <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="audio/*,video/*" />
                         <button
@@ -146,6 +147,7 @@ export const VocalModeModal = () => {
                             {isUploading ? "กำลังอัปโหลดไฟล์..." : "อัปโหลดไฟล์เพลงเอง (แก้ปัญหาดาวน์โหลดไม่ได้)"}
                         </button>
                     </div>
+*/}
 
                     <div className="mt-4 pt-3 border-t border-gray-100 dark:border-zinc-800/60 flex justify-center">
                         <button

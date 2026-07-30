@@ -148,6 +148,7 @@ export const Sidebar = memo(() => {
                     </span>
                 </button>
 
+{/* 
                 <Link href="/library" 
                     className={clsx(
                         "w-full flex items-center transition-all font-bold duration-300 text-sm mt-2",
@@ -161,6 +162,7 @@ export const Sidebar = memo(() => {
                         คลังส่วนตัว
                     </span>
                 </Link>
+*/}
 
 
 
