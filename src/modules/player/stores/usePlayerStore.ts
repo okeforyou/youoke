@@ -598,7 +598,19 @@ export const usePlayerStore = create<PlayerStore>()(
             },
 
             playVideoAtIndex: (index) => {
-                get().setCurrentIndex(index);
+                const state = get();
+                if (index < 0 || index >= state.queue.length) return;
+                if (index === state.currentIndex) return;
+
+                const newQueue = [...state.queue];
+                const [video] = newQueue.splice(index, 1);
+                
+                // Move the clicked song to the current playing position, pushing the rest down
+                newQueue.splice(state.currentIndex, 0, video);
+                
+                set({ queue: newQueue });
+                get().setCurrentIndex(state.currentIndex);
+                broadcast({ queue: newQueue });
             },
 
             removeVideoAtIndex: (index) => set((state) => {
