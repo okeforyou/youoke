@@ -305,7 +305,16 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
         if (verRes) {
             if (verRes.ok) {
                 const verData = await verRes.json().catch(() => ({version: "unknown"}));
-                if (!verData.version || verData.version === "unknown" || verData.version < "1.0.44") isOutdated = true;
+                if (!verData.version || verData.version === "unknown") {
+                    isOutdated = true;
+                } else {
+                    const parts = verData.version.split('.').map(Number);
+                    const req = [1, 0, 44];
+                    for (let i = 0; i < 3; i++) {
+                        if (parts[i] > req[i]) { isOutdated = false; break; }
+                        if (parts[i] < req[i]) { isOutdated = true; break; }
+                    }
+                }
                 bridgeRunning = true;
                 break;
             } else {
