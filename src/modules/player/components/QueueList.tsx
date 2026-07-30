@@ -127,7 +127,6 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                     </div>
                 ) : (
                     <div className="flex items-center w-full">
-                        {!isKaraoke && (
                             <div className="shrink-0 flex items-center">
                                 {aiJob?.status === 'ready' ? (
                                     <div className="flex items-center gap-2">
@@ -253,7 +252,6 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                                     </button>
                                 ) : null}
                             </div>
-                        )}
                         {video.duration ? (
                             <div className="ml-auto text-[10px] font-medium text-gray-400 dark:text-zinc-500">
                                 {formatDuration(video.duration)}
