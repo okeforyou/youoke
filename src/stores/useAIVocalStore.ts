@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { useUIStore } from './useUIStore';
 
 const BRIDGE_PORTS = [5050, 8055];
 let _activeBridgePort: number | null = null;
@@ -195,7 +196,13 @@ export const useAIVocalStore = create<AIVocalState>()(
 
         if (!useManualUpload && (!rapidapiKey || rapidapiKey.trim() === "")) {
             if (typeof window !== "undefined") {
-                alert("กรุณากรอก API Key ของ RapidAPI ในเมนูตั้งค่า (แท็บ AI) ก่อนเริ่มแยกเสียงจาก YouTube ครับ เพื่อให้การดาวน์โหลดมีความเสถียรที่สุด");
+                useUIStore.getState().showConfirm({
+                    title: "จำเป็นต้องใช้ API Key",
+                    message: "กรุณากรอก API Key ของ RapidAPI ในเมนูตั้งค่า (แท็บ AI) ก่อนเริ่มแยกเสียงจาก YouTube ครับ เพื่อให้การดาวน์โหลดมีความเสถียรที่สุด",
+                    type: "warning",
+                    confirmText: "รับทราบ",
+                    onConfirm: () => useUIStore.getState().hideConfirm()
+                });
             }
             return;
         }
