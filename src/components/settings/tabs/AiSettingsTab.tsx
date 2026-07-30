@@ -32,7 +32,7 @@ export default function AiSettingsTab() {
                 </div>
                 <div>
                     <h2 className="text-xl md:text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
-                        ตั้งค่าระบบ AI (AI Settings)
+                        ตั้งค่าระบบ AI Vocal (AI Vocal Settings)
                     </h2>
                     <p className="text-sm font-medium text-zinc-500 mt-1">
                         จัดการเชื่อมต่อ API และตั้งค่าขั้นสูงสำหรับการแยกเสียงร้อง
@@ -95,8 +95,8 @@ export default function AiSettingsTab() {
                                     สมัครสมาชิกเว็บไซต์ <a href="https://rapidapi.com" target="_blank" rel="noreferrer" className="text-primary hover:underline inline-flex items-center gap-1">RapidAPI <ArrowTopRightOnSquareIcon className="w-3 h-3" /></a>
                                 </li>
                                 <li>
-                                    <a href="https://rapidapi.com/s02213197/api/youtube-mp3-audio-video-downloader" target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 px-4 py-2 mt-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl font-bold text-sm shadow-md hover:scale-105 transition-transform">
-                                        👉 สมัครรับ API Key ฟรี (100 เพลง/เดือน)
+                                    <a href="https://rapidapi.com/search/youtube-mp3-audio-video-downloader" target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 px-4 py-2 mt-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl font-bold text-sm shadow-md hover:scale-105 transition-transform">
+                                        👉 ค้นหาและสมัคร API "YouTube MP3 Audio Video Downloader" ฟรี (100 เพลง/เดือน)
                                     </a>
                                 </li>
                                 <li>กดปุ่ม <strong>Subscribe to Test</strong> และเลือกแพ็กเกจ <strong>Basic (Free)</strong></li>
