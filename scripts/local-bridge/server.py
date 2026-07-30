@@ -2,6 +2,7 @@ import os
 import subprocess
 import shutil
 import sys
+import re
 import torch
 import json
 from datetime import datetime
@@ -23,7 +24,7 @@ try:
 except AttributeError:
     pass
 
-VERSION = "1.0.50"
+VERSION = "1.0.51"
 rapidapi_quota = {"remaining": None, "limit": None}
 
 app = FastAPI()
@@ -874,7 +875,6 @@ def separate(req: SeparateRequest):
         cfg = load_config()
         custom_path = cfg.get("custom_storage_path")
         if custom_path and os.path.exists(custom_path):
-            import re
             try:
                 safe_title = re.sub(r'[\\/*?:"<>|]', "", req.title).strip() or vid
                 target_folder = os.path.join(custom_path, safe_title)
