@@ -875,21 +875,24 @@ def separate(req: SeparateRequest):
         custom_path = cfg.get("custom_storage_path")
         if custom_path and os.path.exists(custom_path):
             import re
-            safe_title = re.sub(r'[\\/*?:"<>|]', "", req.title).strip() or vid
-            target_folder = os.path.join(custom_path, safe_title)
-            os.makedirs(target_folder, exist_ok=True)
-            for m4a_file in [f for f in os.listdir(song_dir) if f.endswith('.m4a')]:
-                try:
-                    shutil.copy2(os.path.join(song_dir, m4a_file), os.path.join(target_folder, m4a_file))
-                except:
-                    pass
-            
             try:
-                # Copy mode.txt
-                shutil.copy2(os.path.join(song_dir, "mode.txt"), os.path.join(target_folder, "mode.txt"))
-            except:
-                pass
-            print(f"[Storage] Copied output to {target_folder}")
+                safe_title = re.sub(r'[\\/*?:"<>|]', "", req.title).strip() or vid
+                target_folder = os.path.join(custom_path, safe_title)
+                os.makedirs(target_folder, exist_ok=True)
+                for m4a_file in [f for f in os.listdir(song_dir) if f.endswith('.m4a')]:
+                    try:
+                        shutil.copy(os.path.join(song_dir, m4a_file), os.path.join(target_folder, m4a_file))
+                    except Exception as e:
+                        print(f"[Storage Error] Failed to copy {m4a_file}: {str(e)}")
+                
+                try:
+                    # Copy mode.txt
+                    shutil.copy(os.path.join(song_dir, "mode.txt"), os.path.join(target_folder, "mode.txt"))
+                except Exception as e:
+                    print(f"[Storage Error] Failed to copy mode.txt: {str(e)}")
+                print(f"[Storage] Copied output to {target_folder}")
+            except Exception as e:
+                print(f"[Storage Error] Failed to create folder {custom_path}/{safe_title}: {str(e)}")
 
         # Save title for cache listing
         with open(os.path.join(song_dir, "title.txt"), "w", encoding="utf-8") as f:
