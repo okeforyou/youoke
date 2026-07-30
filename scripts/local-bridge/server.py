@@ -152,6 +152,20 @@ CACHE_DIR = os.path.join(APP_SUPPORT_DIR, 'Cache')
 os.makedirs(CACHE_DIR, exist_ok=True)
 
 HISTORY_FILE = os.path.join(CACHE_DIR, "download_history.json")
+CONFIG_FILE = os.path.join(APP_SUPPORT_DIR, "config.json")
+
+def load_config():
+    if os.path.exists(CONFIG_FILE):
+        try:
+            with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except:
+            return {}
+    return {}
+
+def save_config(cfg):
+    with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+        json.dump(cfg, f, ensure_ascii=False, indent=2)
 
 def log_download_attempt(video_id: str, title: str, attempts: list, status: str):
     try:
@@ -195,7 +209,32 @@ def health():
 
 @app.get("/config")
 def get_config():
-    return {"cache_dir": CACHE_DIR}
+    cfg = load_config()
+    return {"cache_dir": CACHE_DIR, "custom_storage_path": cfg.get("custom_storage_path")}
+
+@app.get("/select_folder")
+def select_folder():
+    script = """
+import tkinter as tk
+from tkinter import filedialog
+root = tk.Tk()
+root.withdraw()
+root.attributes('-topmost', True)
+path = filedialog.askdirectory(title='Select YouOke Storage Folder')
+print(path)
+"""
+    try:
+        import subprocess, sys
+        res = subprocess.run([sys.executable, "-c", script], capture_output=True, text=True)
+        folder_path = res.stdout.strip()
+        if folder_path:
+            cfg = load_config()
+            cfg['custom_storage_path'] = folder_path
+            save_config(cfg)
+            return {"status": "success", "path": folder_path}
+        return {"status": "cancelled"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 @app.get("/search")
 def search_youtube(q: str, limit: int = 5):
@@ -828,6 +867,27 @@ def separate(req: SeparateRequest):
         # Save mode flag for client checks
         with open(os.path.join(song_dir, "mode.txt"), "w") as f:
             f.write(mode)
+
+        # Copy separated files to custom storage path if defined
+        cfg = load_config()
+        custom_path = cfg.get("custom_storage_path")
+        if custom_path and os.path.exists(custom_path):
+            import re
+            safe_title = re.sub(r'[\\/*?:"<>|]', "", req.title).strip() or vid
+            target_folder = os.path.join(custom_path, safe_title)
+            os.makedirs(target_folder, exist_ok=True)
+            for m4a_file in [f for f in os.listdir(song_dir) if f.endswith('.m4a')]:
+                try:
+                    shutil.copy2(os.path.join(song_dir, m4a_file), os.path.join(target_folder, m4a_file))
+                except:
+                    pass
+            
+            try:
+                # Copy mode.txt
+                shutil.copy2(os.path.join(song_dir, "mode.txt"), os.path.join(target_folder, "mode.txt"))
+            except:
+                pass
+            print(f"[Storage] Copied output to {target_folder}")
 
         # Save title for cache listing
         with open(os.path.join(song_dir, "title.txt"), "w", encoding="utf-8") as f:

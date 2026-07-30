@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
     FolderIcon,
     GlobeAltIcon,
@@ -29,18 +29,45 @@ export default function CloudSyncTab() {
         }
     };
 
+    useEffect(() => {
+        // Fetch current storage config from local bridge
+        const fetchConfig = async () => {
+            try {
+                let res = await fetch("http://127.0.0.1:5050/config").catch(() => null);
+                if (!res || !res.ok) {
+                    res = await fetch("http://127.0.0.1:8055/config").catch(() => null);
+                }
+                if (res && res.ok) {
+                    const data = await res.json();
+                    if (data.custom_storage_path) {
+                        setStoragePath(data.custom_storage_path);
+                    }
+                }
+            } catch(e) {
+                console.log("Could not fetch bridge config", e);
+            }
+        };
+        fetchConfig();
+    }, []);
+
     const handleSelectFolder = async () => {
         try {
-            if ('showDirectoryPicker' in window) {
-                const dirHandle = await (window as any).showDirectoryPicker();
-                setStoragePath(dirHandle.name);
-                // Ideally, we'd save this handle to IndexedDB for persistent access
-                alert(`ตั้งค่าที่เก็บไฟล์เป็นโฟลเดอร์ "${dirHandle.name}" สำเร็จ`);
+            // Use native bridge to open folder picker
+            let res = await fetch("http://127.0.0.1:5050/select_folder").catch(() => null);
+            if (!res || !res.ok) {
+                res = await fetch("http://127.0.0.1:8055/select_folder").catch(() => null);
+            }
+            if (res && res.ok) {
+                const data = await res.json();
+                if (data.status === 'success' && data.path) {
+                    setStoragePath(data.path);
+                    alert(`ตั้งค่าที่เก็บไฟล์เป็นโฟลเดอร์ "${data.path}" สำเร็จ\nเพลงที่แยกเสียงหลังจากนี้จะถูกบันทึกที่นี่โดยอัตโนมัติ`);
+                }
             } else {
-                alert('เบราว์เซอร์ของคุณไม่รองรับการเลือกโฟลเดอร์ กรุณาใช้ Chrome หรือ Edge');
+                alert('ไม่สามารถเปิดหน้าต่างเลือกโฟลเดอร์ได้ กรุณาตรวจสอบว่า YouOke Server ทำงานอยู่');
             }
         } catch (err) {
-            console.error('User cancelled or error:', err);
+            console.error('Error selecting folder:', err);
         }
     };
 
