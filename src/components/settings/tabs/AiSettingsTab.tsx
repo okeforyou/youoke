@@ -51,7 +51,7 @@ export default function AiSettingsTab() {
                         </div>
                         <div>
                             <h3 className="text-base font-bold text-zinc-900 dark:text-white">เชื่อมต่อ RapidAPI (Custom API Key)</h3>
-                            <p className="text-[12px] text-zinc-500">ตั้งค่าคีย์ API เพื่อเปิดใช้งานฟังก์ชัน AI แยกเสียงร้อง ให้ระบบสามารถประมวลผลแยกแทร็กเสียงดนตรีได้อย่างสมบูรณ์</p>
+                            <p className="text-[12px] text-zinc-500">เปิดใช้งานระบบ AI แยกเสียงร้องและดนตรี (Vocal Separation) ให้ทำงานได้อย่างสมบูรณ์</p>
                         </div>
                     </div>
                     
@@ -67,7 +67,10 @@ export default function AiSettingsTab() {
                                         name="rapidapi-key"
                                         autoComplete="new-password" 
                                         value={isMounted ? inputValue : ""}
-                                        onChange={(e) => setInputValue(e.target.value)}
+                                        onChange={(e) => {
+                                            setInputValue(e.target.value);
+                                            setRapidapiKey(e.target.value);
+                                        }}
                                         placeholder="ใส่ X-RapidAPI-Key ของคุณที่นี่..."
                                         className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white text-sm rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                                     />
