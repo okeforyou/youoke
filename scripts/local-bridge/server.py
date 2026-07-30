@@ -214,19 +214,21 @@ def get_config():
 
 @app.get("/select_folder")
 def select_folder():
-    script = """
-import tkinter as tk
-from tkinter import filedialog
-root = tk.Tk()
-root.withdraw()
-root.attributes('-topmost', True)
-path = filedialog.askdirectory(title='Select YouOke Storage Folder')
-print(path)
-"""
+    import subprocess
+    import sys
+    folder_path = None
     try:
-        import subprocess, sys
-        res = subprocess.run([sys.executable, "-c", script], capture_output=True, text=True)
-        folder_path = res.stdout.strip()
+        if sys.platform == 'darwin':
+            script = 'tell app "System Events" to activate\ntell app "System Events" to return POSIX path of (choose folder with prompt "Select YouOke Storage Folder")'
+            res = subprocess.run(['osascript', '-e', script], capture_output=True, text=True)
+            if res.returncode == 0 and res.stdout.strip():
+                folder_path = res.stdout.strip()
+        elif sys.platform == 'win32':
+            script = 'Add-Type -AssemblyName System.windows.forms; $f = New-Object System.Windows.Forms.FolderBrowserDialog; $f.ShowDialog() | Out-Null; $f.SelectedPath'
+            res = subprocess.run(['powershell', '-Command', script], capture_output=True, text=True, creationflags=subprocess.CREATE_NO_WINDOW)
+            if res.returncode == 0 and res.stdout.strip():
+                folder_path = res.stdout.strip()
+        
         if folder_path:
             cfg = load_config()
             cfg['custom_storage_path'] = folder_path
