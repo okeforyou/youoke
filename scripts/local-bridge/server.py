@@ -23,7 +23,7 @@ try:
 except AttributeError:
     pass
 
-VERSION = "1.0.45"
+VERSION = "1.0.46"
 rapidapi_quota = {"remaining": None, "limit": None}
 
 app = FastAPI()
@@ -219,7 +219,7 @@ def select_folder():
     folder_path = None
     try:
         if sys.platform == 'darwin':
-            script = 'tell app "System Events" to activate\ntell app "System Events" to return POSIX path of (choose folder with prompt "Select YouOke Storage Folder")'
+            script = 'POSIX path of (choose folder with prompt "Select YouOke Storage Folder")'
             res = subprocess.run(['osascript', '-e', script], capture_output=True, text=True)
             if res.returncode == 0 and res.stdout.strip():
                 folder_path = res.stdout.strip()

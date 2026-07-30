@@ -62,9 +62,11 @@ export default function CloudSyncTab() {
                 if (data.status === 'success' && data.path) {
                     setStoragePath(data.path);
                     alert(`ตั้งค่าที่เก็บไฟล์เป็นโฟลเดอร์ "${data.path}" สำเร็จ\nเพลงที่แยกเสียงหลังจากนี้จะถูกบันทึกที่นี่โดยอัตโนมัติ`);
+                } else if (data.status === 'error') {
+                    alert(`ไม่สามารถเปิดหน้าต่างเลือกโฟลเดอร์ได้: ${data.message || 'Unknown error'}`);
                 }
             } else {
-                alert('ไม่สามารถเปิดหน้าต่างเลือกโฟลเดอร์ได้ กรุณาตรวจสอบว่า YouOke Server ทำงานอยู่');
+                alert('ไม่สามารถเชื่อมต่อ YouOke Server ได้ กรุณาตรวจสอบว่าโปรแกรมทำงานอยู่');
             }
         } catch (err) {
             console.error('Error selecting folder:', err);
