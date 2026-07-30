@@ -30,6 +30,11 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
+      - name: Lint Code (Syntax and Undefined Names)
+        run: |
+          pip install flake8
+          flake8 --select=E9,F63,F7,F82 scripts/local-bridge/server.py
+
       - name: Install Python Dependencies & PyInstaller
         run: |
           pip install -r scripts/local-bridge/requirements.txt

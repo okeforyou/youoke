@@ -538,7 +538,7 @@ def separate(req: SeparateRequest):
                 
                 with urllib.request.urlopen(api_req, context=ctx, timeout=30) as response:
                     # Catch rate limit headers
-                    global rapidapi_quota
+                    
                     remaining = response.getheader('x-ratelimit-requests-remaining')
                     limit = response.getheader('x-ratelimit-requests-limit')
                     if remaining is not None and limit is not None:
