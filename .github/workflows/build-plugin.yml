@@ -40,7 +40,7 @@ jobs:
         run: |
           curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos -o scripts/local-bridge/yt-dlp_macos
           chmod +x scripts/local-bridge/yt-dlp_macos
-          pyinstaller --name youoke-server --onefile --add-data "scripts/local-bridge/yt-dlp_macos:." --collect-data demucs --collect-binaries imageio_ffmpeg --exclude-module torchcodec --hidden-import soundfile --hidden-import websockets --hidden-import curl_cffi --collect-all nodejs_wheel --collect-all pytubefix --collect-all innertube --collect-all yt_dlp scripts/local-bridge/server.py
+          pyinstaller --name youoke-server --onefile --add-data "scripts/local-bridge/yt-dlp_macos:." --collect-data demucs --collect-binaries imageio_ffmpeg --collect-all torchcodec --collect-all torchaudio --hidden-import soundfile --hidden-import websockets --hidden-import curl_cffi --collect-all nodejs_wheel --collect-all pytubefix --collect-all innertube --collect-all yt_dlp scripts/local-bridge/server.py
           mkdir -p youoke-plugin/bin
           cp dist/youoke-server youoke-plugin/bin/
 
@@ -48,7 +48,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe -o scripts\local-bridge\yt-dlp.exe
-          pyinstaller --name youoke-server --onefile --add-data "scripts\local-bridge\yt-dlp.exe;." --collect-data demucs --collect-binaries imageio_ffmpeg --exclude-module torchcodec --hidden-import soundfile --hidden-import websockets --hidden-import curl_cffi --collect-all nodejs_wheel --collect-all pytubefix --collect-all innertube --collect-all yt_dlp scripts\local-bridge\server.py
+          pyinstaller --name youoke-server --onefile --add-data "scripts\local-bridge\yt-dlp.exe;." --collect-data demucs --collect-binaries imageio_ffmpeg --collect-all torchcodec --collect-all torchaudio --hidden-import soundfile --hidden-import websockets --hidden-import curl_cffi --collect-all nodejs_wheel --collect-all pytubefix --collect-all innertube --collect-all yt_dlp scripts\local-bridge\server.py
           mkdir youoke-plugin\bin
           copy dist\youoke-server.exe youoke-plugin\bin\
 
