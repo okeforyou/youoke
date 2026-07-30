@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAIVocalStore } from '@/stores/useAIVocalStore';
 import { CpuChipIcon, KeyIcon, ArrowTopRightOnSquareIcon, EyeIcon, EyeSlashIcon, CheckIcon, ChartBarIcon } from '@heroicons/react/24/outline';
+import { useSystem } from '@/core/container/SystemContext';
+import { getUserProfile, updateUserProfile } from '@/services/userService';
 
 export default function AiSettingsTab() {
+    const { user } = useSystem().auth();
     const { rapidapiKey, setRapidapiKey, rapidapiQuota } = useAIVocalStore();
     const [inputValue, setInputValue] = useState(rapidapiKey || '');
     const [showKey, setShowKey] = useState(false);
@@ -11,14 +14,35 @@ export default function AiSettingsTab() {
 
     useEffect(() => {
         setIsMounted(true);
-    }, []);
+        if (user?.uid) {
+            getUserProfile(user.uid, false).then(res => {
+                if (res.success && res.data?.settings?.rapidapiKey) {
+                    setRapidapiKey(res.data.settings.rapidapiKey);
+                }
+            });
+        }
+    }, [user?.uid, setRapidapiKey]);
 
     useEffect(() => {
         setInputValue(rapidapiKey || '');
     }, [rapidapiKey]);
 
-    const handleSave = () => {
+    const handleSave = async () => {
         setRapidapiKey(inputValue);
+        
+        // Save to Firebase
+        if (user?.uid) {
+            try {
+                const res = await getUserProfile(user.uid, false);
+                const currentSettings = res.data?.settings || {};
+                await updateUserProfile(user.uid, {
+                    settings: { ...currentSettings, rapidapiKey: inputValue } as any
+                });
+            } catch (e) {
+                console.error("Failed to save API key to Firebase", e);
+            }
+        }
+        
         setIsSaved(true);
         setTimeout(() => setIsSaved(false), 2000);
     };

@@ -53,6 +53,7 @@ export interface UserProfile {
     defaultVolume: number;
     quality: "auto" | "720p" | "480p" | "360p";
     theme: "light" | "dark";
+    rapidapiKey?: string;
     notifications: {
       expiryReminder: boolean;
       newAds: boolean;
