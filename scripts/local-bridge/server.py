@@ -24,7 +24,7 @@ try:
 except AttributeError:
     pass
 
-VERSION = "1.0.51"
+VERSION = "1.0.52"
 rapidapi_quota = {"remaining": None, "limit": None}
 
 app = FastAPI()
