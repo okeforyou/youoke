@@ -24,7 +24,7 @@ try:
 except AttributeError:
     pass
 
-VERSION = "1.0.52"
+VERSION = "1.0.53"
 rapidapi_quota = {"remaining": None, "limit": None}
 
 app = FastAPI()
@@ -155,6 +155,13 @@ os.makedirs(CACHE_DIR, exist_ok=True)
 HISTORY_FILE = os.path.join(CACHE_DIR, "download_history.json")
 CONFIG_FILE = os.path.join(APP_SUPPORT_DIR, "config.json")
 
+def get_active_storage_dir():
+    cfg = load_config()
+    custom_path = cfg.get("custom_storage_path")
+    if custom_path and os.path.exists(custom_path):
+        return custom_path
+    return CACHE_DIR
+
 def load_config():
     if os.path.exists(CONFIG_FILE):
         try:
@@ -272,12 +279,13 @@ def search_youtube(q: str, limit: int = 5):
 @app.get("/cache/list")
 def list_cache():
     try:
-        if not os.path.exists(CACHE_DIR):
+        active_dir = get_active_storage_dir()
+        if not os.path.exists(active_dir):
             return {"status": "success", "results": []}
         
         results = []
-        for vid in os.listdir(CACHE_DIR):
-            song_dir = os.path.join(CACHE_DIR, vid)
+        for folder_name in os.listdir(active_dir):
+            song_dir = os.path.join(active_dir, folder_name)
             if not os.path.isdir(song_dir):
                 continue
                 
@@ -285,6 +293,26 @@ def list_cache():
             if not os.path.exists(vocal_m4a):
                 continue
                 
+            # Parse youoke.json if exists
+            youoke_json_path = os.path.join(song_dir, "youoke.json")
+            vid = folder_name
+            title = f"ไฟล์เพลง {folder_name}"
+            
+            if os.path.exists(youoke_json_path):
+                try:
+                    import json
+                    with open(youoke_json_path, "r", encoding="utf-8") as yf:
+                        ydata = json.load(yf)
+                        vid = ydata.get("videoId", folder_name)
+                        title = ydata.get("title", folder_name)
+                except:
+                    pass
+            else:
+                title_path = os.path.join(song_dir, "title.txt")
+                if os.path.exists(title_path):
+                    with open(title_path, "r", encoding="utf-8") as f:
+                        title = f.read().strip()
+
             # Get folder size
             total_size = sum(os.path.getsize(os.path.join(song_dir, f)) for f in os.listdir(song_dir) if os.path.isfile(os.path.join(song_dir, f)))
             size_mb = total_size / (1024 * 1024)
@@ -293,12 +321,6 @@ def list_cache():
             mode = "basic"
             if os.path.exists(os.path.join(song_dir, "drums.m4a")):
                 mode = "pro"
-                
-            title = f"ไฟล์เพลง {vid}"
-            title_path = os.path.join(song_dir, "title.txt")
-            if os.path.exists(title_path):
-                with open(title_path, "r", encoding="utf-8") as f:
-                    title = f.read().strip()
                 
             # Get created time
             created_at = os.path.getctime(vocal_m4a)
@@ -890,6 +912,22 @@ def separate(req: SeparateRequest):
                     shutil.copy(os.path.join(song_dir, "mode.txt"), os.path.join(target_folder, "mode.txt"))
                 except Exception as e:
                     print(f"[Storage Error] Failed to copy mode.txt: {str(e)}")
+                    
+                # Create youoke.json
+                try:
+                    import datetime
+                    ydata = {
+                        "videoId": vid,
+                        "title": req.title,
+                        "mode": mode,
+                        "createdAt": datetime.datetime.utcnow().isoformat() + "Z",
+                        "version": "1.0"
+                    }
+                    with open(os.path.join(target_folder, "youoke.json"), "w", encoding="utf-8") as yf:
+                        json.dump(ydata, yf, ensure_ascii=False, indent=2)
+                except Exception as e:
+                    print(f"[Storage Error] Failed to create youoke.json: {str(e)}")
+                    
                 print(f"[Storage] Copied output to {target_folder}")
             except Exception as e:
                 print(f"[Storage Error] Failed to create folder {custom_path}/{safe_title}: {str(e)}")
@@ -922,8 +960,46 @@ def separate(req: SeparateRequest):
             
     return {"status": "success", "video_id": vid, "mode": mode}
 
-# Mount cache directory for robust static file serving with range request support
-app.mount("/files", StaticFiles(directory=CACHE_DIR), name="files")
+# Dynamic static file serving supporting Range requests and Universal Storage
+
+
+@app.get("/files/{video_id}/{filename}")
+async def serve_audio_file(video_id: str, filename: str):
+    active_dir = get_active_storage_dir()
+    
+    # 1. First, check if there's a legacy folder named directly as video_id
+    legacy_path = os.path.join(active_dir, video_id)
+    if os.path.exists(legacy_path) and os.path.isdir(legacy_path):
+        filepath = os.path.join(legacy_path, filename)
+        if os.path.exists(filepath):
+            return FileResponse(filepath, headers={"Accept-Ranges": "bytes"})
+            
+    # 2. If not found, scan folders for youoke.json mapping
+    if os.path.exists(active_dir):
+        for folder_name in os.listdir(active_dir):
+            song_dir = os.path.join(active_dir, folder_name)
+            if not os.path.isdir(song_dir):
+                continue
+                
+            youoke_json_path = os.path.join(song_dir, "youoke.json")
+            if os.path.exists(youoke_json_path):
+                try:
+                    with open(youoke_json_path, "r", encoding="utf-8") as yf:
+                        ydata = json.load(yf)
+                        if ydata.get("videoId") == video_id:
+                            filepath = os.path.join(song_dir, filename)
+                            if os.path.exists(filepath):
+                                return FileResponse(filepath, headers={"Accept-Ranges": "bytes"})
+                except:
+                    pass
+                    
+    # 3. Fallback to default CACHE_DIR just in case active_dir is custom and missing the file
+    fallback_path = os.path.join(CACHE_DIR, video_id, filename)
+    if os.path.exists(fallback_path):
+        return FileResponse(fallback_path, headers={"Accept-Ranges": "bytes"})
+        
+    raise HTTPException(status_code=404, detail="File not found")
+
 
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "demucs_worker":
