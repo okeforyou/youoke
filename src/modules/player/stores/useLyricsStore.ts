@@ -47,7 +47,7 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
             // --- 1. LOCAL AI LYRICS (Highest Priority if preferredSource is auto) ---
             if (pref !== 'youtube') {
                 try {
-                    const { getActiveBridgeBaseUrl } = await import('../../../../stores/useAIVocalStore');
+                    const { getActiveBridgeBaseUrl } = await import('../../../stores/useAIVocalStore');
                     const baseUrl = await getActiveBridgeBaseUrl();
                     if (baseUrl) {
                         const localRes = await fetch(`${baseUrl}/files/${videoId}/lyrics_timeline.json`);
