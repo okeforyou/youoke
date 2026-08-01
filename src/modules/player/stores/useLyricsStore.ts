@@ -53,14 +53,40 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
                         const localRes = await fetch(`${baseUrl}/files/${videoId}/lyrics_timeline.json`);
                         if (localRes.ok) {
                             const localData = await localRes.json();
-                            if (Array.isArray(localData) && localData.length > 0) {
-                                const mappedLyrics = localData.map((item: any) => ({
-                                    time: item.start,
-                                    text: item.text
-                                }));
+                            // The JSON format is { provider: "deepgram", words: [{word, start, end}] }
+                            if (localData && Array.isArray(localData.words) && localData.words.length > 0) {
+                                // Group words into lines to match the LRC format behavior?
+                                // Actually, KaraokeDisplay expects {time, text}. If we send per-word, it might just show a list of words.
+                                // Let's combine them into logical lines based on pauses.
+                                const mappedLyrics: LyricLine[] = [];
+                                let currentLineText = "";
+                                let currentLineTime = -1;
+                                let lastWordEnd = -1;
+
+                                for (const w of localData.words) {
+                                    if (currentLineTime === -1) {
+                                        currentLineTime = w.start;
+                                    }
+                                    
+                                    // If pause is more than 0.8 seconds, start a new line
+                                    if (lastWordEnd !== -1 && w.start - lastWordEnd > 0.8) {
+                                        mappedLyrics.push({ time: currentLineTime, text: currentLineText.trim() });
+                                        currentLineText = "";
+                                        currentLineTime = w.start;
+                                    }
+                                    
+                                    currentLineText += w.word + " ";
+                                    lastWordEnd = w.end;
+                                }
+                                
+                                // Push the last line
+                                if (currentLineText.trim() !== "") {
+                                    mappedLyrics.push({ time: currentLineTime, text: currentLineText.trim() });
+                                }
+
                                 set({
                                     lyrics: mappedLyrics,
-                                    source: 'lrclib', // Use 'lrclib' to trick the UI into showing synced lyrics view
+                                    source: 'lrclib', // Trick UI to show synced view
                                     isLoading: false
                                 });
                                 return; // Stop execution, we found local AI lyrics!
