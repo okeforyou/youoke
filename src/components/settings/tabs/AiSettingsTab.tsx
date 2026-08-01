@@ -211,9 +211,9 @@ export default function AiSettingsTab() {
                                 <li>
                                     เข้าสู่ระบบที่ <a href="https://console.deepgram.com" target="_blank" rel="noreferrer" className="text-primary hover:underline inline-flex items-center gap-1">Deepgram Console <ArrowTopRightOnSquareIcon className="w-3 h-3" /></a> (สมัครใหม่ได้เครดิตฟรี $200)
                                 </li>
-                                <li>หากพบหน้าต่างสอบถามข้อมูล (Personalize your experience) <strong>สามารถกดปุ่ม Skip (ข้าม) ด้านล่างได้เลย</strong></li>
-                                <li>หากระบบถามว่าต้องการใช้งานแบบไหน ให้เลือก <strong>Speech to Text</strong></li>
-                                <li>ไปที่เมนู <strong>API Keys</strong> แถบด้านซ้าย</li>
+                                <li>หากพบหน้าต่างสอบถามข้อมูล (Personalize your experience) <strong>สามารถกดปุ่ม Skip (ข้าม) ด้านล่างสุดได้เลย</strong></li>
+                                <li>ในหน้าถัดไป ให้มองหาคำว่า <strong>"Skip, create an API key"</strong> ด้านล่างขวา แล้วกดเพื่อข้ามไปสร้างคีย์ได้ทันที</li>
+                                <li>(หรือถ้าเข้ามาหน้าหลักแล้ว) ให้ไปที่เมนู <strong>API Keys</strong> แถบด้านซ้าย</li>
                                 <li>กดปุ่ม <strong>Create a New API Key</strong> สร้างคีย์ใหม่และคัดลอกมาใส่ที่ช่องด้านบน</li>
                             </ol>
                         </div>
