@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, BarChart2, Headphones, Library, User, ListMusic, Search, Gem } from 'lucide-react';
+import { Home, BarChart2, Headphones, Library, User, ListMusic, Search, Gem, Sparkles } from 'lucide-react';
 import { usePlayerStore } from '../../modules/player/stores/usePlayerStore';
 import { useUIStore } from '../../stores/useUIStore';
 import { useSystem } from '../../core/container/SystemContext';
@@ -23,11 +23,11 @@ export const MobileBottomNav = () => {
     const unreadCount = useUnreadNotifications();
 
     const navItems = [
-        { id: 1, label: 'หน้าหลัก', icon: Home },
-        { id: 2, label: 'ชาร์ตเพลง', icon: BarChart2 },
-        { id: 3, label: 'สถานีเพลง', icon: Headphones },
-        { id: 4, label: 'เพลย์ลิสต์', icon: Library },
-        { id: 5, label: 'บัญชี', icon: User },
+        { id: 1, label: 'หน้าหลัก', icon: Home, route: '/' },
+        { id: 2, label: 'ชาร์ตเพลง', icon: BarChart2, route: '/?tab=trending' },
+        { id: 4, label: 'เพลย์ลิสต์', icon: Library, route: '/?tab=library' },
+        { id: 6, label: 'สตูดิโอ', icon: Sparkles, route: '/creator' },
+        { id: 5, label: 'บัญชี', icon: User, route: '' },
     ];
 
     const handleNavClick = (index: number) => {
@@ -40,16 +40,23 @@ export const MobileBottomNav = () => {
             return;
         } else {
 
+            if (index === 6) {
+                router.push('/creator');
+                return;
+            }
+
             setSearchTerm(''); // Clear search logic from MainLayout
             setActiveIndex(index);
             setQueueOpen(false); // Close queue when changing main tabs
 
             // Sync with URL like Sidebar
             const tabMap: Record<number, string> = { 1: 'home', 2: 'trending', 3: 'station', 4: 'library' };
-            router.push({
-                pathname: '/',
-                query: { tab: tabMap[index] }
-            }, undefined, { shallow: true });
+            if (tabMap[index]) {
+                router.push({
+                    pathname: '/',
+                    query: { tab: tabMap[index] }
+                }, undefined, { shallow: true });
+            }
 
             const mainContent = document.getElementById('main-content');
             if (mainContent) {
@@ -65,7 +72,7 @@ export const MobileBottomNav = () => {
 
             <div className="relative flex justify-around items-center h-[72px] px-2 pb-2">
                 {navItems.map((item) => {
-                    const isActive = item.id === 5 ? isProfileOpen : (!isQueueOpen && activeIndex === item.id);
+                    const isActive = item.id === 5 ? isProfileOpen : item.id === 6 ? router.pathname === '/creator' : (!isQueueOpen && activeIndex === item.id);
                     return (
                         <button
                             key={item.id}

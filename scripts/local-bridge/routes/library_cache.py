@@ -1,0 +1,157 @@
+from fastapi import APIRouter, Form, UploadFile, File, HTTPException
+from fastapi.responses import FileResponse
+import os
+import time
+import uuid
+import shutil
+import json
+from utils.config import load_config, get_active_storage_dir, CACHE_DIR, LIBRARY_DIR, LIBRARY_DB_PATH
+
+router = APIRouter()
+
+def load_library():
+    if os.path.exists(LIBRARY_DB_PATH):
+        try:
+            with open(LIBRARY_DB_PATH, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception:
+            return []
+    return []
+
+def save_library(data):
+    with open(LIBRARY_DB_PATH, 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+@router.post("/library/upload")
+async def upload_library(
+    title: str = Form(...),
+    artist: str = Form(...),
+    file: UploadFile = File(...)
+):
+    song_id = f"local_{uuid.uuid4().hex[:8]}"
+    ext = os.path.splitext(file.filename)[1] or '.m4a'
+    filename = f"{song_id}{ext}"
+    filepath = os.path.join(LIBRARY_DIR, filename)
+    
+    with open(filepath, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    library = load_library()
+    new_song = {
+        "id": song_id,
+        "title": title,
+        "artist": artist,
+        "filename": filename,
+        "createdAt": int(time.time())
+    }
+    library.append(new_song)
+    save_library(library)
+    
+    return {"status": "success", "song": new_song}
+
+@router.get("/library")
+async def get_library():
+    return load_library()
+
+@router.get("/library/stream/{song_id}")
+async def stream_library(song_id: str):
+    library = load_library()
+    song = next((s for s in library if s["id"] == song_id), None)
+    if not song:
+        raise HTTPException(status_code=404, detail="Song not found")
+    filepath = os.path.join(LIBRARY_DIR, song["filename"])
+    if not os.path.exists(filepath):
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    return FileResponse(filepath)
+
+@router.delete("/library/{song_id}")
+async def delete_library(song_id: str):
+    library = load_library()
+    song = next((s for s in library if s["id"] == song_id), None)
+    if not song:
+        raise HTTPException(status_code=404, detail="Song not found")
+        
+    filepath = os.path.join(LIBRARY_DIR, song["filename"])
+    if os.path.exists(filepath):
+        try:
+            os.remove(filepath)
+        except Exception:
+            pass
+        
+    library = [s for s in library if s["id"] != song_id]
+    save_library(library)
+    
+    return {"status": "success"}
+
+@router.get("/cache/list")
+def list_cache():
+    try:
+        active_dir = get_active_storage_dir()
+        if not os.path.exists(active_dir):
+            return {"status": "success", "results": []}
+        
+        results = []
+        for folder_name in os.listdir(active_dir):
+            song_dir = os.path.join(active_dir, folder_name)
+            if not os.path.isdir(song_dir):
+                continue
+                
+            vocal_m4a = os.path.join(song_dir, "vocals.m4a")
+            if not os.path.exists(vocal_m4a):
+                continue
+                
+            youoke_json_path = os.path.join(song_dir, "youoke.json")
+            vid = folder_name
+            title = f"ไฟล์เพลง {folder_name}"
+            
+            if os.path.exists(youoke_json_path):
+                try:
+                    with open(youoke_json_path, "r", encoding="utf-8") as yf:
+                        ydata = json.load(yf)
+                        vid = ydata.get("videoId", folder_name)
+                        title = ydata.get("title", folder_name)
+                except:
+                    pass
+            else:
+                title_path = os.path.join(song_dir, "title.txt")
+                if os.path.exists(title_path):
+                    with open(title_path, "r", encoding="utf-8") as f:
+                        title = f.read().strip()
+
+            total_size = sum(os.path.getsize(os.path.join(song_dir, f)) for f in os.listdir(song_dir) if os.path.isfile(os.path.join(song_dir, f)))
+            size_mb = total_size / (1024 * 1024)
+            
+            mode = "basic"
+            if os.path.exists(os.path.join(song_dir, "drums.m4a")):
+                mode = "pro"
+                
+            created_at = os.path.getctime(vocal_m4a)
+            
+            results.append({
+                "video_id": vid,
+                "title": title,
+                "mode": mode,
+                "size_mb": round(size_mb, 2),
+                "created_at": created_at
+            })
+            
+        results.sort(key=lambda x: x["created_at"], reverse=True)
+        return {"status": "success", "results": results}
+    except Exception as e:
+        return {"status": "error", "message": f"Failed to list cache: {str(e)}"}
+
+@router.delete("/cache/{video_id}")
+def delete_cache(video_id: str):
+    try:
+        if not video_id or ".." in video_id or "/" in video_id:
+            raise HTTPException(status_code=400, detail="Invalid video_id")
+            
+        song_dir = os.path.join(CACHE_DIR, video_id)
+        if os.path.exists(song_dir):
+            shutil.rmtree(song_dir)
+            return {"status": "success", "message": f"Deleted cache for {video_id}"}
+        else:
+            return {"status": "error", "message": "Cache not found"}
+    except Exception as e:
+        return {"status": "error", "message": f"Failed to delete cache: {str(e)}"}

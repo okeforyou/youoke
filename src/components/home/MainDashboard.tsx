@@ -22,7 +22,7 @@ import { safeArtistName } from "../../utils/stringUtils";
 import JooxError from "../../components/JooxError";
 import { useSystemConfig } from "../../hooks/useSystemConfig";
 import { useUIStore } from "../../stores/useUIStore";
-import { Headphones, Library, ChevronRight, Grid as GridIcon, Headphones as HeadphonesIcon, Music, Guitar, Disc, Mic2, Star, Globe, Heart, Mic, Coffee, Radio, PlayCircle } from "lucide-react";
+import { Headphones, Library, ChevronRight, Grid as GridIcon, Headphones as HeadphonesIcon, Music, Guitar, Disc, Mic2, Star, Globe, Heart, Mic, Coffee, Radio, PlayCircle, Sparkles } from "lucide-react";
 import { clsx } from "clsx";
 import { ARTIST_CATEGORIES, ArtistCategory } from "../../data/artist-categories";
 import { PackageStore } from "../../components/profile/PackageStore";
@@ -359,6 +359,22 @@ export default function MainDashboard({ showTab = true, mode = 'default' }: { sh
             <div className="animate-in fade-in duration-700 pb-20">
               {!selectedCategoryId && (
                 <div className="animate-in fade-in duration-500">
+                  {/* Creator Studio Banner */}
+                  <div className="px-4 pt-6 pb-2">
+                    <div 
+                      onClick={() => router.push('/creator')}
+                      className="bg-gradient-to-r from-purple-600 to-pink-600 p-5 sm:p-8 rounded-3xl relative overflow-hidden flex flex-col justify-center shadow-lg shadow-purple-900/20 cursor-pointer group hover:scale-[1.01] transition-transform"
+                    >
+                        <h2 className="text-xl sm:text-3xl font-black text-white leading-tight drop-shadow-sm flex items-center gap-2">
+                          YouOke Creator Studio
+                        </h2>
+                        <p className="text-[11px] sm:text-sm text-purple-100 mt-1 sm:mt-2 font-black max-w-xs sm:max-w-sm drop-shadow-sm">สร้างและส่งออกวิดีโอคาราโอเกะ พร้อมปาดเนื้อเพลงด้วย AI อัตโนมัติ</p>
+                        <div className="absolute right-[-5%] sm:right-0 top-[-20%] sm:top-[-40%] opacity-20 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-700">
+                            <Sparkles className="w-40 h-40 sm:w-64 sm:h-64 text-white" />
+                        </div>
+                    </div>
+                  </div>
+
                   <div className="px-4 pt-6 pb-2">
                     <h1 className="text-xl font-bold text-black dark:text-white">ศิลปินยอดฮิต</h1>
                     <p className="text-[12px] text-black dark:text-zinc-500 font-black">ชื่อที่คุณคุ้นเคยและชื่นชอบ</p>
