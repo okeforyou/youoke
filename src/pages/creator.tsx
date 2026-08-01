@@ -38,6 +38,11 @@ export default function CreatorStudioPage() {
     const [error, setError] = useState('');
     const [showLibraryModal, setShowLibraryModal] = useState(false);
     
+    // Font settings
+    const [fontSize, setFontSize] = useState(48);
+    const [fontOutline, setFontOutline] = useState(3);
+    const [fontFamily, setFontFamily] = useState('Sukhumvit Set');
+    
     // Refs
     const containerRef = useRef<HTMLDivElement>(null);
     const wavesurfer = useRef<WaveSurfer | null>(null);
@@ -94,7 +99,7 @@ export default function CreatorStudioPage() {
                     barGap: 2,
                     barRadius: 2,
                     height: 100,
-                    url: `${baseUrl}/files/${song.video_id}/${song.video_id}.m4a`,
+                    url: `${baseUrl}/files/${song.video_id}/original.audio`,
                     normalize: true,
                 });
                 
@@ -199,7 +204,43 @@ export default function CreatorStudioPage() {
         return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
     };
 
+
+    // Group words into lines
+    const lyricLines = React.useMemo(() => {
+        if (lyrics.length === 0) return [];
+        const lines = [];
+        let currentLine = [];
+        let lastEnd = 0;
+        for (const word of lyrics) {
+            if (currentLine.length > 0 && (word.start - lastEnd > 1.5 || currentLine.length >= 10)) {
+                lines.push(currentLine);
+                currentLine = [];
+            }
+            currentLine.push(word);
+            lastEnd = word.end;
+        }
+        if (currentLine.length > 0) lines.push(currentLine);
+        return lines;
+    }, [lyrics]);
+
+    const activeLineIndex = React.useMemo(() => {
+        if (lyricLines.length === 0) return -1;
+        for (let i = 0; i < lyricLines.length; i++) {
+            const line = lyricLines[i];
+            if (currentTime >= line[0].start && currentTime <= line[line.length - 1].end) {
+                return i;
+            }
+        }
+        for (let i = 0; i < lyricLines.length; i++) {
+            if (currentTime < lyricLines[i][0].start) {
+                return Math.max(0, i - 1);
+            }
+        }
+        return lyricLines.length - 1;
+    }, [lyricLines, currentTime]);
+
     return (
+
         <div className="flex flex-col h-screen bg-zinc-950 text-zinc-100 overflow-hidden font-sans">
             <Head><title>Creator Studio - YouOke</title></Head>
 
@@ -255,29 +296,47 @@ export default function CreatorStudioPage() {
                                 <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 to-black/40 pointer-events-none" />
                                 
                                 {/* Lyrics Preview */}
-                                <div className="z-10 text-center px-12 pb-16 w-full absolute bottom-0">
-                                    <p className="text-3xl md:text-5xl font-black text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] leading-relaxed">
+                                <div className="z-10 text-center px-12 pb-16 w-full absolute bottom-0 flex flex-col items-center justify-end pointer-events-none">
+                                    <div className="space-y-4 w-full flex flex-col items-center">
                                         {lyrics.length > 0 ? (
-                                            // Find current word based on time
-                                            lyrics.map((l, i) => {
-                                                const isPast = currentTime > l.end;
-                                                const isCurrent = currentTime >= l.start && currentTime <= l.end;
+                                            [0, 1].map(offset => {
+                                                const lineIdx = activeLineIndex + offset;
+                                                if (lineIdx < 0 || lineIdx >= lyricLines.length) return null;
+                                                const line = lyricLines[lineIdx];
+                                                
                                                 return (
-                                                    <span 
-                                                        key={i} 
+                                                    <p key={lineIdx} 
+                                                        style={{ 
+                                                            fontSize: offset === 0 ? `${fontSize}px` : `${fontSize * 0.8}px`, 
+                                                            fontFamily: fontFamily,
+                                                            WebkitTextStroke: `${fontOutline}px black`,
+                                                        }}
                                                         className={clsx(
-                                                            "transition-colors duration-100 mx-1",
-                                                            isPast ? "text-purple-400" : isCurrent ? "text-pink-400" : "text-white"
-                                                        )}
-                                                    >
-                                                        {l.word}
-                                                    </span>
+                                                        "font-black text-white drop-shadow-[0_4px_4px_rgba(0,0,0,1)] leading-relaxed transition-all duration-300",
+                                                        offset === 0 ? "opacity-100" : "opacity-60"
+                                                    )}>
+                                                        {line.map((l, i) => {
+                                                            const isPast = currentTime > l.end;
+                                                            const isCurrent = currentTime >= l.start && currentTime <= l.end;
+                                                            return (
+                                                                <span 
+                                                                    key={i} 
+                                                                    className={clsx(
+                                                                        "transition-colors duration-100 mx-1",
+                                                                        isPast ? "text-purple-400" : isCurrent ? "text-pink-400" : "text-white"
+                                                                    )}
+                                                                >
+                                                                    {l.word}
+                                                                </span>
+                                                            )
+                                                        })}
+                                                    </p>
                                                 )
                                             })
                                         ) : (
-                                            <span className="text-zinc-600">ไม่มีเนื้อเพลง (กดสร้างเนื้อเพลงด้านขวา)</span>
+                                            <span className="text-zinc-600 text-3xl font-bold">ไม่มีเนื้อเพลง (กดสร้างเนื้อเพลงด้านขวา)</span>
                                         )}
-                                    </p>
+                                    </div>
                                 </div>
 
                                 <div className="absolute top-4 left-4 text-xs font-mono text-zinc-500">
@@ -321,18 +380,41 @@ export default function CreatorStudioPage() {
                         <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-4">รูปแบบตัวอักษร</h3>
                         <div className="space-y-3">
                             <div className="flex items-center justify-between bg-zinc-900 p-2 rounded-lg border border-zinc-800">
-                                <span className="text-xs text-zinc-400"><Type size={14} className="inline mr-2"/> Font</span>
-                                <span className="text-xs text-white">Sukhumvit Set</span>
+                                <span className="text-xs text-zinc-400 flex-shrink-0 mr-2"><Type size={14} className="inline mr-1"/> Font</span>
+                                <select 
+                                    value={fontFamily}
+                                    onChange={(e) => setFontFamily(e.target.value)}
+                                    className="bg-transparent text-xs text-white outline-none w-full text-right cursor-pointer"
+                                >
+                                    <option value="Sukhumvit Set">Sukhumvit Set</option>
+                                    <option value="Kanit">Kanit</option>
+                                    <option value="Prompt">Prompt</option>
+                                    <option value="Sarabun">Sarabun</option>
+                                </select>
                             </div>
-                            <div className="grid grid-cols-2 gap-2">
-                                <div className="bg-zinc-900 p-2 rounded-lg border border-zinc-800 flex items-center justify-between">
-                                    <span className="text-xs text-zinc-400">ขนาด</span>
-                                    <span className="text-xs text-white">72px</span>
+                            <div className="bg-zinc-900 p-3 rounded-lg border border-zinc-800 space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs text-zinc-400">ขนาดตัวอักษร ({fontSize}px)</span>
                                 </div>
-                                <div className="bg-zinc-900 p-2 rounded-lg border border-zinc-800 flex items-center justify-between">
-                                    <span className="text-xs text-zinc-400">ขอบ</span>
-                                    <span className="text-xs text-white">3px</span>
+                                <input 
+                                    type="range" 
+                                    min="24" max="100" 
+                                    value={fontSize} 
+                                    onChange={(e) => setFontSize(Number(e.target.value))}
+                                    className="w-full h-1 bg-zinc-700 rounded-lg appearance-none cursor-pointer"
+                                />
+                            </div>
+                            <div className="bg-zinc-900 p-3 rounded-lg border border-zinc-800 space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs text-zinc-400">ขนาดขอบ ({fontOutline}px)</span>
                                 </div>
+                                <input 
+                                    type="range" 
+                                    min="0" max="10" step="0.5"
+                                    value={fontOutline} 
+                                    onChange={(e) => setFontOutline(Number(e.target.value))}
+                                    className="w-full h-1 bg-zinc-700 rounded-lg appearance-none cursor-pointer"
+                                />
                             </div>
                         </div>
                     </div>
