@@ -209,9 +209,10 @@ export default function AiSettingsTab() {
                             <h4 className="text-sm font-bold text-zinc-900 dark:text-white mb-2">วิธีรับ Deepgram API Key</h4>
                             <ol className="list-decimal list-inside text-sm text-zinc-600 dark:text-zinc-400 space-y-2">
                                 <li>
-                                    เข้าสู่ระบบที่ <a href="https://console.deepgram.com" target="_blank" rel="noreferrer" className="text-primary hover:underline inline-flex items-center gap-1">Deepgram Console <ArrowTopRightOnSquareIcon className="w-3 h-3" /></a> (สมัตรใหม่ได้เครดิตฟรี $200)
+                                    เข้าสู่ระบบที่ <a href="https://console.deepgram.com" target="_blank" rel="noreferrer" className="text-primary hover:underline inline-flex items-center gap-1">Deepgram Console <ArrowTopRightOnSquareIcon className="w-3 h-3" /></a> (สมัครใหม่ได้เครดิตฟรี $200)
                                 </li>
-                                <li>หากระบบถามว่าคุณต้องการใช้งานแบบไหน ให้เลือก <strong>Speech to Text</strong></li>
+                                <li>หากพบหน้าต่างสอบถามข้อมูล (Personalize your experience) <strong>สามารถกดปุ่ม Skip (ข้าม) ด้านล่างได้เลย</strong></li>
+                                <li>หากระบบถามว่าต้องการใช้งานแบบไหน ให้เลือก <strong>Speech to Text</strong></li>
                                 <li>ไปที่เมนู <strong>API Keys</strong> แถบด้านซ้าย</li>
                                 <li>กดปุ่ม <strong>Create a New API Key</strong> สร้างคีย์ใหม่และคัดลอกมาใส่ที่ช่องด้านบน</li>
                             </ol>
