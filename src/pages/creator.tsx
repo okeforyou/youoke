@@ -64,13 +64,18 @@ export default function CreatorStudioPage() {
     };
 
     const handleSelectSong = async (song: CachedSong) => {
-        setSelectedSong(song);
+        // Clone the object so React sees it as a new state and forces re-render if it's the same song
+        setSelectedSong({...song});
         setLyrics([]);
         setError('');
         setShowLibraryModal(false);
         
         if (wavesurfer.current) {
             wavesurfer.current.destroy();
+            wavesurfer.current = null;
+        }
+        if (wsRegions.current) {
+            wsRegions.current = null;
         }
 
         const baseUrl = await getActiveBridgeBaseUrl();
@@ -79,6 +84,7 @@ export default function CreatorStudioPage() {
         // Initialize WaveSurfer after a short delay to ensure DOM is ready
         setTimeout(() => {
             if (containerRef.current) {
+                containerRef.current.innerHTML = ''; // Force clear container just in case
                 const ws = WaveSurfer.create({
                     container: containerRef.current,
                     waveColor: '#6366f1', // Indigo
