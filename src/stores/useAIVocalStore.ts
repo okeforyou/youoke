@@ -86,6 +86,8 @@ interface AIVocalState {
     currentVideoId: string | null;
     defaultMode: 'basic' | 'pro';
     rapidapiKey: string | null;
+    deepgramKey: string | null;
+    groqKey: string | null;
     rapidapiQuota: { remaining: number; limit: number } | null;
     
     // Background jobs
@@ -115,6 +117,8 @@ interface AIVocalState {
     setCurrentVideoId: (id: string | null) => void;
     setDefaultMode: (mode: 'basic' | 'pro') => void;
     setRapidapiKey: (key: string | null) => void;
+    setDeepgramKey: (key: string | null) => void;
+    setGroqKey: (key: string | null) => void;
 }
 
 export const useAIVocalStore = create<AIVocalState>()(
@@ -124,6 +128,8 @@ export const useAIVocalStore = create<AIVocalState>()(
     currentVideoId: null,
     defaultMode: 'basic',
     rapidapiKey: null,
+    deepgramKey: null,
+    groqKey: null,
     rapidapiQuota: null,
     jobs: {},
 
@@ -140,6 +146,8 @@ export const useAIVocalStore = create<AIVocalState>()(
     setCurrentVideoId: (id) => set({ currentVideoId: id }),
     setDefaultMode: (mode) => set({ defaultMode: mode }),
     setRapidapiKey: (key) => set({ rapidapiKey: key }),
+    setDeepgramKey: (key) => set({ deepgramKey: key }),
+    setGroqKey: (key) => set({ groqKey: key }),
 
     setVolume: (type, val) => set((state) => ({
         volumes: { ...state.volumes, [type]: val }
@@ -352,6 +360,6 @@ export const useAIVocalStore = create<AIVocalState>()(
 }),
     {
         name: 'ai-vocal-storage',
-        partialize: (state) => ({ jobs: state.jobs, defaultMode: state.defaultMode, rapidapiKey: state.rapidapiKey }), // Persist jobs, mode preference, and API key
+        partialize: (state) => ({ jobs: state.jobs, defaultMode: state.defaultMode, rapidapiKey: state.rapidapiKey, deepgramKey: state.deepgramKey, groqKey: state.groqKey }), 
     }
 ));

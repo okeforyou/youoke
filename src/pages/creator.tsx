@@ -1,11 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Head from 'next/head';
-import { Sidebar } from '../components/navigation/Sidebar';
-import { MobileBottomNav } from '../components/navigation/MobileBottomNav';
-import { getActiveBridgeBaseUrl } from '../stores/useAIVocalStore';
-import { Mic, Key, Play, Pause, Save, Download, Video, Music } from 'lucide-react';
+import { useRouter } from 'next/router';
+import { getActiveBridgeBaseUrl, useAIVocalStore } from '../stores/useAIVocalStore';
+import { 
+    Mic, Play, Pause, Save, Download, Video, Music, 
+    ArrowLeft, Settings, Maximize, Type, UploadCloud, FileAudio 
+} from 'lucide-react';
 import WaveSurfer from 'wavesurfer.js';
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js';
+import { clsx } from 'clsx';
+import { useUIStore } from '@/stores/useUIStore';
 
 interface CachedSong {
     video_id: string;
@@ -23,23 +27,25 @@ interface LyricWord {
 }
 
 export default function CreatorStudioPage() {
-    const [apiKey, setApiKey] = useState('');
+    const router = useRouter();
+    const { deepgramKey } = useAIVocalStore();
+    
+    // States
     const [songs, setSongs] = useState<CachedSong[]>([]);
     const [selectedSong, setSelectedSong] = useState<CachedSong | null>(null);
     const [lyrics, setLyrics] = useState<LyricWord[]>([]);
     const [isTranscribing, setIsTranscribing] = useState(false);
     const [error, setError] = useState('');
+    const [showLibraryModal, setShowLibraryModal] = useState(false);
     
+    // Refs
     const containerRef = useRef<HTMLDivElement>(null);
     const wavesurfer = useRef<WaveSurfer | null>(null);
     const wsRegions = useRef<any>(null);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [currentTime, setCurrentTime] = useState(0);
 
     useEffect(() => {
-        // Load deepgram API key from local storage
-        const saved = localStorage.getItem('deepgram_api_key');
-        if (saved) setApiKey(saved);
-        
         fetchSongs();
     }, []);
 
@@ -57,15 +63,11 @@ export default function CreatorStudioPage() {
         }
     };
 
-    const handleSaveApiKey = () => {
-        localStorage.setItem('deepgram_api_key', apiKey);
-        alert('API Key saved!');
-    };
-
     const handleSelectSong = async (song: CachedSong) => {
         setSelectedSong(song);
         setLyrics([]);
         setError('');
+        setShowLibraryModal(false);
         
         if (wavesurfer.current) {
             wavesurfer.current.destroy();
@@ -74,41 +76,44 @@ export default function CreatorStudioPage() {
         const baseUrl = await getActiveBridgeBaseUrl();
         if (!baseUrl) return;
 
-        // Initialize WaveSurfer
-        if (containerRef.current) {
-            const ws = WaveSurfer.create({
-                container: containerRef.current,
-                waveColor: '#4F46E5',
-                progressColor: '#818CF8',
-                cursorColor: '#10B981',
-                barWidth: 2,
-                barGap: 1,
-                barRadius: 2,
-                height: 120,
-                url: `${baseUrl}/files/${song.video_id}/vocals.m4a`
-            });
-            
-            const wsReg = ws.registerPlugin(RegionsPlugin.create());
-            
-            ws.on('play', () => setIsPlaying(true));
-            ws.on('pause', () => setIsPlaying(false));
-            
-            wsReg.on('region-updated', (region: any) => {
-                // Update lyrics state when user drags/resizes a region
-                setLyrics(prev => {
-                    const newLyrics = [...prev];
-                    const idx = newLyrics.findIndex(l => l.word === region.content.innerText);
-                    if (idx !== -1) {
-                        newLyrics[idx].start = region.start;
-                        newLyrics[idx].end = region.end;
-                    }
-                    return newLyrics;
+        // Initialize WaveSurfer after a short delay to ensure DOM is ready
+        setTimeout(() => {
+            if (containerRef.current) {
+                const ws = WaveSurfer.create({
+                    container: containerRef.current,
+                    waveColor: '#6366f1', // Indigo
+                    progressColor: '#a855f7', // Purple
+                    cursorColor: '#f43f5e', // Rose
+                    barWidth: 2,
+                    barGap: 2,
+                    barRadius: 2,
+                    height: 100,
+                    url: `${baseUrl}/files/${song.video_id}/vocals.m4a`,
+                    normalize: true,
                 });
-            });
+                
+                const wsReg = ws.registerPlugin(RegionsPlugin.create());
+                
+                ws.on('play', () => setIsPlaying(true));
+                ws.on('pause', () => setIsPlaying(false));
+                ws.on('timeupdate', (time) => setCurrentTime(time));
+                
+                wsReg.on('region-updated', (region: any) => {
+                    setLyrics(prev => {
+                        const newLyrics = [...prev];
+                        const idx = newLyrics.findIndex(l => l.word === region.content.innerText);
+                        if (idx !== -1) {
+                            newLyrics[idx].start = region.start;
+                            newLyrics[idx].end = region.end;
+                        }
+                        return newLyrics;
+                    });
+                });
 
-            wavesurfer.current = ws;
-            wsRegions.current = wsReg;
-        }
+                wavesurfer.current = ws;
+                wsRegions.current = wsReg;
+            }
+        }, 100);
     };
 
     const togglePlay = () => {
@@ -119,8 +124,19 @@ export default function CreatorStudioPage() {
 
     const handleTranscribe = async () => {
         if (!selectedSong) return;
-        if (!apiKey) {
-            setError('Please enter your Deepgram API Key first.');
+        if (!deepgramKey) {
+            useUIStore.getState().showConfirm({
+                title: "ไม่พบ Deepgram API Key",
+                message: "กรุณาไปที่เมนู 'ตั้งค่า > แท็บ AI' เพื่อกรอก Deepgram API Key ก่อนสร้างเนื้อเพลง",
+                type: "warning",
+                confirmText: "ไปหน้าตั้งค่า",
+                cancelText: "ยกเลิก",
+                onConfirm: () => {
+                    useUIStore.getState().hideConfirm();
+                    // Just open settings modal from home in real app, but here we alert
+                    alert("กรุณากดกลับไปหน้าแรก แล้วเปิดเมนูตั้งค่า -> แท็บ AI ครับ");
+                }
+            });
             return;
         }
 
@@ -133,7 +149,7 @@ export default function CreatorStudioPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     video_id: selectedSong.video_id,
-                    api_key: apiKey,
+                    api_key: deepgramKey,
                     provider: 'deepgram'
                 })
             });
@@ -142,7 +158,6 @@ export default function CreatorStudioPage() {
                 const data = await res.json();
                 setLyrics(data.words);
                 
-                // Add regions to wavesurfer
                 if (wsRegions.current) {
                     wsRegions.current.clearRegions();
                     data.words.forEach((word: LyricWord) => {
@@ -150,7 +165,7 @@ export default function CreatorStudioPage() {
                             start: word.start,
                             end: word.end,
                             content: word.word,
-                            color: 'rgba(59, 130, 246, 0.4)', // bg-blue-500 with opacity
+                            color: 'rgba(168, 85, 247, 0.3)', // purple with opacity
                             drag: true,
                             resize: true
                         });
@@ -171,151 +186,214 @@ export default function CreatorStudioPage() {
         alert("Exporting MP4 (FFmpeg process will run on Local Bridge) - Coming in next step!");
     };
 
+    const formatTime = (seconds: number) => {
+        const m = Math.floor(seconds / 60);
+        const s = Math.floor(seconds % 60);
+        const ms = Math.floor((seconds % 1) * 100);
+        return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
+    };
+
     return (
-        <div className="flex h-screen bg-gray-900 text-white overflow-hidden">
+        <div className="flex flex-col h-screen bg-zinc-950 text-zinc-100 overflow-hidden font-sans">
             <Head><title>Creator Studio - YouOke</title></Head>
-            <Sidebar />
-            <div className="flex-1 flex flex-col min-w-0 overflow-y-auto pb-24 md:pb-0">
-                <main className="flex-1 p-4 md:p-8 max-w-6xl mx-auto w-full">
-                    <div className="flex items-center justify-between mb-8">
-                        <div>
-                            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400">
-                                YouOke Creator Studio
-                            </h1>
-                            <p className="text-gray-400 mt-2">สร้างไฟล์คาราโอเกะพร้อมเนื้อร้อง และ Export เป็นไฟล์วิดีโอ (MP4)</p>
-                        </div>
+
+            {/* Top Navigation Bar */}
+            <header className="h-14 border-b border-zinc-800 bg-zinc-900/80 backdrop-blur flex items-center justify-between px-4 shrink-0">
+                <div className="flex items-center gap-4">
+                    <button 
+                        onClick={() => router.push('/')}
+                        className="p-2 hover:bg-zinc-800 rounded-lg transition-colors text-zinc-400 hover:text-white"
+                    >
+                        <ArrowLeft size={20} />
+                    </button>
+                    <div className="font-bold text-lg flex items-center gap-2">
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">YouOke</span>
+                        <span className="text-zinc-300 font-medium text-sm border-l border-zinc-700 pl-2">Creator Studio</span>
                     </div>
+                </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* Left Column: API & Song Selection */}
-                        <div className="space-y-6">
-                            <div className="bg-gray-800/50 p-6 rounded-2xl border border-gray-700">
-                                <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                                    <Key size={20} className="text-yellow-400" />
-                                    1. Deepgram API Key
-                                </h3>
-                                <input 
-                                    type="password" 
-                                    value={apiKey} 
-                                    onChange={e => setApiKey(e.target.value)}
-                                    placeholder="Enter Deepgram API Key"
-                                    className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-purple-500 mb-3"
-                                />
-                                <button onClick={handleSaveApiKey} className="w-full bg-gray-700 hover:bg-gray-600 py-2 rounded-lg text-sm font-medium transition-colors">
-                                    บันทึก Key (ในเบราว์เซอร์)
-                                </button>
-                                <p className="text-xs text-gray-500 mt-3">
-                                    เราใช้ API จากผู้ใช้งานเองเพื่อความรวดเร็วและเป็นส่วนตัว (ได้เครดิตฟรี $200 จาก Deepgram)
-                                </p>
-                            </div>
+                <div className="flex items-center gap-3">
+                    <span className="text-xs text-zinc-500 hidden sm:inline-block">โปรเจกต์: {selectedSong ? selectedSong.title : 'ยังไม่เลือกเพลง'}</span>
+                    <button 
+                        onClick={handleExport}
+                        disabled={lyrics.length === 0}
+                        className="bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-white px-5 py-1.5 rounded-lg text-sm font-bold shadow-md transition-all flex items-center gap-2"
+                    >
+                        <Download size={16} />
+                        Export Video
+                    </button>
+                </div>
+            </header>
 
-                            <div className="bg-gray-800/50 p-6 rounded-2xl border border-gray-700">
-                                <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                                    <Music size={20} className="text-blue-400" />
-                                    2. เลือกเพลงที่ต้องการทำ
-                                </h3>
-                                <div className="space-y-2 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
-                                    {songs.map(song => (
-                                        <div 
-                                            key={song.video_id}
-                                            onClick={() => handleSelectSong(song)}
-                                            className={`p-3 rounded-xl cursor-pointer border transition-colors ${
-                                                selectedSong?.video_id === song.video_id 
-                                                ? 'bg-purple-600/20 border-purple-500' 
-                                                : 'bg-gray-900 border-gray-700 hover:border-gray-500'
-                                            }`}
-                                        >
-                                            <p className="font-medium text-sm truncate">{song.title}</p>
-                                        </div>
-                                    ))}
-                                    {songs.length === 0 && <p className="text-gray-500 text-sm">ไม่มีเพลงในคลัง (แยกเสียงเพลงก่อนที่เมนูคลังเพลง)</p>}
-                                </div>
-                            </div>
+            {/* Main Layout */}
+            <div className="flex flex-1 overflow-hidden">
+                
+                {/* Center Canvas (Preview) */}
+                <div className="flex-1 flex flex-col relative bg-black items-center justify-center overflow-hidden">
+                    {!selectedSong ? (
+                        <div className="text-center p-8">
+                            <h2 className="text-2xl font-bold text-zinc-400 mb-4">เริ่มต้นสร้างคาราโอเกะ</h2>
+                            <p className="text-zinc-500 mb-8 text-sm">ดึงเพลงที่เคยแยกเสียงร้องไว้ในระบบมาทำคาราโอเกะได้ทันที</p>
+                            <button 
+                                onClick={() => setShowLibraryModal(true)}
+                                className="bg-zinc-800 hover:bg-zinc-700 text-white px-6 py-3 rounded-xl shadow-lg border border-zinc-700 transition-colors flex items-center gap-3 mx-auto"
+                            >
+                                <Music className="text-purple-400" />
+                                เลือกเพลงจากคลัง (Library)
+                            </button>
                         </div>
-
-                        {/* Right Column: Editor & Timeline */}
-                        <div className="lg:col-span-2 space-y-6">
-                            <div className="bg-gray-800/50 p-6 rounded-2xl border border-gray-700 min-h-[400px] flex flex-col">
-                                <div className="flex justify-between items-center mb-6">
-                                    <h3 className="text-lg font-medium flex items-center gap-2">
-                                        <Mic size={20} className="text-emerald-400" />
-                                        3. ไทม์ไลน์เนื้อเพลง (MIDI-like Editor)
-                                    </h3>
-                                    <button 
-                                        onClick={handleTranscribe}
-                                        disabled={isTranscribing || !selectedSong}
-                                        className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-                                    >
-                                        {isTranscribing ? <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div> : <Mic size={16} />}
-                                        {isTranscribing ? 'กำลังถอดเสียงร้อง...' : 'สร้างเนื้อเพลงอัตโนมัติ (AI)'}
-                                    </button>
-                                </div>
-
-                                {error && <div className="bg-red-900/50 text-red-300 p-3 rounded-lg mb-4 text-sm border border-red-500/30">{error}</div>}
-
-                                <div className="flex-1 bg-gray-900 rounded-xl p-4 border border-gray-700 relative overflow-hidden flex flex-col">
-                                    {!selectedSong && (
-                                        <div className="absolute inset-0 flex items-center justify-center text-gray-500 z-10 bg-gray-900/80">
-                                            กรุณาเลือกเพลงจากเมนูด้านซ้าย
-                                        </div>
-                                    )}
-                                    
-                                    {/* WaveSurfer Container */}
-                                    <div ref={containerRef} className="w-full mb-4"></div>
-                                    
-                                    <div className="flex justify-center mb-4">
-                                        <button 
-                                            onClick={togglePlay}
-                                            disabled={!selectedSong}
-                                            className="w-12 h-12 bg-purple-600 hover:bg-purple-500 rounded-full flex items-center justify-center transition-colors disabled:opacity-50"
-                                        >
-                                            {isPlaying ? <Pause fill="currentColor" /> : <Play fill="currentColor" className="ml-1" />}
-                                        </button>
-                                    </div>
-
-                                    {/* Lyrics List */}
-                                    <div className="mt-4 max-h-[250px] overflow-y-auto">
-                                        <h4 className="text-gray-400 text-sm mb-2">เนื้อเพลง (ลากยืดหดบนคลื่นเสียงด้านบนเพื่อปรับแก้จังหวะ)</h4>
-                                        <div className="flex flex-wrap gap-2">
-                                            {lyrics.map((l, i) => (
-                                                <span key={i} className="bg-gray-800 px-3 py-1 rounded-full text-sm border border-gray-700 hover:border-purple-500 cursor-pointer">
-                                                    {l.word}
-                                                </span>
-                                            ))}
-                                            {lyrics.length === 0 && selectedSong && !isTranscribing && (
-                                                <p className="text-gray-500 text-sm italic">กดปุ่ม "สร้างเนื้อเพลงอัตโนมัติ" เพื่อเริ่มต้น</p>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Export Section */}
-                            <div className="bg-gray-800/50 p-6 rounded-2xl border border-gray-700">
-                                <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                                    <Video size={20} className="text-pink-400" />
-                                    4. ส่งออกวิดีโอ (Export)
-                                </h3>
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center relative p-8">
+                            {/* Fake Video Canvas Area */}
+                            <div className="aspect-video w-full max-w-4xl bg-zinc-900 rounded-lg shadow-2xl border border-zinc-800 relative flex flex-col items-center justify-center overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 to-black/40 pointer-events-none" />
                                 
-                                <div className="bg-amber-900/30 border border-amber-500/30 p-4 rounded-xl mb-4 text-sm text-amber-200">
-                                    <strong>⚠️ คำเตือนเรื่องลิขสิทธิ์:</strong> 
-                                    คุณเป็นผู้รับผิดชอบต่อไฟล์สื่อและเนื้อหาที่ถูกส่งออกทั้งหมด หากนำไฟล์วิดีโอนี้ไปอัปโหลดลงในแพลตฟอร์มสาธารณะ (เช่น YouTube) อาจมีการตรวจสอบลิขสิทธิ์ด้วยระบบ Content ID โปรแกรมนี้เป็นเพียงเครื่องมือสร้างสื่อส่วนบุคคลเท่านั้น
+                                {/* Lyrics Preview */}
+                                <div className="z-10 text-center px-12 pb-16 w-full absolute bottom-0">
+                                    <p className="text-3xl md:text-5xl font-black text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] leading-relaxed">
+                                        {lyrics.length > 0 ? (
+                                            // Find current word based on time
+                                            lyrics.map((l, i) => {
+                                                const isPast = currentTime > l.end;
+                                                const isCurrent = currentTime >= l.start && currentTime <= l.end;
+                                                return (
+                                                    <span 
+                                                        key={i} 
+                                                        className={clsx(
+                                                            "transition-colors duration-100 mx-1",
+                                                            isPast ? "text-purple-400" : isCurrent ? "text-pink-400" : "text-white"
+                                                        )}
+                                                    >
+                                                        {l.word}
+                                                    </span>
+                                                )
+                                            })
+                                        ) : (
+                                            <span className="text-zinc-600">ไม่มีเนื้อเพลง (กดสร้างเนื้อเพลงด้านขวา)</span>
+                                        )}
+                                    </p>
                                 </div>
 
+                                <div className="absolute top-4 left-4 text-xs font-mono text-zinc-500">
+                                    Canvas 1920x1080
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Right Sidebar (Properties) */}
+                <div className="w-80 border-l border-zinc-800 bg-zinc-950 flex flex-col shrink-0 overflow-y-auto hidden lg:flex">
+                    <div className="p-4 border-b border-zinc-800">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-4">คุณสมบัติโปรเจกต์</h3>
+                        
+                        <div className="space-y-4">
+                            <div>
+                                <label className="text-xs text-zinc-400 mb-1 block">เพลงที่เลือก</label>
+                                <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-3 text-sm truncate flex items-center justify-between cursor-pointer hover:border-zinc-700" onClick={() => setShowLibraryModal(true)}>
+                                    <span className="truncate text-zinc-300">{selectedSong ? selectedSong.title : 'None'}</span>
+                                    <FileAudio size={14} className="text-zinc-500 shrink-0" />
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label className="text-xs text-zinc-400 mb-1 block">AI Lyrics (ถอดเสียงร้อง)</label>
                                 <button 
-                                    onClick={handleExport}
-                                    disabled={lyrics.length === 0}
-                                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 disabled:opacity-50 disabled:cursor-not-allowed py-4 rounded-xl font-bold text-lg shadow-lg shadow-purple-900/20 transition-all"
+                                    onClick={handleTranscribe}
+                                    disabled={isTranscribing || !selectedSong}
+                                    className="w-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed text-zinc-200 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
                                 >
-                                    <Download size={24} />
-                                    ส่งออกวิดีโอคาราโอเกะ (.mp4)
+                                    {isTranscribing ? <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-zinc-400"></div> : <Mic size={16} className="text-purple-400" />}
+                                    {isTranscribing ? 'กำลังประมวลผล...' : 'สร้างเนื้อเพลง (AI)'}
                                 </button>
+                                {error && <p className="text-xs text-rose-500 mt-2">{error}</p>}
                             </div>
                         </div>
                     </div>
-                </main>
+
+                    <div className="p-4 border-b border-zinc-800">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-4">รูปแบบตัวอักษร</h3>
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between bg-zinc-900 p-2 rounded-lg border border-zinc-800">
+                                <span className="text-xs text-zinc-400"><Type size={14} className="inline mr-2"/> Font</span>
+                                <span className="text-xs text-white">Sukhumvit Set</span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div className="bg-zinc-900 p-2 rounded-lg border border-zinc-800 flex items-center justify-between">
+                                    <span className="text-xs text-zinc-400">ขนาด</span>
+                                    <span className="text-xs text-white">72px</span>
+                                </div>
+                                <div className="bg-zinc-900 p-2 rounded-lg border border-zinc-800 flex items-center justify-between">
+                                    <span className="text-xs text-zinc-400">ขอบ</span>
+                                    <span className="text-xs text-white">3px</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div className="md:hidden"><MobileBottomNav /></div>
+
+            {/* Bottom Timeline */}
+            <div className="h-48 border-t border-zinc-800 bg-zinc-950 flex flex-col shrink-0">
+                {/* Timeline Toolbar */}
+                <div className="h-10 border-b border-zinc-800/50 flex items-center justify-between px-4 bg-zinc-900/30">
+                    <div className="flex items-center gap-2 text-zinc-400">
+                        <button className="hover:text-white transition-colors p-1" onClick={togglePlay}>
+                            {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+                        </button>
+                        <span className="text-xs font-mono w-16">{formatTime(currentTime)}</span>
+                    </div>
+                    <div className="text-xs text-zinc-500">
+                        ลากขอบซ้าย-ขวาของกรอบเนื้อเพลงเพื่อปรับจังหวะให้ตรง
+                    </div>
+                </div>
+
+                {/* Wavesurfer Area */}
+                <div className="flex-1 relative bg-zinc-900 overflow-hidden p-2 flex flex-col justify-center">
+                    {!selectedSong && (
+                        <div className="absolute inset-0 flex items-center justify-center text-zinc-600 text-sm z-10">
+                            ไม่มีแทร็กเสียง
+                        </div>
+                    )}
+                    <div ref={containerRef} className="w-full"></div>
+                </div>
+            </div>
+
+            {/* Library Modal */}
+            {showLibraryModal && (
+                <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+                    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[80vh]">
+                        <div className="p-4 border-b border-zinc-800 flex justify-between items-center">
+                            <h2 className="text-lg font-bold text-white">เลือกเพลงจากคลัง</h2>
+                            <button onClick={() => setShowLibraryModal(false)} className="text-zinc-500 hover:text-white">✕</button>
+                        </div>
+                        <div className="p-2 overflow-y-auto custom-scrollbar flex-1">
+                            {songs.length === 0 ? (
+                                <div className="text-center p-8 text-zinc-500">
+                                    ไม่มีเพลงที่แยกเสียงไว้ในระบบ<br/>
+                                    <span className="text-sm">ไปที่หน้าค้นหาและเปิดใช้งานปุ่ม "แยกเสียงร้อง" ก่อน</span>
+                                </div>
+                            ) : (
+                                songs.map(song => (
+                                    <div 
+                                        key={song.video_id}
+                                        onClick={() => handleSelectSong(song)}
+                                        className="flex items-center gap-3 p-3 hover:bg-zinc-800 rounded-xl cursor-pointer group transition-colors"
+                                    >
+                                        <div className="w-10 h-10 bg-zinc-800 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-primary/20 group-hover:text-primary text-zinc-500">
+                                            <Music size={18} />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-bold text-zinc-200 truncate">{song.title}</p>
+                                            <p className="text-xs text-zinc-500">{song.mode} • {(song.size_mb).toFixed(1)} MB</p>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

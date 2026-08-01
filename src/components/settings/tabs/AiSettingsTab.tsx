@@ -6,9 +6,13 @@ import { getUserProfile, updateUserProfile } from '@/services/userService';
 
 export default function AiSettingsTab() {
     const { user } = useSystem().auth();
-    const { rapidapiKey, setRapidapiKey, rapidapiQuota } = useAIVocalStore();
+    const { rapidapiKey, setRapidapiKey, deepgramKey, setDeepgramKey, groqKey, setGroqKey, rapidapiQuota } = useAIVocalStore();
     const [inputValue, setInputValue] = useState(rapidapiKey || '');
+    const [deepgramInputValue, setDeepgramInputValue] = useState(deepgramKey || '');
+    const [groqInputValue, setGroqInputValue] = useState(groqKey || '');
     const [showKey, setShowKey] = useState(false);
+    const [showDeepgramKey, setShowDeepgramKey] = useState(false);
+    const [showGroqKey, setShowGroqKey] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
 
@@ -16,19 +20,31 @@ export default function AiSettingsTab() {
         setIsMounted(true);
         if (user?.uid) {
             getUserProfile(user.uid, false).then(res => {
-                if (res.success && res.data?.settings?.rapidapiKey) {
-                    setRapidapiKey(res.data.settings.rapidapiKey);
+                if (res.success && res.data?.settings) {
+                    if (res.data.settings.rapidapiKey) setRapidapiKey(res.data.settings.rapidapiKey);
+                    if (res.data.settings.deepgramKey) setDeepgramKey(res.data.settings.deepgramKey);
+                    if (res.data.settings.groqKey) setGroqKey(res.data.settings.groqKey);
                 }
             });
         }
-    }, [user?.uid, setRapidapiKey]);
+    }, [user?.uid, setRapidapiKey, setDeepgramKey, setGroqKey]);
 
     useEffect(() => {
         setInputValue(rapidapiKey || '');
     }, [rapidapiKey]);
 
+    useEffect(() => {
+        setDeepgramInputValue(deepgramKey || '');
+    }, [deepgramKey]);
+
+    useEffect(() => {
+        setGroqInputValue(groqKey || '');
+    }, [groqKey]);
+
     const handleSave = async () => {
         setRapidapiKey(inputValue);
+        setDeepgramKey(deepgramInputValue);
+        setGroqKey(groqInputValue);
         
         // Save to Firebase
         if (user?.uid) {
@@ -36,10 +52,15 @@ export default function AiSettingsTab() {
                 const res = await getUserProfile(user.uid, false);
                 const currentSettings = res.data?.settings || {};
                 await updateUserProfile(user.uid, {
-                    settings: { ...currentSettings, rapidapiKey: inputValue } as any
+                    settings: { 
+                        ...currentSettings, 
+                        rapidapiKey: inputValue,
+                        deepgramKey: deepgramInputValue,
+                        groqKey: groqInputValue 
+                    } as any
                 });
             } catch (e) {
-                console.error("Failed to save API key to Firebase", e);
+                console.error("Failed to save API keys to Firebase", e);
             }
         }
         
@@ -131,6 +152,127 @@ export default function AiSettingsTab() {
                                 <li className="text-rose-500">
                                     <em>หมายเหตุ: คีย์ของ RapidAPI 1 คีย์สามารถใช้ได้กับทุก API แต่คุณต้องกด Subscribe ตัว API ที่เราใช้ก่อนถึงจะใช้งานได้</em>
                                 </li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Deepgram Key Section */}
+                <div className="bg-white dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-sm">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-500/10 flex items-center justify-center shrink-0">
+                            <KeyIcon className="w-5 h-5 text-purple-500" />
+                        </div>
+                        <div>
+                            <h3 className="text-base font-bold text-zinc-900 dark:text-white">เชื่อมต่อ Deepgram API (ถอดเนื้อเพลง)</h3>
+                            <p className="text-[12px] text-zinc-500">ใช้สำหรับสร้างเนื้อเพลง (Lyrics) คาราโอเกะแบบแม่นยำรายคำ</p>
+                        </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-2">
+                                Deepgram API Key ของคุณ
+                            </label>
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                                <div className="relative flex-1">
+                                    <input 
+                                        type={showDeepgramKey ? "text" : "password"} 
+                                        name="deepgram-key"
+                                        autoComplete="new-password" 
+                                        value={isMounted ? deepgramInputValue : ""}
+                                        onChange={(e) => {
+                                            setDeepgramInputValue(e.target.value);
+                                            setDeepgramKey(e.target.value);
+                                        }}
+                                        placeholder="ใส่ Deepgram API Key ของคุณที่นี่..."
+                                        className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white text-sm rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                                    />
+                                    <button 
+                                        type="button"
+                                        onClick={() => setShowDeepgramKey(!showDeepgramKey)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors p-1"
+                                    >
+                                        {showDeepgramKey ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                                    </button>
+                                </div>
+                                <button 
+                                    onClick={handleSave}
+                                    className="px-5 py-3 bg-primary hover:bg-primary/90 text-white rounded-xl text-sm font-bold transition-all shadow-md shrink-0 flex items-center justify-center gap-2"
+                                >
+                                    {isSaved ? <><CheckIcon className="w-4 h-4" /> บันทึกแล้ว</> : 'บันทึก'}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="bg-zinc-50 dark:bg-zinc-900 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                            <h4 className="text-sm font-bold text-zinc-900 dark:text-white mb-2">วิธีรับ Deepgram API Key</h4>
+                            <ol className="list-decimal list-inside text-sm text-zinc-600 dark:text-zinc-400 space-y-2">
+                                <li>
+                                    เข้าสู่ระบบที่ <a href="https://console.deepgram.com" target="_blank" rel="noreferrer" className="text-primary hover:underline inline-flex items-center gap-1">Deepgram Console <ArrowTopRightOnSquareIcon className="w-3 h-3" /></a> (ได้เครดิตฟรี $200)
+                                </li>
+                                <li>ไปที่เมนู <strong>API Keys</strong> แถบด้านซ้าย</li>
+                                <li>กดปุ่ม <strong>Create a New API Key</strong> สร้างคีย์ใหม่และคัดลอกมาใส่ที่ช่องด้านบน</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Groq Key Section */}
+                <div className="bg-white dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-sm">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-500/10 flex items-center justify-center shrink-0">
+                            <KeyIcon className="w-5 h-5 text-orange-500" />
+                        </div>
+                        <div>
+                            <h3 className="text-base font-bold text-zinc-900 dark:text-white">เชื่อมต่อ Groq API (แก้ไขคำผิด)</h3>
+                            <p className="text-[12px] text-zinc-500">สำหรับ AI ช่วยเกลาเนื้อเพลงและปรับคำให้ถูกต้อง (ฟรีและเร็วกว่า OpenAI)</p>
+                        </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-2">
+                                Groq API Key ของคุณ
+                            </label>
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                                <div className="relative flex-1">
+                                    <input 
+                                        type={showGroqKey ? "text" : "password"} 
+                                        name="groq-key"
+                                        autoComplete="new-password" 
+                                        value={isMounted ? groqInputValue : ""}
+                                        onChange={(e) => {
+                                            setGroqInputValue(e.target.value);
+                                            setGroqKey(e.target.value);
+                                        }}
+                                        placeholder="ใส่ Groq API Key ของคุณที่นี่..."
+                                        className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white text-sm rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                                    />
+                                    <button 
+                                        type="button"
+                                        onClick={() => setShowGroqKey(!showGroqKey)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors p-1"
+                                    >
+                                        {showGroqKey ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                                    </button>
+                                </div>
+                                <button 
+                                    onClick={handleSave}
+                                    className="px-5 py-3 bg-primary hover:bg-primary/90 text-white rounded-xl text-sm font-bold transition-all shadow-md shrink-0 flex items-center justify-center gap-2"
+                                >
+                                    {isSaved ? <><CheckIcon className="w-4 h-4" /> บันทึกแล้ว</> : 'บันทึก'}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="bg-zinc-50 dark:bg-zinc-900 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                            <h4 className="text-sm font-bold text-zinc-900 dark:text-white mb-2">วิธีรับ Groq API Key</h4>
+                            <ol className="list-decimal list-inside text-sm text-zinc-600 dark:text-zinc-400 space-y-2">
+                                <li>
+                                    เข้าสู่ระบบที่ <a href="https://console.groq.com/keys" target="_blank" rel="noreferrer" className="text-primary hover:underline inline-flex items-center gap-1">Groq Console <ArrowTopRightOnSquareIcon className="w-3 h-3" /></a>
+                                </li>
+                                <li>กดปุ่ม <strong>Create API Key</strong> สร้างคีย์ใหม่และคัดลอกมาใส่ที่ช่องด้านบน</li>
                             </ol>
                         </div>
                     </div>
