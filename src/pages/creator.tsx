@@ -242,7 +242,10 @@ export default function CreatorStudioPage() {
     return (
 
         <div className="flex flex-col h-screen bg-zinc-950 text-zinc-100 overflow-hidden font-sans">
-            <Head><title>Creator Studio - YouOke</title></Head>
+            <Head>
+        <title>Creator Studio - YouOke</title>
+        <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&family=Prompt:wght@400;700&family=Sarabun:wght@400;700&family=Mali:wght@400;700&family=Itim&display=swap" rel="stylesheet" />
+    </Head>
 
             {/* Top Navigation Bar */}
             <header className="h-14 border-b border-zinc-800 bg-zinc-900/80 backdrop-blur flex items-center justify-between px-4 shrink-0">
@@ -299,21 +302,29 @@ export default function CreatorStudioPage() {
                                 <div className="z-10 text-center px-12 pb-16 w-full absolute bottom-0 flex flex-col items-center justify-end pointer-events-none">
                                     <div className="space-y-4 w-full flex flex-col items-center">
                                         {lyrics.length > 0 ? (
-                                            [0, 1].map(offset => {
-                                                const lineIdx = activeLineIndex + offset;
-                                                if (lineIdx < 0 || lineIdx >= lyricLines.length) return null;
+                                            [0, 1].map(position => {
+                                                const baseIdx = Math.max(0, activeLineIndex);
+                                                let lineIdx = position === 0 
+                                                    ? (baseIdx % 2 === 0 ? baseIdx : baseIdx + 1)
+                                                    : (baseIdx % 2 === 1 ? baseIdx : baseIdx + 1);
+
+                                                if (lineIdx >= lyricLines.length) {
+                                                    return <p key={`empty-${position}`} style={{ fontSize: `${fontSize}px`, opacity: 0 }}>&nbsp;</p>;
+                                                }
+
                                                 const line = lyricLines[lineIdx];
+                                                const isActive = lineIdx === activeLineIndex;
                                                 
                                                 return (
                                                     <p key={lineIdx} 
                                                         style={{ 
-                                                            fontSize: offset === 0 ? `${fontSize}px` : `${fontSize * 0.8}px`, 
+                                                            fontSize: `${fontSize}px`, 
                                                             fontFamily: fontFamily,
                                                             WebkitTextStroke: `${fontOutline}px black`,
                                                         }}
                                                         className={clsx(
                                                         "font-black text-white drop-shadow-[0_4px_4px_rgba(0,0,0,1)] leading-relaxed transition-all duration-300",
-                                                        offset === 0 ? "opacity-100" : "opacity-60"
+                                                        isActive ? "opacity-100 scale-100" : "opacity-60 scale-95"
                                                     )}>
                                                         {line.map((l, i) => {
                                                             const isPast = currentTime > l.end;
@@ -386,10 +397,12 @@ export default function CreatorStudioPage() {
                                     onChange={(e) => setFontFamily(e.target.value)}
                                     className="bg-transparent text-xs text-white outline-none w-full text-right cursor-pointer"
                                 >
-                                    <option value="Sukhumvit Set">Sukhumvit Set</option>
-                                    <option value="Kanit">Kanit</option>
-                                    <option value="Prompt">Prompt</option>
-                                    <option value="Sarabun">Sarabun</option>
+                                    <option value="Sukhumvit Set">Sukhumvit Set (Default)</option>
+                                    <option value="'Kanit', sans-serif">Kanit (คณิต)</option>
+                                    <option value="'Prompt', sans-serif">Prompt (พร้อม)</option>
+                                    <option value="'Sarabun', sans-serif">Sarabun (สารบรรณ)</option>
+                                    <option value="'Mali', cursive">Mali (มะลิ)</option>
+                                    <option value="'Itim', cursive">Itim (ไอติม)</option>
                                 </select>
                             </div>
                             <div className="bg-zinc-900 p-3 rounded-lg border border-zinc-800 space-y-2">
