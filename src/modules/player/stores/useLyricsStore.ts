@@ -20,6 +20,7 @@ interface LyricsState {
     setPreferredSource: (src: 'auto' | 'youtube') => void;
     setSyncOffset: (offset: number) => void;
     fetchLyrics: (videoId: string, title: string, prefer?: 'auto' | 'youtube') => Promise<void>;
+    generateAILyrics: (videoId: string) => Promise<void>;
     clearLyrics: () => void;
 }
 
@@ -113,13 +114,41 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
                     isLoading: false 
                 });
             } else {
-                set({ 
-                    error: 'ไม่พบเนื้อเพลงสำหรับวิดีโอนี้', 
-                    isLoading: false 
-                });
+                set({ error: 'ไม่พบเนื้อเพลงจากแหล่งใดๆ', isLoading: false });
             }
-        } catch (error: any) {
-            set({ error: error.message || 'Error fetching lyrics', isLoading: false });
+        } catch (e: any) {
+            set({ error: e.message || 'เกิดข้อผิดพลาดในการโหลดเนื้อเพลง', isLoading: false });
+        }
+    },
+
+    generateAILyrics: async (videoId: string) => {
+        set({ isLoading: true, error: null });
+        try {
+            const { getActiveBridgeBaseUrl, deepgramKey } = await import('../../../stores/useAIVocalStore');
+            const baseUrl = await getActiveBridgeBaseUrl();
+            if (!baseUrl) {
+                throw new Error("Local Bridge offline");
+            }
+            if (!deepgramKey) {
+                throw new Error("ไม่พบ Deepgram API Key กรุณาตั้งค่าในหน้า Settings");
+            }
+
+            const res = await fetch(`${baseUrl}/transcribe`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ video_id: videoId, api_key: deepgramKey, provider: 'deepgram' })
+            });
+
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.detail || "เกิดข้อผิดพลาดในการแกะเนื้อเพลง");
+            }
+
+            // Once generated, re-fetch normally
+            await get().fetchLyrics(videoId, '', 'auto');
+            
+        } catch (e: any) {
+            set({ error: e.message || 'เกิดข้อผิดพลาด', isLoading: false });
         }
     }
 }));

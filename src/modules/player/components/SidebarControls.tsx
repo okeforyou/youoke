@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Play, Pause, SkipForward, RotateCcw, Volume2, VolumeX, Maximize, Cast, Mic, MicOff, ChevronUp, Mic2, Music, SlidersHorizontal, Type, Drum, Guitar, Piano, MicVocal, X } from "lucide-react";
+import { Play, Pause, SkipForward, RotateCcw, Volume2, VolumeX, Maximize, Cast, Mic, MicOff, ChevronUp, Mic2, Music, SlidersHorizontal, Type, Drum, Guitar, Piano, MicVocal, X, Sparkles } from "lucide-react";
 import { usePlayerStore } from "../stores/usePlayerStore";
 import { useLyricsStore } from "../stores/useLyricsStore";
 import { useMixerStore, type TrackType } from "../stores/useMixerStore";
@@ -472,8 +472,17 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                         </button>
                         
                         {lyricsError && showLyrics && (
-                            <div className="mt-2 text-[10px] text-gray-500 dark:text-gray-400 font-medium bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700 p-2 rounded-xl text-center">
-                                ไม่มีเนื้อเพลง
+                            <div className="mt-2 text-[10px] text-gray-500 dark:text-gray-400 font-medium bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700 p-2 rounded-xl text-center flex flex-col gap-2">
+                                <span>{lyricsError}</span>
+                                {currentVideo && isAiReady && (
+                                    <button
+                                        onClick={() => useLyricsStore.getState().generateAILyrics(currentVideo.id)}
+                                        className="w-full py-1.5 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-lg shadow-sm font-bold active:scale-95 transition-all flex items-center justify-center gap-1"
+                                    >
+                                        <Sparkles size={12} />
+                                        ให้ AI แกะเนื้อเพลง
+                                    </button>
+                                )}
                             </div>
                         )}
                         {lyricsLoading && showLyrics && (
