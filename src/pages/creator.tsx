@@ -88,7 +88,7 @@ export default function CreatorStudioPage() {
                     barGap: 2,
                     barRadius: 2,
                     height: 100,
-                    url: `${baseUrl}/files/${song.video_id}/vocals.m4a`,
+                    url: `${baseUrl}/files/${song.video_id}/${song.video_id}.m4a`,
                     normalize: true,
                 });
                 
