@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.214";
+export const SYSTEM_VERSION = "5.5.215";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.215",
+        date: "2026-08-01",
+        changes: [
+            "feat(creator): Added Zoom slider for precise waveform timing adjustments.",
+            "feat(creator): Revamped Lyrics Editor with direct inline text editing.",
+            "feat(creator): Added 'Merge' (chain) and 'Delete' controls for AI lyric segments.",
+            "fix(creator): Resolved UI layout clipping and syntax errors in the sidebar tab system."
+        ]
+    },
     {
         version: "5.5.214",
         date: "2026-08-01",

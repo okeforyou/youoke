@@ -51,6 +51,12 @@ async def serve_audio_file(video_id: str, filename: str):
     
     legacy_path = os.path.join(active_dir, video_id)
     if os.path.exists(legacy_path) and os.path.isdir(legacy_path):
+        if filename == "original.audio":
+            for f in os.listdir(legacy_path):
+                if f not in ["vocals.m4a", "bass.m4a", "drums.m4a", "other.m4a", "lyrics_timeline.json", "youoke.json", "mode.txt", "title.txt"]:
+                    if f.endswith(('.m4a', '.mp3', '.webm', '.wav', '.ogg')):
+                        return FileResponse(os.path.join(legacy_path, f), headers={"Accept-Ranges": "bytes"})
+                        
         filepath = os.path.join(legacy_path, filename)
         if os.path.exists(filepath):
             return FileResponse(filepath, headers={"Accept-Ranges": "bytes"})

@@ -52,7 +52,7 @@ async def transcribe_audio(
             with open(legacy_path, 'rb') as audio:
                 audio_data = audio.read()
                 
-            url = "https://api.deepgram.com/v1/listen?language=th&punctuate=true&smart_format=true&utterances=true"
+            url = "https://api.deepgram.com/v1/listen?model=nova-3&language=th&punctuate=true&smart_format=true&utterances=true"
             req = urllib.request.Request(url, data=audio_data, method="POST")
             req.add_header("Authorization", f"Token {api_key}")
             req.add_header("Content-Type", "audio/m4a")
