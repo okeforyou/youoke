@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.216";
+export const SYSTEM_VERSION = "5.5.217";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.217",
+        date: "2026-08-01",
+        changes: [
+            "fix(backend): Fixed IndentationError in search_files.py that caused the local bridge server to crash.",
+            "fix(backend): Added robust file fallback logic for PRO mode separated songs in Creator Studio where original audio is deleted to save space."
+        ]
+    },
     {
         version: "5.5.216",
         date: "2026-08-01",
