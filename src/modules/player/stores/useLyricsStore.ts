@@ -43,6 +43,37 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
         set({ isLoading: true, error: null, lyrics: [], source: null });
         try {
             const pref = prefer || get().preferredSource;
+
+            // --- 1. LOCAL AI LYRICS (Highest Priority if preferredSource is auto) ---
+            if (pref !== 'youtube') {
+                try {
+                    const { getActiveBridgeBaseUrl } = await import('../../../../stores/useAIVocalStore');
+                    const baseUrl = await getActiveBridgeBaseUrl();
+                    if (baseUrl) {
+                        const localRes = await fetch(`${baseUrl}/files/${videoId}/lyrics_timeline.json`);
+                        if (localRes.ok) {
+                            const localData = await localRes.json();
+                            if (Array.isArray(localData) && localData.length > 0) {
+                                const mappedLyrics = localData.map((item: any) => ({
+                                    time: item.start,
+                                    text: item.text
+                                }));
+                                set({
+                                    lyrics: mappedLyrics,
+                                    source: 'lrclib', // Use 'lrclib' to trick the UI into showing synced lyrics view
+                                    isLoading: false
+                                });
+                                return; // Stop execution, we found local AI lyrics!
+                            }
+                        }
+                    }
+                } catch (e) {
+                    // Ignore errors and fallback to online lyrics
+                    console.log('Local AI lyrics not found or bridge offline, falling back to online APIs.');
+                }
+            }
+
+            // --- 2. ONLINE APIs (LRCLIB / YouTube) ---
             const res = await fetch(`/api/lyrics?videoId=${encodeURIComponent(videoId)}&title=${encodeURIComponent(title)}${pref === 'youtube' ? '&forceSource=youtube' : ''}`);
             if (!res.ok) {
                 throw new Error('Failed to fetch lyrics');
