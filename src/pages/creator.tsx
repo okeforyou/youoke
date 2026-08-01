@@ -43,6 +43,7 @@ export default function CreatorStudioPage() {
     const [fontOutline, setFontOutline] = useState(3);
     const [fontFamily, setFontFamily] = useState('Sukhumvit Set');
     const [activeTab, setActiveTab] = useState<'properties' | 'lyrics'>('properties');
+    const [audioTrack, setAudioTrack] = useState<'original' | 'vocals' | 'instrumental'>('original');
     const [zoom, setZoom] = useState(50); // px per second
     
     // Refs
@@ -101,7 +102,7 @@ export default function CreatorStudioPage() {
                     barGap: 2,
                     barRadius: 2,
                     height: 100,
-                    url: `${baseUrl}/files/${song.video_id}/original.audio`,
+                    url: `${baseUrl}/files/${song.video_id}/${audioTrack === 'vocals' ? 'vocals.m4a' : audioTrack === 'instrumental' ? 'no_vocals.m4a' : 'original.audio'}`,
                     normalize: true,
                     minPxPerSec: 50,
                 });
@@ -131,6 +132,31 @@ export default function CreatorStudioPage() {
             }
         }, 100);
     };
+
+    useEffect(() => {
+        if (wavesurfer.current && selectedSong) {
+            const loadTrack = async () => {
+                const baseUrl = await getActiveBridgeBaseUrl();
+                if (!baseUrl) return;
+                const url = `${baseUrl}/files/${selectedSong.video_id}/${audioTrack === 'vocals' ? 'vocals.m4a' : audioTrack === 'instrumental' ? 'no_vocals.m4a' : 'original.audio'}`;
+                
+                // Save current time
+                const time = wavesurfer.current?.getCurrentTime() || 0;
+                const isPlayingNow = wavesurfer.current?.isPlaying() || false;
+                
+                await wavesurfer.current?.load(url);
+                
+                // Rebuild regions after load since loading new url clears them
+                rebuildRegions(lyrics);
+                
+                wavesurfer.current?.setTime(time);
+                if (isPlayingNow) {
+                    wavesurfer.current?.play();
+                }
+            };
+            loadTrack();
+        }
+    }, [audioTrack]);
 
     const rebuildRegions = (newLyrics: LyricWord[]) => {
         if (wsRegions.current) {
