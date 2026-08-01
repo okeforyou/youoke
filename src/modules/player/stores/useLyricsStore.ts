@@ -124,8 +124,10 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
     generateAILyrics: async (videoId: string) => {
         set({ isLoading: true, error: null });
         try {
-            const { getActiveBridgeBaseUrl, deepgramKey } = await import('../../../stores/useAIVocalStore');
+            const { useAIVocalStore, getActiveBridgeBaseUrl } = await import('../../../stores/useAIVocalStore');
             const baseUrl = await getActiveBridgeBaseUrl();
+            const deepgramKey = useAIVocalStore.getState().deepgramKey;
+            
             if (!baseUrl) {
                 throw new Error("Local Bridge offline");
             }
