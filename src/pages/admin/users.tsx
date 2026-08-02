@@ -130,8 +130,7 @@ export default function AdminUsersPage() {
     const { addToast } = useToast() || { addToast: (msg: string) => window.alert(msg) };
     const { user } = useAuthStore();
     const router = useRouter();
-    const toastContext = useToast();
-    const addToast = toastContext?.addToast;
+
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
