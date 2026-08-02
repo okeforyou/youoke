@@ -107,7 +107,7 @@ export const LyricsOverlay = ({ playerRef, activeVideoId, videoTitle }: LyricsOv
                         "text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]",
                         source === 'youtube' && isActive && "text-[#2563eb]"
                     )}>
-                        {line.text.replace(/(?<=[ก-๙])\s+(?=[ก-๙])/g, '')}
+                        {line.text ? line.text.replace(/([ก-๙])\s+([ก-๙])/g, '$1$2').replace(/([ก-๙])\s+([ก-๙])/g, '$1$2') : ''}
                     </span>
                     
                     {/* Swept Text (Blue) - Uses clip-path to support multi-line wrap sweep */}
@@ -121,7 +121,7 @@ export const LyricsOverlay = ({ playerRef, activeVideoId, videoTitle }: LyricsOv
                                 transition: isActive ? 'clip-path 0.1s linear' : 'none'
                             }}
                         >
-                            {line.text.replace(/(?<=[ก-๙])\s+(?=[ก-๙])/g, '')}
+                            {line.text ? line.text.replace(/([ก-๙])\s+([ก-๙])/g, '$1$2').replace(/([ก-๙])\s+([ก-๙])/g, '$1$2') : ''}
                         </span>
                     )}
                 </div>
