@@ -69,8 +69,8 @@ async def transcribe_audio(
             req.add_header("Content-Type", "audio/m4a")
             
             try:
-                # Use a timeout to prevent hanging forever
-                with urllib.request.urlopen(req, timeout=120) as response:
+                # Use a larger timeout (600s = 10 minutes) for slow upload connections
+                with urllib.request.urlopen(req, timeout=600) as response:
                     res_body = response.read()
                     dg_result = json.loads(res_body)
                     
@@ -102,7 +102,10 @@ async def transcribe_audio(
             raise HTTPException(status_code=400, detail="Unsupported provider.")
             
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        error_str = str(e)
+        if "timed out" in error_str.lower():
+            raise HTTPException(status_code=504, detail="หมดเวลาเชื่อมต่อ (อินเทอร์เน็ตในการอัปโหลดอาจช้าเกินไป) กรุณาลองใหม่อีกครั้ง")
+        raise HTTPException(status_code=500, detail=error_str)
 
 
 @router.post("/export")

@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.217";
+export const SYSTEM_VERSION = "5.5.218";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.218",
+        date: "2026-08-02",
+        changes: [
+            "feat(ui): Redesigned Audio Mixer into a spacious, centered modal instead of a cramped popover.",
+            "feat(ai): Integrated Deepgram API for AI Lyrics transcription directly in the Player (SidebarControls).",
+            "fix(backend): Increased urllib timeout to 600s in local-bridge to prevent 500 Internal Server Errors on slow uploads.",
+            "fix(player): Added loading state and cache-busting when fetching generated lyrics from the bridge."
+        ]
+    },
     {
         version: "5.5.217",
         date: "2026-08-01",
