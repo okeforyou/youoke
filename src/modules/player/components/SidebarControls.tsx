@@ -283,7 +283,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                             )}
                         </div>
                         <span className={clsx(
-                            "text-[10px] font-medium uppercase tracking-wide transition-colors duration-200 mt-0.5",
+                            "text-xs font-medium uppercase tracking-wide transition-colors duration-200 mt-0.5",
                             item.textColor || (item.active ? "text-primary" : "text-black/60 dark:text-zinc-400")
                         )}>
                             {item.label}
@@ -320,52 +320,267 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                 <X size={16} />
                             </button>
                         </div>
-                        
+                    
                         {/* Master Mute */}
                         <div className={clsx("mb-5", isAiReady && "border-b border-gray-100 dark:border-zinc-800 pb-5")}>
-                            <button 
-                                onClick={() => {
-                                    if (isConnected) {
-                                        cast.setMuted(!isMuted);
-                                    } else {
-                                        setMuted(!isMuted);
-                                    }
-                                }}
-                                className={clsx(
-                                    "w-full py-2.5 px-4 rounded-xl flex items-center gap-3 text-sm font-bold transition-colors border",
-                                    isMuted 
-                                        ? "bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-800" 
-                                        : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
-                                )}
-                            >
-                                {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
-                                <span>เสียงหลัก (Master)</span>
-                                <span className="ml-auto text-[11px] opacity-70 px-2 py-1 bg-white/50 dark:bg-black/20 rounded-md">
-                                    {isMuted ? 'Muted' : 'On'}
-                                </span>
-                            </button>
-                        </div>
+                        <button 
+                            onClick={() => {
+                                if (isConnected) {
+                                    cast.setMuted(!isMuted);
+                                } else {
+                                    setMuted(!isMuted);
+                                }
+                            }}
+                            className={clsx(
+                                "w-full py-2.5 px-4 rounded-xl flex items-center gap-4 text-sm font-bold transition-colors border",
+                                isMuted 
+                                    ? "bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-800" 
+                                    : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
+                            )}
+                        >
+                            {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                            <span>เสียงหลัก (Master)</span>
+                            <span className="ml-auto text-[11px] opacity-70 px-2 py-1 bg-white/50 dark:bg-black/20 rounded-md">
+                                {isMuted ? 'Muted' : 'On'}
+                            </span>
+                        </button>
+                    </div>
 
                         {/* AI & Volume Controls (Always Visible) */}
                         <div className="flex flex-col gap-4">
-                            {/* Vocals */}
+                        {/* Vocals */}
+                        <div className="flex items-center gap-4">
+                            <button 
+                                onClick={() => toggleMute('vocals')}
+                                className={clsx(
+                                    "w-10 h-10 shrink-0 flex items-center justify-center rounded-xl transition-all border",
+                                    trackStates.vocals.muted 
+                                        ? "bg-gray-50 dark:bg-zinc-800/50 text-gray-400 dark:text-gray-500 border-transparent opacity-60 hover:opacity-80" 
+                                        : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
+                                )}
+                            >
+                                <div className="relative flex items-center justify-center">
+                                    <MicVocal size={18} />
+                                </div>
+                            </button>
+                            <div className="flex-1 flex flex-col justify-center">
+                                <div className="flex justify-between items-center mb-1.5">
+                                    <span className="text-xs font-bold text-black dark:text-white">เสียงร้อง (Vocals)</span>
+                                </div>
+                                <VolumeSlider value={trackStates.vocals.muted ? 0 : volumes.vocals} onChange={(val) => handleVolumeChange('vocals', val)} muted={trackStates.vocals.muted} />
+                            </div>
+                        </div>
+
+                        {/* Instrumental (Basic Mode or Karaoke) */}
+                        {!isProMode && (
                             <div className="flex items-center gap-4">
                                 <button 
-                                    onClick={() => toggleMute('vocals')}
+                                    onClick={() => toggleMute('instrumental')}
                                     className={clsx(
                                         "w-10 h-10 shrink-0 flex items-center justify-center rounded-xl transition-all border",
-                                        trackStates.vocals.muted 
+                                        trackStates.instrumental.muted 
                                             ? "bg-gray-50 dark:bg-zinc-800/50 text-gray-400 dark:text-gray-500 border-transparent opacity-60 hover:opacity-80" 
                                             : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
                                     )}
                                 >
                                     <div className="relative flex items-center justify-center">
-                                        <MicVocal size={18} />
+                                        <Music size={18} />
                                     </div>
                                 </button>
                                 <div className="flex-1 flex flex-col justify-center">
+                                    <div className="flex justify-between items-center mb-1.5">
+                                        <span className="text-xs font-bold text-black dark:text-white">ดนตรี (Instrumental)</span>
+                                    </div>
+                                    <VolumeSlider value={trackStates.instrumental.muted ? 0 : volumes.instrumental} onChange={(val) => handleVolumeChange('instrumental', val)} muted={trackStates.instrumental.muted} />
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Pro Mode Tracks */}
+                        {isProMode && (
+                            <>
+                                {/* Drums */}
+                                <div className="flex items-center gap-4">
+                                    <button 
+                                        onClick={() => toggleMute('drums')}
+                                        className={clsx(
+                                            "w-10 h-10 shrink-0 flex items-center justify-center rounded-xl transition-all border",
+                                            trackStates.drums.muted 
+                                                ? "bg-gray-50 dark:bg-zinc-800/50 text-gray-400 dark:text-gray-500 border-transparent opacity-60 hover:opacity-80" 
+                                                : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
+                                        )}
+                                    >
+                                        <div className="relative flex items-center justify-center">
+                                            <Drum size={18} />
+                                        </div>
+                                    </button>
+                                    <div className="flex-1 flex flex-col justify-center">
+                                        <div className="flex justify-between items-center mb-1.5">
+                                            <span className="text-xs font-bold text-black dark:text-white">กลอง (Drums)</span>
+                                        </div>
+                                        <VolumeSlider value={trackStates.drums.muted ? 0 : volumes.drums} onChange={(val) => handleVolumeChange('drums', val)} muted={trackStates.drums.muted} />
+                                    </div>
+                                </div>
+
+                                {/* Bass */}
+                                <div className="flex items-center gap-4">
+                                    <button 
+                                        onClick={() => toggleMute('bass')}
+                                        className={clsx(
+                                            "w-10 h-10 shrink-0 flex items-center justify-center rounded-xl transition-all border",
+                                            trackStates.bass.muted 
+                                                ? "bg-gray-50 dark:bg-zinc-800/50 text-gray-400 dark:text-gray-500 border-transparent opacity-60 hover:opacity-80" 
+                                                : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
+                                        )}
+                                    >
+                                        <div className="relative flex items-center justify-center">
+                                            <Guitar size={18} />
+                                        </div>
+                                    </button>
+                                    <div className="flex-1 flex flex-col justify-center">
+                                        <div className="flex justify-between items-center mb-1.5">
+                                            <span className="text-xs font-bold text-black dark:text-white">เบส (Bass)</span>
+                                        </div>
+                                        <VolumeSlider value={trackStates.bass.muted ? 0 : volumes.bass} onChange={(val) => handleVolumeChange('bass', val)} muted={trackStates.bass.muted} />
+                                    </div>
+                                </div>
+
+                                {/* Other */}
+                                <div className="flex items-center gap-4">
+                                    <button 
+                                        onClick={() => toggleMute('other')}
+                                        className={clsx(
+                                            "w-10 h-10 shrink-0 flex items-center justify-center rounded-xl transition-all border",
+                                            trackStates.other.muted 
+                                                ? "bg-gray-50 dark:bg-zinc-800/50 text-gray-400 dark:text-gray-500 border-transparent opacity-60 hover:opacity-80" 
+                                                : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
+                                        )}
+                                    >
+                                        <div className="relative flex items-center justify-center">
+                                            <Piano size={18} />
+                                        </div>
+                                    </button>
+                                    <div className="flex-1 flex flex-col justify-center">
+                                        <div className="flex justify-between items-center mb-1.5">
+                                            <span className="text-xs font-bold text-black dark:text-white">ดนตรีอื่นๆ (Other)</span>
+                                        </div>
+                                        <VolumeSlider value={trackStates.other.muted ? 0 : volumes.other} onChange={(val) => handleVolumeChange('other', val)} muted={trackStates.other.muted} />
+                                    </div>
+                                </div>
+                            </>
                         )}
                     </div>
+
+                        <div className={clsx("mt-6 pt-5", isAiReady || isConnected ? "border-t border-gray-100 dark:border-zinc-800" : "")}>
+                            <button 
+                                onClick={toggleLyrics}
+                                className={clsx(
+                                    "w-full py-2.5 px-4 rounded-xl flex items-center justify-between gap-3 text-sm font-bold transition-colors border",
+                                showLyrics 
+                                    ? "bg-primary text-white border-primary" 
+                                    : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
+                            )}
+                        >
+                            <div className="flex items-center gap-2">
+                                <Type size={18} />
+                                <span>เนื้อเพลง (Lyrics)</span>
+                            </div>
+                            <span className="text-xs opacity-70">{showLyrics ? 'On' : 'Off'}</span>
+                        </button>
+                        
+                        {lyricsError && showLyrics && !isGeneratingAI && (
+                            <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 font-medium bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700 p-2 rounded-xl text-center flex flex-col gap-2">
+                                <span>{lyricsError}</span>
+                                {currentVideo && isAiReady && (
+                                    <button
+                                        onClick={() => generateAILyrics(currentVideo.id)}
+                                        className="w-full py-1.5 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-lg shadow-sm font-bold active:scale-95 transition-all flex items-center justify-center gap-1"
+                                    >
+                                        <Sparkles size={12} />
+                                        ให้ AI แกะเนื้อเพลง
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                        {lyricsLoading && showLyrics && !isGeneratingAI && (
+                            <div className="mt-2 text-xs text-blue-500 font-medium bg-blue-50 dark:bg-blue-900/20 p-2 rounded">
+                                กำลังค้นหาเนื้อเพลง...
+                            </div>
+                        )}
+                        {isGeneratingAI && showLyrics && (
+                            <div className="mt-2 text-xs text-purple-600 dark:text-purple-400 font-medium bg-purple-50 dark:bg-purple-900/20 p-2 rounded flex items-center justify-center gap-2">
+                                <Sparkles size={12} className="animate-pulse" />
+                                AI กำลังประมวลผลฟังเพลงเพื่อแกะเนื้อร้อง... (อาจใช้เวลา 10-20 วินาที)
+                            </div>
+                        )}
+                        
+                        {/* Lyrics Details Controls */}
+                        {showLyrics && (
+                            <div className="mt-2 p-2 bg-gray-50 dark:bg-zinc-800/50 rounded-xl border border-gray-100 dark:border-zinc-700/50 flex flex-col gap-2">
+                                {/* Source Selector */}
+                                <div>
+                                    <div className="text-[9px] font-bold mb-1.5 text-black/70 dark:text-zinc-400 uppercase">
+                                        แหล่งข้อมูล (Source)
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <button 
+                                            onClick={() => handleSourceChange('auto')}
+                                            className={clsx(
+                                                "flex-1 py-1 rounded shadow-sm text-[9px] font-bold transition-all border",
+                                                preferredSource === 'auto' 
+                                                    ? "bg-primary text-white border-primary" 
+                                                    : "bg-white dark:bg-zinc-700 text-black dark:text-white border-gray-200 dark:border-zinc-600 hover:bg-gray-50 dark:hover:bg-zinc-600"
+                                            )}
+                                        >
+                                            LRCLIB
+                                        </button>
+                                        <button 
+                                            onClick={() => handleSourceChange('youtube')}
+                                            className={clsx(
+                                                "flex-1 py-1 rounded shadow-sm text-[9px] font-bold transition-all border",
+                                                preferredSource === 'youtube' 
+                                                    ? "bg-blue-600 text-white border-blue-600" 
+                                                    : "bg-white dark:bg-zinc-700 text-black dark:text-white border-gray-200 dark:border-zinc-600 hover:bg-gray-50 dark:hover:bg-zinc-600"
+                                            )}
+                                        >
+                                            YouTube CC
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Sync Offset Controls */}
+                                <div>
+                                    <div className="flex justify-between items-center text-[9px] font-bold mb-1.5 text-black/70 dark:text-zinc-400 uppercase">
+                                        <span>ปรับเวลา (Sync)</span>
+                                        <span className={syncOffset !== 0 ? "text-primary" : ""}>
+                                            {syncOffset > 0 ? '+' : ''}{syncOffset.toFixed(1)}s
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <button 
+                                            onClick={() => setSyncOffset(syncOffset - 0.5)}
+                                            className="flex-1 py-1 bg-white dark:bg-zinc-700 border border-gray-200 dark:border-zinc-600 rounded shadow-sm text-xs font-bold hover:bg-gray-50 dark:hover:bg-zinc-600 active:scale-95 transition-all text-black dark:text-white"
+                                        >
+                                            -0.5s
+                                        </button>
+                                        <button 
+                                            onClick={() => setSyncOffset(0)}
+                                            className="px-2 py-1 bg-gray-200 dark:bg-zinc-800 rounded text-[9px] font-bold text-gray-500 hover:text-black dark:hover:text-white transition-colors"
+                                        >
+                                            Reset
+                                        </button>
+                                        <button 
+                                            onClick={() => setSyncOffset(syncOffset + 0.5)}
+                                            className="flex-1 py-1 bg-white dark:bg-zinc-700 border border-gray-200 dark:border-zinc-600 rounded shadow-sm text-xs font-bold hover:bg-gray-50 dark:hover:bg-zinc-600 active:scale-95 transition-all text-black dark:text-white"
+                                        >
+                                            +0.5s
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
                 </div>
             )}
         </div>
