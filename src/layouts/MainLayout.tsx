@@ -656,7 +656,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     <div
                         id="global-video-player-container"
                         className={clsx(
-                            "transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] z-[100] max-lg:overflow-visible lg:overflow-hidden lg:border-l lg:border-gray-200 lg:dark:border-zinc-800 shrink-0",
+                            "transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] z-[100] max-lg:overflow-visible lg:overflow-hidden shrink-0",
 
                             // Optimized Fullscreen Transition
                             layoutMode === 'fullscreen'
