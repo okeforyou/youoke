@@ -7,8 +7,10 @@ import {
 } from '@heroicons/react/24/outline';
 import { useAuthStore } from '@/modules/auth/useAuthStore';
 import { cn } from '@/lib/utils';
+import { useToast } from "@/context/ToastContext";
 
 export default function CloudSyncTab() {
+    const { addToast } = useToast() || { addToast: (msg: string) => window.alert(msg) };
     const googleDriveAccessToken = useAuthStore(state => state.googleDriveAccessToken);
     const connectGoogleDrive = useAuthStore(state => state.connectGoogleDrive);
     const [isConnecting, setIsConnecting] = useState(false);
@@ -23,7 +25,7 @@ export default function CloudSyncTab() {
             await connectGoogleDrive();
         } catch (error) {
             console.error("Failed to connect to Google Drive:", error);
-            alert("ไม่สามารถเชื่อมต่อ Google Drive ได้ กรุณาลองใหม่อีกครั้ง");
+            addToast("ไม่สามารถเชื่อมต่อ Google Drive ได้ กรุณาลองใหม่อีกครั้ง");
         } finally {
             setIsConnecting(false);
         }
@@ -61,12 +63,12 @@ export default function CloudSyncTab() {
                 const data = await res.json();
                 if (data.status === 'success' && data.path) {
                     setStoragePath(data.path);
-                    alert(`ตั้งค่าที่เก็บไฟล์เป็นโฟลเดอร์ "${data.path}" สำเร็จ\nเพลงที่แยกเสียงหลังจากนี้จะถูกบันทึกที่นี่โดยอัตโนมัติ`);
+                    addToast(`ตั้งค่าที่เก็บไฟล์เป็นโฟลเดอร์ "${data.path}" สำเร็จ\nเพลงที่แยกเสียงหลังจากนี้จะถูกบันทึกที่นี่โดยอัตโนมัติ`);
                 } else if (data.status === 'error') {
-                    alert(`ไม่สามารถเปิดหน้าต่างเลือกโฟลเดอร์ได้: ${data.message || 'Unknown error'}`);
+                    addToast(`ไม่สามารถเปิดหน้าต่างเลือกโฟลเดอร์ได้: ${data.message || 'Unknown error'}`);
                 }
             } else {
-                alert('ไม่สามารถเชื่อมต่อ YouOke Server ได้ กรุณาตรวจสอบว่าโปรแกรมทำงานอยู่');
+                addToast('ไม่สามารถเชื่อมต่อ YouOke Server ได้ กรุณาตรวจสอบว่าโปรแกรมทำงานอยู่');
             }
         } catch (err) {
             console.error('Error selecting folder:', err);

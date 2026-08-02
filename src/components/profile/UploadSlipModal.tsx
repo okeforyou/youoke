@@ -8,6 +8,7 @@ import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'fire
 import axios from 'axios';
 import { useSystemConfig } from '@/hooks/useSystemConfig';
 import { cn } from '@/lib/utils';
+import { useToast } from "@/context/ToastContext";
 
 interface UploadSlipModalProps {
     isOpen: boolean;
@@ -16,6 +17,7 @@ interface UploadSlipModalProps {
 }
 
 export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) => {
+    const { addToast } = useToast() || { addToast: (msg: string) => window.alert(msg) };
     const { user } = useAuthStore();
     const { config } = useSystemConfig();
     const [sending, setSending] = useState(false);
@@ -129,7 +131,7 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
             }, 4000);
         } catch (error) {
             console.error("Confirmation error:", error);
-            alert("เกิดข้อผิดพลาดในการแจ้งระบบ กรุณาลองใหม่อีกครั้ง หรือติดต่อทีมงานทาง LINE ครับ");
+            addToast("เกิดข้อผิดพลาดในการแจ้งระบบ กรุณาลองใหม่อีกครั้ง หรือติดต่อทีมงานทาง LINE ครับ");
         } finally {
             setSending(false);
         }
@@ -228,7 +230,7 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
                                             <button
                                                 onClick={() => {
                                                     navigator.clipboard.writeText("0864653950");
-                                                    alert("คัดลอกเลขพร้อมเพย์แล้วครับ ✨");
+                                                    addToast("คัดลอกเลขพร้อมเพย์แล้วครับ ✨");
                                                 }}
                                                 className="p-1.5 bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors"
                                             >

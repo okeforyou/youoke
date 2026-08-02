@@ -14,6 +14,7 @@ import Link from 'next/link';
 import { cn } from '../../../../utils/cn';
 import dynamic from 'next/dynamic';
 import 'react-quill/dist/quill.snow.css';
+import { useToast } from "@/context/ToastContext";
 
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false }) as any;
 
@@ -22,6 +23,7 @@ interface PageEditorProps {
 }
 
 export const PageEditor = ({ pageId }: PageEditorProps) => {
+    const { addToast } = useToast() || { addToast: (msg: string) => window.alert(msg) };
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(!!pageId);
@@ -75,7 +77,7 @@ export const PageEditor = ({ pageId }: PageEditorProps) => {
             router.push('/admin/content/profile-pages');
         } catch (error) {
             console.error(error);
-            alert('เกิดข้อผิดพลาด');
+            addToast('เกิดข้อผิดพลาด');
         } finally {
             setLoading(false);
         }

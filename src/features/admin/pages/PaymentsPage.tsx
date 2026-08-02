@@ -11,6 +11,7 @@ import {
 import AdminLayout from '../layouts/AdminLayout';
 import { AdminService } from '../services/adminService';
 import { cn } from '../../../utils/cn';
+import { useToast } from "@/context/ToastContext";
 
 interface PaymentSlip {
   id: string;
@@ -26,6 +27,7 @@ interface PaymentSlip {
 }
 
 export default function PaymentsPage() {
+    const { addToast } = useToast() || { addToast: (msg: string) => window.alert(msg) };
   const [payments, setPayments] = useState<PaymentSlip[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
@@ -53,11 +55,11 @@ export default function PaymentsPage() {
 
     try {
       await AdminService.approvePayment(selectedSlip.id, selectedSlip.userId, selectedSlip.packageId, 'admin');
-      alert("Payment Approved!");
+      addToast("Payment Approved!");
       setSelectedSlip(null);
       fetchPayments();
     } catch (error: any) {
-      alert("Error: " + error.message);
+      addToast("Error: " + error.message);
     }
   };
 
@@ -68,11 +70,11 @@ export default function PaymentsPage() {
 
     try {
       await AdminService.rejectPayment(selectedSlip.id, selectedSlip.userId, reason, 'admin');
-      alert("Payment Rejected");
+      addToast("Payment Rejected");
       setSelectedSlip(null);
       fetchPayments();
     } catch (error: any) {
-      alert("Error: " + error.message);
+      addToast("Error: " + error.message);
     }
   };
 

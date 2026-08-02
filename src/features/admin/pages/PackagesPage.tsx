@@ -27,6 +27,7 @@ import {
     HeartIcon
 } from '@heroicons/react/24/outline';
 import { cn } from '../../../utils/cn';
+import { useToast } from "@/context/ToastContext";
 
 interface PackageData {
     id: string;
@@ -57,6 +58,7 @@ const PREDEFINED_FEATURES = [
 ];
 
 export default function PackagesPage() {
+    const { addToast } = useToast() || { addToast: (msg: string) => window.alert(msg) };
     const [packages, setPackages] = useState<PackageData[]>([]);
     const [loading, setLoading] = useState(true);
     const [editMode, setEditMode] = useState<PackageData | null>(null);
@@ -141,7 +143,7 @@ export default function PackagesPage() {
             parsedFeatures = JSON.parse(featuresJson);
         } catch (e: any) {
             setJsonError('รูปแบบ JSON ไม่ถูกต้อง: ' + e.message);
-            alert("JSON Syntax Error: " + e.message);
+            addToast("JSON Syntax Error: " + e.message);
             return;
         }
 
@@ -176,7 +178,7 @@ export default function PackagesPage() {
 
             await setDoc(doc(db, 'packages', finalId), payload, { merge: true });
 
-            alert("✅ บันทึกข้อมูลสำเร็จ!");
+            addToast("✅ บันทึกข้อมูลสำเร็จ!");
             setEditMode(null);
             setIsCreating(false);
 
@@ -186,7 +188,7 @@ export default function PackagesPage() {
 
         } catch (e: any) {
             console.error("Save Error:", e);
-            alert(`❌ เกิดข้อผิดพลาด: ${e.message}`);
+            addToast(`❌ เกิดข้อผิดพลาด: ${e.message}`);
         } finally {
             setLoading(false);
         }

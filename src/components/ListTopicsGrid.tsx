@@ -3,7 +3,8 @@ import axios from "axios";
 import { PlayIcon, ChevronLeftIcon } from "@heroicons/react/24/solid";
 import { usePlayerStore } from "../modules/player/stores/usePlayerStore";
 import { useUIStore } from "../stores/useUIStore";
-import { YOUTUBE_GENRES } from "../data/genres"; // Keep as fallback
+import { YOUTUBE_GENRES } from "../data/genres";
+import { useToast } from "@/context/ToastContext";
 
 interface ExploreSection {
   title: string;
@@ -19,6 +20,7 @@ interface ExploreSection {
 }
 
 export default function ListTopicsGrid({ showTab = true }) {
+    const { addToast } = useToast() || { addToast: (msg: string) => window.alert(msg) };
   const { setActiveIndex, setSearchTerm } = usePlayerStore();
   const [isLoading, setIsLoading] = useState(false);
   const [exploreSections, setExploreSections] = useState<ExploreSection[]>([]);
@@ -116,7 +118,7 @@ export default function ListTopicsGrid({ showTab = true }) {
       }
     } catch (e) {
       console.error("Failed to load playlist", e);
-      alert("ไม่สามารถโหลดรายชื่อเพลงได้ครับ");
+      addToast("ไม่สามารถโหลดรายชื่อเพลงได้ครับ");
     } finally {
       setIsLoading(false);
     }
@@ -139,7 +141,7 @@ export default function ListTopicsGrid({ showTab = true }) {
       }
     } catch (e) {
       console.error(e);
-      alert("ค้นหาไม่เจอครับ - กรุณาลองใหมีกครั้ง");
+      addToast("ค้นหาไม่เจอครับ - กรุณาลองใหมีกครั้ง");
     } finally {
       setIsLoading(false);
     }

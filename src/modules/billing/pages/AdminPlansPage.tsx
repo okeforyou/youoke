@@ -5,8 +5,10 @@ import { useSystemConfig } from "../../../hooks/useSystemConfig";
 import { updateSystemConfig, SystemConfig } from "../../../services/systemConfigService";
 import { Shield, Zap, Radio, Globe, Tv, Check, Save, DollarSign, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/context/ToastContext";
 
 export default function AdminPlansPage() {
+    const { addToast } = useToast() || { addToast: (msg: string) => window.alert(msg) };
     const { config, loading } = useSystemConfig();
     const [formConfig, setFormConfig] = useState<SystemConfig | null>(null);
     const [saving, setSaving] = useState(false);
@@ -27,7 +29,7 @@ export default function AdminPlansPage() {
             setTimeout(() => setSuccessMsg(""), 3000);
         } catch (error) {
             console.error("Failed to save config:", error);
-            alert("เกิดข้อผิดพลาดในการบันทึก");
+            addToast("เกิดข้อผิดพลาดในการบันทึก");
         } finally {
             setSaving(false);
         }

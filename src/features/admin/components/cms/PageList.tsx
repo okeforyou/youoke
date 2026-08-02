@@ -12,6 +12,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { cn } from '../../../../utils/cn';
 import Link from 'next/link';
+import { useToast } from "@/context/ToastContext";
 
 interface CMSPage {
     id: string;
@@ -22,6 +23,7 @@ interface CMSPage {
 }
 
 export const PageList = () => {
+    const { addToast } = useToast() || { addToast: (msg: string) => window.alert(msg) };
     const [pages, setPages] = useState<CMSPage[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -89,10 +91,10 @@ export const PageList = () => {
                 if (!db) continue;
                 await setDoc(doc(db, 'cms_pages', page.id), page);
             }
-            alert('สร้างหน้าตัวอย่างเรียบร้อยแล้ว');
+            addToast('สร้างหน้าตัวอย่างเรียบร้อยแล้ว');
         } catch (error) {
             console.error(error);
-            alert('เกิดข้อผิดพลาดในการสร้าง Demo: ' + (error as any).message);
+            addToast('เกิดข้อผิดพลาดในการสร้าง Demo: ' + (error as any).message);
         } finally {
             setLoading(false);
         }

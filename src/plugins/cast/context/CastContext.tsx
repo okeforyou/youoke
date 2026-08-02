@@ -6,6 +6,7 @@ import { createLogger } from '../../../utils/logger';
 import { QueueItem } from '../../../modules/player/types';
 
 import { generateUUID } from '../../../modules/player/utils';
+import { useToast } from "@/context/ToastContext";
 
 interface CastContextValue {
   // Connection State
@@ -76,6 +77,7 @@ type CastMessage =
   | { type: 'SET_MUTED', muted: boolean };
 
 export function CastProvider({ children }: { children: ReactNode }) {
+    const { addToast } = useToast() || { addToast: (msg: string) => window.alert(msg) };
   const [isAvailable, setIsAvailable] = useState(false);
   const [isConnected, setIsConnected] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
@@ -773,7 +775,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
     const cast = (window as any).cast;
     if (!cast || !cast.framework) {
       console.error('Google Cast SDK not loaded yet. Please wait a moment and try again.');
-      alert('กรุณารอสักครู่และลองใหม่อีกครั้ง\n(Google Cast SDK กำลังโหลด...)');
+      addToast('กรุณารอสักครู่และลองใหม่อีกครั้ง\n(Google Cast SDK กำลังโหลด...)');
       return;
     }
 
@@ -816,12 +818,12 @@ export function CastProvider({ children }: { children: ReactNode }) {
           } else if (error === 'session_error') {
             errorMessage = 'ไม่สามารถเชื่อมต่อกับอุปกรณ์ได้\n\nกรุณา:\n1. Reboot ทีวี\n2. รอ 5-10 นาที\n3. ลองใหม่อีกครั้ง';
           }
-          alert(errorMessage);
+          addToast(errorMessage);
         }
       );
     } catch (error) {
       console.error('❌ Error connecting to Cast:', error);
-      alert('ไม่สามารถเชื่อมต่อ Google Cast ได้\nกรุณาลองใหม่อีกครั้ง');
+      addToast('ไม่สามารถเชื่อมต่อ Google Cast ได้\nกรุณาลองใหม่อีกครั้ง');
     }
   };
 

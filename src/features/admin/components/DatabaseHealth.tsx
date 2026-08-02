@@ -6,6 +6,7 @@ import {
     ArrowPathIcon
 } from "@heroicons/react/24/outline";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
 
 interface HealthStats {
     totalUsers: number;
@@ -15,6 +16,7 @@ interface HealthStats {
 }
 
 export const DatabaseHealth: React.FC = () => {
+    const { addToast } = useToast() || { addToast: (msg: string) => window.alert(msg) };
     const { user } = useAuth();
     const [stats, setStats] = useState<HealthStats | null>(null);
     const [loading, setLoading] = useState(false);
@@ -66,11 +68,11 @@ export const DatabaseHealth: React.FC = () => {
                 setCleanupResult({ count: data.deletedCount, days: data.thresholdDays });
                 fetchStats(); // Refresh stats
             } else {
-                alert("Cleanup failed. Check console.");
+                addToast("Cleanup failed. Check console.");
             }
         } catch (err) {
             console.error("Cleanup error:", err);
-            alert("Error executing cleanup");
+            addToast("Error executing cleanup");
         } finally {
             setCleaning(false);
         }

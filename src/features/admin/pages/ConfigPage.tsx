@@ -24,6 +24,7 @@ import {
     PlayCircleIcon
 } from '@heroicons/react/24/outline';
 import { cn } from '../../../utils/cn';
+import { useToast } from "@/context/ToastContext";
 
 const THAI_FONTS = [
     { family: 'Kanit', label: 'Kanit (ทันสมัย)', url: '...' },
@@ -33,6 +34,7 @@ const THAI_FONTS = [
 ];
 
 export default function ConfigPage() {
+    const { addToast } = useToast() || { addToast: (msg: string) => window.alert(msg) };
     const { config, loading } = useSystemConfig();
     const [localConfig, setLocalConfig] = useState(config);
     const [saving, setSaving] = useState(false);
@@ -49,10 +51,10 @@ export default function ConfigPage() {
         setSaving(true);
         try {
             await SystemConfigService.updateConfig(localConfig);
-            alert("✅ บันทึกการตั้งค่าเรียบร้อย!");
+            addToast("✅ บันทึกการตั้งค่าเรียบร้อย!");
         } catch (error) {
             console.error(error);
-            alert("❌ บันทึกไม่สำเร็จ");
+            addToast("❌ บันทึกไม่สำเร็จ");
         } finally {
             setSaving(false);
         }

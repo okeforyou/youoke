@@ -127,6 +127,7 @@ const GlobalScrollbarStyle = () => (
 );
 
 export default function AdminUsersPage() {
+    const { addToast } = useToast() || { addToast: (msg: string) => window.alert(msg) };
     const { user } = useAuthStore();
     const router = useRouter();
     const toastContext = useToast();
@@ -441,7 +442,7 @@ export default function AdminUsersPage() {
 
                 } catch (error: any) {
                     console.error(error);
-                    alert("Failed to assign lifetime: " + error.message);
+                    addToast("Failed to assign lifetime: " + error.message);
                 } finally {
                     setAssigningLoading(false);
                 }
@@ -711,7 +712,7 @@ export default function AdminUsersPage() {
                     await AdminService.toggleAuthStatus(targetUser.uid, newStatus);
                     fetchUsers();
                 } catch (e: any) {
-                    alert("Auth Status Error: " + e.message);
+                    addToast("Auth Status Error: " + e.message);
                 }
             }
         });
@@ -1180,7 +1181,7 @@ export default function AdminUsersPage() {
                                                 onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
                                             });
                                         } catch (e: any) {
-                                            alert(e.message);
+                                            addToast(e.message);
                                         }
                                     }}
                                     className={cn(

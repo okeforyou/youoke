@@ -4,8 +4,10 @@ import { useAIVocalStore } from '../stores/useAIVocalStore';
 import { usePlayerStore } from '../modules/player/stores/usePlayerStore';
 import { Sparkles, Mic, X, AlertCircle, Upload, Loader2 } from 'lucide-react';
 import clsx from 'clsx';
+import { useToast } from "@/context/ToastContext";
 
 export const VocalModeModal = () => {
+    const { addToast } = useToast() || { addToast: (msg: string) => window.alert(msg) };
     const { vocalModeModal, hideVocalModeModal } = useUIStore();
     const { isOpen, videoUuid, videoId } = vocalModeModal;
     const processAudio = useAIVocalStore(state => state.processAudio);
@@ -34,11 +36,11 @@ export const VocalModeModal = () => {
                 processAudio(videoId, songTitle, defaultMode, true).catch(console.error);
                 hideVocalModeModal();
             } else {
-                alert("การอัปโหลดไฟล์ล้มเหลว กรุณาตรวจสอบว่า Local Bridge ทำงานอยู่");
+                addToast("การอัปโหลดไฟล์ล้มเหลว กรุณาตรวจสอบว่า Local Bridge ทำงานอยู่");
             }
         } catch (error) {
             console.error("Upload error:", error);
-            alert("การอัปโหลดไฟล์ล้มเหลว");
+            addToast("การอัปโหลดไฟล์ล้มเหลว");
         } finally {
             setIsUploading(false);
             if (fileInputRef.current) fileInputRef.current.value = '';

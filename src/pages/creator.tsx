@@ -10,6 +10,7 @@ import WaveSurfer from 'wavesurfer.js';
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js';
 import { clsx } from 'clsx';
 import { useUIStore } from '@/stores/useUIStore';
+import { useToast } from "@/context/ToastContext";
 
 interface CachedSong {
     video_id: string;
@@ -27,6 +28,7 @@ interface LyricWord {
 }
 
 export default function CreatorStudioPage() {
+    const { addToast } = useToast() || { addToast: (msg: string) => window.alert(msg) };
     const router = useRouter();
     const { deepgramKey } = useAIVocalStore();
     
@@ -234,7 +236,7 @@ export default function CreatorStudioPage() {
                 onConfirm: () => {
                     useUIStore.getState().hideConfirm();
                     // Just open settings modal from home in real app, but here we alert
-                    alert("กรุณากดกลับไปหน้าแรก แล้วเปิดเมนูตั้งค่า -> แท็บ AI ครับ");
+                    addToast("กรุณากดกลับไปหน้าแรก แล้วเปิดเมนูตั้งค่า -> แท็บ AI ครับ");
                 }
             });
             return;
@@ -284,7 +286,7 @@ export default function CreatorStudioPage() {
     };
 
     const handleExport = async () => {
-        alert("Exporting MP4 (FFmpeg process will run on Local Bridge) - Coming in next step!");
+        addToast("Exporting MP4 (FFmpeg process will run on Local Bridge) - Coming in next step!");
     };
 
     const formatTime = (seconds: number) => {

@@ -5,6 +5,7 @@ import { MODULES } from '../../../config/modules';
 import { UserGroupIcon, SignalIcon, PowerIcon } from '@heroicons/react/24/outline';
 import { db } from '../../../firebase';
 import { collection, getDocs, doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { useToast } from "@/context/ToastContext";
 
 interface UserSummary {
     uid: string;
@@ -14,6 +15,7 @@ interface UserSummary {
 }
 
 export default function AdminModulesPage() {
+    const { addToast } = useToast() || { addToast: (msg: string) => window.alert(msg) };
     const [users, setUsers] = useState<UserSummary[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedModule, setSelectedModule] = useState(MODULES[0] ? MODULES[0].id : '');
@@ -69,7 +71,7 @@ export default function AdminModulesPage() {
                 return u;
             }));
         } catch (error: any) {
-            alert('Failed to update: ' + error.message);
+            addToast('Failed to update: ' + error.message);
         }
     };
 

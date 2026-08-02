@@ -9,6 +9,7 @@ import { db } from '../../../firebase';
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { VERSION_LABEL } from '@/core/version';
 import { approvePayment } from '../../../modules/billing/services/paymentService';
+import { useToast } from "@/context/ToastContext";
 
 interface User {
     uid: string;
@@ -50,6 +51,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
     onRefresh,
     loading: parentLoading
 }) => {
+    const { addToast } = useToast() || { addToast: (msg: string) => window.alert(msg) };
     const [editName, setEditName] = useState(user.displayName || '');
     const [startedAt, setStartedAt] = useState<string>(
         user.membership?.startedAt 
@@ -571,7 +573,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                                                 onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
                                             });
                                         } catch (e: any) {
-                                            alert(e.message);
+                                            addToast(e.message);
                                         }
                                     }}
                                     className={cn(

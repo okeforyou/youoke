@@ -4,8 +4,10 @@ import { Camera, Save, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { db } from '@/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
+import { useToast } from "@/context/ToastContext";
 
 export const EditProfileForm = () => {
+    const { addToast } = useToast() || { addToast: (msg: string) => window.alert(msg) };
     const { user } = useAuthStore();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
@@ -48,10 +50,10 @@ export const EditProfileForm = () => {
 
             // Ideally update local state or trigger re-fetch, 
             // but for now Firebase auth listener might catch it if we also updateProfile on Auth (optional but recommended)
-            alert('บันทึกข้อมูลเรียบร้อยแล้ว');
+            addToast('บันทึกข้อมูลเรียบร้อยแล้ว');
         } catch (error) {
             console.error(error);
-            alert('เกิดข้อผิดพลาดในการบันทึก');
+            addToast('เกิดข้อผิดพลาดในการบันทึก');
         } finally {
             setLoading(false);
         }

@@ -46,6 +46,7 @@ import { usePlayerStore } from "../modules/player/stores/usePlayerStore"; // Imp
 import { Video } from "../modules/player/types";
 import PlaylistCard from "./CardV2";
 import ListCommunityPlaylists from "./ListCommunityPlaylists";
+import { useToast } from "@/context/ToastContext";
 
 // Helper function to get playlists reference
 const getPlaylistsRef = () => {
@@ -81,6 +82,7 @@ interface ListPlaylistsGridProps {
 }
 
 export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridProps) {
+    const { addToast } = useToast() || { addToast: (msg: string) => window.alert(msg) };
   const { user } = useAuthStore();
   // The original `database` import is used directly, not via a hook.
   // If `useFirebase` is intended, it needs to be imported and `database` removed.
@@ -228,7 +230,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
   const getYoutubePlaylists = async () => {
     if (!user?.googleAccessToken) {
       console.warn("[YouTube Shell] 🚫 Missing Google Access Token. Re-login required.");
-      alert("❌ ไม่พบบัญชี YouTube ที่เชื่อมต่อ! กรุณาลองเข้าสู่ระบบด้วย Google ใหม่อีกครั้งครับ (และอย่าลืมกดยอมรับสิทธิ YouTube นะครับ)");
+      addToast("❌ ไม่พบบัญชี YouTube ที่เชื่อมต่อ! กรุณาลองเข้าสู่ระบบด้วย Google ใหม่อีกครั้งครับ (และอย่าลืมกดยอมรับสิทธิ YouTube นะครับ)");
       return;
     }
     
@@ -247,7 +249,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
       if (!resp.ok) {
         const errorData = await resp.json().catch(() => ({}));
         console.error("[YouTube Shell] ❌ API Error Details:", errorData);
-        alert(`❌ YouTube API Error: ${resp.status}\n${JSON.stringify(errorData)}`);
+        addToast(`❌ YouTube API Error: ${resp.status}\n${JSON.stringify(errorData)}`);
         
         if (resp.status === 401) {
           console.error("🔒 Token might be expired or invalid scope.");
@@ -259,7 +261,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
       console.log(`[YouTube Shell] ✅ Success! Found ${data.items?.length || 0} playlists.`);
       
       if (!data.items || data.items.length === 0) {
-        alert("ℹ️ พบ 0 เพลย์ลิสต์: บัญชี YouTube นี้อาจจะยังไม่มีเพลย์ลิสต์ที่บันทึกไว้ครับ");
+        addToast("ℹ️ พบ 0 เพลย์ลิสต์: บัญชี YouTube นี้อาจจะยังไม่มีเพลย์ลิสต์ที่บันทึกไว้ครับ");
       }
       
       const mapped = (data.items || []).map((item: any) => ({
@@ -410,10 +412,10 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
         setAiCacheList(prev => prev.filter(item => item.video_id !== videoId));
         alertRef.current?.open();
       } else {
-        alert(`Failed to delete: ${data.message}`);
+        addToast(`Failed to delete: ${data.message}`);
       }
     } catch (e) {
-      alert("Error deleting file.");
+      addToast("Error deleting file.");
     }
   };
 
