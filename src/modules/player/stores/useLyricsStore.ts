@@ -33,15 +33,17 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
     syncOffset: 0,
     error: null,
 
+    isGeneratingAI: false,
+
     toggleLyrics: () => set((state) => ({ isEnabled: !state.isEnabled })),
     setLyricsEnabled: (enabled) => set({ isEnabled: enabled }),
     setPreferredSource: (src) => set({ preferredSource: src }),
     setSyncOffset: (offset) => set({ syncOffset: offset }),
 
-    clearLyrics: () => set({ lyrics: [], source: null, error: null, isLoading: false, syncOffset: 0 }),
+    clearLyrics: () => set({ lyrics: [], source: null, error: null, isLoading: false, isGeneratingAI: false, syncOffset: 0 }),
 
     fetchLyrics: async (videoId: string, title: string, prefer?: 'auto' | 'youtube') => {
-        set({ isLoading: true, error: null, lyrics: [], source: null });
+        set({ isLoading: true, error: null, lyrics: [], source: null, isGeneratingAI: false });
         try {
             const pref = prefer || get().preferredSource;
 
@@ -51,7 +53,7 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
                     const { getActiveBridgeBaseUrl } = await import('../../../stores/useAIVocalStore');
                     const baseUrl = await getActiveBridgeBaseUrl();
                     if (baseUrl) {
-                        const localRes = await fetch(`${baseUrl}/files/${videoId}/lyrics_timeline.json`);
+                        const localRes = await fetch(`${baseUrl}/files/${videoId}/lyrics_timeline.json?t=${Date.now()}`, { cache: 'no-store' });
                         if (localRes.ok) {
                             const localData = await localRes.json();
                             // The JSON format is { provider: "deepgram", words: [{word, start, end}] }
@@ -88,7 +90,8 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
                                 set({
                                     lyrics: mappedLyrics,
                                     source: 'lrclib', // Trick UI to show synced view
-                                    isLoading: false
+                                    isLoading: false,
+                                    isGeneratingAI: false
                                 });
                                 return; // Stop execution, we found local AI lyrics!
                             }
@@ -110,19 +113,20 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
             if (data.lyrics && data.lyrics.length > 0) {
                 set({ 
                     lyrics: data.lyrics, 
-                    source: data.source,
-                    isLoading: false 
+                    source: data.source, 
+                    isLoading: false,
+                    isGeneratingAI: false 
                 });
             } else {
-                set({ error: 'ไม่พบเนื้อเพลงจากแหล่งใดๆ', isLoading: false });
+                set({ error: 'ไม่พบเนื้อเพลงจากแหล่งใดๆ', isLoading: false, isGeneratingAI: false });
             }
         } catch (e: any) {
-            set({ error: e.message || 'เกิดข้อผิดพลาดในการโหลดเนื้อเพลง', isLoading: false });
+            set({ error: e.message || 'เกิดข้อผิดพลาดในการโหลดเนื้อเพลง', isLoading: false, isGeneratingAI: false });
         }
     },
 
     generateAILyrics: async (videoId: string) => {
-        set({ isLoading: true, error: null });
+        set({ isGeneratingAI: true, error: null });
         try {
             const { useAIVocalStore, getActiveBridgeBaseUrl } = await import('../../../stores/useAIVocalStore');
             const baseUrl = await getActiveBridgeBaseUrl();
@@ -150,7 +154,7 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
             await get().fetchLyrics(videoId, '', 'auto');
             
         } catch (e: any) {
-            set({ error: e.message || 'เกิดข้อผิดพลาด', isLoading: false });
+            set({ error: e.message || 'เกิดข้อผิดพลาด', isGeneratingAI: false });
         }
     }
 }));

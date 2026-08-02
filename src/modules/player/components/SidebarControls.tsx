@@ -97,7 +97,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
         setVolume
     } = useMixerStore();
 
-    const { isEnabled: showLyrics, toggleLyrics, syncOffset, setSyncOffset, preferredSource, setPreferredSource, fetchLyrics, error: lyricsError, isLoading: lyricsLoading } = useLyricsStore();
+    const { isEnabled: showLyrics, toggleLyrics, syncOffset, setSyncOffset, preferredSource, setPreferredSource, fetchLyrics, error: lyricsError, isLoading: lyricsLoading, isGeneratingAI, generateAILyrics } = useLyricsStore();
 
     const handleSourceChange = (src: 'auto' | 'youtube') => {
         setPreferredSource(src);
@@ -453,7 +453,6 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                         )}
                     </div>
 
-                    {/* Lyrics Toggle */}
                     <div className={clsx("mt-4 pt-3", isAiReady || isConnected ? "border-t border-gray-100 dark:border-zinc-800" : "")}>
                         <button 
                             onClick={toggleLyrics}
@@ -471,12 +470,12 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                             <span className="text-[10px] opacity-70">{showLyrics ? 'On' : 'Off'}</span>
                         </button>
                         
-                        {lyricsError && showLyrics && (
+                        {lyricsError && showLyrics && !isGeneratingAI && (
                             <div className="mt-2 text-[10px] text-gray-500 dark:text-gray-400 font-medium bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700 p-2 rounded-xl text-center flex flex-col gap-2">
                                 <span>{lyricsError}</span>
                                 {currentVideo && isAiReady && (
                                     <button
-                                        onClick={() => useLyricsStore.getState().generateAILyrics(currentVideo.id)}
+                                        onClick={() => generateAILyrics(currentVideo.id)}
                                         className="w-full py-1.5 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-lg shadow-sm font-bold active:scale-95 transition-all flex items-center justify-center gap-1"
                                     >
                                         <Sparkles size={12} />
@@ -485,9 +484,15 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                 )}
                             </div>
                         )}
-                        {lyricsLoading && showLyrics && (
+                        {lyricsLoading && showLyrics && !isGeneratingAI && (
                             <div className="mt-2 text-[10px] text-blue-500 font-medium bg-blue-50 dark:bg-blue-900/20 p-2 rounded">
                                 กำลังค้นหาเนื้อเพลง...
+                            </div>
+                        )}
+                        {isGeneratingAI && showLyrics && (
+                            <div className="mt-2 text-[10px] text-purple-600 dark:text-purple-400 font-medium bg-purple-50 dark:bg-purple-900/20 p-2 rounded flex items-center justify-center gap-2">
+                                <Sparkles size={12} className="animate-pulse" />
+                                AI กำลังประมวลผลฟังเพลงเพื่อแกะเนื้อร้อง... (อาจใช้เวลา 10-20 วินาที)
                             </div>
                         )}
                         
