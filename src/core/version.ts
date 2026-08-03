@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.218";
+export const SYSTEM_VERSION = "5.5.219";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.219",
+        date: "2026-08-03",
+        changes: [
+            "fix(plugin): Disabled yt-dlp browser popup (youtubepot-wpc) during audio separation to prevent excessive Chrome instances from opening.",
+            "feat(ui): Refactored lyrics and karaoke mode toggles into a unified iOS-style grouped settings list.",
+            "fix(lyrics): Adjusted Thai lyrics formatting to prevent unneeded spacing between words, making it flow naturally like standard karaoke.",
+            "fix(ui): Fixed syntax error in SidebarControls to resolve Vercel build failures."
+        ]
+    },
     {
         version: "5.5.218",
         date: "2026-08-02",

@@ -231,7 +231,7 @@ def separate(req: SeparateRequest):
 
         out_template = os.path.join(song_dir, f"{vid}.%(ext)s")
         # 2026-era client list: web_creator & ios bypass most SABR blocks
-        extractor_args = "youtube:player_client=web_creator,ios,mweb,web_safari"
+        extractor_args = "youtube:player_client=web_creator,ios,mweb,web_safari;youtubepot-wpc:browser_path=none"
         cookie_sources = [None, "chrome"]
 
         for source in cookie_sources:
@@ -243,6 +243,7 @@ def separate(req: SeparateRequest):
                 "-o", out_template,
                 "--no-warnings",
                 "--extractor-args", extractor_args,
+                "--compat-options", "no-youtube-po-token-browser",
             ]
             if source:
                 cmd += ["--cookies-from-browser", source]
@@ -287,7 +288,11 @@ def separate(req: SeparateRequest):
                     "outtmpl": out_template,
                     "quiet": True,
                     "no_warnings": True,
-                    "extractor_args": {"youtube": {"player_client": ["web_creator", "ios", "mweb", "web_safari"]}},
+                    "compat_opts": ["no-youtube-po-token-browser"],
+                    "extractor_args": {
+                        "youtube": {"player_client": ["web_creator", "ios", "mweb", "web_safari"]},
+                        "youtubepot-wpc": {"browser_path": ["none"]}
+                    },
                     "postprocessors": [{
                         "key": "FFmpegExtractAudio",
                         "preferredcodec": "m4a",
