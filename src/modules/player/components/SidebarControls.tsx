@@ -306,8 +306,9 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                 <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
                     <div 
                         ref={mixerRef} 
-                        className="relative w-full max-w-md bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-[24px] p-6 shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh] overflow-y-auto overscroll-contain"
+                        className="relative w-full max-w-md bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-[24px] shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh] overflow-hidden"
                     >
+                        <div className="p-6 overflow-y-auto overscroll-contain flex flex-col h-full w-full">
                         {/* Header */}
                         <div className="flex items-center justify-between mb-6 shrink-0">
                             <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
@@ -655,6 +656,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                 </div>
                             </div>
                         )}
+                        </div>
                     </div>
                 </div>
             ,

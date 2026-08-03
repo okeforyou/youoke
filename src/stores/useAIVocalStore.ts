@@ -16,7 +16,10 @@ async function getActiveBridgePort(): Promise<number | null> {
     // Check which port is available
     for (const port of BRIDGE_PORTS) {
         try {
-            const res = await fetch(`http://127.0.0.1:${port}/health`, { signal: AbortSignal.timeout(2000) });
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), 2000);
+            const res = await fetch(`http://127.0.0.1:${port}/health`, { signal: controller.signal });
+            clearTimeout(id);
             if (res.status < 500) { // 200, 404, 405 all count as "server is up"
                 _activeBridgePort = port;
                 _serverCheckTime = now;
