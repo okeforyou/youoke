@@ -1,8 +1,15 @@
 import { create } from 'zustand';
 
+export interface LyricWord {
+    word: string;
+    start: number;
+    end: number;
+}
+
 export interface LyricLine {
     time: number;
     text: string;
+    words?: LyricWord[];
 }
 
 interface LyricsState {
@@ -99,6 +106,42 @@ const normalizeLyrics = (lyrics: LyricLine[], maxLength = 40): LyricLine[] => {
             continue;
         }
 
+        if (line.words && line.words.length > 0) {
+            // Chunk based on actual words from AI
+            let currentLineText = "";
+            let currentLineWords: LyricWord[] = [];
+            
+            for (const w of line.words) {
+                if ((currentLineText + w.word).length > maxLength) {
+                    if (currentLineWords.length > 0) {
+                        result.push({
+                            time: currentLineWords[0].start,
+                            text: currentLineText.trim(),
+                            words: currentLineWords
+                        });
+                        currentLineText = w.word + " ";
+                        currentLineWords = [w];
+                    } else {
+                        // single word is larger than max len
+                        result.push({ time: w.start, text: w.word, words: [w] });
+                        currentLineText = "";
+                        currentLineWords = [];
+                    }
+                } else {
+                    currentLineText += w.word + " ";
+                    currentLineWords.push(w);
+                }
+            }
+            if (currentLineWords.length > 0) {
+                result.push({
+                    time: currentLineWords[0].start,
+                    text: currentLineText.trim(),
+                    words: currentLineWords
+                });
+            }
+            continue;
+        }
+
         const chunks = chunkText(line.text, maxLength);
         if (chunks.length === 1) {
             result.push({ time: line.time, text: chunks[0] });
@@ -162,6 +205,7 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
                                 const mappedLyrics: LyricLine[] = [];
                                 let currentLineText = "";
                                 let currentLineTime = -1;
+                                let currentLineWords: LyricWord[] = [];
                                 let lastWordEnd = -1;
 
                                 for (const w of localData.words) {
@@ -169,20 +213,31 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
                                         currentLineTime = w.start;
                                     }
                                     
-                                    // If pause is more than 0.8 seconds, start a new line
-                                    if (lastWordEnd !== -1 && w.start - lastWordEnd > 0.8) {
-                                        mappedLyrics.push({ time: currentLineTime, text: currentLineText.trim() });
+                                    // If pause is more than 1.5 seconds (was 0.8), start a new line. 
+                                    // This prevents words from dropping to a new line just because the singer took a breath.
+                                    if (lastWordEnd !== -1 && w.start - lastWordEnd > 1.5) {
+                                        mappedLyrics.push({ 
+                                            time: currentLineTime, 
+                                            text: currentLineText.trim(),
+                                            words: currentLineWords
+                                        });
                                         currentLineText = "";
                                         currentLineTime = w.start;
+                                        currentLineWords = [];
                                     }
                                     
                                     currentLineText += w.word + " ";
+                                    currentLineWords.push({ word: w.word, start: w.start, end: w.end });
                                     lastWordEnd = w.end;
                                 }
                                 
                                 // Push the last line
                                 if (currentLineText.trim() !== "") {
-                                    mappedLyrics.push({ time: currentLineTime, text: currentLineText.trim() });
+                                    mappedLyrics.push({ 
+                                        time: currentLineTime, 
+                                        text: currentLineText.trim(),
+                                        words: currentLineWords
+                                    });
                                 }
 
                                 set({
