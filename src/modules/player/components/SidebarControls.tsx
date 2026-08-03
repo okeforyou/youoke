@@ -472,39 +472,58 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                     </div>
 
                         <div className={clsx("mt-6 pt-5", isAiReady || isConnected ? "border-t border-gray-100 dark:border-zinc-800" : "")}>
-                            <button 
-                                onClick={toggleLyrics}
-                                className={clsx(
-                                    "w-full py-2.5 px-4 rounded-xl flex items-center justify-between gap-3 text-sm font-bold transition-colors border",
-                                showLyrics 
-                                    ? "bg-primary text-white border-primary" 
-                                    : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
-                            )}
-                        >
-                            <div className="flex items-center gap-2">
-                                <Type size={18} />
-                                <span>เนื้อเพลง (Lyrics)</span>
+                            <div className="bg-gray-50 dark:bg-zinc-800/40 border border-gray-100 dark:border-zinc-700/50 rounded-2xl overflow-hidden flex flex-col">
+                                <button 
+                                    onClick={toggleLyrics}
+                                    className={clsx(
+                                        "w-full py-3 px-4 flex items-center justify-between gap-3 text-sm font-bold transition-colors",
+                                        showLyrics ? "text-primary" : "text-black/70 dark:text-zinc-300"
+                                    )}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <Type size={18} className={showLyrics ? "text-primary" : "opacity-60"} />
+                                        <span>เนื้อเพลง (Lyrics)</span>
+                                    </div>
+                                    <div className={clsx(
+                                        "w-10 h-6 rounded-full p-1 transition-colors flex items-center shadow-inner",
+                                        showLyrics ? "bg-primary" : "bg-gray-300 dark:bg-zinc-700"
+                                    )}>
+                                        <div className={clsx(
+                                            "w-4 h-4 bg-white rounded-full transition-transform shadow-sm",
+                                            showLyrics ? "translate-x-4" : "translate-x-0"
+                                        )} />
+                                    </div>
+                                </button>
+                                
+                                {showLyrics && (
+                                    <div className="w-full h-[1px] bg-gray-200 dark:bg-zinc-700/50" />
+                                )}
+                                
+                                {showLyrics && (
+                                    <button 
+                                        onClick={toggleKaraokeMode}
+                                        className={clsx(
+                                            "w-full py-3 px-4 flex items-center justify-between gap-3 text-sm font-bold transition-colors",
+                                            isKaraokeMode ? "text-primary" : "text-black/70 dark:text-zinc-300"
+                                        )}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <Sparkles size={18} className={isKaraokeMode ? "text-primary" : "opacity-60"} />
+                                            <span>ปาดสีคาราโอเกะ (Sweep)</span>
+                                        </div>
+                                        <div className={clsx(
+                                            "w-10 h-6 rounded-full p-1 transition-colors flex items-center shadow-inner",
+                                            isKaraokeMode ? "bg-primary" : "bg-gray-300 dark:bg-zinc-700"
+                                        )}>
+                                            <div className={clsx(
+                                                "w-4 h-4 bg-white rounded-full transition-transform shadow-sm",
+                                                isKaraokeMode ? "translate-x-4" : "translate-x-0"
+                                            )} />
+                                        </div>
+                                    </button>
+                                )}
                             </div>
-                            <span className="text-xs opacity-70">{showLyrics ? 'On' : 'Off'}</span>
-                        </button>
-                        
-                        {showLyrics && (
-                            <button 
-                                onClick={toggleKaraokeMode}
-                                className={clsx(
-                                    "w-full py-2.5 px-4 rounded-xl flex items-center justify-between gap-3 text-sm font-bold transition-colors border mt-2",
-                                isKaraokeMode 
-                                    ? "bg-primary text-white border-primary" 
-                                    : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
-                            )}
-                        >
-                            <div className="flex items-center gap-2">
-                                <Sparkles size={18} />
-                                <span>ปาดสีคาราโอเกะ (Sweep)</span>
-                            </div>
-                            <span className="text-xs opacity-70">{isKaraokeMode ? 'On' : 'Off'}</span>
-                        </button>
-                        )}
+                        </div>
                         
                         {lyricsError && showLyrics && !isGeneratingAI && (
                             <div className="mt-3 overflow-hidden rounded-2xl bg-gray-50 dark:bg-zinc-800/40 border border-gray-100 dark:border-zinc-700/50">
