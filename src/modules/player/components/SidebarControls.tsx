@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Play, Pause, SkipForward, RotateCcw, Volume2, VolumeX, Maximize, Cast, Mic, MicOff, ChevronUp, Mic2, Music, SlidersHorizontal, Type, Drum, Guitar, Piano, MicVocal, X, Sparkles, FileQuestion } from "lucide-react";
 import { usePlayerStore } from "../stores/usePlayerStore";
 import { useLyricsStore } from "../stores/useLyricsStore";
@@ -121,9 +122,9 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
     // Auto-resume job if requested but missing in store (e.g. page refresh)
     useEffect(() => {
         if (currentVideo?.aiVocalRequested && activeVideoId && !aiJob) {
-            aiVocalStore.processAudio(activeVideoId, aiVocalStore.defaultMode).catch(console.error);
+            aiVocalStore.processAudio(activeVideoId, currentVideo?.title || "Unknown Title", aiVocalStore.defaultMode).catch(console.error);
         }
-    }, [currentVideo?.aiVocalRequested, activeVideoId, aiJob, aiVocalStore]);
+    }, [currentVideo?.aiVocalRequested, currentVideo?.title, activeVideoId, aiJob, aiVocalStore]);
 
     const isAiReady = Boolean(activeVideoId && aiJob?.status === 'ready');
     const isProMode = aiJob?.mode === 'pro';
@@ -301,8 +302,8 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             </div>
             
             {/* Mixer Modal */}
-            {showVocalMixer && (
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+            {showVocalMixer && typeof document !== "undefined" && createPortal(
+                <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
                     <div 
                         ref={mixerRef} 
                         className="relative w-full max-w-md bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-[24px] p-6 shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh] overflow-y-auto overscroll-contain"
@@ -533,10 +534,12 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                     </div>
                                     <div className="space-y-1">
                                         <p className="text-[13px] font-bold text-gray-800 dark:text-gray-200">
-                                            ไม่พบเนื้อเพลงในระบบ
+                                            {lyricsError && lyricsError !== 'ไม่พบเนื้อเพลงจากแหล่งใดๆ' && !lyricsError.includes('offline') && !lyricsError.includes('Network') ? 'เกิดข้อผิดพลาด' : 'ไม่พบเนื้อเพลงในระบบ'}
                                         </p>
                                         <p className="text-[11px] text-gray-500 dark:text-gray-400 max-w-[200px] leading-relaxed mx-auto">
-                                            {lyricsError.includes('offline') || lyricsError.includes('Network') ? 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง' : 'เพลงนี้ยังไม่มีเนื้อเพลงในฐานข้อมูล LRCLIB หรือ YouTube CC'}
+                                            {lyricsError && (lyricsError.includes('offline') || lyricsError.includes('Network'))
+                                                ? 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง' 
+                                                : (lyricsError === 'ไม่พบเนื้อเพลงจากแหล่งใดๆ' ? 'เพลงนี้ยังไม่มีเนื้อเพลงในฐานข้อมูล LRCLIB หรือ YouTube CC' : lyricsError)}
                                         </p>
                                     </div>
                                     
@@ -654,7 +657,9 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                         )}
                     </div>
                 </div>
-            )}
+            ,
+            document.body
+        )}
         </div>
     );
 };

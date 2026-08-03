@@ -45,7 +45,7 @@ async def transcribe_audio(
                 song_dir = os.path.join(CACHE_DIR, video_id)
         
         if not os.path.exists(legacy_path):
-            raise HTTPException(status_code=404, detail="Vocals file not found for this video_id.")
+            raise HTTPException(status_code=404, detail="ไม่พบไฟล์เสียงร้อง กรุณารอให้ระบบแยกเสียงร้องเสร็จสมบูรณ์ก่อนแกะเนื้อเพลง")
             
         # Check if already transcribed
         timeline_path = os.path.join(song_dir, "lyrics_timeline.json")
@@ -101,6 +101,8 @@ async def transcribe_audio(
         else:
             raise HTTPException(status_code=400, detail="Unsupported provider.")
             
+    except HTTPException:
+        raise
     except Exception as e:
         error_str = str(e)
         if "timed out" in error_str.lower():

@@ -20,6 +20,7 @@ interface LyricsState {
     source: 'lrclib' | 'youtube' | null;
     preferredSource: 'auto' | 'youtube';
     error: string | null;
+    isGeneratingAI: boolean;
     
     syncOffset: number;
     
@@ -171,6 +172,7 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
     isEnabled: true,
     isKaraokeMode: true,
     isLoading: false,
+    isGeneratingAI: false,
     lyrics: [],
     source: null,
     preferredSource: 'auto',

@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.222";
+export const SYSTEM_VERSION = "5.5.223";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.223",
+        date: "2026-08-03",
+        changes: [
+            "fix(bridge): Resolved system freezing and FFmpeg errors by removing dangerous PyTorch MPS upper limit allocation.",
+            "fix(bridge): Killed background conflicting YouOke Plugin app (v1.0.44) and deleted it to prevent port 5050 hijacking.",
+            "ui(card): Fixed 2CH badge overlapping in playlist grid by moving it to the top-right corner."
+        ]
+    },
     {
         version: "5.5.222",
         date: new Date().toISOString().split('T')[0],
