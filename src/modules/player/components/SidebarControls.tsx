@@ -654,7 +654,6 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                         )}
                     </div>
                 </div>
-                </div>
             )}
         </div>
     );
