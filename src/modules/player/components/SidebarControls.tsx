@@ -97,7 +97,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
         setVolume
     } = useMixerStore();
 
-    const { isEnabled: showLyrics, toggleLyrics, syncOffset, setSyncOffset, preferredSource, setPreferredSource, fetchLyrics, error: lyricsError, isLoading: lyricsLoading, isGeneratingAI, generateAILyrics } = useLyricsStore();
+    const { isEnabled: showLyrics, isKaraokeMode, toggleLyrics, toggleKaraokeMode, syncOffset, setSyncOffset, preferredSource, setPreferredSource, fetchLyrics, error: lyricsError, isLoading: lyricsLoading, isGeneratingAI, generateAILyrics } = useLyricsStore();
 
     const handleSourceChange = (src: 'auto' | 'youtube') => {
         setPreferredSource(src);
@@ -487,6 +487,24 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                             </div>
                             <span className="text-xs opacity-70">{showLyrics ? 'On' : 'Off'}</span>
                         </button>
+                        
+                        {showLyrics && (
+                            <button 
+                                onClick={toggleKaraokeMode}
+                                className={clsx(
+                                    "w-full py-2.5 px-4 rounded-xl flex items-center justify-between gap-3 text-sm font-bold transition-colors border mt-2",
+                                isKaraokeMode 
+                                    ? "bg-primary text-white border-primary" 
+                                    : "bg-gray-100 dark:bg-zinc-800 text-black dark:text-white border-transparent hover:bg-gray-200 dark:hover:bg-zinc-700"
+                            )}
+                        >
+                            <div className="flex items-center gap-2">
+                                <Sparkles size={18} />
+                                <span>ปาดสีคาราโอเกะ (Sweep)</span>
+                            </div>
+                            <span className="text-xs opacity-70">{isKaraokeMode ? 'On' : 'Off'}</span>
+                        </button>
+                        )}
                         
                         {lyricsError && showLyrics && !isGeneratingAI && (
                             <div className="mt-3 overflow-hidden rounded-2xl bg-gray-50 dark:bg-zinc-800/40 border border-gray-100 dark:border-zinc-700/50">

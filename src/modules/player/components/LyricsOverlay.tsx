@@ -10,7 +10,7 @@ interface LyricsOverlayProps {
 }
 
 export const LyricsOverlay = ({ playerRef, activeVideoId, videoTitle }: LyricsOverlayProps) => {
-    const { isEnabled, lyrics, source, fetchLyrics, syncOffset } = useLyricsStore();
+    const { isEnabled, isKaraokeMode, lyrics, source, fetchLyrics, syncOffset } = useLyricsStore();
     const { isPlaying } = usePlayerStore();
     
     const [currentTime, setCurrentTime] = useState(0);
@@ -120,14 +120,16 @@ export const LyricsOverlay = ({ playerRef, activeVideoId, videoTitle }: LyricsOv
                                         {/* Base text includes space so the layout is correct */}
                                         <span className="whitespace-pre">{w.word} </span>
                                         {/* Swept text does NOT include space, so the clip-path hits 100% at the end of the letter, not the space */}
-                                        <span className="absolute left-0 top-0 text-[#2563eb] whitespace-pre" style={{ 
-                                            clipPath: `inset(-20% ${100 - (wordProgress * 100)}% -20% -20%)`,
-                                            transition: isActive ? 'clip-path 0.05s linear' : 'none',
-                                            WebkitTextStroke: 'clamp(2px, 0.4cqw, 4px) black',
-                                            paintOrder: 'stroke fill',
-                                        }}>
-                                            {w.word}
-                                        </span>
+                                        {isKaraokeMode && (
+                                            <span className="absolute left-0 top-0 text-[#2563eb] whitespace-pre" style={{ 
+                                                clipPath: `inset(-20% ${100 - (wordProgress * 100)}% -20% -20%)`,
+                                                transition: isActive ? 'clip-path 0.05s linear' : 'none',
+                                                WebkitTextStroke: 'clamp(2px, 0.4cqw, 4px) black',
+                                                paintOrder: 'stroke fill',
+                                            }}>
+                                                {w.word}
+                                            </span>
+                                        )}
                                     </span>
                                 );
                             })}
@@ -143,7 +145,7 @@ export const LyricsOverlay = ({ playerRef, activeVideoId, videoTitle }: LyricsOv
                             </span>
                             
                             {/* Swept Text (Blue) - Classic line-level sweep */}
-                            {source === 'lrclib' && (
+                            {source === 'lrclib' && isKaraokeMode && (
                                 <span 
                                     className="absolute left-0 top-0 text-[#2563eb] drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] whitespace-pre-wrap break-words max-w-full text-center md:text-left"
                                     style={{ 

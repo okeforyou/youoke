@@ -14,6 +14,7 @@ export interface LyricLine {
 
 interface LyricsState {
     isEnabled: boolean;
+    isKaraokeMode: boolean;
     isLoading: boolean;
     lyrics: LyricLine[];
     source: 'lrclib' | 'youtube' | null;
@@ -23,6 +24,7 @@ interface LyricsState {
     syncOffset: number;
     
     toggleLyrics: () => void;
+    toggleKaraokeMode: () => void;
     setLyricsEnabled: (enabled: boolean) => void;
     setPreferredSource: (src: 'auto' | 'youtube') => void;
     setSyncOffset: (offset: number) => void;
@@ -166,17 +168,17 @@ const normalizeLyrics = (lyrics: LyricLine[], maxLength = 40): LyricLine[] => {
 }
 
 export const useLyricsStore = create<LyricsState>((set, get) => ({
-    isEnabled: false,
+    isEnabled: true,
+    isKaraokeMode: true,
     isLoading: false,
     lyrics: [],
     source: null,
     preferredSource: 'auto',
-    syncOffset: 0,
     error: null,
-
-    isGeneratingAI: false,
-
+    syncOffset: 0,
+    
     toggleLyrics: () => set((state) => ({ isEnabled: !state.isEnabled })),
+    toggleKaraokeMode: () => set((state) => ({ isKaraokeMode: !state.isKaraokeMode })),
     setLyricsEnabled: (enabled) => set({ isEnabled: enabled }),
     setPreferredSource: (src) => set({ preferredSource: src }),
     setSyncOffset: (offset) => set({ syncOffset: offset }),
