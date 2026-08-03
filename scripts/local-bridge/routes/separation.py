@@ -441,12 +441,17 @@ def separate(req: SeparateRequest):
         
     device = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
 
+    # Prevent macOS memory leak / out of memory errors when using MPS
+    if device == "mps":
+        os.environ["PYTORCH_MPS_HIGH_WATERMARK_RATIO"] = "0.0"
+
     # 3. Run Demucs
     progress_store[vid] = {"status": "separating", "percent": 25, "message": "AI กำลังแยกเสียงร้องและดนตรี (อาจใช้เวลา 2-3 นาที)..."}
     try:
-        demucs_args = ["-n", "htdemucs_ft", "--shifts=0", "-d", device, "-o", song_dir, wav_path]
+        # Use --segment 2 and -j 1 to drastically reduce RAM/VRAM usage and prevent system freezes
+        demucs_args = ["-n", "htdemucs_ft", "--shifts=0", "-d", device, "--segment", "2", "-j", "1", "-o", song_dir, wav_path]
         if mode == "basic":
-            demucs_args = ["-n", "htdemucs_ft", "--shifts=0", "-d", device, "--two-stems=vocals", "-o", song_dir, wav_path]
+            demucs_args = ["-n", "htdemucs_ft", "--shifts=0", "-d", device, "--segment", "2", "-j", "1", "--two-stems=vocals", "-o", song_dir, wav_path]
 
         if getattr(sys, 'frozen', False):
             cmd = [sys.executable, "demucs_worker"] + demucs_args

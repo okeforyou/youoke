@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.220";
+export const SYSTEM_VERSION = "5.5.221";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,13 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.221",
+        date: "2026-08-03",
+        changes: [
+            "fix(plugin): Resolved macOS severe memory leak/system freeze during Demucs by limiting segment size to 2 and enforcing PYTORCH_MPS_HIGH_WATERMARK_RATIO (v1.0.55)."
+        ]
+    },
     {
         version: "5.5.220",
         date: "2026-08-03",
