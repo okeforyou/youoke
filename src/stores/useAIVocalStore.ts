@@ -302,6 +302,23 @@ export const useAIVocalStore = create<AIVocalState>()(
             }));
         }
     },
+    
+    uploadAudioFile: async (videoId: string, file: File): Promise<boolean> => {
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const res = await fetchWithFallback(`/upload/${videoId}`, {
+                method: 'POST',
+                body: formData
+            }, 0);
+            
+            return res.ok;
+        } catch (e) {
+            console.error('Failed to upload audio file:', e);
+            return false;
+        }
+    },
 
     checkCachedStatus: async (videoIds: string[]) => {
         if (!videoIds || videoIds.length === 0) return;

@@ -22,9 +22,9 @@ export const AIVocalControls = ({ mobile }: AIVocalControlsProps) => {
     // Auto-resume job if requested but missing in store (e.g. page refresh)
     useEffect(() => {
         if (isActive && currentVideoId && !currentJob) {
-            aiVocal.processAudio(currentVideoId).catch(console.error);
+            aiVocal.processAudio(currentVideoId, currentVideo?.title || "Unknown Title").catch(console.error);
         }
-    }, [isActive, currentVideoId, currentJob, aiVocal]);
+    }, [isActive, currentVideoId, currentJob, aiVocal, currentVideo?.title]);
 
     const [showSlider, setShowSlider] = useState(false);
     const [showModeSelect, setShowModeSelect] = useState(false);
@@ -154,7 +154,7 @@ export const AIVocalControls = ({ mobile }: AIVocalControlsProps) => {
                                         if (currentVideoId) {
                                             if (!isActive) usePlayerStore.getState().updateQueueItem(currentVideo!.uuid, { aiVocalRequested: true });
                                             aiVocal.setDefaultMode('basic');
-                                            await aiVocal.processAudio(currentVideoId, 'basic');
+                                            await aiVocal.processAudio(currentVideoId, currentVideo?.title || "Unknown Title", 'basic');
                                         }
                                     }}
                                     disabled={currentJob?.mode === 'pro'}
@@ -169,7 +169,7 @@ export const AIVocalControls = ({ mobile }: AIVocalControlsProps) => {
                                         if (currentVideoId) {
                                             if (!isActive) usePlayerStore.getState().updateQueueItem(currentVideo!.uuid, { aiVocalRequested: true });
                                             aiVocal.setDefaultMode('pro');
-                                            await aiVocal.processAudio(currentVideoId, 'pro');
+                                            await aiVocal.processAudio(currentVideoId, currentVideo?.title || "Unknown Title", 'pro');
                                         }
                                     }}
                                     className="w-full text-left p-3 rounded-xl bg-gray-50 hover:bg-primary/10 hover:text-primary transition-colors border border-yellow-200 relative overflow-hidden"
@@ -225,7 +225,7 @@ export const AIVocalControls = ({ mobile }: AIVocalControlsProps) => {
                                 onClick={async () => {
                                     if (currentVideoId) {
                                         aiVocal.setDefaultMode('pro');
-                                        await aiVocal.processAudio(currentVideoId, 'pro');
+                                        await aiVocal.processAudio(currentVideoId, currentVideo?.title || "Unknown Title", 'pro');
                                         setShowSlider(false);
                                     }
                                 }}

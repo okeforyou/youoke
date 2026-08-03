@@ -67,6 +67,18 @@ def separate(req: SeparateRequest):
         
     os.makedirs(song_dir, exist_ok=True)
     
+    # Try downloading cover image
+    try:
+        import urllib.request
+        cover_path = os.path.join(song_dir, "cover.jpg")
+        if not os.path.exists(cover_path):
+            try:
+                urllib.request.urlretrieve(f"https://img.youtube.com/vi/{vid}/maxresdefault.jpg", cover_path)
+            except Exception:
+                urllib.request.urlretrieve(f"https://img.youtube.com/vi/{vid}/hqdefault.jpg", cover_path)
+    except Exception as e:
+        print(f"[Cover] Failed to download cover: {e}")
+    
     # Cleanup old temp files
     for ext in ['webm', 'm4a', 'wav', 'mp4', 'mp3']:
         temp_file = os.path.join(song_dir, f"{vid}.{ext}")
@@ -441,10 +453,6 @@ def separate(req: SeparateRequest):
         
     device = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
 
-    # Prevent macOS memory leak / out of memory errors when using MPS
-    if device == "mps":
-        os.environ["PYTORCH_MPS_HIGH_WATERMARK_RATIO"] = "0.0"
-
     # 3. Run Demucs
     progress_store[vid] = {"status": "separating", "percent": 25, "message": "AI กำลังแยกเสียงร้องและดนตรี (อาจใช้เวลา 2-3 นาที)..."}
     try:
@@ -525,10 +533,15 @@ def separate(req: SeparateRequest):
                         print(f"[Storage Error] Failed to copy {m4a_file}: {str(e)}")
                 
                 try:
-                    # Copy mode.txt
+                    # Copy mode.txt and cover.jpg
                     shutil.copy(os.path.join(song_dir, "mode.txt"), os.path.join(target_folder, "mode.txt"))
                 except Exception as e:
                     print(f"[Storage Error] Failed to copy mode.txt: {str(e)}")
+                    
+                try:
+                    shutil.copy(os.path.join(song_dir, "cover.jpg"), os.path.join(target_folder, "cover.jpg"))
+                except Exception:
+                    pass
                     
                 # Create youoke.json
                 try:
