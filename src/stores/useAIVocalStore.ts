@@ -13,21 +13,17 @@ async function getActiveBridgePort(): Promise<number | null> {
     if (_activeBridgePort && now - _serverCheckTime < SERVER_CACHE_TTL) {
         return _activeBridgePort;
     }
-    // Check which port is available
-    for (const port of BRIDGE_PORTS) {
-        try {
-            const controller = new AbortController();
-            const id = setTimeout(() => controller.abort(), 2000);
-            const res = await fetch(`http://127.0.0.1:${port}/health`, { signal: controller.signal });
-            clearTimeout(id);
-            if (res.status < 500) { // 200, 404, 405 all count as "server is up"
-                _activeBridgePort = port;
-                _serverCheckTime = now;
-                return port;
-            }
-        } catch {
-            // ignore
+    // Check which port is available using fetchWithFallback for maximum reliability
+    try {
+        const res = await fetchWithFallback('/health', { signal: AbortSignal.timeout ? AbortSignal.timeout(3000) : undefined }, 0);
+        if (res && res.url) {
+            const port = res.url.includes(':5050') ? 5050 : 8055;
+            _activeBridgePort = port;
+            _serverCheckTime = now;
+            return port;
         }
+    } catch {
+        // ignore
     }
     _activeBridgePort = null;
     _serverCheckTime = now;
@@ -39,7 +35,7 @@ export async function getActiveBridgeBaseUrl(): Promise<string | null> {
     return port ? `http://127.0.0.1:${port}` : null;
 }
 
-const fetchWithFallback = async (endpoint: string, options?: RequestInit, maxRetries = 0) => {
+async function fetchWithFallback(endpoint: string, options?: RequestInit, maxRetries = 0) {
     let delayMs = 1000;
     let lastError = null;
 
