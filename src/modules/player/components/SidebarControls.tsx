@@ -302,13 +302,13 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             
             {/* Mixer Modal */}
             {showVocalMixer && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
                     <div 
                         ref={mixerRef} 
                         className="relative w-full max-w-md bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-[24px] p-6 shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh] overflow-y-auto overscroll-contain"
                     >
                         {/* Header */}
-                        <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center justify-between mb-6 shrink-0">
                             <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
                                 <SlidersHorizontal size={16} className="text-primary" />
                                 ตั้งค่าเสียง (Mixer)
@@ -526,7 +526,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                         </div>
                         
                         {lyricsError && showLyrics && !isGeneratingAI && (
-                            <div className="mt-3 overflow-hidden rounded-2xl bg-gray-50 dark:bg-zinc-800/40 border border-gray-100 dark:border-zinc-700/50">
+                            <div className="mt-3 shrink-0 overflow-hidden rounded-2xl bg-gray-50 dark:bg-zinc-800/40 border border-gray-100 dark:border-zinc-700/50">
                                 <div className="p-5 flex flex-col items-center justify-center text-center gap-3">
                                     <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-zinc-800 flex items-center justify-center text-gray-500 dark:text-gray-400 mb-1">
                                         <FileQuestion size={24} strokeWidth={1.5} />
