@@ -489,9 +489,9 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                         </button>
                         
                         {lyricsError && showLyrics && !isGeneratingAI && (
-                            <div className="mt-3 overflow-hidden rounded-2xl bg-gray-50/80 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700/50 relative">
-                                <div className="p-5 flex flex-col items-center justify-center text-center gap-3 relative z-10">
-                                    <div className="w-12 h-12 rounded-full bg-gray-200/50 dark:bg-zinc-700/50 flex items-center justify-center text-gray-500 dark:text-gray-400 mb-1">
+                            <div className="mt-3 overflow-hidden rounded-2xl bg-gray-50 dark:bg-zinc-800/40 border border-gray-100 dark:border-zinc-700/50">
+                                <div className="p-5 flex flex-col items-center justify-center text-center gap-3">
+                                    <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-zinc-800 flex items-center justify-center text-gray-500 dark:text-gray-400 mb-1">
                                         <FileQuestion size={24} strokeWidth={1.5} />
                                     </div>
                                     <div className="space-y-1">
@@ -506,16 +506,13 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                     {currentVideo && isAiReady && (
                                         <button
                                             onClick={() => generateAILyrics(currentVideo.id)}
-                                            className="w-full mt-3 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-xl font-bold text-xs shadow-[0_4px_12px_rgba(99,102,241,0.3)] hover:shadow-[0_4px_16px_rgba(99,102,241,0.4)] active:scale-95 transition-all duration-300 flex items-center justify-center gap-2 group border border-white/10"
+                                            className="w-full mt-3 py-3 bg-primary hover:bg-primary/90 text-white rounded-xl font-bold text-xs active:scale-95 transition-all duration-300 flex items-center justify-center gap-2 group"
                                         >
                                             <Sparkles size={14} className="group-hover:rotate-12 transition-transform duration-300" />
                                             <span>ให้ AI ช่วยแกะเนื้อเพลงอัตโนมัติ</span>
                                         </button>
                                     )}
                                 </div>
-                                {/* Decorative background glow */}
-                                <div className="absolute -top-10 -right-10 w-32 h-32 bg-indigo-500/10 blur-3xl rounded-full pointer-events-none" />
-                                <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-violet-500/10 blur-3xl rounded-full pointer-events-none" />
                             </div>
                         )}
                         {lyricsLoading && showLyrics && !isGeneratingAI && (
@@ -525,25 +522,24 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                             </div>
                         )}
                         {isGeneratingAI && showLyrics && (
-                            <div className="mt-3 overflow-hidden rounded-2xl bg-purple-50/80 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800/30 relative">
+                            <div className="mt-3 overflow-hidden rounded-2xl bg-gray-50 dark:bg-zinc-800/40 border border-gray-100 dark:border-zinc-700/50 relative">
                                 <div className="p-5 flex flex-col items-center justify-center text-center gap-4 relative z-10">
                                     <div className="relative flex items-center justify-center">
-                                        <div className="absolute inset-0 bg-purple-500/20 rounded-full animate-ping" />
-                                        <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-purple-500/30 relative z-10">
+                                        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary relative z-10">
                                             <Sparkles size={20} className="animate-pulse" />
                                         </div>
                                     </div>
                                     <div className="space-y-1.5">
-                                        <p className="text-[13px] font-bold text-purple-700 dark:text-purple-300">
+                                        <p className="text-[13px] font-bold text-gray-800 dark:text-gray-200">
                                             AI กำลังแกะเนื้อเพลง...
                                         </p>
-                                        <p className="text-[10px] text-purple-600/70 dark:text-purple-400/70 max-w-[200px] leading-relaxed mx-auto">
+                                        <p className="text-[10px] text-gray-500 dark:text-gray-400 max-w-[200px] leading-relaxed mx-auto">
                                             กำลังฟังและประมวลผลเสียงร้อง อาจใช้เวลาประมาณ 10-20 วินาที
                                         </p>
                                     </div>
                                 </div>
-                                <div className="absolute inset-x-0 bottom-0 h-1 bg-purple-100 dark:bg-purple-900/50">
-                                    <div className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 w-full animate-pulse" />
+                                <div className="absolute inset-x-0 bottom-0 h-1 bg-gray-200 dark:bg-zinc-700">
+                                    <div className="h-full bg-primary w-full animate-pulse" />
                                 </div>
                             </div>
                         )}
