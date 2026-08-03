@@ -47,6 +47,9 @@ app.include_router(search_files_router)
 app.include_router(creator_router)
 
 if __name__ == "__main__":
+    import multiprocessing
+    multiprocessing.freeze_support()
+    
     if len(sys.argv) > 1 and sys.argv[1] == "demucs_worker":
         import demucs.pretrained
         from demucs.separate import main
