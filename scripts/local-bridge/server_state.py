@@ -1,3 +1,3 @@
 VERSION = "1.0.53"
-rapidapi_quota = "Checking quota..."
+rapidapi_quota = {"remaining": "Checking quota...", "limit": "Checking quota..."}
 progress_store = {}
