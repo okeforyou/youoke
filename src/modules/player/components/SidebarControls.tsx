@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Play, Pause, SkipForward, RotateCcw, Volume2, VolumeX, Maximize, Cast, Mic, MicOff, ChevronUp, Mic2, Music, SlidersHorizontal, Type, Drum, Guitar, Piano, MicVocal, X, Sparkles } from "lucide-react";
+import { Play, Pause, SkipForward, RotateCcw, Volume2, VolumeX, Maximize, Cast, Mic, MicOff, ChevronUp, Mic2, Music, SlidersHorizontal, Type, Drum, Guitar, Piano, MicVocal, X, Sparkles, FileQuestion } from "lucide-react";
 import { usePlayerStore } from "../stores/usePlayerStore";
 import { useLyricsStore } from "../stores/useLyricsStore";
 import { useMixerStore, type TrackType } from "../stores/useMixerStore";
@@ -489,47 +489,82 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                         </button>
                         
                         {lyricsError && showLyrics && !isGeneratingAI && (
-                            <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 font-medium bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700 p-2 rounded-xl text-center flex flex-col gap-2">
-                                <span>{lyricsError}</span>
-                                {currentVideo && isAiReady && (
-                                    <button
-                                        onClick={() => generateAILyrics(currentVideo.id)}
-                                        className="w-full py-1.5 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-lg shadow-sm font-bold active:scale-95 transition-all flex items-center justify-center gap-1"
-                                    >
-                                        <Sparkles size={12} />
-                                        ให้ AI แกะเนื้อเพลง
-                                    </button>
-                                )}
+                            <div className="mt-3 overflow-hidden rounded-2xl bg-gray-50/80 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-700/50 relative">
+                                <div className="p-5 flex flex-col items-center justify-center text-center gap-3 relative z-10">
+                                    <div className="w-12 h-12 rounded-full bg-gray-200/50 dark:bg-zinc-700/50 flex items-center justify-center text-gray-500 dark:text-gray-400 mb-1">
+                                        <FileQuestion size={24} strokeWidth={1.5} />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="text-[13px] font-bold text-gray-800 dark:text-gray-200">
+                                            ไม่พบเนื้อเพลงในระบบ
+                                        </p>
+                                        <p className="text-[11px] text-gray-500 dark:text-gray-400 max-w-[200px] leading-relaxed mx-auto">
+                                            {lyricsError.includes('offline') || lyricsError.includes('Network') ? 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง' : 'เพลงนี้ยังไม่มีเนื้อเพลงในฐานข้อมูล LRCLIB หรือ YouTube CC'}
+                                        </p>
+                                    </div>
+                                    
+                                    {currentVideo && isAiReady && (
+                                        <button
+                                            onClick={() => generateAILyrics(currentVideo.id)}
+                                            className="w-full mt-3 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-xl font-bold text-xs shadow-[0_4px_12px_rgba(99,102,241,0.3)] hover:shadow-[0_4px_16px_rgba(99,102,241,0.4)] active:scale-95 transition-all duration-300 flex items-center justify-center gap-2 group border border-white/10"
+                                        >
+                                            <Sparkles size={14} className="group-hover:rotate-12 transition-transform duration-300" />
+                                            <span>ให้ AI ช่วยแกะเนื้อเพลงอัตโนมัติ</span>
+                                        </button>
+                                    )}
+                                </div>
+                                {/* Decorative background glow */}
+                                <div className="absolute -top-10 -right-10 w-32 h-32 bg-indigo-500/10 blur-3xl rounded-full pointer-events-none" />
+                                <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-violet-500/10 blur-3xl rounded-full pointer-events-none" />
                             </div>
                         )}
                         {lyricsLoading && showLyrics && !isGeneratingAI && (
-                            <div className="mt-2 text-xs text-blue-500 font-medium bg-blue-50 dark:bg-blue-900/20 p-2 rounded">
-                                กำลังค้นหาเนื้อเพลง...
+                            <div className="mt-3 p-4 flex flex-col items-center justify-center gap-3 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100/50 dark:border-blue-800/30 rounded-2xl">
+                                <div className="w-5 h-5 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+                                <span className="text-[11px] text-blue-600 dark:text-blue-400 font-bold">กำลังค้นหาเนื้อเพลง...</span>
                             </div>
                         )}
                         {isGeneratingAI && showLyrics && (
-                            <div className="mt-2 text-xs text-purple-600 dark:text-purple-400 font-medium bg-purple-50 dark:bg-purple-900/20 p-2 rounded flex items-center justify-center gap-2">
-                                <Sparkles size={12} className="animate-pulse" />
-                                AI กำลังประมวลผลฟังเพลงเพื่อแกะเนื้อร้อง... (อาจใช้เวลา 10-20 วินาที)
+                            <div className="mt-3 overflow-hidden rounded-2xl bg-purple-50/80 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800/30 relative">
+                                <div className="p-5 flex flex-col items-center justify-center text-center gap-4 relative z-10">
+                                    <div className="relative flex items-center justify-center">
+                                        <div className="absolute inset-0 bg-purple-500/20 rounded-full animate-ping" />
+                                        <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-purple-500/30 relative z-10">
+                                            <Sparkles size={20} className="animate-pulse" />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <p className="text-[13px] font-bold text-purple-700 dark:text-purple-300">
+                                            AI กำลังแกะเนื้อเพลง...
+                                        </p>
+                                        <p className="text-[10px] text-purple-600/70 dark:text-purple-400/70 max-w-[200px] leading-relaxed mx-auto">
+                                            กำลังฟังและประมวลผลเสียงร้อง อาจใช้เวลาประมาณ 10-20 วินาที
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="absolute inset-x-0 bottom-0 h-1 bg-purple-100 dark:bg-purple-900/50">
+                                    <div className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 w-full animate-pulse" />
+                                </div>
                             </div>
                         )}
                         
                         {/* Lyrics Details Controls */}
                         {showLyrics && (
-                            <div className="mt-2 p-2 bg-gray-50 dark:bg-zinc-800/50 rounded-xl border border-gray-100 dark:border-zinc-700/50 flex flex-col gap-2">
+                            <div className="mt-3 p-4 bg-gray-50/80 dark:bg-zinc-800/40 rounded-2xl border border-gray-100 dark:border-zinc-700/50 flex flex-col gap-4">
                                 {/* Source Selector */}
                                 <div>
-                                    <div className="text-[9px] font-bold mb-1.5 text-black/70 dark:text-zinc-400 uppercase">
-                                        แหล่งข้อมูล (Source)
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <div className="w-1 h-3 rounded-full bg-gray-300 dark:bg-zinc-600" />
+                                        <span className="text-[10px] font-bold text-gray-500 dark:text-zinc-400 tracking-wider">แหล่งข้อมูล (SOURCE)</span>
                                     </div>
-                                    <div className="flex items-center gap-1.5">
+                                    <div className="flex items-center p-1 bg-gray-200/50 dark:bg-zinc-900/50 rounded-lg">
                                         <button 
                                             onClick={() => handleSourceChange('auto')}
                                             className={clsx(
-                                                "flex-1 py-1 rounded shadow-sm text-[9px] font-bold transition-all border",
+                                                "flex-1 py-1.5 rounded-md shadow-sm text-[10px] font-bold transition-all",
                                                 preferredSource === 'auto' 
-                                                    ? "bg-primary text-white border-primary" 
-                                                    : "bg-white dark:bg-zinc-700 text-black dark:text-white border-gray-200 dark:border-zinc-600 hover:bg-gray-50 dark:hover:bg-zinc-600"
+                                                    ? "bg-white dark:bg-zinc-700 text-black dark:text-white shadow" 
+                                                    : "text-gray-500 dark:text-zinc-400 hover:text-black dark:hover:text-white shadow-none"
                                             )}
                                         >
                                             LRCLIB
@@ -537,10 +572,10 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                         <button 
                                             onClick={() => handleSourceChange('youtube')}
                                             className={clsx(
-                                                "flex-1 py-1 rounded shadow-sm text-[9px] font-bold transition-all border",
+                                                "flex-1 py-1.5 rounded-md shadow-sm text-[10px] font-bold transition-all",
                                                 preferredSource === 'youtube' 
-                                                    ? "bg-blue-600 text-white border-blue-600" 
-                                                    : "bg-white dark:bg-zinc-700 text-black dark:text-white border-gray-200 dark:border-zinc-600 hover:bg-gray-50 dark:hover:bg-zinc-600"
+                                                    ? "bg-white dark:bg-zinc-700 text-black dark:text-white shadow" 
+                                                    : "text-gray-500 dark:text-zinc-400 hover:text-black dark:hover:text-white shadow-none"
                                             )}
                                         >
                                             YouTube CC
@@ -550,30 +585,35 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
 
                                 {/* Sync Offset Controls */}
                                 <div>
-                                    <div className="flex justify-between items-center text-[9px] font-bold mb-1.5 text-black/70 dark:text-zinc-400 uppercase">
-                                        <span>ปรับเวลา (Sync)</span>
-                                        <span className={syncOffset !== 0 ? "text-primary" : ""}>
+                                    <div className="flex justify-between items-center mb-2">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-1 h-3 rounded-full bg-gray-300 dark:bg-zinc-600" />
+                                            <span className="text-[10px] font-bold text-gray-500 dark:text-zinc-400 tracking-wider">ปรับเวลา (SYNC)</span>
+                                        </div>
+                                        <span className={clsx("text-[10px] font-black px-2 py-0.5 rounded", syncOffset !== 0 ? "bg-primary/10 text-primary" : "bg-gray-200/50 dark:bg-zinc-800 text-gray-500")}>
                                             {syncOffset > 0 ? '+' : ''}{syncOffset.toFixed(1)}s
                                         </span>
                                     </div>
-                                    <div className="flex items-center gap-1.5">
+                                    <div className="flex items-center gap-2">
                                         <button 
                                             onClick={() => setSyncOffset(syncOffset - 0.5)}
-                                            className="flex-1 py-1 bg-white dark:bg-zinc-700 border border-gray-200 dark:border-zinc-600 rounded shadow-sm text-xs font-bold hover:bg-gray-50 dark:hover:bg-zinc-600 active:scale-95 transition-all text-black dark:text-white"
+                                            className="flex-1 py-2 bg-white dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 rounded-lg shadow-sm text-xs font-bold hover:bg-gray-50 dark:hover:bg-zinc-700 active:scale-95 transition-all text-black dark:text-white flex items-center justify-center gap-1"
                                         >
+                                            <RotateCcw size={12} className="opacity-50" />
                                             -0.5s
                                         </button>
                                         <button 
                                             onClick={() => setSyncOffset(0)}
-                                            className="px-2 py-1 bg-gray-200 dark:bg-zinc-800 rounded text-[9px] font-bold text-gray-500 hover:text-black dark:hover:text-white transition-colors"
+                                            className="px-3 py-2 bg-transparent rounded-lg text-[10px] font-bold text-gray-400 hover:text-black dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-zinc-800 transition-all"
                                         >
                                             Reset
                                         </button>
                                         <button 
                                             onClick={() => setSyncOffset(syncOffset + 0.5)}
-                                            className="flex-1 py-1 bg-white dark:bg-zinc-700 border border-gray-200 dark:border-zinc-600 rounded shadow-sm text-xs font-bold hover:bg-gray-50 dark:hover:bg-zinc-600 active:scale-95 transition-all text-black dark:text-white"
+                                            className="flex-1 py-2 bg-white dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 rounded-lg shadow-sm text-xs font-bold hover:bg-gray-50 dark:hover:bg-zinc-700 active:scale-95 transition-all text-black dark:text-white flex items-center justify-center gap-1"
                                         >
                                             +0.5s
+                                            <SkipForward size={12} className="opacity-50" />
                                         </button>
                                     </div>
                                 </div>
