@@ -102,27 +102,59 @@ export const LyricsOverlay = ({ playerRef, activeVideoId, videoTitle }: LyricsOv
                         paintOrder: 'stroke fill',
                     }}
                 >
-                    {/* Base Text (White with shadow) */}
-                    <span className={clsx(
-                        "text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]",
-                        source === 'youtube' && isActive && "text-[#2563eb]"
-                    )}>
-                        {line.text ? line.text.replace(/([ก-๙])\s+([ก-๙])/g, '$1$2').replace(/([ก-๙])\s+([ก-๙])/g, '$1$2') : ''}
-                    </span>
-                    
-                    {/* Swept Text (Blue) - Uses clip-path to support multi-line wrap sweep */}
-                    {source === 'lrclib' && (
-                        <span 
-                            className="absolute left-0 top-0 text-[#2563eb] drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] whitespace-pre-wrap break-words max-w-full text-center md:text-left"
-                            style={{ 
-                                clipPath: `inset(-20% ${100 - (progress * 100)}% -20% -20%)`,
-                                WebkitTextStroke: 'clamp(2px, 0.4cqw, 4px) black',
-                                paintOrder: 'stroke fill',
-                                transition: isActive ? 'clip-path 0.1s linear' : 'none'
-                            }}
-                        >
-                            {line.text ? line.text.replace(/([ก-๙])\s+([ก-๙])/g, '$1$2').replace(/([ก-๙])\s+([ก-๙])/g, '$1$2') : ''}
+                    {line.words && line.words.length > 0 ? (
+                        <span className="text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] flex flex-wrap justify-center md:justify-start">
+                            {line.words.map((w: any, i: number) => {
+                                let wordProgress = 0;
+                                if (index < currentLineIndex) {
+                                    wordProgress = 1;
+                                } else if (isActive) {
+                                    if (adjustedTime > w.end) wordProgress = 1;
+                                    else if (adjustedTime >= w.start) {
+                                        wordProgress = (adjustedTime - w.start) / Math.max(0.01, w.end - w.start);
+                                    }
+                                }
+                                
+                                return (
+                                    <span key={i} className="inline-block relative">
+                                        <span className="whitespace-pre">{w.word} </span>
+                                        <span className="absolute left-0 top-0 text-[#2563eb] whitespace-pre" style={{ 
+                                            clipPath: `inset(-20% ${100 - (wordProgress * 100)}% -20% -20%)`,
+                                            transition: isActive ? 'clip-path 0.05s linear' : 'none',
+                                            WebkitTextStroke: 'clamp(2px, 0.4cqw, 4px) black',
+                                            paintOrder: 'stroke fill',
+                                        }}>
+                                            {w.word} 
+                                        </span>
+                                    </span>
+                                );
+                            })}
                         </span>
+                    ) : (
+                        <>
+                            {/* Base Text (White with shadow) */}
+                            <span className={clsx(
+                                "text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]",
+                                source === 'youtube' && isActive && "text-[#2563eb]"
+                            )}>
+                                {line.text}
+                            </span>
+                            
+                            {/* Swept Text (Blue) - Classic line-level sweep */}
+                            {source === 'lrclib' && (
+                                <span 
+                                    className="absolute left-0 top-0 text-[#2563eb] drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] whitespace-pre-wrap break-words max-w-full text-center md:text-left"
+                                    style={{ 
+                                        clipPath: `inset(-20% ${100 - (progress * 100)}% -20% -20%)`,
+                                        WebkitTextStroke: 'clamp(2px, 0.4cqw, 4px) black',
+                                        paintOrder: 'stroke fill',
+                                        transition: isActive ? 'clip-path 0.1s linear' : 'none'
+                                    }}
+                                >
+                                    {line.text}
+                                </span>
+                            )}
+                        </>
                     )}
                 </div>
             </div>
