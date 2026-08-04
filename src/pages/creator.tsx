@@ -76,7 +76,18 @@ export default function CreatorStudioPage() {
     const handleSelectSong = async (song: CachedSong) => {
         // Clone the object so React sees it as a new state and forces re-render if it's the same song
         setSelectedSong({...song});
-        setLyrics([]);
+        
+        // Auto-load previously extracted/edited AI lyrics from localStorage
+        let initialLyrics: LyricWord[] = [];
+        if (typeof window !== 'undefined') {
+            const cached = localStorage.getItem(`ai_lyrics_${song.video_id}`);
+            if (cached) {
+                try {
+                    initialLyrics = JSON.parse(cached);
+                } catch(e) {}
+            }
+        }
+        setLyrics(initialLyrics);
         setError('');
         setShowLibraryModal(false);
         
@@ -159,6 +170,13 @@ export default function CreatorStudioPage() {
             loadTrack();
         }
     }, [audioTrack]);
+
+    // Auto-save lyrics to localStorage when they change
+    useEffect(() => {
+        if (selectedSong && lyrics.length > 0) {
+            localStorage.setItem(`ai_lyrics_${selectedSong.video_id}`, JSON.stringify(lyrics));
+        }
+    }, [lyrics, selectedSong]);
 
     const rebuildRegions = (newLyrics: LyricWord[]) => {
         if (wsRegions.current) {
