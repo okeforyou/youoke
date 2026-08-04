@@ -28,7 +28,7 @@ function killExistingServer(callback) {
   const isWin = process.platform === 'win32';
   
   // 1. Kill by process name
-  const killByName = isWin ? 'taskkill /F /IM youoke-server.exe /T' : 'killall -9 youoke-server';
+  const killByName = isWin ? 'taskkill /F /IM youoke-server.exe /T' : 'pkill -9 -f youoke-server';
   
   // 2. Kill whatever is holding port 5050
   const killByPort = isWin 
@@ -99,7 +99,7 @@ function startServer() {
 
 function stopServer() {
   if (serverProcess) {
-    serverProcess.kill('SIGINT');
+    serverProcess.kill('SIGKILL');
     serverProcess = null;
     console.log("Server stopped.");
   }
