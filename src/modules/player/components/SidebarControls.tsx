@@ -620,6 +620,17 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                         >
                                             YouTube CC
                                         </button>
+                                        <button 
+                                            onClick={() => handleSourceChange('local')}
+                                            className={clsx(
+                                                "flex-1 py-1.5 rounded-md shadow-sm text-[10px] font-bold transition-all",
+                                                preferredSource === 'local'
+                                                    ? "bg-white dark:bg-zinc-700 text-black dark:text-white shadow" 
+                                                    : "text-gray-500 dark:text-zinc-400 hover:text-black dark:hover:text-white shadow-none"
+                                            )}
+                                        >
+                                            AI แกะเนื้อ
+                                        </button>
                                     </div>
                                 </div>
 

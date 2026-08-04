@@ -19,7 +19,7 @@ interface LyricsState {
     lyrics: LyricLine[];
     lyricsType: 'synced' | 'plain' | null;
     source: 'lrclib' | 'youtube' | null;
-    preferredSource: 'auto' | 'youtube';
+    preferredSource: 'auto' | 'youtube' | 'local';
     error: string | null;
     isGeneratingAI: boolean;
     
@@ -28,9 +28,9 @@ interface LyricsState {
     toggleLyrics: () => void;
     toggleKaraokeMode: () => void;
     setLyricsEnabled: (enabled: boolean) => void;
-    setPreferredSource: (src: 'auto' | 'youtube') => void;
+    setPreferredSource: (src: 'auto' | 'youtube' | 'local') => void;
     setSyncOffset: (offset: number) => void;
-    fetchLyrics: (videoId: string, title: string, prefer?: 'auto' | 'youtube') => Promise<void>;
+    fetchLyrics: (videoId: string, title: string, prefer?: 'auto' | 'youtube' | 'local') => Promise<void>;
     generateAILyrics: (videoId: string) => Promise<void>;
     clearLyrics: () => void;
 }
@@ -239,28 +239,30 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
         return newLyrics;
     },
 
-    fetchLyrics: async (videoId: string, title: string, prefer?: 'auto' | 'youtube', duration?: number) => {
+    fetchLyrics: async (videoId: string, title: string, prefer?: 'auto' | 'youtube' | 'local', duration?: number) => {
         set({ isLoading: true, error: null, lyrics: [], source: null, lyricsType: null, isGeneratingAI: false });
         try {
             const pref = prefer || get().preferredSource;
 
             // 1. Fetch Online APIs (LRCLIB / YouTube)
             let onlineData: any = null;
-            if (pref !== 'youtube') {
-                try {
-                    const res = await fetch(`/api/lyrics?videoId=${encodeURIComponent(videoId)}&title=${encodeURIComponent(title)}${duration ? '&duration=' + duration : ''}`);
-                    if (res.ok) {
-                        onlineData = await res.json();
+            if (pref !== 'local') {
+                if (pref !== 'youtube') {
+                    try {
+                        const res = await fetch(`/api/lyrics?videoId=${encodeURIComponent(videoId)}&title=${encodeURIComponent(title)}${duration ? '&duration=' + duration : ''}`);
+                        if (res.ok) {
+                            onlineData = await res.json();
+                        }
+                    } catch (e) {
+                        console.warn("Failed to fetch online lyrics", e);
                     }
-                } catch (e) {
-                    console.warn("Failed to fetch online lyrics", e);
+                } else {
+                    // If youtube preferred
+                    try {
+                        const res = await fetch(`/api/lyrics?videoId=${encodeURIComponent(videoId)}&title=${encodeURIComponent(title)}&forceSource=youtube`);
+                        if (res.ok) onlineData = await res.json();
+                    } catch(e) {}
                 }
-            } else {
-                // If youtube preferred
-                try {
-                    const res = await fetch(`/api/lyrics?videoId=${encodeURIComponent(videoId)}&title=${encodeURIComponent(title)}&forceSource=youtube`);
-                    if (res.ok) onlineData = await res.json();
-                } catch(e) {}
             }
 
             // 2. Fetch Local AI
@@ -280,7 +282,7 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
                 }
             }
 
-            // Helper to map Deepgram words to standard lines
+            // Fallback mapper for deepgram words -> lines
             const mapDeepgramToLines = (words: any[]) => {
                 const mappedLyrics: LyricLine[] = [];
                 let currentLineText = "";
@@ -292,7 +294,7 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
                     if (currentLineTime === -1) {
                         currentLineTime = w.start;
                     }
-                    if (lastWordEnd !== -1 && w.start - lastWordEnd > 1.5) {
+                    if (lastWordEnd !== -1 && (w.start - lastWordEnd > 0.4 || currentLineText.length > 40)) {
                         mappedLyrics.push({ time: currentLineTime, text: currentLineText.trim(), words: currentLineWords });
                         currentLineText = "";
                         currentLineTime = w.start;
