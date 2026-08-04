@@ -17,6 +17,7 @@ interface LyricsState {
     isKaraokeMode: boolean;
     isLoading: boolean;
     lyrics: LyricLine[];
+    lyricsType: 'synced' | 'plain' | null;
     source: 'lrclib' | 'youtube' | null;
     preferredSource: 'auto' | 'youtube';
     error: string | null;
@@ -185,14 +186,85 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
     setPreferredSource: (src) => set({ preferredSource: src }),
     setSyncOffset: (offset) => set({ syncOffset: offset }),
 
-    clearLyrics: () => set({ lyrics: [], source: null, error: null, isLoading: false, isGeneratingAI: false, syncOffset: 0 }),
+    clearLyrics: () => set({ lyrics: [], source: null, error: null, lyricsType: null, isLoading: false, isGeneratingAI: false, syncOffset: 0 }),
+
+    alignPlainLyricsWithDeepgram: (plainLines: string[], words: any[]) => {
+        // Simple Alignment Algorithm
+        // 1. Join deepgram words to find indices
+        let deepgramStr = "";
+        
+        for (const w of words) {
+            const cleanWord = w.word.replace(/\s+/g, '');
+            deepgramStr += cleanWord;
+        }
+
+        // 2. Map plain lines
+        const newLyrics: LyricLine[] = [];
+
+        for (const line of plainLines) {
+            const cleanLine = line.replace(/\s+/g, '');
+            if (cleanLine.length === 0) continue;
+
+            let matchedWords = [];
+            let currentLineLength = 0;
+            let startTime = -1;
+            
+            // Just take words until we cover the character length
+            for (let i = 0; i < words.length; i++) {
+                if (words[i].used) continue;
+                
+                if (startTime === -1) startTime = words[i].start;
+                matchedWords.push(words[i]);
+                currentLineLength += words[i].word.replace(/\s+/g, '').length;
+                words[i].used = true;
+
+                if (currentLineLength >= cleanLine.length * 0.7) {
+                    break;
+                }
+            }
+
+            if (matchedWords.length > 0) {
+                newLyrics.push({
+                    time: startTime,
+                    text: line,
+                    words: matchedWords
+                });
+            } else {
+                // If we ran out of words, just use the last time or 0
+                const lastTime = newLyrics.length > 0 ? newLyrics[newLyrics.length - 1].time + 2 : 0;
+                newLyrics.push({ time: lastTime, text: line });
+            }
+        }
+
+        return newLyrics;
+    },
 
     fetchLyrics: async (videoId: string, title: string, prefer?: 'auto' | 'youtube', duration?: number) => {
-        set({ isLoading: true, error: null, lyrics: [], source: null, isGeneratingAI: false });
+        set({ isLoading: true, error: null, lyrics: [], source: null, lyricsType: null, isGeneratingAI: false });
         try {
             const pref = prefer || get().preferredSource;
 
-            // --- 1. LOCAL AI LYRICS (Highest Priority if preferredSource is auto) ---
+            // 1. Fetch Online APIs (LRCLIB / YouTube)
+            let onlineData: any = null;
+            if (pref !== 'youtube') {
+                try {
+                    const res = await fetch(`/api/lyrics?videoId=${encodeURIComponent(videoId)}&title=${encodeURIComponent(title)}${duration ? '&duration=' + duration : ''}`);
+                    if (res.ok) {
+                        onlineData = await res.json();
+                    }
+                } catch (e) {
+                    console.warn("Failed to fetch online lyrics", e);
+                }
+            } else {
+                // If youtube preferred
+                try {
+                    const res = await fetch(`/api/lyrics?videoId=${encodeURIComponent(videoId)}&title=${encodeURIComponent(title)}&forceSource=youtube`);
+                    if (res.ok) onlineData = await res.json();
+                } catch(e) {}
+            }
+
+            // 2. Fetch Local AI
+            let localData: any = null;
             if (pref !== 'youtube') {
                 try {
                     const { getActiveBridgeBaseUrl } = await import('../../../stores/useAIVocalStore');
@@ -200,85 +272,90 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
                     if (baseUrl) {
                         const localRes = await fetch(`${baseUrl}/files/${videoId}/lyrics_timeline.json?t=${Date.now()}`, { cache: 'no-store' });
                         if (localRes.ok) {
-                            const localData = await localRes.json();
-                            // The JSON format is { provider: "deepgram", words: [{word, start, end}] }
-                            if (localData && Array.isArray(localData.words) && localData.words.length > 0) {
-                                // Group words into lines to match the LRC format behavior?
-                                // Actually, KaraokeDisplay expects {time, text}. If we send per-word, it might just show a list of words.
-                                // Let's combine them into logical lines based on pauses.
-                                const mappedLyrics: LyricLine[] = [];
-                                let currentLineText = "";
-                                let currentLineTime = -1;
-                                let currentLineWords: LyricWord[] = [];
-                                let lastWordEnd = -1;
-
-                                for (const w of localData.words) {
-                                    if (currentLineTime === -1) {
-                                        currentLineTime = w.start;
-                                    }
-                                    
-                                    // If pause is more than 1.5 seconds (was 0.8), start a new line. 
-                                    // This prevents words from dropping to a new line just because the singer took a breath.
-                                    if (lastWordEnd !== -1 && w.start - lastWordEnd > 1.5) {
-                                        mappedLyrics.push({ 
-                                            time: currentLineTime, 
-                                            text: currentLineText.trim(),
-                                            words: currentLineWords
-                                        });
-                                        currentLineText = "";
-                                        currentLineTime = w.start;
-                                        currentLineWords = [];
-                                    }
-                                    
-                                    currentLineText += w.word + " ";
-                                    currentLineWords.push({ word: w.word, start: w.start, end: w.end });
-                                    lastWordEnd = w.end;
-                                }
-                                
-                                // Push the last line
-                                if (currentLineText.trim() !== "") {
-                                    mappedLyrics.push({ 
-                                        time: currentLineTime, 
-                                        text: currentLineText.trim(),
-                                        words: currentLineWords
-                                    });
-                                }
-
-                                set({
-                                    lyrics: normalizeLyrics(mappedLyrics),
-                                    source: 'lrclib', // Trick UI to show synced view
-                                    isLoading: false,
-                                    isGeneratingAI: false
-                                });
-                                return; // Stop execution, we found local AI lyrics!
-                            }
+                            localData = await localRes.json();
                         }
                     }
                 } catch (e) {
-                    // Ignore errors and fallback to online lyrics
-                    console.log('Local AI lyrics not found or bridge offline, falling back to online APIs.');
+                    console.log('Local AI bridge offline or file not found.');
                 }
             }
 
-            // --- 2. ONLINE APIs (LRCLIB / YouTube) ---
-            const res = await fetch(`/api/lyrics?videoId=${encodeURIComponent(videoId)}&title=${encodeURIComponent(title)}${pref === 'youtube' ? '&forceSource=youtube' : ''}${duration ? '&duration=' + duration : ''}`);
-            if (!res.ok) {
-                throw new Error('Failed to fetch lyrics');
-            }
-            const data = await res.json();
-            
-            if (data.lyrics && data.lyrics.length > 0) {
+            // Helper to map Deepgram words to standard lines
+            const mapDeepgramToLines = (words: any[]) => {
+                const mappedLyrics: LyricLine[] = [];
+                let currentLineText = "";
+                let currentLineTime = -1;
+                let currentLineWords: LyricWord[] = [];
+                let lastWordEnd = -1;
+
+                for (const w of words) {
+                    if (currentLineTime === -1) {
+                        currentLineTime = w.start;
+                    }
+                    if (lastWordEnd !== -1 && w.start - lastWordEnd > 1.5) {
+                        mappedLyrics.push({ time: currentLineTime, text: currentLineText.trim(), words: currentLineWords });
+                        currentLineText = "";
+                        currentLineTime = w.start;
+                        currentLineWords = [];
+                    }
+                    currentLineText += w.word + " ";
+                    currentLineWords.push({ word: w.word, start: w.start, end: w.end });
+                    lastWordEnd = w.end;
+                }
+                if (currentLineText.trim() !== "") {
+                    mappedLyrics.push({ time: currentLineTime, text: currentLineText.trim(), words: currentLineWords });
+                }
+                return mappedLyrics;
+            };
+
+            // 3. Decision Tree
+            if (onlineData?.type === 'synced') {
                 set({ 
-                    lyrics: normalizeLyrics(data.lyrics), 
-                    source: data.source, 
-                    isLoading: false,
-                    isGeneratingAI: false 
+                    lyrics: normalizeLyrics(onlineData.lyrics), 
+                    source: onlineData.source, 
+                    lyricsType: 'synced',
+                    isLoading: false 
+                });
+            } else if (onlineData?.type === 'plain' && localData?.words?.length > 0) {
+                // ALIGNMENT: LRCLIB Plain + Deepgram Time
+                const plainLines = onlineData.lyrics.map((l: any) => l.text);
+                const alignedLyrics = (get() as any).alignPlainLyricsWithDeepgram(plainLines, localData.words);
+                set({
+                    lyrics: normalizeLyrics(alignedLyrics),
+                    source: 'lrclib', // Treat as lrclib synced
+                    lyricsType: 'synced',
+                    isLoading: false
+                });
+            } else if (localData?.words?.length > 0) {
+                // Local AI Only
+                const mappedLyrics = mapDeepgramToLines(localData.words);
+                set({
+                    lyrics: normalizeLyrics(mappedLyrics),
+                    source: 'lrclib', // Trick UI
+                    lyricsType: 'synced',
+                    isLoading: false
+                });
+            } else if (onlineData?.type === 'plain') {
+                // Plain Lyrics Only
+                set({ 
+                    lyrics: onlineData.lyrics, 
+                    source: onlineData.source, 
+                    lyricsType: 'plain',
+                    isLoading: false 
+                });
+            } else if (onlineData?.source === 'youtube') {
+                // YouTube Transcript
+                set({ 
+                    lyrics: normalizeLyrics(onlineData.lyrics), 
+                    source: 'youtube', 
+                    lyricsType: 'synced',
+                    isLoading: false 
                 });
             } else {
-                set({ error: 'ไม่พบเนื้อเพลงจากแหล่งใดๆ', isLoading: false, isGeneratingAI: false });
+                set({ error: 'ไม่พบเนื้อเพลงจากแหล่งใดๆ', isLoading: false });
             }
         } catch (e: any) {
-            set({ error: e.message || 'เกิดข้อผิดพลาดในการโหลดเนื้อเพลง', isLoading: false, isGeneratingAI: false });
+            set({ error: e.message || 'เกิดข้อผิดพลาดในการโหลดเนื้อเพลง', isLoading: false });
         }
     },
 

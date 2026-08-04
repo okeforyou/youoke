@@ -8,7 +8,7 @@ interface LyricsOverlayProps {
 }
 
 export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
-    const { isEnabled, isKaraokeMode, lyrics, source, fetchLyrics, syncOffset } = useLyricsStore();
+    const { isEnabled, isKaraokeMode, lyrics, lyricsType, source, fetchLyrics, syncOffset } = useLyricsStore();
     const { isPlaying } = usePlayerStore();
     const activeVideoId = usePlayerStore(state => state.currentVideo?.videoId || state.currentVideo?.id);
     const videoTitle = usePlayerStore(state => state.currentVideo?.title);
@@ -59,6 +59,26 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
     }, [currentTime, lyrics, syncOffset]);
 
     if (!isEnabled || !lyrics || lyrics.length === 0) return null;
+
+    if (lyricsType === 'plain') {
+        return (
+            <div className="absolute inset-0 pointer-events-none z-40 flex items-center justify-center p-8">
+                <div className="w-full max-w-2xl h-[70%] max-h-[500px] overflow-y-auto rounded-2xl bg-black/40 backdrop-blur-md p-6 sm:p-10 scrollbar-hide text-center flex flex-col gap-6 pointer-events-auto shadow-2xl border border-white/10">
+                    <div className="sticky top-0 bg-black/80 backdrop-blur-md text-xs text-white/70 font-medium px-4 py-2 rounded-full w-fit mx-auto mb-2 shadow-lg border border-white/5 z-10 flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-gray-400 animate-pulse" />
+                        เนื้อเพลงแบบ PLAIN ธรรมดา
+                    </div>
+                    <div className="flex flex-col gap-4">
+                        {lyrics.map((line: any, i: number) => (
+                            <div key={i} className="text-white/90 font-bold text-lg md:text-2xl drop-shadow-md leading-relaxed">
+                                {line.text}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     // VCD Style Layout Logic
     const activeIndex = Math.max(0, currentLineIndex);
@@ -172,7 +192,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
             <div className="w-[95%] max-w-5xl flex flex-col space-y-2 px-6">
                 {source && (
                     <div className="absolute top-4 left-4 bg-black/40 backdrop-blur-sm rounded-lg px-2 py-1 text-[10px] text-white/50 font-medium">
-                        เนื้อเพลงจาก: {source === 'lrclib' ? 'LRCLIB' : 'YouTube CC'}
+                        เนื้อเพลงจาก: {source === 'lrclib' ? (lyricsType === 'synced' ? 'LRCLIB (SYNC)' : 'LRCLIB (PLAIN)') : 'YouTube CC'}
                     </div>
                 )}
                 {renderLine(topLine, topLineIndex, 'left')}

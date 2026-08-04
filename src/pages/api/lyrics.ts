@@ -31,6 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     let lyrics: any[] = [];
     let source: 'lrclib' | 'youtube' | null = null;
+    let lyricsType: 'synced' | 'plain' | null = null;
 
     // 1. Try LRCLIB first if title is provided and we aren't forcing youtube
     if (title && typeof title === 'string' && forceSource !== 'youtube') {
@@ -70,38 +71,65 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                                         }
                                     }
                                 }
-                                if (bestItem) return bestItem.syncedLyrics;
+                                if (bestItem) return { type: 'synced', content: bestItem.syncedLyrics };
                             }
-                            // Fallback to first synced lyrics
-                            return syncedItems[0].syncedLyrics;
+                            return { type: 'synced', content: syncedItems[0].syncedLyrics };
+                        }
+                        
+                        const plainItems = data.filter((d: any) => d.plainLyrics);
+                        if (plainItems.length > 0) {
+                            if (targetDuration) {
+                                let bestItem = null;
+                                let minDiff = 5;
+                                for (const item of plainItems) {
+                                    if (item.duration) {
+                                        const diff = Math.abs(item.duration - targetDuration);
+                                        if (diff <= minDiff) {
+                                            minDiff = diff;
+                                            bestItem = item;
+                                        }
+                                    }
+                                }
+                                if (bestItem) return { type: 'plain', content: bestItem.plainLyrics };
+                            }
+                            return { type: 'plain', content: plainItems[0].plainLyrics };
                         }
                     }
                 }
                 return null;
             };
 
-            let syncedLyrics = null;
+            let lrclibResult = null;
 
             // Strategy 1: Search with specific track_name and artist_name (Highly accurate)
             if (artist && track) {
                 const searchParams = new URLSearchParams({ track_name: track, artist_name: artist });
-                syncedLyrics = await fetchLrcLib(`https://lrclib.net/api/search?${searchParams.toString()}`);
+                lrclibResult = await fetchLrcLib(`https://lrclib.net/api/search?${searchParams.toString()}`);
             }
 
             // Strategy 2: Fallback to generic search with just the track name
-            if (!syncedLyrics && track) {
+            if (!lrclibResult && track) {
                 const searchParams = new URLSearchParams({ q: track });
-                syncedLyrics = await fetchLrcLib(`https://lrclib.net/api/search?${searchParams.toString()}`);
+                lrclibResult = await fetchLrcLib(`https://lrclib.net/api/search?${searchParams.toString()}`);
             }
 
             // Strategy 3: Fallback to generic search with the whole clean title
-            if (!syncedLyrics) {
+            if (!lrclibResult) {
                 const searchParams = new URLSearchParams({ q: cleanTitle });
-                syncedLyrics = await fetchLrcLib(`https://lrclib.net/api/search?${searchParams.toString()}`);
+                lrclibResult = await fetchLrcLib(`https://lrclib.net/api/search?${searchParams.toString()}`);
             }
 
-            if (syncedLyrics) {
-                lyrics = parseLRC(syncedLyrics);
+            if (lrclibResult) {
+                if (lrclibResult.type === 'synced') {
+                    lyrics = parseLRC(lrclibResult.content);
+                    lyricsType = 'synced';
+                } else if (lrclibResult.type === 'plain') {
+                    lyrics = lrclibResult.content.split('\n').map((line: string) => ({
+                        time: -1,
+                        text: line.trim()
+                    })).filter((l: any) => l.text.length > 0);
+                    lyricsType = 'plain';
+                }
                 source = 'lrclib';
             }
         } catch (error) {
@@ -121,6 +149,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 // Filter out empty lines or generic noises like [Music] if desired, 
                 // but usually fine to keep for timing.
                 source = 'youtube';
+                lyricsType = 'synced'; // YouTube is synced
             }
         } catch (error) {
             console.error('YouTube Transcript fetch error:', error);
@@ -128,7 +157,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (lyrics.length > 0) {
-        res.status(200).json({ lyrics, source });
+        res.status(200).json({ lyrics, source, type: lyricsType });
     } else {
         res.status(404).json({ error: 'No lyrics found' });
     }

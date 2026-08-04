@@ -98,7 +98,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
         setVolume
     } = useMixerStore();
 
-    const { isEnabled: showLyrics, isKaraokeMode, toggleLyrics, toggleKaraokeMode, syncOffset, setSyncOffset, preferredSource, setPreferredSource, fetchLyrics, error: lyricsError, isLoading: lyricsLoading, isGeneratingAI, generateAILyrics } = useLyricsStore();
+    const { isEnabled: showLyrics, isKaraokeMode, toggleLyrics, toggleKaraokeMode, syncOffset, setSyncOffset, preferredSource, setPreferredSource, fetchLyrics, error: lyricsError, isLoading: lyricsLoading, isGeneratingAI, generateAILyrics, lyricsType, source } = useLyricsStore();
 
     const handleSourceChange = (src: 'auto' | 'youtube') => {
         setPreferredSource(src);
@@ -485,6 +485,11 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                     <div className="flex items-center gap-2">
                                         <Type size={18} className={showLyrics ? "text-primary" : "opacity-60"} />
                                         <span>เนื้อเพลง (Lyrics)</span>
+                                        {showLyrics && source && (
+                                            <span className={clsx("ml-2 text-[9px] px-1.5 py-0.5 rounded font-black", lyricsType === 'synced' ? "bg-green-500/10 text-green-600 dark:text-green-400" : "bg-gray-500/10 text-gray-500 dark:text-gray-400")}>
+                                                {lyricsType === 'synced' ? 'SYNC' : 'PLAIN'}
+                                            </span>
+                                        )}
                                     </div>
                                     <div className={clsx(
                                         "w-10 h-6 rounded-full p-1 transition-colors flex items-center shadow-inner",
@@ -527,7 +532,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                             </div>
                         </div>
                         
-                        {lyricsError && showLyrics && !isGeneratingAI && (
+                        {((lyricsError || lyricsType === 'plain') && showLyrics && !isGeneratingAI) && (
                             <div className="mt-3 shrink-0 overflow-hidden rounded-2xl bg-gray-50 dark:bg-zinc-800/40 border border-gray-100 dark:border-zinc-700/50">
                                 <div className="p-5 flex flex-col items-center justify-center text-center gap-3">
                                     <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-zinc-800 flex items-center justify-center text-gray-500 dark:text-gray-400 mb-1">
@@ -535,12 +540,10 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                     </div>
                                     <div className="space-y-1">
                                         <p className="text-[13px] font-bold text-gray-800 dark:text-gray-200">
-                                            {lyricsError && lyricsError !== 'ไม่พบเนื้อเพลงจากแหล่งใดๆ' && !lyricsError.includes('offline') && !lyricsError.includes('Network') ? 'เกิดข้อผิดพลาด' : 'ไม่พบเนื้อเพลงในระบบ'}
+                                            {lyricsError ? (lyricsError !== 'ไม่พบเนื้อเพลงจากแหล่งใดๆ' && !lyricsError.includes('offline') && !lyricsError.includes('Network') ? 'เกิดข้อผิดพลาด' : 'ไม่พบเนื้อเพลงในระบบ') : 'ต้องการเนื้อเพลงแบบปาดสี (SYNC)?'}
                                         </p>
                                         <p className="text-[11px] text-gray-500 dark:text-gray-400 max-w-[200px] leading-relaxed mx-auto">
-                                            {lyricsError && (lyricsError.includes('offline') || lyricsError.includes('Network'))
-                                                ? 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง' 
-                                                : (lyricsError === 'ไม่พบเนื้อเพลงจากแหล่งใดๆ' ? 'เพลงนี้ยังไม่มีเนื้อเพลงในฐานข้อมูล LRCLIB หรือ YouTube CC' : lyricsError)}
+                                            {lyricsError ? (lyricsError.includes('offline') || lyricsError.includes('Network') ? 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง' : (lyricsError === 'ไม่พบเนื้อเพลงจากแหล่งใดๆ' ? 'เพลงนี้ยังไม่มีเนื้อเพลงในฐานข้อมูล LRCLIB หรือ YouTube CC' : lyricsError)) : 'เนื้อเพลงนี้ยังเป็นแบบ PLAIN ธรรมดา คุณสามารถใช้ AI แกะเนื้อเพลงแบบปาดสีอัตโนมัติได้'}
                                         </p>
                                     </div>
                                     
