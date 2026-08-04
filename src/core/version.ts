@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.229";
+export const SYSTEM_VERSION = "5.5.230";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.230",
+        date: new Date().toISOString().split('T')[0],
+        changes: [
+            "feat(player): Add 'Edit in Studio' button to quickly jump to creator.",
+            "ui(lyrics): Disable line sweep for standard lyrics to prevent word cutoff issues."
+        ]
+    },
     {
         version: "5.5.229",
         date: new Date().toISOString().split('T')[0],

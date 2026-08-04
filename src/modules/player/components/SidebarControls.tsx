@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Play, Pause, SkipForward, RotateCcw, Volume2, VolumeX, Maximize, Cast, Mic, MicOff, ChevronUp, Mic2, Music, SlidersHorizontal, Type, Drum, Guitar, Piano, MicVocal, X, Sparkles, FileQuestion } from "lucide-react";
+import { useRouter } from "next/router";
+import { Play, Pause, SkipForward, RotateCcw, Volume2, VolumeX, Maximize, Cast, Mic, MicOff, ChevronUp, Mic2, Music, SlidersHorizontal, Type, Drum, Guitar, Piano, MicVocal, X, Sparkles, FileQuestion, Edit2 } from "lucide-react";
 import { usePlayerStore } from "../stores/usePlayerStore";
 import { useLyricsStore } from "../stores/useLyricsStore";
 import { useMixerStore, type TrackType } from "../stores/useMixerStore";
@@ -60,6 +61,7 @@ interface SidebarControlsProps {
 }
 
 export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => {
+    const router = useRouter();
     const {
         isPlaying,
         togglePlay,
@@ -591,6 +593,20 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                         {/* Lyrics Details Controls */}
                         {showLyrics && (
                             <div className="mt-3 p-4 bg-gray-50/80 dark:bg-zinc-800/40 rounded-2xl border border-gray-100 dark:border-zinc-700/50 flex flex-col gap-4">
+                                {/* Edit in Studio Button */}
+                                {currentVideo && (
+                                    <button
+                                        onClick={() => {
+                                            setShowLyricsModal(false);
+                                            router.push(`/creator?edit=${currentVideo.id}`);
+                                        }}
+                                        className="w-full py-2.5 bg-zinc-900 hover:bg-black dark:bg-zinc-700 dark:hover:bg-zinc-600 text-white rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        <Edit2 size={14} />
+                                        <span>แก้ไขเนื้อเพลงใน Studio</span>
+                                    </button>
+                                )}
+                                
                                 {/* Source Selector */}
                                 <div>
                                     <div className="flex items-center gap-2 mb-2">

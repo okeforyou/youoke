@@ -73,6 +73,21 @@ export default function CreatorStudioPage() {
         }
     };
 
+    // Auto-select song if '?edit=videoId' is passed
+    useEffect(() => {
+        if (router.isReady && router.query.edit && songs.length > 0 && !selectedSong) {
+            const editId = router.query.edit as string;
+            const match = songs.find(s => s.video_id === editId);
+            if (match) {
+                handleSelectSong(match);
+                // Remove the query param so refreshing doesn't force re-select
+                router.replace('/creator', undefined, { shallow: true });
+            } else {
+                toast.error(`ไม่พบเพลง (ID: ${editId}) ใน Local Bridge`);
+            }
+        }
+    }, [router.isReady, router.query.edit, songs, selectedSong, router]);
+
     const handleSelectSong = async (song: CachedSong) => {
         // Clone the object so React sees it as a new state and forces re-render if it's the same song
         setSelectedSong({...song});
