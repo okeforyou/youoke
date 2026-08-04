@@ -52,6 +52,20 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
     const bassRef = useRef<HTMLAudioElement>(null);
     const otherRef = useRef<HTMLAudioElement>(null);
     const ytPlayerRef = useRef<any>(null);
+    const handleAudioError = (e: React.SyntheticEvent<HTMLAudioElement, Event>) => {
+        if (!isAIVocalMode) return;
+        console.error("Audio error:", e.currentTarget.src, e.currentTarget.error);
+        
+        // Fallback to YouTube Audio
+        if (ytPlayerRef.current && typeof ytPlayerRef.current.unMute === 'function') {
+            const { isMuted } = useMixerStore.getState();
+            if (!isMuted) {
+                ytPlayerRef.current.unMute();
+                ytPlayerRef.current.setVolume(100);
+            }
+        }
+    };
+
     const [bridgeBaseUrl, setBridgeBaseUrl] = useState('http://127.0.0.1:5050');
 
     const { trackStates, volumes } = useMixerStore(
@@ -445,7 +459,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
             {/* AI Audio Elements */}
             {isAiReady && activeVideoId && (
                 <div className="hidden" key={`${activeVideoId}-${aiMode}`}>
-                    <audio 
+                    <audio onError={handleAudioError} 
                         ref={vocalRef} 
                         src={`${bridgeBaseUrl}/files/${activeVideoId}/vocals.m4a`} 
                         preload="auto" 
@@ -453,12 +467,12 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                     />
                     {aiMode === 'pro' ? (
                         <>
-                            <audio ref={drumsRef} src={`${bridgeBaseUrl}/files/${activeVideoId}/drums.m4a`} preload="auto" onLoadedData={(e) => { e.currentTarget.volume = (volumes?.drums ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} />
-                            <audio ref={bassRef} src={`${bridgeBaseUrl}/files/${activeVideoId}/bass.m4a`} preload="auto" onLoadedData={(e) => { e.currentTarget.volume = (volumes?.bass ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} />
-                            <audio ref={otherRef} src={`${bridgeBaseUrl}/files/${activeVideoId}/other.m4a`} preload="auto" onLoadedData={(e) => { e.currentTarget.volume = (volumes?.other ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} />
+                            <audio onError={handleAudioError} ref={drumsRef} src={`${bridgeBaseUrl}/files/${activeVideoId}/drums.m4a`} preload="auto" onLoadedData={(e) => { e.currentTarget.volume = (volumes?.drums ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} />
+                            <audio onError={handleAudioError} ref={bassRef} src={`${bridgeBaseUrl}/files/${activeVideoId}/bass.m4a`} preload="auto" onLoadedData={(e) => { e.currentTarget.volume = (volumes?.bass ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} />
+                            <audio onError={handleAudioError} ref={otherRef} src={`${bridgeBaseUrl}/files/${activeVideoId}/other.m4a`} preload="auto" onLoadedData={(e) => { e.currentTarget.volume = (volumes?.other ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} />
                         </>
                     ) : (
-                        <audio 
+                        <audio onError={handleAudioError} 
                             ref={instrumentalRef} 
                             src={`${bridgeBaseUrl}/files/${activeVideoId}/no_vocals.m4a`} 
                             preload="auto" 
