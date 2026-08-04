@@ -34,26 +34,58 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (title && typeof title === 'string' && forceSource !== 'youtube') {
         try {
             // Clean title (e.g. remove "Official MV", "Lyrics", etc.)
-            const cleanTitle = title
+            let cleanTitle = title
                 .replace(/(\(|\[).*?(official|mv|lyrics|lyric|audio|video|live).*?(\)|\])/gi, '')
                 .trim();
             
-            // Use generic search which works much better for varied Thai title formats
-            const searchParams = new URLSearchParams({
-                q: cleanTitle
-            });
+            // Try to split into Artist and Track for better LRCLIB matching
+            let artist = '';
+            let track = cleanTitle;
+            if (cleanTitle.includes('-')) {
+                const parts = cleanTitle.split('-');
+                artist = parts[0].trim();
+                track = parts.slice(1).join('-').trim();
+            }
 
-            const lrclibRes = await fetch(`https://lrclib.net/api/search?${searchParams.toString()}`);
-            if (lrclibRes.ok) {
-                const data = await lrclibRes.json();
-                if (Array.isArray(data) && data.length > 0) {
-                    // Find the first one with synced lyrics
-                    const bestMatch = data.find((d: any) => d.syncedLyrics);
-                    if (bestMatch && bestMatch.syncedLyrics) {
-                        lyrics = parseLRC(bestMatch.syncedLyrics);
-                        source = 'lrclib';
+            // Function to fetch and process LRCLIB search
+            const fetchLrcLib = async (url: string) => {
+                const res = await fetch(url);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (Array.isArray(data) && data.length > 0) {
+                        // Find the first one with synced lyrics
+                        const bestMatch = data.find((d: any) => d.syncedLyrics);
+                        if (bestMatch && bestMatch.syncedLyrics) {
+                            return bestMatch.syncedLyrics;
+                        }
                     }
                 }
+                return null;
+            };
+
+            let syncedLyrics = null;
+
+            // Strategy 1: Search with specific track_name and artist_name (Highly accurate)
+            if (artist && track) {
+                const searchParams = new URLSearchParams({ track_name: track, artist_name: artist });
+                syncedLyrics = await fetchLrcLib(`https://lrclib.net/api/search?${searchParams.toString()}`);
+            }
+
+            // Strategy 2: Fallback to generic search with just the track name
+            if (!syncedLyrics && track) {
+                const searchParams = new URLSearchParams({ q: track });
+                syncedLyrics = await fetchLrcLib(`https://lrclib.net/api/search?${searchParams.toString()}`);
+            }
+
+            // Strategy 3: Fallback to generic search with the whole clean title
+            if (!syncedLyrics) {
+                const searchParams = new URLSearchParams({ q: cleanTitle });
+                syncedLyrics = await fetchLrcLib(`https://lrclib.net/api/search?${searchParams.toString()}`);
+            }
+
+            if (syncedLyrics) {
+                lyrics = parseLRC(syncedLyrics);
+                source = 'lrclib';
             }
         } catch (error) {
             console.error('LRCLIB fetch error:', error);
