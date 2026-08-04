@@ -667,6 +667,15 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                             <SkipForward size={12} className="opacity-50" />
                                         </button>
                                     </div>
+                                    {currentVideo && isAiReady && lyricsType === 'synced' && source === 'lrclib' && !isGeneratingAI && (
+                                        <button
+                                            onClick={() => generateAILyrics(currentVideo.id)}
+                                            className="w-full mt-3 py-2.5 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-xl font-bold text-[11px] active:scale-95 transition-all duration-300 flex items-center justify-center gap-2 group"
+                                        >
+                                            <Sparkles size={12} className="group-hover:rotate-12 transition-transform duration-300" />
+                                            <span>เนื้อเพลงไม่ตรง? ปาดใหม่ด้วย AI ให้ตรงกับวิดีโอนี้</span>
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         )}

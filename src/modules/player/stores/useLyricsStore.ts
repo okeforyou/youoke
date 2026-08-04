@@ -267,14 +267,24 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
 
             // 2. Fetch Local AI
             let localData: any = null;
+            let localDataType: 'edited' | 'ai' | null = null;
             if (pref !== 'youtube') {
                 try {
                     const { getActiveBridgeBaseUrl } = await import('../../../stores/useAIVocalStore');
                     const baseUrl = await getActiveBridgeBaseUrl();
                     if (baseUrl) {
-                        const localRes = await fetch(`${baseUrl}/files/${videoId}/lyrics_timeline.json?t=${Date.now()}`, { cache: 'no-store' });
+                        // Try lyrics.json first (user edited in Creator)
+                        let localRes = await fetch(`${baseUrl}/files/${videoId}/lyrics.json?t=${Date.now()}`, { cache: 'no-store' });
                         if (localRes.ok) {
                             localData = await localRes.json();
+                            localDataType = 'edited';
+                        } else {
+                            // Fallback to lyrics_timeline.json (raw AI generation)
+                            localRes = await fetch(`${baseUrl}/files/${videoId}/lyrics_timeline.json?t=${Date.now()}`, { cache: 'no-store' });
+                            if (localRes.ok) {
+                                localData = await localRes.json();
+                                localDataType = 'ai';
+                            }
                         }
                     }
                 } catch (e) {
@@ -311,14 +321,16 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
             };
 
             // 3. Decision Tree
-            if (onlineData?.type === 'synced') {
-                set({ 
-                    lyrics: normalizeLyrics(onlineData.lyrics), 
-                    source: onlineData.source, 
+            if (localData?.words?.length > 0 && localDataType === 'edited') {
+                // User explicitly edited in Creator - HIGHEST PRIORITY
+                const mappedLyrics = mapDeepgramToLines(localData.words);
+                set({
+                    lyrics: normalizeLyrics(mappedLyrics),
+                    source: 'lrclib', // Trick UI
                     lyricsType: 'synced',
-                    isLoading: false, isGeneratingAI: false 
+                    isLoading: false, isGeneratingAI: false
                 });
-            } else if (onlineData?.type === 'plain' && localData?.words?.length > 0) {
+            } else if (localData?.words?.length > 0 && localDataType === 'ai' && onlineData?.type === 'plain') {
                 // ALIGNMENT: LRCLIB Plain + Deepgram Time
                 const plainLines = onlineData.lyrics.map((l: any) => l.text);
                 const alignedLyrics = (get() as any).alignPlainLyricsWithDeepgram(plainLines, localData.words);
@@ -328,14 +340,21 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
                     lyricsType: 'synced',
                     isLoading: false, isGeneratingAI: false
                 });
-            } else if (localData?.words?.length > 0) {
-                // Local AI Only
+            } else if (localData?.words?.length > 0 && localDataType === 'ai') {
+                // Local AI Only (Overrides LRCLIB synced because AI is usually more accurate for Thai MVs)
                 const mappedLyrics = mapDeepgramToLines(localData.words);
                 set({
                     lyrics: normalizeLyrics(mappedLyrics),
                     source: 'lrclib', // Trick UI
                     lyricsType: 'synced',
                     isLoading: false, isGeneratingAI: false
+                });
+            } else if (onlineData?.type === 'synced') {
+                set({ 
+                    lyrics: normalizeLyrics(onlineData.lyrics), 
+                    source: onlineData.source, 
+                    lyricsType: 'synced',
+                    isLoading: false, isGeneratingAI: false 
                 });
             } else if (onlineData?.type === 'plain') {
                 // Plain Lyrics Only
