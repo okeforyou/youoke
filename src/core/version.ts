@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.226";
+export const SYSTEM_VERSION = "5.5.227";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.227",
+        date: new Date().toISOString().split('T')[0],
+        changes: [
+            "fix(lyrics): Fixed LRC parser to handle multiple timestamps per line (e.g. [01:00.00][01:05.00]), resolving sync offsets.",
+            "fix(ui): Resolved missing song covers on some AI Cache items by adding fallback to standard hqdefault.jpg.",
+            "ui(card): Adjusted 2CH/4CH AI badge padding and position to prevent touching the edges."
+        ]
+    },
     {
         version: "5.5.226",
         date: new Date().toISOString().split('T')[0],

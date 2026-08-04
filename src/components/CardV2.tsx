@@ -68,10 +68,17 @@ export default function CardV2({
                 {imageSrc && (
                     <img
                         src={imageSrc}
-                        alt={name}
+                        alt={name || 'Cover'}
                         className="absolute inset-0 w-full h-full object-cover z-10 transition-transform duration-700 group-hover:scale-110"
                         style={{ filter: 'none' }} // Explicitly disable filters
-                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                        onError={(e) => {
+                            const target = e.currentTarget;
+                            if (target.src.includes('sddefault.jpg') || target.src.includes('mqdefault.jpg')) {
+                                target.src = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+                            } else {
+                                target.style.display = 'none';
+                            }
+                        }}
                     />
                 )}
 
@@ -98,16 +105,17 @@ export default function CardV2({
                 )}
 
                 {aiBadgeText && (
-                    <div className="absolute top-2 left-2 z-30">
+                    <div className="absolute top-3 left-3 z-30">
                         <span style={{ 
                             display: 'inline-block', 
-                            padding: '3px 6px', 
-                            borderRadius: '4px', 
-                            backgroundColor: 'rgba(0,0,0,0.5)', 
+                            padding: '4px 8px', 
+                            borderRadius: '6px', 
+                            backgroundColor: 'rgba(0,0,0,0.6)', 
                             color: 'white', 
-                            fontSize: '9px', 
+                            fontSize: '10px', 
                             fontWeight: 'bold',
-                            border: '1px solid rgba(255,255,255,0.15)'
+                            border: '1px solid rgba(255,255,255,0.2)',
+                            backdropFilter: 'blur(4px)'
                         }}>
                             {aiBadgeText}
                         </span>

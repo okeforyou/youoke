@@ -5,18 +5,30 @@ import getArtistTitle from 'get-artist-title';
 function parseLRC(lrc: string) {
     const lines = lrc.split('\n');
     const lyrics = [];
+    const timeRegex = /\[(\d{2,}):(\d{2}(?:\.\d{2,3})?)\]/g;
+
     for (const line of lines) {
-        // Match [mm:ss.xx] or [mm:ss.xxx]
-        const match = line.match(/\[(\d{2,}):(\d{2}(?:\.\d{2,3})?)\](.*)/);
-        if (match) {
+        let match;
+        const times = [];
+        // Extract all time tags
+        while ((match = timeRegex.exec(line)) !== null) {
             const min = parseInt(match[1], 10);
             const sec = parseFloat(match[2]);
-            const text = match[3].trim();
-            if (text) {
-                lyrics.push({ time: min * 60 + sec, text });
+            times.push(min * 60 + sec);
+        }
+        
+        // Remove time tags to get text
+        const text = line.replace(/\[\d{2,}:\d{2}(?:\.\d{2,3})?\]/g, '').trim();
+        
+        if (text) {
+            for (const time of times) {
+                lyrics.push({ time, text });
             }
         }
     }
+    
+    // Sort by time (required when multiple time tags are expanded)
+    lyrics.sort((a, b) => a.time - b.time);
     return lyrics;
 }
 
