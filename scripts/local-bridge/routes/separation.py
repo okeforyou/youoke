@@ -70,12 +70,19 @@ def separate(req: SeparateRequest):
     # Try downloading cover image
     try:
         import urllib.request
+        import socket
         cover_path = os.path.join(song_dir, "cover.jpg")
         if not os.path.exists(cover_path):
+            socket.setdefaulttimeout(5)
             try:
                 urllib.request.urlretrieve(f"https://img.youtube.com/vi/{vid}/maxresdefault.jpg", cover_path)
             except Exception:
-                urllib.request.urlretrieve(f"https://img.youtube.com/vi/{vid}/hqdefault.jpg", cover_path)
+                try:
+                    urllib.request.urlretrieve(f"https://img.youtube.com/vi/{vid}/hqdefault.jpg", cover_path)
+                except Exception:
+                    pass
+            finally:
+                socket.setdefaulttimeout(None)
     except Exception as e:
         print(f"[Cover] Failed to download cover: {e}")
     
