@@ -480,8 +480,6 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                     />
                     <LyricsOverlay 
                         playerRef={ytPlayerRef} 
-                        activeVideoId={activeVideoId} 
-                        videoTitle={currentVideo?.title} 
                     />
                 </>
             ) : (

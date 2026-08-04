@@ -21,11 +21,13 @@ function parseLRC(lrc: string) {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    const { videoId, title, forceSource } = req.query;
+    const { videoId, title, forceSource, duration } = req.query;
 
     if (!videoId || typeof videoId !== 'string') {
         return res.status(400).json({ error: 'Missing videoId' });
     }
+
+    const targetDuration = duration && !isNaN(Number(duration)) ? Number(duration) : null;
 
     let lyrics: any[] = [];
     let source: 'lrclib' | 'youtube' | null = null;
@@ -53,10 +55,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 if (res.ok) {
                     const data = await res.json();
                     if (Array.isArray(data) && data.length > 0) {
-                        // Find the first one with synced lyrics
-                        const bestMatch = data.find((d: any) => d.syncedLyrics);
-                        if (bestMatch && bestMatch.syncedLyrics) {
-                            return bestMatch.syncedLyrics;
+                        const syncedItems = data.filter((d: any) => d.syncedLyrics);
+                        if (syncedItems.length > 0) {
+                            if (targetDuration) {
+                                // Find closest duration within 5 seconds
+                                let bestItem = null;
+                                let minDiff = 5; // Max 5 seconds difference
+                                for (const item of syncedItems) {
+                                    if (item.duration) {
+                                        const diff = Math.abs(item.duration - targetDuration);
+                                        if (diff <= minDiff) {
+                                            minDiff = diff;
+                                            bestItem = item;
+                                        }
+                                    }
+                                }
+                                if (bestItem) return bestItem.syncedLyrics;
+                            }
+                            // Fallback to first synced lyrics
+                            return syncedItems[0].syncedLyrics;
                         }
                     }
                 }

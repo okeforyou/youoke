@@ -187,7 +187,7 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
 
     clearLyrics: () => set({ lyrics: [], source: null, error: null, isLoading: false, isGeneratingAI: false, syncOffset: 0 }),
 
-    fetchLyrics: async (videoId: string, title: string, prefer?: 'auto' | 'youtube') => {
+    fetchLyrics: async (videoId: string, title: string, prefer?: 'auto' | 'youtube', duration?: number) => {
         set({ isLoading: true, error: null, lyrics: [], source: null, isGeneratingAI: false });
         try {
             const pref = prefer || get().preferredSource;
@@ -261,7 +261,7 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
             }
 
             // --- 2. ONLINE APIs (LRCLIB / YouTube) ---
-            const res = await fetch(`/api/lyrics?videoId=${encodeURIComponent(videoId)}&title=${encodeURIComponent(title)}${pref === 'youtube' ? '&forceSource=youtube' : ''}`);
+            const res = await fetch(`/api/lyrics?videoId=${encodeURIComponent(videoId)}&title=${encodeURIComponent(title)}${pref === 'youtube' ? '&forceSource=youtube' : ''}${duration ? '&duration=' + duration : ''}`);
             if (!res.ok) {
                 throw new Error('Failed to fetch lyrics');
             }

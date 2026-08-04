@@ -104,7 +104,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
         setPreferredSource(src);
         const activeId = currentVideo?.videoId || currentVideo?.id;
         if (activeId) {
-            fetchLyrics(activeId, currentVideo?.title || '', src);
+            fetchLyrics(activeId, currentVideo?.title || '', src, currentVideo?.duration);
         }
     };
 

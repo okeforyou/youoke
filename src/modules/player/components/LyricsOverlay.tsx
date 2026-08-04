@@ -5,22 +5,23 @@ import clsx from 'clsx';
 
 interface LyricsOverlayProps {
     playerRef: React.MutableRefObject<any>;
-    activeVideoId?: string;
-    videoTitle?: string;
 }
 
-export const LyricsOverlay = ({ playerRef, activeVideoId, videoTitle }: LyricsOverlayProps) => {
+export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
     const { isEnabled, isKaraokeMode, lyrics, source, fetchLyrics, syncOffset } = useLyricsStore();
     const { isPlaying } = usePlayerStore();
+    const activeVideoId = usePlayerStore(state => state.currentVideo?.videoId || state.currentVideo?.id);
+    const videoTitle = usePlayerStore(state => state.currentVideo?.title);
+    const videoDuration = usePlayerStore(state => state.currentVideo?.duration);
     
     const [currentTime, setCurrentTime] = useState(0);
 
     // Fetch lyrics when video changes
     useEffect(() => {
         if (activeVideoId && videoTitle) {
-            fetchLyrics(activeVideoId, videoTitle);
+            fetchLyrics(activeVideoId, videoTitle, 'auto', videoDuration);
         }
-    }, [activeVideoId, videoTitle, fetchLyrics]);
+    }, [activeVideoId, videoTitle, videoDuration, fetchLyrics]);
 
     // Fast precise time tracking loop for smooth sweep
     useEffect(() => {
