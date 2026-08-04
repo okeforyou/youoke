@@ -268,7 +268,19 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
             // 2. Fetch Local AI
             let localData: any = null;
             let localDataType: 'edited' | 'ai' | null = null;
-            if (pref !== 'youtube') {
+            
+            // Check localStorage for browser-generated AI lyrics
+            if (typeof window !== 'undefined') {
+                const cachedAi = localStorage.getItem(`ai_lyrics_${videoId}`);
+                if (cachedAi) {
+                    try {
+                        localData = { words: JSON.parse(cachedAi) };
+                        localDataType = 'ai';
+                    } catch(e) {}
+                }
+            }
+
+            if (!localData && pref !== 'youtube') {
                 try {
                     const { getActiveBridgeBaseUrl } = await import('../../../stores/useAIVocalStore');
                     const baseUrl = await getActiveBridgeBaseUrl();
@@ -394,15 +406,38 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
                 throw new Error("ไม่พบ Deepgram API Key กรุณาตั้งค่าในหน้า Settings");
             }
 
-            const res = await fetch(`${baseUrl}/transcribe`, {
+            // Fetch vocals audio from local bridge
+            const audioRes = await fetch(`${baseUrl}/files/${videoId}/vocals.m4a`);
+            if (!audioRes.ok) {
+                throw new Error("ไม่พบไฟล์เสียงร้อง (vocals.m4a) กรุณาแยกเสียงเพลงนี้ก่อนให้ AI แกะเนื้อเพลง");
+            }
+            const audioBlob = await audioRes.blob();
+
+            // Call Deepgram directly from browser
+            const dgRes = await fetch('https://api.deepgram.com/v1/listen?model=nova-2&language=th&smart_format=true', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ video_id: videoId, api_key: deepgramKey, provider: 'deepgram' })
+                headers: {
+                    'Authorization': `Token ${deepgramKey}`,
+                    'Content-Type': 'audio/m4a'
+                },
+                body: audioBlob
             });
 
-            if (!res.ok) {
-                const errData = await res.json().catch(() => ({}));
-                throw new Error(errData.detail || "เกิดข้อผิดพลาดในการแกะเนื้อเพลง");
+            if (!dgRes.ok) {
+                const errData = await dgRes.json().catch(() => ({}));
+                throw new Error(errData.err_msg || "เกิดข้อผิดพลาดในการเชื่อมต่อ Deepgram API");
+            }
+
+            const dgData = await dgRes.json();
+            const words = dgData.results?.channels[0]?.alternatives[0]?.words || [];
+
+            if (words.length === 0) {
+                throw new Error("AI ไม่สามารถแกะเนื้อเพลงจากไฟล์เสียงร้องได้");
+            }
+
+            // Cache locally so we don't need to re-transcribe
+            if (typeof window !== 'undefined') {
+                localStorage.setItem(`ai_lyrics_${videoId}`, JSON.stringify(words));
             }
 
             // Once generated, re-fetch normally

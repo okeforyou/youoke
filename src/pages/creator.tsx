@@ -246,23 +246,41 @@ export default function CreatorStudioPage() {
         setError('');
         try {
             const baseUrl = await getActiveBridgeBaseUrl();
-            const res = await fetch(`${baseUrl}/transcribe`, {
+            if (!baseUrl) throw new Error("Local Bridge offline");
+
+            // 1. Fetch audio from bridge
+            const audioRes = await fetch(`${baseUrl}/files/${selectedSong.video_id}/vocals.m4a`);
+            if (!audioRes.ok) {
+                throw new Error("ไม่พบไฟล์เสียงร้อง (vocals.m4a) กรุณาแยกเสียงเพลงนี้ก่อน");
+            }
+            const audioBlob = await audioRes.blob();
+
+            // 2. Call Deepgram directly from browser
+            const res = await fetch('https://api.deepgram.com/v1/listen?model=nova-2&language=th&smart_format=true', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    video_id: selectedSong.video_id,
-                    api_key: deepgramKey,
-                    provider: 'deepgram'
-                })
+                headers: {
+                    'Authorization': `Token ${deepgramKey}`,
+                    'Content-Type': 'audio/m4a'
+                },
+                body: audioBlob
             });
 
             if (res.ok) {
-                const data = await res.json();
-                setLyrics(data.words);
+                const dgData = await res.json();
+                const words = dgData.results?.channels[0]?.alternatives[0]?.words || [];
+                
+                if (words.length === 0) {
+                    throw new Error("AI ไม่สามารถแกะเนื้อเพลงจากไฟล์เสียงร้องได้");
+                }
+                
+                // Cache locally so it syncs with the player!
+                localStorage.setItem(`ai_lyrics_${selectedSong.video_id}`, JSON.stringify(words));
+
+                setLyrics(words);
                 
                 if (wsRegions.current) {
                     wsRegions.current.clearRegions();
-                    data.words.forEach((word: LyricWord, i: number) => {
+                    words.forEach((word: LyricWord, i: number) => {
                         wsRegions.current.addRegion({
                             id: `lyric-${i}`,
                             start: word.start,
@@ -275,8 +293,8 @@ export default function CreatorStudioPage() {
                     });
                 }
             } else {
-                const errData = await res.json();
-                setError(errData.detail || 'Transcription failed');
+                const errData = await res.json().catch(() => ({}));
+                setError(errData.err_msg || 'เกิดข้อผิดพลาดในการเชื่อมต่อ Deepgram API');
             }
         } catch (e: any) {
             setError(e.message);
