@@ -265,23 +265,11 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
                 }
             }
 
-            // 2. Fetch Local AI
+            // 2. Fetch Local AI (Python Bridge only)
             let localData: any = null;
             let localDataType: 'edited' | 'ai' | null = null;
             
-            // Check localStorage for browser-generated AI lyrics
-            if (typeof window !== 'undefined') {
-                const cachedAi = localStorage.getItem(`ai_lyrics_${videoId}`);
-                if (cachedAi) {
-                    try {
-                        localData = { words: JSON.parse(cachedAi) };
-                        // Treat browser cache as 'edited' so it gets highest priority and isn't overwritten by online plain text
-                        localDataType = 'edited';
-                    } catch(e) {}
-                }
-            }
-
-            if (!localData && pref !== 'youtube') {
+            if (pref !== 'youtube') {
                 try {
                     const { getActiveBridgeBaseUrl } = await import('../../../stores/useAIVocalStore');
                     const baseUrl = await getActiveBridgeBaseUrl();
@@ -333,9 +321,17 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
                 return mappedLyrics;
             };
 
-            // 3. Decision Tree
-            if (localData?.words?.length > 0 && localDataType === 'edited') {
-                // User explicitly edited in Creator - HIGHEST PRIORITY
+            // 3. Decision Tree (Prioritize Online Synced > Local Edited > Local AI > Online Plain)
+            if (onlineData?.type === 'synced' && pref !== 'local') {
+                // HIGHEST PRIORITY: Official LRCLIB Synced Lyrics
+                set({ 
+                    lyrics: normalizeLyrics(onlineData.lyrics), 
+                    source: onlineData.source, 
+                    lyricsType: 'synced',
+                    isLoading: false, isGeneratingAI: false 
+                });
+            } else if (localData?.words?.length > 0 && localDataType === 'edited') {
+                // User explicitly edited in Creator
                 const mappedLyrics = mapDeepgramToLines(localData.words);
                 set({
                     lyrics: normalizeLyrics(mappedLyrics),
