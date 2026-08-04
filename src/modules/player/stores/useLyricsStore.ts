@@ -275,7 +275,8 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
                 if (cachedAi) {
                     try {
                         localData = { words: JSON.parse(cachedAi) };
-                        localDataType = 'ai';
+                        // Treat browser cache as 'edited' so it gets highest priority and isn't overwritten by online plain text
+                        localDataType = 'edited';
                     } catch(e) {}
                 }
             }
