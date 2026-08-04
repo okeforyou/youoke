@@ -172,7 +172,7 @@ const normalizeLyrics = (lyrics: LyricLine[], maxLength = 40): LyricLine[] => {
 export const useLyricsStore = create<LyricsState>((set, get) => ({
     isEnabled: true,
     isKaraokeMode: true,
-    isLoading: false,
+    isLoading: false, isGeneratingAI: false,
     isGeneratingAI: false,
     lyrics: [],
     source: null,
@@ -186,7 +186,7 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
     setPreferredSource: (src) => set({ preferredSource: src }),
     setSyncOffset: (offset) => set({ syncOffset: offset }),
 
-    clearLyrics: () => set({ lyrics: [], source: null, error: null, lyricsType: null, isLoading: false, isGeneratingAI: false, syncOffset: 0 }),
+    clearLyrics: () => set({ lyrics: [], source: null, error: null, lyricsType: null, isLoading: false, isGeneratingAI: false, isGeneratingAI: false, syncOffset: 0 }),
 
     alignPlainLyricsWithDeepgram: (plainLines: string[], words: any[]) => {
         // Simple Alignment Algorithm
@@ -314,7 +314,7 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
                     lyrics: normalizeLyrics(onlineData.lyrics), 
                     source: onlineData.source, 
                     lyricsType: 'synced',
-                    isLoading: false 
+                    isLoading: false, isGeneratingAI: false 
                 });
             } else if (onlineData?.type === 'plain' && localData?.words?.length > 0) {
                 // ALIGNMENT: LRCLIB Plain + Deepgram Time
@@ -324,7 +324,7 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
                     lyrics: normalizeLyrics(alignedLyrics),
                     source: 'lrclib', // Treat as lrclib synced
                     lyricsType: 'synced',
-                    isLoading: false
+                    isLoading: false, isGeneratingAI: false
                 });
             } else if (localData?.words?.length > 0) {
                 // Local AI Only
@@ -333,7 +333,7 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
                     lyrics: normalizeLyrics(mappedLyrics),
                     source: 'lrclib', // Trick UI
                     lyricsType: 'synced',
-                    isLoading: false
+                    isLoading: false, isGeneratingAI: false
                 });
             } else if (onlineData?.type === 'plain') {
                 // Plain Lyrics Only
@@ -341,7 +341,7 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
                     lyrics: onlineData.lyrics, 
                     source: onlineData.source, 
                     lyricsType: 'plain',
-                    isLoading: false 
+                    isLoading: false, isGeneratingAI: false 
                 });
             } else if (onlineData?.source === 'youtube') {
                 // YouTube Transcript
@@ -349,13 +349,13 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
                     lyrics: normalizeLyrics(onlineData.lyrics), 
                     source: 'youtube', 
                     lyricsType: 'synced',
-                    isLoading: false 
+                    isLoading: false, isGeneratingAI: false 
                 });
             } else {
-                set({ error: 'ไม่พบเนื้อเพลงจากแหล่งใดๆ', isLoading: false });
+                set({ error: 'ไม่พบเนื้อเพลงจากแหล่งใดๆ', isLoading: false, isGeneratingAI: false });
             }
         } catch (e: any) {
-            set({ error: e.message || 'เกิดข้อผิดพลาดในการโหลดเนื้อเพลง', isLoading: false });
+            set({ error: e.message || 'เกิดข้อผิดพลาดในการโหลดเนื้อเพลง', isLoading: false, isGeneratingAI: false });
         }
     },
 
