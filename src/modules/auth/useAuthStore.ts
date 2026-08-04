@@ -301,6 +301,15 @@ export const useAuthStore = create<UserState & AuthActions>()(
                             if (userSnap.exists()) {
                                 const userData = userSnap.data();
                                 
+                                // Self-heal legacy missing fields
+                                const healUpdates: any = {};
+                                if (!userData.createdAt) healUpdates.createdAt = serverTimestamp();
+                                if (!userData.email && firebaseUser.email) healUpdates.email = firebaseUser.email;
+                                if (Object.keys(healUpdates).length > 0) {
+                                    console.log('🩹 [AuthStore] Healing legacy missing fields:', Object.keys(healUpdates));
+                                    await updateDoc(userRef, healUpdates).catch(e => console.warn('Failed to heal legacy fields', e));
+                                }
+                                
                                 // Basic data mapping
                                 let role = userData.role || 'user';
                                 const isOwnerEmail = firebaseUser.email === 'boonyanone@gmail.com' || firebaseUser.email === 'youoke.okeforyou@gmail.com';

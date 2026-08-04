@@ -55,11 +55,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             });
             results.created++;
           } else {
-            // Update existing status (sync disabled flag)
-            await userRef.update({
+            const data = doc.data() || {};
+            const updates: any = {
                 disabled: user.disabled || false,
                 updatedAt: new Date()
-            });
+            };
+            
+            // Self-heal legacy missing fields
+            if (!data.email && user.email) updates.email = user.email;
+            if (!data.createdAt) updates.createdAt = new Date(user.metadata.creationTime || Date.now());
+            if (!data.displayName && baseData.displayName) updates.displayName = baseData.displayName;
+
+            // Update existing status and missing fields
+            await userRef.update(updates);
             results.updated++;
           }
         } catch (e) {
