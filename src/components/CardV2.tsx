@@ -144,7 +144,7 @@ export default function CardV2({
             </div>
 
             {/* Footer Data */}
-            <div className="flex items-start justify-between gap-2 px-1 pt-1.5 pb-0">
+            <div className="flex items-center justify-between gap-2 px-1 pt-1.5 pb-1">
                 <div className="flex-1 min-w-0 pr-2">
                     <h3 className="font-bold text-gray-900 dark:text-zinc-200 truncate group-hover:text-primary text-[12px] sm:text-[13px] leading-tight">
                         {name}
@@ -156,8 +156,8 @@ export default function CardV2({
                     <div className="flex items-center gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
                         {activeIndex === 1 || activeIndex === 3 ? (
                             <div className="dropdown dropdown-end dropdown-top">
-                                <button tabIndex={0} className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg text-gray-400 dark:text-zinc-500 hover:text-gray-900 dark:hover:text-white transition-colors">
-                                    <EllipsisVerticalIcon className="w-5 h-5" />
+                                <button tabIndex={0} className="p-1.5 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg text-gray-400 dark:text-zinc-500 hover:text-gray-900 dark:hover:text-white transition-colors">
+                                    <EllipsisVerticalIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                                 </button>
                                 <ul tabIndex={0} className="dropdown-content z-[50] menu p-1 shadow-xl bg-white dark:bg-zinc-900 rounded-xl w-32 border border-gray-100 dark:border-zinc-800 text-xs font-bold">
                                     {activeIndex === 1 && (
@@ -167,8 +167,8 @@ export default function CardV2({
                                 </ul>
                             </div>
                         ) : (
-                            <button onClick={(e) => { e.preventDefault(); onLike && onLike(); }} className="p-2 hover:bg-pink-50 rounded-lg text-gray-300 hover:text-pink-500 transition-colors">
-                                <HandThumbUpIcon className="w-5 h-5" />
+                            <button onClick={(e) => { e.preventDefault(); onLike && onLike(); }} className="p-1.5 hover:bg-pink-50 rounded-lg text-gray-300 hover:text-pink-500 transition-colors">
+                                <HandThumbUpIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                             </button>
                         )}
                     </div>
