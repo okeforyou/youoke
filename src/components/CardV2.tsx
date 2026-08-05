@@ -56,7 +56,7 @@ export default function CardV2({
             className="group relative flex flex-col gap-1.5 cursor-pointer select-none"
         >
             {/* Floating Badge (Placed outside overflow-hidden container to prevent rounded corner clipping) */}
-            {aiBadgeText && (
+            {(activeIndex === 3 ? aiBadgeText : count !== undefined) && (
                 <div style={{ position: 'absolute', top: '12px', left: '12px', zIndex: 30, pointerEvents: 'none' }}>
                     <div style={{
                         padding: '2px 6px',
@@ -71,7 +71,7 @@ export default function CardV2({
                         justifyContent: 'center',
                         backdropFilter: 'blur(4px)'
                     }}>
-                        {aiBadgeText}
+                        {activeIndex === 3 ? aiBadgeText : `${count} เพลง`}
                     </div>
                 </div>
             )}
@@ -149,13 +149,6 @@ export default function CardV2({
                     <h3 className="font-bold text-gray-900 dark:text-zinc-200 truncate group-hover:text-primary text-[12px] sm:text-[13px] leading-tight">
                         {name}
                     </h3>
-                    {activeIndex !== 3 && (
-                        <p className="text-[11px] font-medium text-gray-500 dark:text-zinc-500 mt-1 flex items-center gap-2">
-                            <span className="inline-block px-2 py-0.5 rounded-md bg-gray-100 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800">
-                                {count} เพลง
-                            </span>
-                        </p>
-                    )}
                 </div>
 
                 {/* 8. Action Buttons (Right) - SQUARES ONLY */}
