@@ -59,7 +59,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             if (cleanTitle.includes('-')) {
                 const parts = cleanTitle.split('-');
                 track = parts[0].trim();
-                artist = parts.slice(1).join('-').trim();
+                track = parts.slice(1).join('-').trim();
             }
 
             // Function to fetch and process LRCLIB search
