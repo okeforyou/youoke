@@ -55,6 +55,27 @@ export default function CardV2({
             onClick={onClick}
             className="group relative flex flex-col gap-1.5 cursor-pointer select-none"
         >
+            {/* Floating Badge (Placed outside overflow-hidden container to prevent rounded corner clipping) */}
+            {aiBadgeText && (
+                <div style={{ position: 'absolute', top: '12px', left: '12px', zIndex: 30, pointerEvents: 'none' }}>
+                    <div style={{
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        backgroundColor: 'rgba(0,0,0,0.6)',
+                        color: 'white',
+                        fontSize: '9px',
+                        fontWeight: 'bold',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backdropFilter: 'blur(4px)'
+                    }}>
+                        {aiBadgeText}
+                    </div>
+                </div>
+            )}
+
             {/* 1. Card Container: Explicitly 16:9, White Bg, Rounded */}
             <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-white dark:bg-zinc-950 border border-gray-100 dark:border-zinc-900 group-hover:border-primary/50 transition-all duration-300">
 
@@ -128,20 +149,12 @@ export default function CardV2({
                     <h3 className="font-bold text-gray-900 dark:text-zinc-200 truncate group-hover:text-primary text-[12px] sm:text-[13px] leading-tight">
                         {name}
                     </h3>
-                    {activeIndex !== 3 ? (
+                    {activeIndex !== 3 && (
                         <p className="text-[11px] font-medium text-gray-500 dark:text-zinc-500 mt-1 flex items-center gap-2">
                             <span className="inline-block px-2 py-0.5 rounded-md bg-gray-100 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800">
                                 {count} เพลง
                             </span>
                         </p>
-                    ) : (
-                        aiBadgeText && (
-                            <p className="mt-1 flex items-center gap-2">
-                                <span className="inline-block px-1.5 py-0.5 rounded-[4px] bg-black/60 dark:bg-black/50 text-white text-[9px] font-bold border border-white/10">
-                                    {aiBadgeText}
-                                </span>
-                            </p>
-                        )
                     )}
                 </div>
 
