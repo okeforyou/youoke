@@ -104,25 +104,7 @@ export default function CardV2({
                     </div>
                 )}
 
-                {aiBadgeText && (
-                    <div style={{ position: 'absolute', top: '14px', left: '14px', zIndex: 30, pointerEvents: 'none' }}>
-                        <div style={{
-                            padding: '2px 6px',
-                            borderRadius: '4px',
-                            backgroundColor: 'rgba(0,0,0,0.6)',
-                            color: 'white',
-                            fontSize: '9px',
-                            fontWeight: 'bold',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            backdropFilter: 'blur(4px)'
-                        }}>
-                            {aiBadgeText}
-                        </div>
-                    </div>
-                )}
+
 
                 {/* 6. Action Button Overlay (Center) */}
                 {activeIndex === 3 && (
@@ -146,12 +128,20 @@ export default function CardV2({
                     <h3 className="font-bold text-gray-900 dark:text-zinc-200 truncate group-hover:text-primary text-[12px] sm:text-[13px] leading-tight">
                         {name}
                     </h3>
-                    {activeIndex !== 3 && (
+                    {activeIndex !== 3 ? (
                         <p className="text-[11px] font-medium text-gray-500 dark:text-zinc-500 mt-1 flex items-center gap-2">
                             <span className="inline-block px-2 py-0.5 rounded-md bg-gray-100 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800">
                                 {count} เพลง
                             </span>
                         </p>
+                    ) : (
+                        aiBadgeText && (
+                            <p className="mt-1 flex items-center gap-2">
+                                <span className="inline-block px-1.5 py-0.5 rounded-[4px] bg-black/60 dark:bg-black/50 text-white text-[9px] font-bold border border-white/10">
+                                    {aiBadgeText}
+                                </span>
+                            </p>
+                        )
                     )}
                 </div>
 
