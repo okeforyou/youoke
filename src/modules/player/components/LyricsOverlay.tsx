@@ -91,7 +91,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
     const bottomLine = lyrics[bottomLineIndex];
 
     const renderLine = (line: any, index: number, align: 'left' | 'right') => {
-        if (!line) return <div className="w-full" style={{ minHeight: 'clamp(3rem, 12cqw, 6rem)' }} />; // Empty slot
+        if (!line) return <div className="w-full" style={{ minHeight: 'clamp(1.8rem, 7cqw, 4.5rem)' }} />; // Empty slot
 
         const adjustedTime = currentTime - syncOffset;
         const nextTime = index < lyrics.length - 1 ? lyrics[index + 1].time : line.time + 5;
@@ -111,7 +111,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
         return (
             <div 
                 className={`flex w-full ${align === 'left' ? 'justify-start' : 'justify-end'} items-center px-4`}
-                style={{ minHeight: 'clamp(3rem, 12cqw, 6rem)' }}
+                style={{ minHeight: 'clamp(1.8rem, 7cqw, 4.5rem)' }}
             >
                 <div 
                     className={clsx(
@@ -181,7 +181,13 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
     };
 
     return (
-        <div className="absolute inset-0 pointer-events-none z-40 flex items-end justify-center pb-16 md:pb-24 [@container/player]:true" style={{ containerType: 'inline-size' }}>
+        <div 
+            className="absolute inset-0 pointer-events-none z-40 flex items-end justify-center [@container/player]:true" 
+            style={{ 
+                containerType: 'inline-size',
+                paddingBottom: 'clamp(1rem, 5cqw, 5rem)'
+            }}
+        >
             {/* Lyrics Container */}
             <div className="w-[95%] max-w-5xl flex flex-col space-y-2 px-6">
                 {source && (
