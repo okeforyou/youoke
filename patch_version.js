@@ -1,11 +1,11 @@
 const fs = require('fs');
 let code = fs.readFileSync('src/core/version.ts', 'utf8');
 const newLog = `        {
-            version: 'v5.5.233',
+            version: 'v5.5.234',
             date: new Date().toISOString().split('T')[0],
             changes: [
-                "fix(api): Fixed LRCLIB search query for Thai songs by swapping artist and track names to prevent 'ไม่พบเนื้อเพลงในระบบ' and 'Failed to fetch' errors.",
-                "ui(card): Changed CH badge to a perfect pill shape (equal padding) and moved to top-right to avoid sticking to corners."
+                "fix(ui): Removed a hacky wrapper in ListPlaylistsGrid that was forcing the 2CH/4CH badge to stick to the top-left corner.",
+                "style(ui): Adjusted the AI Cache 2CH/4CH badge on thumbnail cards to match the exact minimalist rectangular style used in the QueueList, positioned cleanly without touching the edges."
             ]
         },`;
 code = code.replace(/export const CHANGELOG: VersionLog\[\] = \[/, 'export const CHANGELOG: VersionLog[] = [\n' + newLog);
