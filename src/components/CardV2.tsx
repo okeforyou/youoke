@@ -105,8 +105,20 @@ export default function CardV2({
                 )}
 
                 {aiBadgeText && (
-                    <div className="absolute top-3 left-3 z-30 pointer-events-none">
-                        <div className="px-1.5 py-0.5 rounded-[4px] bg-black/60 dark:bg-black/50 text-white text-[9px] font-bold border border-white/10 shadow-sm backdrop-blur-md">
+                    <div style={{ position: 'absolute', top: '14px', left: '14px', zIndex: 30, pointerEvents: 'none' }}>
+                        <div style={{
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            backgroundColor: 'rgba(0,0,0,0.6)',
+                            color: 'white',
+                            fontSize: '9px',
+                            fontWeight: 'bold',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backdropFilter: 'blur(4px)'
+                        }}>
                             {aiBadgeText}
                         </div>
                     </div>

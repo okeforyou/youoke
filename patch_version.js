@@ -1,11 +1,10 @@
 const fs = require('fs');
 let code = fs.readFileSync('src/core/version.ts', 'utf8');
 const newLog = `        {
-            version: 'v5.5.234',
+            version: 'v5.5.235',
             date: new Date().toISOString().split('T')[0],
             changes: [
-                "fix(ui): Removed a hacky wrapper in ListPlaylistsGrid that was forcing the 2CH/4CH badge to stick to the top-left corner.",
-                "style(ui): Adjusted the AI Cache 2CH/4CH badge on thumbnail cards to match the exact minimalist rectangular style used in the QueueList, positioned cleanly without touching the edges."
+                "fix(ui): Bypassed Tailwind CSS constraints by using strict inline styles for the AI Cache 2CH/4CH badge, guaranteeing it exactly matches the QueueList design and maintains a 14px distance from the corners without being clipped by parent overflow rules."
             ]
         },`;
 code = code.replace(/export const CHANGELOG: VersionLog\[\] = \[/, 'export const CHANGELOG: VersionLog[] = [\n' + newLog);
