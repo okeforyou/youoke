@@ -109,7 +109,10 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
         const isActive = index === currentLineIndex;
 
         return (
-            <div className={`flex w-full ${align === 'left' ? 'justify-start' : 'justify-end'} min-h-[12cqh] items-center px-4`}>
+            <div 
+                className={`flex w-full ${align === 'left' ? 'justify-start' : 'justify-end'} items-center px-4`}
+                style={{ minHeight: 'clamp(3rem, 12cqw, 6rem)' }}
+            >
                 <div 
                     className={clsx(
                         "relative inline-block font-black tracking-wide",
