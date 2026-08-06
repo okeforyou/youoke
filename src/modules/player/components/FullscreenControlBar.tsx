@@ -18,7 +18,6 @@ export const FullscreenControlBar = ({ showControls, layoutMode, playerRef }: Fu
     // Deepgram Hybrid Sync State
     const { isAligning, alignmentStatus, alignHybridLyrics, hybridModeEnabled, setHybridModeEnabled } = useDeepgramLyricsStore();
     const currentVideo = usePlayerStore(state => state.currentVideo);
-    const currentLyrics = useLyricsStore(state => state.currentLyrics);
 
     // System 1: Manual Sync State & Actions
     const { syncOffset, nudgeOffset, setSyncOffset, lyrics } = useLyricsStore();
@@ -36,8 +35,8 @@ export const FullscreenControlBar = ({ showControls, layoutMode, playerRef }: Fu
     };
 
     const handleSync = async () => {
-        if (!currentVideo?.videoId || currentLyrics.length === 0) return;
-        await alignHybridLyrics(currentVideo.videoId, currentLyrics);
+        if (!currentVideo?.videoId || lyrics.length === 0) return;
+        await alignHybridLyrics(currentVideo.videoId, lyrics);
     };
 
     if (layoutMode !== 'fullscreen') return null;
@@ -60,13 +59,13 @@ export const FullscreenControlBar = ({ showControls, layoutMode, playerRef }: Fu
                     onClick={() => {
                         if (playerRef?.current && typeof playerRef.current.getCurrentTime === 'function') {
                             const currentTime = playerRef.current.getCurrentTime();
-                            if (typeof currentTime === 'number' && currentLyrics.length > 0) {
+                            if (typeof currentTime === 'number' && lyrics.length > 0) {
                                 // Find current line or active line
-                                const activeIndex = currentLyrics.findIndex((l, idx) => {
-                                    const nextTime = idx < currentLyrics.length - 1 ? currentLyrics[idx + 1].time : l.time + 5;
+                                const activeIndex = lyrics.findIndex((l, idx) => {
+                                    const nextTime = idx < lyrics.length - 1 ? lyrics[idx + 1].time : l.time + 5;
                                     return currentTime >= (l.time - syncOffset) && currentTime < (nextTime - syncOffset);
                                 });
-                                const lineToSync = activeIndex >= 0 ? currentLyrics[activeIndex] : currentLyrics[0];
+                                const lineToSync = activeIndex >= 0 ? lyrics[activeIndex] : lyrics[0];
                                 if (lineToSync) {
                                     const newOffset = currentTime - lineToSync.time;
                                     setSyncOffset(Math.round(newOffset * 10) / 10);
@@ -103,7 +102,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode, playerRef }: Fu
             <div className="flex items-center gap-1 bg-white/5 rounded-xl p-1 border border-white/5">
                 <button
                     onClick={handleSync}
-                    disabled={isAligning || currentLyrics.length === 0}
+                    disabled={isAligning || lyrics.length === 0}
                     className={`px-3 py-2 rounded-lg flex items-center gap-2 text-xs font-medium transition-all ${isAligning ? 'bg-primary/50 text-white cursor-not-allowed' : alignmentStatus === 'success' ? 'bg-green-500/20 text-green-400' : 'bg-transparent text-white/70 hover:bg-white/10 hover:text-white'}`}
                     title="ปรับ Sync อัตโนมัติด้วย AI (Deepgram)"
                 >
