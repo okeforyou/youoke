@@ -80,17 +80,11 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
         );
     }
 
-    // VCD Style Layout Logic
+    // Single Line Layout Logic
     const activeIndex = Math.max(0, currentLineIndex);
-    const isTopActive = activeIndex % 2 === 0;
+    const activeLine = lyrics[activeIndex];
 
-    const topLineIndex = isTopActive ? activeIndex : activeIndex + 1;
-    const bottomLineIndex = isTopActive ? activeIndex + 1 : activeIndex;
-
-    const topLine = lyrics[topLineIndex];
-    const bottomLine = lyrics[bottomLineIndex];
-
-    const renderLine = (line: any, index: number, align: 'left' | 'right') => {
+    const renderLine = (line: any, index: number) => {
         if (!line) return <div className="w-full" style={{ minHeight: 'clamp(1.5rem, 6.5cqw, 4rem)' }} />; // Empty slot
 
         const adjustedTime = currentTime - syncOffset;
@@ -110,15 +104,13 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
 
         return (
             <div 
-                className={`flex w-full ${align === 'left' ? 'justify-start' : 'justify-end'} items-center px-4`}
+                className={`flex w-full justify-center items-center px-4`}
                 style={{ minHeight: 'clamp(1.5rem, 6.5cqw, 4rem)' }}
             >
                 <div 
                     className={clsx(
                         "relative inline-block font-black tracking-wide",
-                        "transition-transform duration-200 break-words whitespace-pre-wrap max-w-full",
-                        align === 'left' ? 'text-left' : 'text-right',
-                        isActive ? "scale-100" : "scale-[0.95]"
+                        "transition-colors duration-200 break-words whitespace-pre-wrap max-w-full text-center"
                     )}
                     style={{
                         fontSize: 'clamp(1rem, 4cqw, 3rem)',
@@ -128,7 +120,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                     }}
                 >
                     {line.words && line.words.length > 0 ? (
-                        <span className="text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] flex flex-wrap justify-center md:justify-start">
+                        <span className="text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] flex flex-wrap justify-center">
                             {line.words.map((w: any, i: number) => {
                                 let wordProgress = 0;
                                 if (index < currentLineIndex) {
@@ -164,8 +156,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                             {/* Simple Line Render (No sweeping to prevent word cutoffs) */}
                                 <span 
                                     className={clsx(
-                                        "text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] whitespace-pre-wrap break-words max-w-full transition-colors duration-200",
-                                        align === 'left' ? 'text-left' : 'text-right',
+                                        "text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] whitespace-pre-wrap break-words max-w-full transition-colors duration-200 text-center",
                                         isActive && (source === 'youtube' || source === 'lrclib') && "text-[#2563eb]"
                                     )}
                                 style={{
@@ -197,8 +188,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                         เนื้อเพลงจาก: {source === 'lrclib' ? (lyricsType === 'synced' ? 'LRCLIB (SYNC)' : 'LRCLIB (PLAIN)') : 'YouTube CC'}
                     </div>
                 )}
-                {renderLine(topLine, topLineIndex, 'left')}
-                {renderLine(bottomLine, bottomLineIndex, 'right')}
+                {renderLine(activeLine, activeIndex)}
             </div>
         </div>
     );
