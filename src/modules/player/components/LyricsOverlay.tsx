@@ -178,7 +178,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
             className="absolute inset-0 pointer-events-none z-40 flex items-end justify-center [@container/player]:true" 
             style={{ 
                 containerType: 'inline-size',
-                paddingBottom: 'clamp(0.5rem, 1.5cqw, 2.5rem)'
+                paddingBottom: 'clamp(1.5rem, 5cqw, 6rem)'
             }}
         >
             {/* Lyrics Container */}
