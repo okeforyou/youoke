@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { useWikiLyricsStore } from './useWikiLyricsStore';
 
 export interface LyricLine {
     time: number;
@@ -30,6 +31,28 @@ interface LyricsState {
     fetchLyrics: (videoId: string, title: string, prefer?: 'auto' | 'youtube', duration?: number) => Promise<void>;
     clearLyrics: () => void;
 }
+
+const parseLRC = (lrc: string): LyricLine[] => {
+    const lines = lrc.split('\n');
+    const result: LyricLine[] = [];
+    const timeRegex = /\[(\d{2}):(\d{2}\.\d{2,3})\]/;
+    
+    for (const line of lines) {
+        const match = timeRegex.exec(line);
+        if (match) {
+            const min = parseInt(match[1], 10);
+            const sec = parseFloat(match[2]);
+            const text = line.replace(timeRegex, '').trim();
+            if (text) {
+                result.push({
+                    time: min * 60 + sec,
+                    text
+                });
+            }
+        }
+    }
+    return result;
+};
 
 const normalizeLyrics = (lyrics: LyricLine[], maxLength = 40): LyricLine[] => {
     if (!lyrics || lyrics.length === 0) return [];
@@ -168,6 +191,27 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
     fetchLyrics: async (videoId: string, title: string, prefer?: 'auto' | 'youtube', duration?: number) => {
         set({ isLoading: true, error: null, lyrics: [], source: null, lyricsType: null, syncOffset: 0 });
         try {
+            // 0. Check Wiki / Crowdsourced Sync first
+            try {
+                const wikiStore = useWikiLyricsStore.getState();
+                const bestSync = await wikiStore.fetchBestSync(videoId);
+                if (bestSync?.lrcContent) {
+                    const parsedLyrics = parseLRC(bestSync.lrcContent);
+                    if (parsedLyrics.length > 0) {
+                        set({
+                            lyrics: normalizeLyrics(parsedLyrics),
+                            source: 'lrclib', // UI still thinks it's lrclib style, but we apply our offset
+                            lyricsType: 'synced',
+                            syncOffset: bestSync.globalOffset || 0,
+                            isLoading: false
+                        });
+                        return; // Exit early if we have a valid wiki sync!
+                    }
+                }
+            } catch (wikiErr) {
+                console.warn("Failed to fetch Wiki Lyrics", wikiErr);
+            }
+
             const pref = prefer || get().preferredSource;
             let onlineData: any = null;
 
@@ -189,12 +233,16 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
                 } catch(e) {}
             }
 
+            // Get local offset fallback if any
+            const localOffset = useWikiLyricsStore.getState().getLocalOffset(videoId);
+
             // 2. Decision Tree (Online Synced > Online Plain > YouTube)
             if (onlineData?.type === 'synced') {
                 set({ 
                     lyrics: normalizeLyrics(onlineData.lyrics), 
                     source: onlineData.source, 
                     lyricsType: 'synced',
+                    syncOffset: localOffset,
                     isLoading: false
                 });
             } else if (onlineData?.type === 'plain') {
@@ -202,6 +250,7 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
                     lyrics: onlineData.lyrics,
                     source: onlineData.source, 
                     lyricsType: 'plain',
+                    syncOffset: localOffset,
                     isLoading: false
                 });
             } else if (onlineData?.source === 'youtube') {
@@ -209,6 +258,7 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
                     lyrics: normalizeLyrics(onlineData.lyrics), 
                     source: 'youtube', 
                     lyricsType: 'synced',
+                    syncOffset: localOffset,
                     isLoading: false
                 });
             } else {

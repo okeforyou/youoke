@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.250";
+export const SYSTEM_VERSION = "5.5.251";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.251",
+        date: new Date().toISOString().split('T')[0],
+        changes: [
+            "feat(wiki-karaoke): Implemented crowdsourced Wiki Karaoke with Firestore sync saving (+/- offset).",
+            "feat(studio): Added /studio route for Tap-to-Sync and drag-and-drop timeline lyrics adjustment.",
+            "feat(player): Added Quick Nudge (+/- 0.1s, 0.5s) and Upvote/Downvote buttons directly to the player controls."
+        ]
+    },
     {
         version: "5.5.250",
         date: new Date().toISOString().split('T')[0],

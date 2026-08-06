@@ -1,10 +1,12 @@
 import React from 'react';
-import { Minimize2, X, Play, Pause, Wand2, RefreshCw } from 'lucide-react';
+import { Minimize2, X, Play, Pause, Wand2, RefreshCw, ThumbsUp, ThumbsDown, Save, Edit2 } from 'lucide-react';
 import { usePlayerStore } from '../stores/usePlayerStore';
 import { useCast } from '../../../plugins/cast/context/CastContext';
-import { useDeepgramLyricsStore } from '../../lyrics/stores/useDeepgramLyricsStore';
 import { useLyricsStore } from '../stores/useLyricsStore';
+import { useWikiLyricsStore } from '../stores/useWikiLyricsStore';
+import { useAuthStore } from '../../auth/useAuthStore';
 import { useUIStore } from '../../../stores/useUIStore';
+import { useRouter } from 'next/router';
 
 interface FullscreenControlBarProps {
     showControls: boolean;
@@ -15,13 +17,16 @@ interface FullscreenControlBarProps {
 export const FullscreenControlBar = ({ showControls, layoutMode, playerRef }: FullscreenControlBarProps) => {
     const isPlaying = usePlayerStore(state => state.isPlaying);
     const cast = useCast();
+    const router = useRouter();
+    const { user } = useAuthStore();
     
-    // Deepgram Hybrid Sync State
-    const { isAligning, alignmentStatus, alignHybridLyrics, hybridModeEnabled, setHybridModeEnabled } = useDeepgramLyricsStore();
     const currentVideo = usePlayerStore(state => state.currentVideo);
 
     // System 1: Manual Sync State & Actions
     const { syncOffset, nudgeOffset, setSyncOffset, lyrics } = useLyricsStore();
+    
+    // Wiki Karaoke State
+    const { activeSync, voteSync, saveLocalOffset } = useWikiLyricsStore();
 
     const handlePlayPause = () => {
         if (cast.isConnected) {
@@ -36,12 +41,27 @@ export const FullscreenControlBar = ({ showControls, layoutMode, playerRef }: Fu
     };
 
     const handleSync = async () => {
-        const { showConfirm } = useUIStore.getState();
+        // Obsolete AI Sync function - kept for reference or to be completely removed
+    };
 
-        if (!currentVideo?.videoId) {
-            showConfirm({
-                title: "ไม่สามารถเริ่ม AI Sync ได้",
-                message: "ไม่พบรหัสวิดีโอของเพลงนี้",
+    const handleSaveOffset = () => {
+        if (!currentVideo?.videoId) return;
+        saveLocalOffset(currentVideo.videoId, syncOffset);
+        useUIStore.getState().showConfirm({
+            title: "บันทึกเวลาสำเร็จ",
+            message: "บันทึกเวลาเริ่มต้นสำหรับเครื่องของคุณเรียบร้อยแล้ว หากต้องการให้ทุกคนได้ใช้ กรุณาเข้าโหมด Studio",
+            type: "success",
+            confirmText: "เข้าโหมด Studio",
+            cancelText: "ปิด",
+            onConfirm: () => router.push(`/studio/${currentVideo.videoId}`)
+        });
+    };
+
+    const handleVote = async (type: 'upvote' | 'downvote') => {
+        if (!user) {
+            useUIStore.getState().showConfirm({
+                title: "เข้าสู่ระบบ",
+                message: "กรุณาเข้าสู่ระบบเพื่อโหวตความแม่นยำของเนื้อเพลง",
                 type: "warning",
                 confirmText: "ตกลง",
                 cancelText: "none",
@@ -49,40 +69,8 @@ export const FullscreenControlBar = ({ showControls, layoutMode, playerRef }: Fu
             });
             return;
         }
-
-        try {
-            await alignHybridLyrics(currentVideo.videoId, lyrics);
-            
-            // Get updated state
-            const state = useDeepgramLyricsStore.getState();
-            if (state.alignmentStatus === 'error' && state.errorMessage) {
-                showConfirm({
-                    title: "AI Sync ล้มเหลว",
-                    message: state.errorMessage,
-                    type: "danger",
-                    confirmText: "ตกลง",
-                    cancelText: "none",
-                    onConfirm: () => {}
-                });
-            } else if (state.alignmentStatus === 'success') {
-                showConfirm({
-                    title: "AI Sync สำเร็จ",
-                    message: "ระบบได้ทำการจัดเรียงเนื้อเพลงและสลับไปใช้ระบบ AI Hybrid เรียบร้อยแล้วครับ",
-                    type: "success",
-                    confirmText: "ตกลง",
-                    cancelText: "none",
-                    onConfirm: () => {}
-                });
-            }
-        } catch (err: any) {
-            showConfirm({
-                title: "AI Sync ล้มเหลว",
-                message: err.message || String(err),
-                type: "danger",
-                confirmText: "ตกลง",
-                cancelText: "none",
-                onConfirm: () => {}
-            });
+        if (activeSync) {
+            await voteSync(activeSync.id, user.uid, type);
         }
     };
 
@@ -166,28 +154,54 @@ export const FullscreenControlBar = ({ showControls, layoutMode, playerRef }: Fu
 
             <div className="w-[1px] h-8 bg-white/10 mx-1" />
 
-            {/* System 2: AI Deepgram Hybrid Sync Feature */}
+            {/* Save Offset Action */}
             <div className="flex items-center gap-1 bg-white/5 rounded-xl p-1 border border-white/5">
                 <button
-                    onClick={handleSync}
-                    disabled={isAligning}
-                    className={`px-3 py-2 rounded-lg flex items-center gap-2 text-xs font-medium transition-all ${isAligning ? 'bg-primary/50 text-white cursor-not-allowed' : alignmentStatus === 'success' ? 'bg-green-500/20 text-green-400' : 'bg-transparent text-white/70 hover:bg-white/10 hover:text-white'}`}
-                    title="ปรับ Sync อัตโนมัติด้วย AI (Deepgram)"
+                    onClick={handleSaveOffset}
+                    className={`px-3 py-2 rounded-lg flex items-center gap-2 text-xs font-medium transition-all ${syncOffset !== (activeSync?.globalOffset || 0) ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30' : 'bg-transparent text-white/50 hover:bg-white/10 hover:text-white'}`}
+                    title="บันทึก Offset ไว้ในเครื่อง"
                 >
-                    <Wand2 size={15} className={isAligning ? "animate-pulse text-white" : ""} />
-                    {isAligning ? "AI กำลังจัดเรียง..." : alignmentStatus === 'success' ? "AI Sync แล้ว" : "AI Sync"}
+                    <Save size={15} />
+                    เซฟ
                 </button>
+            </div>
 
-                {/* Hybrid Mode Toggle */}
-                {alignmentStatus === 'success' && (
-                    <button
-                        onClick={() => setHybridModeEnabled(!hybridModeEnabled)}
-                        className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${hybridModeEnabled ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-white/5 text-white/50 hover:bg-white/10 hover:text-white'}`}
-                        title={hybridModeEnabled ? "สลับไปใช้ระบบ Manual" : "สลับไปใช้ระบบ AI Hybrid"}
-                    >
-                        <RefreshCw size={14} className={hybridModeEnabled ? "animate-spin-slow" : ""} />
-                    </button>
-                )}
+            <div className="w-[1px] h-8 bg-white/10 mx-1" />
+
+            {/* Wiki Karaoke Actions */}
+            <div className="flex items-center gap-1 bg-white/5 rounded-xl p-1 border border-white/5">
+                <button
+                    onClick={() => handleVote('upvote')}
+                    disabled={!activeSync || (user && activeSync.voterIds?.includes(user.uid))}
+                    className="px-2 py-2 rounded-lg flex items-center gap-1 text-xs font-medium bg-transparent text-white/70 hover:bg-white/10 hover:text-white disabled:opacity-50"
+                    title="โหวตว่าเนื้อร้องตรง"
+                >
+                    <ThumbsUp size={15} className={user && activeSync?.voterIds?.includes(user.uid) && activeSync?.upvotes > 0 ? "fill-green-400 text-green-400" : ""} />
+                    {activeSync?.upvotes || 0}
+                </button>
+                <button
+                    onClick={() => handleVote('downvote')}
+                    disabled={!activeSync || (user && activeSync.voterIds?.includes(user.uid))}
+                    className="px-2 py-2 rounded-lg flex items-center gap-1 text-xs font-medium bg-transparent text-white/70 hover:bg-white/10 hover:text-white disabled:opacity-50"
+                    title="โหวตว่าเนื้อร้องไม่ตรง"
+                >
+                    <ThumbsDown size={15} className={user && activeSync?.voterIds?.includes(user.uid) && activeSync?.downvotes > 0 ? "fill-red-400 text-red-400" : ""} />
+                </button>
+                
+                <div className="w-[1px] h-4 bg-white/10 mx-1" />
+                
+                <button
+                    onClick={() => {
+                        if (currentVideo?.videoId) {
+                            router.push(`/studio/${currentVideo.videoId}`);
+                        }
+                    }}
+                    className="px-3 py-2 rounded-lg flex items-center gap-2 text-xs font-medium bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 transition-all"
+                    title="เข้าสู่โหมด Studio เพื่อแก้ไขเนื้อเพลง"
+                >
+                    <Edit2 size={15} />
+                    Studio
+                </button>
             </div>
 
             <div className="w-[1px] h-8 bg-white/10 mx-1" />
