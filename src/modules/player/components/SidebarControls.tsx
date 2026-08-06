@@ -100,7 +100,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
         setVolume
     } = useMixerStore();
 
-    const { isEnabled: showLyrics, isKaraokeMode, toggleLyrics, toggleKaraokeMode, syncOffset, setSyncOffset, preferredSource, setPreferredSource, fetchLyrics, error: lyricsError, isLoading: lyricsLoading, lyricsType, source } = useLyricsStore();
+    const { isEnabled: showLyrics, isKaraokeMode, toggleLyrics, toggleKaraokeMode, syncOffset, setSyncOffset, preferredSource, setPreferredSource, fetchLyrics, error: lyricsError, isLoading: lyricsLoading, lyricsType, source, activeLineText } = useLyricsStore();
 
     const handleSourceChange = (src: 'auto' | 'youtube') => {
         setPreferredSource(src);
@@ -310,7 +310,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                         ref={mixerRef} 
                         className="relative w-full max-w-md bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-[24px] shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh] overflow-hidden"
                     >
-                        <div className="p-6 overflow-y-auto overscroll-contain flex flex-col h-full w-full">
+                        <div className="p-6 overflow-y-auto overscroll-contain flex flex-col h-full w-full [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-gray-200 dark:[&::-webkit-scrollbar-thumb]:bg-zinc-800 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
                         {/* Header */}
                         <div className="flex items-center justify-between mb-6 shrink-0">
                             <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
@@ -546,7 +546,9 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                         ไม่พบเนื้อเพลงในระบบ
                                     </p>
                                     <p className="text-[11px] text-gray-500 dark:text-gray-400 max-w-[200px] leading-relaxed mx-auto">
-                                        เพลงนี้ยังไม่มีเนื้อเพลงในฐานข้อมูล LRCLIB หรือ YouTube CC
+                                        {preferredSource === 'youtube' 
+                                            ? "เพลงนี้ยังไม่มีคำบรรยาย (CC) บน YouTube" 
+                                            : "เพลงนี้ยังไม่มีเนื้อเพลงในฐานข้อมูล LRCLIB"}
                                     </p>
                                 </div>
                             </div>
@@ -609,6 +611,13 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
 
                                 {/* Sync Offset Controls */}
                                 <div>
+                                    {showLyrics && activeLineText && (
+                                        <div className="mb-3.5 p-3 bg-red-500/5 dark:bg-red-500/10 rounded-2xl border border-red-500/10 flex flex-col items-center justify-center text-center animate-in fade-in duration-200">
+                                            <span className="text-[9px] font-black text-primary uppercase tracking-widest mb-1">คำร้องขณะนี้</span>
+                                            <span className="text-xs font-bold text-gray-900 dark:text-zinc-100 line-clamp-2 leading-relaxed">{activeLineText}</span>
+                                        </div>
+                                    )}
+                                    
                                     <div className="flex justify-between items-center mb-2">
                                         <div className="flex items-center gap-2">
                                             <div className="w-1 h-3 rounded-full bg-gray-300 dark:bg-zinc-600" />

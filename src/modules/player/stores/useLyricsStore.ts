@@ -16,12 +16,14 @@ interface LyricsState {
     error: string | null;
     
     syncOffset: number;
+    activeLineText: string;
     
     toggleLyrics: () => void;
     toggleKaraokeMode: () => void;
     setLyricsEnabled: (enabled: boolean) => void;
     setPreferredSource: (src: 'auto' | 'youtube') => void;
     setSyncOffset: (offset: number) => void;
+    setActiveLineText: (text: string) => void;
     fetchLyrics: (videoId: string, title: string, prefer?: 'auto' | 'youtube', duration?: number) => Promise<void>;
     clearLyrics: () => void;
 }
@@ -134,14 +136,16 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
     preferredSource: 'auto',
     error: null,
     syncOffset: 0,
+    activeLineText: '',
     
     toggleLyrics: () => set((state) => ({ isEnabled: !state.isEnabled })),
     toggleKaraokeMode: () => set((state) => ({ isKaraokeMode: !state.isKaraokeMode })),
     setLyricsEnabled: (enabled) => set({ isEnabled: enabled }),
     setPreferredSource: (src) => set({ preferredSource: src }),
     setSyncOffset: (offset) => set({ syncOffset: offset }),
+    setActiveLineText: (text) => set({ activeLineText: text }),
 
-    clearLyrics: () => set({ lyrics: [], source: null, error: null, lyricsType: null, isLoading: false, syncOffset: 0 }),
+    clearLyrics: () => set({ lyrics: [], source: null, error: null, lyricsType: null, isLoading: false, syncOffset: 0, activeLineText: '' }),
 
     fetchLyrics: async (videoId: string, title: string, prefer?: 'auto' | 'youtube', duration?: number) => {
         set({ isLoading: true, error: null, lyrics: [], source: null, lyricsType: null });
