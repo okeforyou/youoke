@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.233";
+export const SYSTEM_VERSION = "5.5.234";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.234",
+        date: new Date().toISOString().split('T')[0],
+        changes: [
+            "ui(mixer): Compacted Lyrics and Sweep toggles to a single line in SidebarControls.",
+            "fix(lyrics): Resolved issue where lyrics displayed at top instead of bottom on small screens.",
+            "fix(mixer): Relocated Active Lyric Line preview into the Mixer to be prominently visible during Sync adjustment.",
+            "fix(sync): Improved visibility of sync timing controls."
+        ]
+    },
     {
         version: "5.5.233",
         date: new Date().toISOString().split('T')[0],

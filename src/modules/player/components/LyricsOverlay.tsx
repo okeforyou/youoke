@@ -8,7 +8,7 @@ interface LyricsOverlayProps {
 }
 
 export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
-    const { isEnabled, isKaraokeMode, lyrics, lyricsType, source, fetchLyrics, syncOffset } = useLyricsStore();
+    const { isEnabled, isKaraokeMode, lyrics, lyricsType, source, fetchLyrics, syncOffset, setActiveLineText } = useLyricsStore();
     const { isPlaying } = usePlayerStore();
     const activeVideoId = usePlayerStore(state => state.currentVideo?.videoId || state.currentVideo?.id);
     const videoTitle = usePlayerStore(state => state.currentVideo?.title);
@@ -84,6 +84,15 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
     const activeIndex = Math.max(0, currentLineIndex);
     const activeLine = lyrics[activeIndex];
 
+    // Sync active line text to store so other components (like Mixer modal) can show it in real-time!
+    useEffect(() => {
+        if (activeLine && isEnabled) {
+            setActiveLineText(activeLine.text);
+        } else {
+            setActiveLineText('');
+        }
+    }, [activeLine, isEnabled, setActiveLineText]);
+
     const renderLine = (line: any, index: number) => {
         if (!line) return <div className="w-full" style={{ minHeight: 'clamp(1.5rem, 6.5cqw, 4rem)' }} />; // Empty slot
 
@@ -113,7 +122,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                         "transition-colors duration-200 break-words whitespace-pre-wrap max-w-full text-center"
                     )}
                     style={{
-                        fontSize: 'clamp(1.25rem, 6cqw, 4.5rem)',
+                        fontSize: 'clamp(1.5rem, 8cqw, 5.5rem)',
                         lineHeight: '1.2',
                         WebkitTextStroke: 'clamp(2px, 0.4cqw, 4px) black',
                         paintOrder: 'stroke fill',
@@ -175,16 +184,18 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
 
     return (
         <div 
-            className="absolute inset-0 pointer-events-none z-40 flex items-end justify-center [@container/player]:true" 
+            className="absolute inset-0 pointer-events-none z-40 flex items-end justify-center" 
             style={{ 
-                containerType: 'inline-size',
-                paddingBottom: 'clamp(2rem, 8cqw, 10rem)'
+                paddingBottom: 'clamp(4rem, 15vh, 15rem)' // Use vh so it scales with player height
             }}
         >
             {/* Lyrics Container */}
-            <div className="w-[95%] max-w-5xl flex flex-col space-y-1 px-4 sm:px-6">
+            <div 
+                className="w-[95%] max-w-5xl flex flex-col space-y-1 px-4 sm:px-6 relative"
+                style={{ containerType: 'inline-size' }}
+            >
                 {source && (
-                    <div className="absolute top-4 left-4 bg-black/40 backdrop-blur-sm rounded-lg px-2 py-1 text-[10px] text-white/50 font-medium">
+                    <div className="absolute -top-6 left-4 bg-black/40 backdrop-blur-sm rounded-lg px-2 py-1 text-[10px] text-white/50 font-medium">
                         เนื้อเพลงจาก: {source === 'lrclib' ? (lyricsType === 'synced' ? 'LRCLIB (SYNC)' : 'LRCLIB (PLAIN)') : 'YouTube CC'}
                     </div>
                 )}
