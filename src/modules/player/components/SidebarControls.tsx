@@ -100,7 +100,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
         setVolume
     } = useMixerStore();
 
-    const { isEnabled: showLyrics, isKaraokeMode, toggleLyrics, toggleKaraokeMode, syncOffset, setSyncOffset, preferredSource, setPreferredSource, fetchLyrics, error: lyricsError, isLoading: lyricsLoading, isGeneratingAI, generateAILyrics, lyricsType, source } = useLyricsStore();
+    const { isEnabled: showLyrics, isKaraokeMode, toggleLyrics, toggleKaraokeMode, syncOffset, setSyncOffset, preferredSource, setPreferredSource, fetchLyrics, error: lyricsError, isLoading: lyricsLoading, lyricsType, source } = useLyricsStore();
 
     const handleSourceChange = (src: 'auto' | 'youtube') => {
         setPreferredSource(src);
@@ -476,57 +476,59 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                     </div>
 
                         <div className={clsx("mt-6 pt-5", isAiReady || isConnected ? "border-t border-gray-100 dark:border-zinc-800" : "")}>
-                            <div className="bg-gray-50 dark:bg-zinc-800/40 border border-gray-100 dark:border-zinc-700/50 rounded-2xl overflow-hidden flex flex-col">
+                            <div className="bg-gray-50 dark:bg-zinc-800/40 border border-gray-100 dark:border-zinc-700/50 rounded-2xl overflow-hidden flex flex-row items-center justify-between p-2">
+                                {/* Lyrics Toggle */}
                                 <button 
                                     onClick={toggleLyrics}
                                     className={clsx(
-                                        "w-full py-3 px-4 flex items-center justify-between gap-3 text-sm font-bold transition-colors",
+                                        "flex-1 flex items-center justify-center gap-2 py-2 text-sm font-bold transition-colors",
                                         showLyrics ? "text-primary" : "text-black/70 dark:text-zinc-300"
                                     )}
                                 >
-                                    <div className="flex items-center gap-2">
-                                        <Type size={18} className={showLyrics ? "text-primary" : "opacity-60"} />
-                                        <span>เนื้อเพลง (Lyrics)</span>
+                                    <div className="flex items-center gap-1.5">
+                                        <Type size={16} className={showLyrics ? "text-primary" : "opacity-60"} />
+                                        <span>เนื้อเพลง</span>
                                         {showLyrics && source && (
-                                            <span className={clsx("ml-2 text-[9px] px-1.5 py-0.5 rounded font-black", lyricsType === 'synced' ? "bg-green-500/10 text-green-600 dark:text-green-400" : "bg-gray-500/10 text-gray-500 dark:text-gray-400")}>
+                                            <span className={clsx("hidden sm:inline-block ml-1 text-[9px] px-1.5 py-0.5 rounded font-black", lyricsType === 'synced' ? "bg-green-500/10 text-green-600 dark:text-green-400" : "bg-gray-500/10 text-gray-500 dark:text-gray-400")}>
                                                 {lyricsType === 'synced' ? 'SYNC' : 'PLAIN'}
                                             </span>
                                         )}
                                     </div>
                                     <div className={clsx(
-                                        "w-10 h-6 rounded-full p-1 transition-colors flex items-center shadow-inner",
+                                        "w-8 h-4.5 rounded-full p-0.5 transition-colors flex items-center shadow-inner ml-2",
                                         showLyrics ? "bg-primary" : "bg-gray-300 dark:bg-zinc-700"
                                     )}>
                                         <div className={clsx(
-                                            "w-4 h-4 bg-white rounded-full transition-transform shadow-sm",
-                                            showLyrics ? "translate-x-4" : "translate-x-0"
+                                            "w-3.5 h-3.5 bg-white rounded-full transition-transform shadow-sm",
+                                            showLyrics ? "translate-x-3.5" : "translate-x-0"
                                         )} />
                                     </div>
                                 </button>
                                 
                                 {showLyrics && (
-                                    <div className="w-full h-[1px] bg-gray-200 dark:bg-zinc-700/50" />
+                                    <div className="w-[1px] h-8 bg-gray-200 dark:bg-zinc-700/50 mx-1" />
                                 )}
                                 
+                                {/* Sweep Toggle */}
                                 {showLyrics && (
                                     <button 
                                         onClick={toggleKaraokeMode}
                                         className={clsx(
-                                            "w-full py-3 px-4 flex items-center justify-between gap-3 text-sm font-bold transition-colors",
+                                            "flex-1 flex items-center justify-center gap-2 py-2 text-sm font-bold transition-colors",
                                             isKaraokeMode ? "text-primary" : "text-black/70 dark:text-zinc-300"
                                         )}
                                     >
-                                        <div className="flex items-center gap-2">
-                                            <Sparkles size={18} className={isKaraokeMode ? "text-primary" : "opacity-60"} />
-                                            <span>ปาดสีคาราโอเกะ (Sweep)</span>
+                                        <div className="flex items-center gap-1.5">
+                                            <Sparkles size={16} className={isKaraokeMode ? "text-primary" : "opacity-60"} />
+                                            <span>ปาดสี</span>
                                         </div>
                                         <div className={clsx(
-                                            "w-10 h-6 rounded-full p-1 transition-colors flex items-center shadow-inner",
+                                            "w-8 h-4.5 rounded-full p-0.5 transition-colors flex items-center shadow-inner ml-2",
                                             isKaraokeMode ? "bg-primary" : "bg-gray-300 dark:bg-zinc-700"
                                         )}>
                                             <div className={clsx(
-                                                "w-4 h-4 bg-white rounded-full transition-transform shadow-sm",
-                                                isKaraokeMode ? "translate-x-4" : "translate-x-0"
+                                                "w-3.5 h-3.5 bg-white rounded-full transition-transform shadow-sm",
+                                                isKaraokeMode ? "translate-x-3.5" : "translate-x-0"
                                             )} />
                                         </div>
                                     </button>
@@ -534,59 +536,26 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                             </div>
                         </div>
                         
-                        {((lyricsError || lyricsType === 'plain') && showLyrics && !isGeneratingAI) && (
+                        {(lyricsError && showLyrics) && (
                             <div className="mt-3 shrink-0 overflow-hidden rounded-2xl bg-gray-50 dark:bg-zinc-800/40 border border-gray-100 dark:border-zinc-700/50">
-                                <div className="p-5 flex flex-col items-center justify-center text-center gap-3">
-                                    <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-zinc-800 flex items-center justify-center text-gray-500 dark:text-gray-400 mb-1">
-                                        <FileQuestion size={24} strokeWidth={1.5} />
+                                <div className="p-4 flex flex-col items-center justify-center text-center gap-2">
+                                    <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-zinc-800 flex items-center justify-center text-gray-500 dark:text-gray-400 mb-1">
+                                        <FileQuestion size={20} strokeWidth={1.5} />
                                     </div>
-                                    <div className="space-y-1">
-                                        <p className="text-[13px] font-bold text-gray-800 dark:text-gray-200">
-                                            {lyricsError ? (lyricsError !== 'ไม่พบเนื้อเพลงจากแหล่งใดๆ' && !lyricsError.includes('offline') && !lyricsError.includes('Network') ? 'เกิดข้อผิดพลาด' : 'ไม่พบเนื้อเพลงในระบบ') : 'ต้องการเนื้อเพลงแบบปาดสี (SYNC)?'}
-                                        </p>
-                                        <p className="text-[11px] text-gray-500 dark:text-gray-400 max-w-[200px] leading-relaxed mx-auto">
-                                            {lyricsError ? (lyricsError.includes('offline') || lyricsError.includes('Network') ? 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง' : (lyricsError === 'ไม่พบเนื้อเพลงจากแหล่งใดๆ' ? 'เพลงนี้ยังไม่มีเนื้อเพลงในฐานข้อมูล LRCLIB หรือ YouTube CC' : lyricsError)) : 'เนื้อเพลงนี้ยังเป็นแบบ PLAIN ธรรมดา คุณสามารถใช้ AI แกะเนื้อเพลงแบบปาดสีอัตโนมัติได้'}
-                                        </p>
-                                    </div>
-                                    
-                                    {currentVideo && isAiReady && (
-                                        <button
-                                            onClick={() => generateAILyrics(currentVideo.id)}
-                                            className="w-full mt-3 py-3 bg-primary hover:bg-primary/90 text-white rounded-xl font-bold text-xs active:scale-95 transition-all duration-300 flex items-center justify-center gap-2 group"
-                                        >
-                                            <Sparkles size={14} className="group-hover:rotate-12 transition-transform duration-300" />
-                                            <span>ให้ AI ช่วยแกะเนื้อเพลงอัตโนมัติ</span>
-                                        </button>
-                                    )}
+                                    <p className="text-[13px] font-bold text-gray-800 dark:text-gray-200">
+                                        ไม่พบเนื้อเพลงในระบบ
+                                    </p>
+                                    <p className="text-[11px] text-gray-500 dark:text-gray-400 max-w-[200px] leading-relaxed mx-auto">
+                                        เพลงนี้ยังไม่มีเนื้อเพลงในฐานข้อมูล LRCLIB หรือ YouTube CC
+                                    </p>
                                 </div>
                             </div>
                         )}
-                        {lyricsLoading && showLyrics && !isGeneratingAI && (
+                        
+                        {lyricsLoading && showLyrics && (
                             <div className="mt-3 p-4 flex flex-col items-center justify-center gap-3 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100/50 dark:border-blue-800/30 rounded-2xl">
                                 <div className="w-5 h-5 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
                                 <span className="text-[11px] text-blue-600 dark:text-blue-400 font-bold">กำลังค้นหาเนื้อเพลง...</span>
-                            </div>
-                        )}
-                        {isGeneratingAI && showLyrics && (
-                            <div className="mt-3 overflow-hidden rounded-2xl bg-gray-50 dark:bg-zinc-800/40 border border-gray-100 dark:border-zinc-700/50 relative">
-                                <div className="p-5 flex flex-col items-center justify-center text-center gap-4 relative z-10">
-                                    <div className="relative flex items-center justify-center">
-                                        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary relative z-10">
-                                            <Sparkles size={20} className="animate-pulse" />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <p className="text-[13px] font-bold text-gray-800 dark:text-gray-200">
-                                            AI กำลังแกะเนื้อเพลง...
-                                        </p>
-                                        <p className="text-[10px] text-gray-500 dark:text-gray-400 max-w-[200px] leading-relaxed mx-auto">
-                                            กำลังฟังและประมวลผลเสียงร้อง อาจใช้เวลาประมาณ 10-20 วินาที
-                                        </p>
-                                    </div>
-                                </div>
-                                <div className="absolute inset-x-0 bottom-0 h-1 bg-gray-200 dark:bg-zinc-700">
-                                    <div className="h-full bg-primary w-full animate-pulse" />
-                                </div>
                             </div>
                         )}
                         
@@ -597,7 +566,6 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                 {currentVideo && (
                                     <button
                                         onClick={() => {
-                                            setShowLyricsModal(false);
                                             router.push(`/creator?edit=${currentVideo.id}`);
                                         }}
                                         className="w-full py-2.5 bg-zinc-900 hover:bg-black dark:bg-zinc-700 dark:hover:bg-zinc-600 text-white rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-2"
@@ -636,17 +604,6 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                         >
                                             YouTube CC
                                         </button>
-                                        <button 
-                                            onClick={() => handleSourceChange('local')}
-                                            className={clsx(
-                                                "flex-1 py-1.5 rounded-md shadow-sm text-[10px] font-bold transition-all",
-                                                preferredSource === 'local'
-                                                    ? "bg-white dark:bg-zinc-700 text-black dark:text-white shadow" 
-                                                    : "text-gray-500 dark:text-zinc-400 hover:text-black dark:hover:text-white shadow-none"
-                                            )}
-                                        >
-                                            AI แกะเนื้อ
-                                        </button>
                                     </div>
                                 </div>
 
@@ -683,15 +640,6 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                             <SkipForward size={12} className="opacity-50" />
                                         </button>
                                     </div>
-                                    {currentVideo && isAiReady && lyricsType === 'synced' && source === 'lrclib' && !isGeneratingAI && (
-                                        <button
-                                            onClick={() => generateAILyrics(currentVideo.id)}
-                                            className="w-full mt-3 py-2.5 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-xl font-bold text-[11px] active:scale-95 transition-all duration-300 flex items-center justify-center gap-2 group"
-                                        >
-                                            <Sparkles size={12} className="group-hover:rotate-12 transition-transform duration-300" />
-                                            <span>เนื้อเพลงไม่ตรง? ปาดใหม่ด้วย AI ให้ตรงกับวิดีโอนี้</span>
-                                        </button>
-                                    )}
                                 </div>
                             </div>
                         )}
