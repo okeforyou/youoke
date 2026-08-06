@@ -113,7 +113,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                         "transition-colors duration-200 break-words whitespace-pre-wrap max-w-full text-center"
                     )}
                     style={{
-                        fontSize: 'clamp(1rem, 4cqw, 3rem)',
+                        fontSize: 'clamp(1.25rem, 6cqw, 4.5rem)',
                         lineHeight: '1.2',
                         WebkitTextStroke: 'clamp(2px, 0.4cqw, 4px) black',
                         paintOrder: 'stroke fill',
@@ -178,7 +178,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
             className="absolute inset-0 pointer-events-none z-40 flex items-end justify-center [@container/player]:true" 
             style={{ 
                 containerType: 'inline-size',
-                paddingBottom: 'clamp(1.5rem, 5cqw, 6rem)'
+                paddingBottom: 'clamp(2rem, 8cqw, 10rem)'
             }}
         >
             {/* Lyrics Container */}
