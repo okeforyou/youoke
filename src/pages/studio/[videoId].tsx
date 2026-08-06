@@ -4,6 +4,7 @@ import Head from 'next/head';
 import { useAuthStore } from '@/modules/auth/useAuthStore';
 import { useWikiLyricsStore, WikiLyricsSync } from '@/modules/player/stores/useWikiLyricsStore';
 import { useLyricsStore, LyricLine } from '@/modules/player/stores/useLyricsStore';
+import { usePlayerStore } from '@/modules/player/stores/usePlayerStore';
 import YouTube from 'react-youtube';
 import { Play, Pause, Save, ArrowLeft, RefreshCw } from 'lucide-react';
 import { useUIStore } from '@/stores/useUIStore';
@@ -26,12 +27,13 @@ export default function StudioPage() {
     const { saveSync } = useWikiLyricsStore();
     const fetchLyrics = useLyricsStore(state => state.fetchLyrics);
     const originalLyrics = useLyricsStore(state => state.lyrics);
+    const currentVideo = usePlayerStore(state => state.currentVideo);
 
     useEffect(() => {
         if (!videoId || typeof videoId !== 'string') return;
-        // Fetch base lyrics
-        fetchLyrics(videoId, "Unknown Title");
-    }, [videoId, fetchLyrics]);
+        const songTitle = currentVideo?.title || "Unknown Title";
+        fetchLyrics(videoId, songTitle);
+    }, [videoId, currentVideo?.title, fetchLyrics]);
 
     useEffect(() => {
         if (originalLyrics && originalLyrics.length > 0 && lyrics.length === 0) {
@@ -187,12 +189,13 @@ export default function StudioPage() {
                         )}
                         
                         {/* Single-line Lyric Overlay */}
-                        <div className="absolute bottom-4 left-0 right-0 px-8 text-center pointer-events-none">
-                            <p className="text-2xl md:text-3xl font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" style={{ textShadow: '2px 2px 4px #000, -2px -2px 4px #000, 2px -2px 4px #000, -2px 2px 4px #000' }}>
+                        <div className="absolute bottom-8 left-0 right-0 px-8 text-center pointer-events-none z-20 flex flex-col items-center">
+                            <span className="bg-black/60 px-4 py-2 rounded-lg text-2xl md:text-3xl font-bold text-white mb-2 shadow-2xl backdrop-blur-sm" style={{ textShadow: '0px 2px 4px rgba(0,0,0,0.8)' }}>
                                 {isRecording 
                                     ? lyrics[recordingIndex]?.text || "..." 
                                     : lyrics[activeLineIndex]?.text || ""}
-                            </p>
+                            </span>
+                            {isRecording && <span className="text-yellow-400 font-bold text-sm bg-black/60 px-2 py-1 rounded">บรรทัดที่จะถูกบันทึกเมื่อกด Spacebar</span>}
                         </div>
                     </div>
                     
