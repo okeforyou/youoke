@@ -6,7 +6,7 @@ import { useWikiLyricsStore, WikiLyricsSync } from '@/modules/player/stores/useW
 import { useLyricsStore, LyricLine } from '@/modules/player/stores/useLyricsStore';
 import { usePlayerStore } from '@/modules/player/stores/usePlayerStore';
 import YouTube from 'react-youtube';
-import { Play, Pause, Save, ArrowLeft, RefreshCw, ZoomIn, ZoomOut, GripVertical, Settings2 } from 'lucide-react';
+import { Play, Pause, Save, ArrowLeft, RefreshCw, ZoomIn, ZoomOut, GripVertical, Settings2, Link } from 'lucide-react';
 import { useUIStore } from '@/stores/useUIStore';
 
 export default function StudioPage() {
@@ -28,6 +28,7 @@ export default function StudioPage() {
     // Timeline state
     const timelineRef = useRef<HTMLDivElement>(null);
     const [pixelsPerSecond, setPixelsPerSecond] = useState(100);
+    const [isRippleEdit, setIsRippleEdit] = useState(false);
     
     // Drag state
     const [draggingIdx, setDraggingIdx] = useState<number | null>(null);
@@ -71,19 +72,22 @@ export default function StudioPage() {
                     if (playerRef.current?.getDuration) {
                         setDuration(playerRef.current.getDuration() || 300);
                     }
-                    
-                    if (lyrics.length > 0) {
-                        let activeIdx = lyrics.findIndex((l) => {
-                            const end = l.endTime || (l.time + 3);
-                            return time >= l.time && time < end;
-                        });
-                        setActiveLineIndex(activeIdx);
-                    }
                 }
             }, 100);
         }
         return () => clearInterval(interval);
     }, [isPlaying, lyrics, draggingIdx]);
+
+    // Keep activeLineIndex in sync with currentTime
+    useEffect(() => {
+        if (lyrics.length > 0) {
+            let activeIdx = lyrics.findIndex((l) => {
+                const end = l.endTime || (l.time + 3);
+                return currentTime >= l.time && currentTime < end;
+            });
+            setActiveLineIndex(activeIdx);
+        }
+    }, [currentTime, lyrics]);
 
     // Auto-scroll
     useEffect(() => {
@@ -162,9 +166,19 @@ export default function StudioPage() {
                 if (dragAction === 'move') {
                     const blockDuration = startEndTime - startTime;
                     let newTime = Math.max(0, startTime + deltaTime);
+                    const actualDelta = newTime - startTime;
                     
                     line.time = newTime;
                     line.endTime = newTime + blockDuration;
+                    
+                    // Ripple Edit
+                    if (isRippleEdit || e.shiftKey) {
+                        for (let i = draggingIdx + 1; i < next.length; i++) {
+                            const dur = (next[i].endTime || (next[i].time + 3)) - next[i].time;
+                            next[i].time = Math.max(0, next[i].time + actualDelta);
+                            next[i].endTime = next[i].time + dur;
+                        }
+                    }
                 } else if (dragAction === 'resize-left') {
                     let newTime = Math.max(0, startTime + deltaTime);
                     newTime = Math.min(newTime, startEndTime - 0.2); // Min duration 0.2s
@@ -328,6 +342,13 @@ export default function StudioPage() {
                 
                 <div className="flex items-center gap-2">
                     <button
+                        onClick={() => setIsRippleEdit(!isRippleEdit)}
+                        className={`px-4 py-1.5 rounded-full font-bold flex items-center gap-2 transition-all active:scale-95 text-sm ${isRippleEdit ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-white/10 text-zinc-300 hover:bg-white/15'}`}
+                        title="ลากขยับพร้อมกันทั้งกลุ่ม (หรือกด Shift ค้างตอนลาก)"
+                    >
+                        <Link size={16} /> <span className="hidden sm:inline">Ripple</span>
+                    </button>
+                    <button
                         onClick={() => {
                             setIsRecording(!isRecording);
                             if (!isRecording && !isPlaying) {
@@ -385,8 +406,9 @@ export default function StudioPage() {
                         if (e.target === e.currentTarget && playerRef.current) {
                             const rect = e.currentTarget.getBoundingClientRect();
                             const x = e.clientX - rect.left;
-                            const newTime = x / pixelsPerSecond;
+                            const newTime = Math.max(0, x / pixelsPerSecond);
                             playerRef.current.seekTo(newTime, true);
+                            setCurrentTime(newTime);
                         }
                     }}
                 >
