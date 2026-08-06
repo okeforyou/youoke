@@ -1,6 +1,44 @@
 import { create } from 'zustand';
-import { LRCLIBLine, alignLyrics, DeepgramWord } from '../engines/deepgramAlignEngine';
+import { LRCLIBLine, alignLyrics, DeepgramWord, AlignedWord } from '../engines/deepgramAlignEngine';
 import { useAIVocalStore, getActiveBridgeBaseUrl } from '../../../stores/useAIVocalStore';
+
+function groupDeepgramWordsIntoLines(words: DeepgramWord[]): LRCLIBLine[] {
+  if (!words || words.length === 0) return [];
+  
+  const lines: any[] = [];
+  let currentLineWords: AlignedWord[] = [];
+  
+  for (let i = 0; i < words.length; i++) {
+    const w = words[i];
+    currentLineWords.push({
+      word: w.word,
+      start: w.start,
+      end: w.end
+    });
+    
+    // Start a new line if:
+    // 1. We have accumulated 6 words, OR
+    // 2. The next word is starting more than 1.5 seconds after the current word ends
+    const nextWord = words[i + 1];
+    const isBigGap = nextWord ? (nextWord.start - w.end > 1.5) : false;
+    
+    if (currentLineWords.length >= 6 || isBigGap || i === words.length - 1) {
+      const lineStart = currentLineWords[0].start;
+      const lineEnd = currentLineWords[currentLineWords.length - 1].end;
+      const lineText = currentLineWords.map(cw => cw.word).join(' ');
+      
+      lines.push({
+        time: lineStart,
+        text: lineText,
+        duration: lineEnd - lineStart,
+        words: [...currentLineWords]
+      });
+      currentLineWords = [];
+    }
+  }
+  
+  return lines;
+}
 
 interface DeepgramLyricsState {
   alignedLyrics: LRCLIBLine[];
@@ -77,8 +115,8 @@ export const useDeepgramLyricsStore = create<DeepgramLyricsState>((set, get) => 
           localStorage.setItem(`ai_lyrics_${videoId}`, JSON.stringify(deepgramWords));
       }
       
-      // Pass to the Alignment Engine
-      const alignedLines = alignLyrics(deepgramWords, originalLyrics);
+      // POC: Bypass alignment engine and display raw Deepgram words grouped into lines
+      const alignedLines = groupDeepgramWordsIntoLines(deepgramWords);
       
       set({ 
         alignedLyrics: alignedLines, 
