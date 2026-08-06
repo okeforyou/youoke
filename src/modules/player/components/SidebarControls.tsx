@@ -576,58 +576,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                         <span>แก้ไขเนื้อเพลงใน Studio</span>
                                     </button>
                                 )}
-                                
-                                {/* Sync Offset Controls */}
-                                {showLyrics && (
-                                    <div className="mb-4">
-                                        <div className="mb-4 p-4 bg-gray-900 dark:bg-black rounded-2xl border border-gray-800 flex flex-col items-center justify-center text-center shadow-inner relative overflow-hidden">
-                                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 via-primary to-primary/50" />
-                                            <span className="text-[10px] font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                                                <Type size={12} className="text-primary" />
-                                                คำร้องขณะนี้
-                                            </span>
-                                            <span className={clsx(
-                                                "text-sm sm:text-base font-bold line-clamp-2 leading-relaxed px-2",
-                                                activeLineText ? "text-white" : "text-gray-500 italic"
-                                            )}>
-                                                {activeLineText || "(ไม่มีเนื้อร้องในขณะนี้)"}
-                                            </span>
-                                        </div>
-                                        
-                                        <div className="flex justify-between items-center mb-2 px-1">
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-1 h-3 rounded-full bg-gray-300 dark:bg-zinc-600" />
-                                                <span className="text-[10px] font-bold text-gray-500 dark:text-zinc-400 tracking-wider">ปรับเวลา (SYNC)</span>
-                                            </div>
-                                            <span className={clsx("text-[10px] font-black px-2 py-0.5 rounded", syncOffset !== 0 ? "bg-primary/10 text-primary" : "bg-gray-200/50 dark:bg-zinc-800 text-gray-500")}>
-                                                {syncOffset > 0 ? '+' : ''}{syncOffset.toFixed(1)}s
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <button 
-                                                onClick={() => setSyncOffset(syncOffset - 0.5)}
-                                                className="flex-1 py-2.5 bg-white dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 rounded-xl shadow-sm text-xs font-bold hover:bg-gray-50 dark:hover:bg-zinc-700 active:scale-95 transition-all text-black dark:text-white flex items-center justify-center gap-1"
-                                            >
-                                                <RotateCcw size={14} className="opacity-50" />
-                                                -0.5s
-                                            </button>
-                                            <button 
-                                                onClick={() => setSyncOffset(0)}
-                                                className="px-4 py-2.5 bg-transparent rounded-xl text-[10px] font-bold text-gray-400 hover:text-black dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-zinc-800 transition-all"
-                                            >
-                                                Reset
-                                            </button>
-                                            <button 
-                                                onClick={() => setSyncOffset(syncOffset + 0.5)}
-                                                className="flex-1 py-2.5 bg-white dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 rounded-xl shadow-sm text-xs font-bold hover:bg-gray-50 dark:hover:bg-zinc-700 active:scale-95 transition-all text-black dark:text-white flex items-center justify-center gap-1"
-                                            >
-                                                +0.5s
-                                                <SkipForward size={14} className="opacity-50" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-                                
+
                                 {/* Source Selector */}
                                 <div>
                                     <div className="flex items-center gap-2 mb-2 px-1">

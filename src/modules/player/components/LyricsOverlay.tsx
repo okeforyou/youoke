@@ -184,6 +184,18 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
         );
     };
 
+    const handleOneTapSync = () => {
+        if (activeLine) {
+            // Calc offset so that the active line's start time perfectly matches currentTime
+            const newOffset = currentTime - activeLine.time;
+            setSyncOffset(Math.round(newOffset * 10) / 10);
+        }
+    };
+
+    const handleAdjustOffset = (amount: number) => {
+        setSyncOffset(Math.round((syncOffset + amount) * 10) / 10);
+    };
+
     return (
         <div 
             className="absolute inset-0 pointer-events-none z-40 flex items-end justify-center" 
@@ -193,7 +205,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
         >
             {/* Lyrics Container */}
             <div 
-                className="w-[95%] max-w-5xl flex flex-col space-y-1 px-4 sm:px-6 relative"
+                className="w-[95%] max-w-5xl flex flex-col space-y-1 px-4 sm:px-6 relative group"
                 style={{ containerType: 'inline-size' }}
             >
                 {source && (
@@ -201,6 +213,45 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                         เนื้อเพลงจาก: {source === 'lrclib' ? (lyricsType === 'synced' ? 'LRCLIB (SYNC)' : 'LRCLIB (PLAIN)') : 'YouTube CC'}
                     </div>
                 )}
+
+                {/* Floating Sync Pill (Visual Sync) */}
+                {lyricsType === 'synced' && (
+                    <div className="absolute -top-8 right-4 pointer-events-auto flex items-center gap-1 bg-black/40 backdrop-blur-md rounded-full px-2 py-1 shadow-lg border border-white/5 opacity-40 hover:opacity-100 transition-opacity duration-300 z-50">
+                        <button onClick={() => handleAdjustOffset(-0.5)} className="px-2 py-1 hover:bg-white/20 rounded-full text-[11px] text-white/80 font-medium transition-colors" title="-0.5s">
+                            -0.5
+                        </button>
+                        <button onClick={() => handleAdjustOffset(-0.1)} className="px-2 py-1 hover:bg-white/20 rounded-full text-[11px] text-white/80 font-medium transition-colors" title="-0.1s">
+                            -0.1
+                        </button>
+                        
+                        <div className="w-px h-3 bg-white/20 mx-1" />
+                        
+                        <button 
+                            onClick={handleOneTapSync} 
+                            className="px-3 py-1 hover:bg-[#2563eb]/80 bg-[#2563eb]/30 text-white rounded-full text-[11px] font-bold transition-colors flex items-center gap-1.5" 
+                            title="กดเมื่อนักร้องเริ่มร้องท่อนนี้ (Sync to Now)"
+                        >
+                            <span>🎯</span> <span>Sync</span>
+                        </button>
+
+                        <div className="w-px h-3 bg-white/20 mx-1" />
+
+                        <button onClick={() => handleAdjustOffset(0.1)} className="px-2 py-1 hover:bg-white/20 rounded-full text-[11px] text-white/80 font-medium transition-colors" title="+0.1s">
+                            +0.1
+                        </button>
+                        <button onClick={() => handleAdjustOffset(0.5)} className="px-2 py-1 hover:bg-white/20 rounded-full text-[11px] text-white/80 font-medium transition-colors" title="+0.5s">
+                            +0.5
+                        </button>
+                        
+                        {/* Offset indicator */}
+                        {syncOffset !== 0 && (
+                            <div className="absolute -top-5 right-0 bg-black/60 rounded px-1.5 text-[9px] text-blue-300 border border-white/10 font-mono">
+                                {syncOffset > 0 ? '+' : ''}{syncOffset}s
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 {renderLine(activeLine, activeIndex)}
             </div>
         </div>
