@@ -598,13 +598,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     </div>
 
                     <div className="flex items-center gap-6 ml-6">
-                        {/* Search Toggle (Song / AI Karaoke / Classic Karaoke) - Animated Switch */}
-                        <div className="relative flex items-center bg-gray-50 dark:bg-zinc-900 rounded-2xl p-1 h-11 w-[270px] border border-gray-100 dark:border-zinc-800">
+                        {/* Search Toggle (Song / Classic Karaoke) - Animated Switch */}
+                        <div className="relative flex items-center bg-gray-50 dark:bg-zinc-900 rounded-2xl p-1 h-11 w-[180px] border border-gray-100 dark:border-zinc-800">
                             {/* Sliding Active Background */}
                             <div
                                 className={clsx(
-                                    "absolute top-1 bottom-1 w-[calc(33.33%-4px)] bg-white dark:bg-zinc-800 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
-                                    searchMode === 'song' ? "left-1" : (searchMode === 'ai_karaoke' ? "left-[calc(33.33%+1px)]" : "left-[calc(66.66%+1px)]")
+                                    "absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white dark:bg-zinc-800 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
+                                    searchMode === 'song' ? "left-1" : "left-[calc(50%+2px)]"
                                 )}
                             />
 
@@ -618,19 +618,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             >
                                 <Music className="w-3.5 h-3.5" />
                                 <span>เพลง</span>
-                            </button>
-
-                            {/* AI Karaoke Option */}
-                            <button
-                                onClick={() => setSearchMode?.('ai_karaoke')}
-                                className={clsx(
-                                    "relative flex-1 flex items-center justify-center gap-1.5 h-full rounded-xl text-[11px] font-black tracking-tight uppercase transition-colors z-10",
-                                    searchMode === 'ai_karaoke' ? "text-primary" : "text-black dark:text-zinc-400 hover:text-black dark:hover:text-white"
-                                )}
-                                title="ร้องคาราโอเกะสตูดิโอ (แยกเสียง + เนื้อปาดตรง)"
-                            >
-                                <Sparkles className="w-3.5 h-3.5" />
-                                <span>แยกเสียง AI</span>
                             </button>
 
                             {/* Karaoke Option */}
@@ -765,13 +752,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                 )}
                                             </div>
 
-                                            {/* Mode Switch (Song/AI Karaoke/Classic Karaoke) - Animated Sliding Style */}
-                                            <div className="relative flex bg-gray-100 dark:bg-zinc-900 p-1 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-inner shrink-0 h-10 w-[126px] items-center">
+                                            {/* Mode Switch (Song/Classic Karaoke) - Animated Sliding Style */}
+                                            <div className="relative flex bg-gray-100 dark:bg-zinc-900 p-1 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-inner shrink-0 h-10 w-[84px] items-center">
                                                 {/* Sliding Background */}
                                                 <div
                                                     className={clsx(
                                                         "absolute h-8 w-9 bg-white dark:bg-zinc-800 rounded-xl shadow-sm transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
-                                                        searchMode === 'song' ? "translate-x-0" : (searchMode === 'ai_karaoke' ? "translate-x-[40px]" : "translate-x-[80px]")
+                                                        searchMode === 'song' ? "translate-x-0" : "translate-x-9"
                                                     )}
                                                 />
                                                 <button
@@ -782,16 +769,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                     )}
                                                 >
                                                     <Music size={16} />
-                                                </button>
-                                                <button
-                                                    onClick={() => setSearchMode?.('ai_karaoke')}
-                                                    className={clsx(
-                                                        "relative flex-1 h-8 flex items-center justify-center rounded-xl transition-all duration-300 z-10",
-                                                        searchMode === 'ai_karaoke' ? "text-primary scale-105" : "text-black/40 dark:text-zinc-600"
-                                                    )}
-                                                    title="แยกเสียง AI"
-                                                >
-                                                    <Sparkles size={16} />
                                                 </button>
                                                 <button
                                                     onClick={() => setSearchMode?.('karaoke')}
