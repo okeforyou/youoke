@@ -86,11 +86,25 @@ export const useDeepgramLyricsStore = create<DeepgramLyricsState>((set, get) => 
               throw new Error("Local Bridge ออฟไลน์ หรือยังไม่ได้เปิดโปรแกรม");
           }
 
-          const audioRes = await fetch(`${baseUrl}/files/${videoId}/vocals.m4a`);
-          if (!audioRes.ok) {
-              throw new Error("ไม่พบไฟล์เสียงร้อง (vocals.m4a) สำหรับเพลงนี้ กรุณาให้ระบบประมวลผลเสียงร้องก่อน");
+          let audioBlob: Blob;
+          try {
+              const audioRes = await fetch(`${baseUrl}/files/${videoId}/vocals.m4a`);
+              if (!audioRes.ok) {
+                  throw new Error("Vocals file missing");
+              }
+              audioBlob = await audioRes.blob();
+          } catch (e) {
+              console.warn("vocals.m4a not found or unreachable, attempting original.audio fallback...");
+              try {
+                  const fallbackRes = await fetch(`${baseUrl}/files/${videoId}/original.audio`);
+                  if (!fallbackRes.ok) {
+                      throw new Error("Original audio file missing");
+                  }
+                  audioBlob = await fallbackRes.blob();
+              } catch (fallbackError) {
+                  throw new Error("ไม่พบไฟล์เสียงร้อง (vocals.m4a) หรือไฟล์เสียงหลักสำหรับเพลงนี้ในระบบ Local Bridge กรุณารอกระบวนการประมวลผลเสียงเสร็จสิ้นก่อนครับ");
+              }
           }
-          const audioBlob = await audioRes.blob();
 
           // Transcribe via Deepgram API directly from browser (direct POC)
           const res = await fetch('https://api.deepgram.com/v1/listen?model=nova-2&language=th&smart_format=true', {
