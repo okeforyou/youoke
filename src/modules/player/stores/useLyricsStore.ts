@@ -166,7 +166,7 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
     clearLyrics: () => set({ lyrics: [], source: null, error: null, lyricsType: null, isLoading: false, syncOffset: 0, activeLineText: '' }),
 
     fetchLyrics: async (videoId: string, title: string, prefer?: 'auto' | 'youtube', duration?: number) => {
-        set({ isLoading: true, error: null, lyrics: [], source: null, lyricsType: null });
+        set({ isLoading: true, error: null, lyrics: [], source: null, lyricsType: null, syncOffset: 0 });
         try {
             const pref = prefer || get().preferredSource;
             let onlineData: any = null;

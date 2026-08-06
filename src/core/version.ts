@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.238";
+export const SYSTEM_VERSION = "5.5.239";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.239",
+        date: new Date().toISOString().split('T')[0],
+        changes: [
+            "fix(lyrics): Removed legacy floating sync pill from screen.",
+            "fix(lyrics): Reset syncOffset and Deepgram aligned store when changing songs.",
+            "feat(player): Added -0.1s and +0.1s micro-nudges to Fullscreen Control Bar.",
+            "feat(player): Upgraded Live Tap Sync to use closest-line algorithm to resolve delayed alignment drifts."
+        ]
+    },
     {
         version: "5.5.238",
         date: new Date().toISOString().split('T')[0],

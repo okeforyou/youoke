@@ -54,20 +54,34 @@ export const FullscreenControlBar = ({ showControls, layoutMode, playerRef }: Fu
                 >
                     -0.5s
                 </button>
+                <button
+                    onClick={() => nudgeOffset(-0.1)}
+                    className="px-1.5 py-1.5 rounded-lg bg-white/5 text-white/70 hover:bg-white/15 hover:text-white text-xs font-mono font-bold transition-all active:scale-95"
+                    title="ถอยหลัง 0.1 วินาที"
+                >
+                    -0.1s
+                </button>
 
                 <button
                     onClick={() => {
                         if (playerRef?.current && typeof playerRef.current.getCurrentTime === 'function') {
                             const currentTime = playerRef.current.getCurrentTime();
                             if (typeof currentTime === 'number' && lyrics.length > 0) {
-                                // Find current line or active line
-                                const activeIndex = lyrics.findIndex((l, idx) => {
-                                    const nextTime = idx < lyrics.length - 1 ? lyrics[idx + 1].time : l.time + 5;
-                                    return currentTime >= (l.time - syncOffset) && currentTime < (nextTime - syncOffset);
-                                });
-                                const lineToSync = activeIndex >= 0 ? lyrics[activeIndex] : lyrics[0];
-                                if (lineToSync) {
-                                    const newOffset = currentTime - lineToSync.time;
+                                // Find closest line using the absolute distance from current adjusted time
+                                const adjustedTime = currentTime - syncOffset;
+                                let closestLine = lyrics[0];
+                                let minDistance = Math.abs(adjustedTime - lyrics[0].time);
+
+                                for (let i = 1; i < lyrics.length; i++) {
+                                    const distance = Math.abs(adjustedTime - lyrics[i].time);
+                                    if (distance < minDistance) {
+                                        minDistance = distance;
+                                        closestLine = lyrics[i];
+                                    }
+                                }
+
+                                if (closestLine) {
+                                    const newOffset = currentTime - closestLine.time;
                                     setSyncOffset(Math.round(newOffset * 10) / 10);
                                 }
                             }
@@ -87,6 +101,13 @@ export const FullscreenControlBar = ({ showControls, layoutMode, playerRef }: Fu
                     {syncOffset > 0 ? `+${syncOffset.toFixed(1)}s` : `${syncOffset.toFixed(1)}s`}
                 </div>
 
+                <button
+                    onClick={() => nudgeOffset(0.1)}
+                    className="px-1.5 py-1.5 rounded-lg bg-white/5 text-white/70 hover:bg-white/15 hover:text-white text-xs font-mono font-bold transition-all active:scale-95"
+                    title="เดินหน้า 0.1 วินาที"
+                >
+                    +0.1s
+                </button>
                 <button
                     onClick={() => nudgeOffset(0.5)}
                     className="px-2 py-1.5 rounded-lg bg-white/5 text-white/80 hover:bg-white/15 hover:text-white text-xs font-mono font-bold transition-all active:scale-95"
