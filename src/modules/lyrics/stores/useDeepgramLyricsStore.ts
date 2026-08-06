@@ -90,31 +90,36 @@ export const useDeepgramLyricsStore = create<DeepgramLyricsState>((set, get) => 
           try {
               const audioRes = await fetch(`${baseUrl}/files/${videoId}/vocals.m4a`);
               if (!audioRes.ok) {
-                  throw new Error("Vocals file missing");
+                  throw new Error(`HTTP Status ${audioRes.status}`);
               }
               audioBlob = await audioRes.blob();
-          } catch (e) {
+          } catch (e: any) {
               console.warn("vocals.m4a not found or unreachable, attempting original.audio fallback...");
               try {
                   const fallbackRes = await fetch(`${baseUrl}/files/${videoId}/original.audio`);
                   if (!fallbackRes.ok) {
-                      throw new Error("Original audio file missing");
+                      throw new Error(`HTTP Status ${fallbackRes.status}`);
                   }
                   audioBlob = await fallbackRes.blob();
-              } catch (fallbackError) {
-                  throw new Error("ไม่พบไฟล์เสียงร้อง (vocals.m4a) หรือไฟล์เสียงหลักสำหรับเพลงนี้ในระบบ Local Bridge กรุณารอกระบวนการประมวลผลเสียงเสร็จสิ้นก่อนครับ");
+              } catch (fallbackError: any) {
+                  throw new Error(`ดึงไฟล์เสียงร้องจาก Local Bridge ล้มเหลว (เกิดข้อผิดพลาด: ${e.message || String(e)})`);
               }
           }
 
           // Transcribe via Deepgram API directly from browser (direct POC)
-          const res = await fetch('https://api.deepgram.com/v1/listen?model=nova-2&language=th&smart_format=true', {
-              method: 'POST',
-              headers: {
-                  'Authorization': `Token ${deepgramKey}`,
-                  'Content-Type': 'audio/m4a'
-              },
-              body: audioBlob
-          });
+          let res;
+          try {
+              res = await fetch('https://api.deepgram.com/v1/listen?model=nova-2&language=th&smart_format=true', {
+                  method: 'POST',
+                  headers: {
+                      'Authorization': `Token ${deepgramKey}`,
+                      'Content-Type': 'audio/m4a'
+                  },
+                  body: audioBlob
+              });
+          } catch (e: any) {
+              throw new Error(`ส่งข้อมูลเสียงไปยัง Deepgram API ล้มเหลว (เกิดข้อผิดพลาด: ${e.message || String(e)})`);
+          }
 
           if (!res.ok) {
               const errText = await res.text().catch(() => "");
