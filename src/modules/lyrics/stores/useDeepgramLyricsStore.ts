@@ -103,7 +103,8 @@ export const useDeepgramLyricsStore = create<DeepgramLyricsState>((set, get) => 
           });
 
           if (!res.ok) {
-              throw new Error("เกิดข้อผิดพลาดในการดึงข้อมูลจาก Deepgram API");
+              const errText = await res.text().catch(() => "");
+              throw new Error(`Deepgram API Error (${res.status}): ${errText || "เกิดข้อผิดพลาดในการแกะเสียงร้อง"}`);
           }
 
           const dgData = await res.json();
@@ -117,8 +118,10 @@ export const useDeepgramLyricsStore = create<DeepgramLyricsState>((set, get) => 
           localStorage.setItem(`ai_lyrics_${videoId}`, JSON.stringify(deepgramWords));
       }
       
-      // POC: Bypass alignment engine and display raw Deepgram words grouped into lines
-      const alignedLines = groupDeepgramWordsIntoLines(deepgramWords);
+      // If we have original clean lyrics, align them; otherwise, fall back to raw Deepgram grouping
+      const alignedLines = originalLyrics && originalLyrics.length > 0
+        ? alignLyrics(deepgramWords, originalLyrics)
+        : groupDeepgramWordsIntoLines(deepgramWords);
       
       set({ 
         alignedLyrics: alignedLines, 
