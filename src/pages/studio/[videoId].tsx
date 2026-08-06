@@ -174,17 +174,26 @@ export default function StudioPage() {
             <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
                 {/* Left Side: Video & Controls */}
                 <div className="w-full md:w-1/2 p-4 flex flex-col gap-4 border-r border-white/10">
-                    <div className="w-full aspect-video rounded-xl overflow-hidden bg-zinc-900 shadow-xl relative">
+                    <div className="w-full aspect-video rounded-xl overflow-hidden bg-zinc-900 shadow-xl relative group">
                         {videoId && (
                             <YouTube
                                 videoId={videoId as string}
-                                opts={{ width: '100%', height: '100%', playerVars: { autoplay: 0, controls: 0 } }}
+                                opts={{ width: '100%', height: '100%', playerVars: { autoplay: 0, controls: 0, cc_load_policy: 0, iv_load_policy: 3 } }}
                                 onReady={(e) => { playerRef.current = e.target; }}
                                 onPlay={() => setIsPlaying(true)}
                                 onPause={() => setIsPlaying(false)}
-                                className="w-full h-full absolute inset-0"
+                                className="w-full h-full absolute inset-0 pointer-events-none"
                             />
                         )}
+                        
+                        {/* Single-line Lyric Overlay */}
+                        <div className="absolute bottom-4 left-0 right-0 px-8 text-center pointer-events-none">
+                            <p className="text-2xl md:text-3xl font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" style={{ textShadow: '2px 2px 4px #000, -2px -2px 4px #000, 2px -2px 4px #000, -2px 2px 4px #000' }}>
+                                {isRecording 
+                                    ? lyrics[recordingIndex]?.text || "..." 
+                                    : lyrics[activeLineIndex]?.text || ""}
+                            </p>
+                        </div>
                     </div>
                     
                     <div className="flex items-center justify-center gap-4 bg-zinc-900/50 p-4 rounded-xl">
