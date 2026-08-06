@@ -6,13 +6,16 @@ import { useWikiLyricsStore, WikiLyricsSync } from '@/modules/player/stores/useW
 import { useLyricsStore, LyricLine } from '@/modules/player/stores/useLyricsStore';
 import { usePlayerStore } from '@/modules/player/stores/usePlayerStore';
 import YouTube from 'react-youtube';
-import { Play, Pause, Save, ArrowLeft, RefreshCw, ZoomIn, ZoomOut, GripVertical, Settings2, Link } from 'lucide-react';
+import { Play, Pause, Save, ArrowLeft, RefreshCw, ZoomIn, ZoomOut, GripVertical, Settings2, Link, Trash2, Plus, FileText, X } from 'lucide-react';
 import { useUIStore } from '@/stores/useUIStore';
 
 export default function StudioPage() {
     const router = useRouter();
     const { videoId } = router.query;
     const { user } = useAuthStore();
+    const [error, setError] = useState<string | null>(null);
+    const [showPasteModal, setShowPasteModal] = useState(false);
+    const [rawText, setRawText] = useState('');
     const [lyrics, setLyrics] = useState<LyricLine[]>([]);
     const [title, setTitle] = useState("Studio");
     const playerRef = useRef<any>(null);
@@ -272,6 +275,43 @@ export default function StudioPage() {
         }
     };
 
+    const handleAddBlock = () => {
+        const newBlock: LyricLine = {
+            time: currentTime,
+            endTime: currentTime + 3,
+            text: "เนื้อร้องใหม่"
+        };
+        const next = [...lyrics, newBlock].sort((a, b) => a.time - b.time);
+        setLyrics(next);
+    };
+
+    const handlePasteRaw = () => {
+        if (!rawText.trim()) return;
+        const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        
+        let currentOffset = 0;
+        const newLyrics: LyricLine[] = lines.map((text) => {
+            const block = {
+                time: currentOffset,
+                endTime: currentOffset + 3,
+                text
+            };
+            currentOffset += 3.5; // space them out
+            return block;
+        });
+
+        // Ask for confirmation if there are already lyrics
+        if (lyrics.length > 0) {
+            if (!confirm("คุณต้องการวางทับเนื้อเพลงเดิมทั้งหมดใช่หรือไม่?")) {
+                return;
+            }
+        }
+        
+        setLyrics(newLyrics);
+        setShowPasteModal(false);
+        setRawText('');
+    };
+
     return (
         <div className="h-screen w-screen bg-black text-white flex flex-col overflow-hidden">
             <Head>
@@ -341,6 +381,20 @@ export default function StudioPage() {
                 </div>
                 
                 <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setShowPasteModal(true)}
+                        className="px-3 py-1.5 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all text-sm flex items-center gap-2"
+                        title="วางเนื้อเพลงดิบ (Raw Text)"
+                    >
+                        <FileText size={16} /> <span className="hidden sm:inline">นำเข้าเนื้อเพลง</span>
+                    </button>
+                    <button
+                        onClick={handleAddBlock}
+                        className="px-3 py-1.5 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all text-sm flex items-center gap-2"
+                        title="เพิ่มกล่องใหม่ ณ เวลาปัจจุบัน"
+                    >
+                        <Plus size={16} /> <span className="hidden sm:inline">เพิ่มบรรทัด</span>
+                    </button>
                     <button
                         onClick={() => setIsRippleEdit(!isRippleEdit)}
                         className={`px-4 py-1.5 rounded-full font-bold flex items-center gap-2 transition-all active:scale-95 text-sm ${isRippleEdit ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-white/10 text-zinc-300 hover:bg-white/15'}`}
@@ -485,6 +539,21 @@ export default function StudioPage() {
                                     onPointerDown={(e) => e.stopPropagation()} // Prevent drag when focusing input
                                 />
                                 
+                                {/* Delete Button (appears on hover) */}
+                                <button
+                                    className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-50 shadow-md"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (confirm(`ลบเนื้อร้อง "${line.text}" ใช่ไหม?`)) {
+                                            const next = [...lyrics];
+                                            next.splice(idx, 1);
+                                            setLyrics(next);
+                                        }
+                                    }}
+                                >
+                                    <X size={12} />
+                                </button>
+                                
                                 {/* Right Drag Handle (Resize Duration) */}
                                 <div 
                                     className="w-4 h-full bg-white/5 hover:bg-white/20 cursor-ew-resize flex items-center justify-center border-l border-white/10 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -514,6 +583,43 @@ export default function StudioPage() {
                     background: #3f3f46; 
                 }
             `}</style>
+            
+            {/* Paste Modal */}
+            {showPasteModal && (
+                <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+                    <div className="bg-zinc-900 border border-white/10 p-6 rounded-xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh]">
+                        <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                            <FileText size={20} className="text-primary" /> นำเข้าเนื้อเพลงดิบ
+                        </h2>
+                        <p className="text-zinc-400 text-sm mb-4">
+                            วางเนื้อเพลงแบบบรรทัดต่อบรรทัดลงในช่องนี้ ระบบจะสร้างกล่องข้อความเรียงคิวไว้ที่ 0.0s ให้คุณกด Tap-to-Sync ไล่ไปทีละบรรทัดได้เลย
+                        </p>
+                        
+                        <textarea 
+                            className="w-full bg-black/50 border border-white/10 rounded-lg p-4 text-white font-medium resize-none focus:outline-none focus:border-primary/50 flex-1 min-h-[300px]"
+                            placeholder="พิมพ์หรือวางเนื้อเพลงที่นี่..."
+                            value={rawText}
+                            onChange={e => setRawText(e.target.value)}
+                        />
+                        
+                        <div className="flex justify-end gap-3 mt-6">
+                            <button 
+                                onClick={() => setShowPasteModal(false)}
+                                className="px-5 py-2.5 rounded-lg text-white bg-white/5 hover:bg-white/10 transition-colors font-medium"
+                            >
+                                ยกเลิก
+                            </button>
+                            <button 
+                                onClick={handlePasteRaw}
+                                disabled={!rawText.trim()}
+                                className="px-5 py-2.5 rounded-lg text-black bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-bold"
+                            >
+                                นำเข้าเนื้อเพลง
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
