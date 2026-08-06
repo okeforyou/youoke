@@ -86,48 +86,31 @@ export const useDeepgramLyricsStore = create<DeepgramLyricsState>((set, get) => 
               throw new Error("Local Bridge ออฟไลน์ หรือยังไม่ได้เปิดโปรแกรม");
           }
 
-          let audioBlob: Blob;
-          try {
-              const audioRes = await fetch(`${baseUrl}/files/${videoId}/vocals.m4a`);
-              if (!audioRes.ok) {
-                  throw new Error(`HTTP Status ${audioRes.status}`);
-              }
-              audioBlob = await audioRes.blob();
-          } catch (e: any) {
-              console.warn("vocals.m4a not found or unreachable, attempting original.audio fallback...");
-              try {
-                  const fallbackRes = await fetch(`${baseUrl}/files/${videoId}/original.audio`);
-                  if (!fallbackRes.ok) {
-                      throw new Error(`HTTP Status ${fallbackRes.status}`);
-                  }
-                  audioBlob = await fallbackRes.blob();
-              } catch (fallbackError: any) {
-                  throw new Error(`ดึงไฟล์เสียงร้องจาก Local Bridge ล้มเหลว (เกิดข้อผิดพลาด: ${e.message || String(e)})`);
-              }
-          }
-
-          // Transcribe via Deepgram API directly from browser (direct POC)
+          // Call the local bridge /transcribe endpoint to handle file reading and transcription securely without browser CORS/mixed-content blocks
           let res;
           try {
-              res = await fetch('https://api.deepgram.com/v1/listen?model=nova-2&language=th&smart_format=true', {
+              res = await fetch(`${baseUrl}/transcribe`, {
                   method: 'POST',
                   headers: {
-                      'Authorization': `Token ${deepgramKey}`,
-                      'Content-Type': 'audio/m4a'
+                      'Content-Type': 'application/json'
                   },
-                  body: audioBlob
+                  body: JSON.stringify({
+                      video_id: videoId,
+                      api_key: deepgramKey,
+                      provider: 'deepgram'
+                  })
               });
           } catch (e: any) {
-              throw new Error(`ส่งข้อมูลเสียงไปยัง Deepgram API ล้มเหลว (เกิดข้อผิดพลาด: ${e.message || String(e)})`);
+              throw new Error(`เชื่อมต่อ Local Bridge /transcribe ล้มเหลว (เกิดข้อผิดพลาด: ${e.message || String(e)})`);
           }
 
           if (!res.ok) {
-              const errText = await res.text().catch(() => "");
-              throw new Error(`Deepgram API Error (${res.status}): ${errText || "เกิดข้อผิดพลาดในการแกะเสียงร้อง"}`);
+              const errData = await res.json().catch(() => ({}));
+              throw new Error(errData.detail || `Local Bridge /transcribe Error (${res.status})`);
           }
 
           const dgData = await res.json();
-          deepgramWords = dgData.results?.channels?.[0]?.alternatives?.[0]?.words || [];
+          deepgramWords = dgData.words || [];
 
           if (deepgramWords.length === 0) {
               throw new Error("AI ไม่สามารถแกะเนื้อเพลงจากไฟล์เสียงร้องได้");
