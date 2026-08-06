@@ -116,7 +116,8 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                 <div 
                     className={clsx(
                         "relative inline-block font-black tracking-wide",
-                        "transition-transform duration-200 break-words whitespace-pre-wrap max-w-full text-center md:text-left",
+                        "transition-transform duration-200 break-words whitespace-pre-wrap max-w-full",
+                        align === 'left' ? 'text-left' : 'text-right',
                         isActive ? "scale-100" : "scale-[0.95]"
                     )}
                     style={{
@@ -161,11 +162,12 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                     ) : (
                         <>
                             {/* Simple Line Render (No sweeping to prevent word cutoffs) */}
-                            <span 
-                                className={clsx(
-                                    "text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] whitespace-pre-wrap break-words max-w-full text-center md:text-left transition-colors duration-200",
-                                    isActive && (source === 'youtube' || source === 'lrclib') && "text-[#2563eb]"
-                                )}
+                                <span 
+                                    className={clsx(
+                                        "text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] whitespace-pre-wrap break-words max-w-full transition-colors duration-200",
+                                        align === 'left' ? 'text-left' : 'text-right',
+                                        isActive && (source === 'youtube' || source === 'lrclib') && "text-[#2563eb]"
+                                    )}
                                 style={{
                                     WebkitTextStroke: 'clamp(2px, 0.4cqw, 4px) black',
                                     paintOrder: 'stroke fill',
@@ -185,11 +187,11 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
             className="absolute inset-0 pointer-events-none z-40 flex items-end justify-center [@container/player]:true" 
             style={{ 
                 containerType: 'inline-size',
-                paddingBottom: 'clamp(0.6rem, 3.5cqw, 4.5rem)'
+                paddingBottom: 'clamp(0.5rem, 1.5cqw, 2.5rem)'
             }}
         >
             {/* Lyrics Container */}
-            <div className="w-[95%] max-w-5xl flex flex-col space-y-2 px-6">
+            <div className="w-[95%] max-w-5xl flex flex-col space-y-1 px-4 sm:px-6">
                 {source && (
                     <div className="absolute top-4 left-4 bg-black/40 backdrop-blur-sm rounded-lg px-2 py-1 text-[10px] text-white/50 font-medium">
                         เนื้อเพลงจาก: {source === 'lrclib' ? (lyricsType === 'synced' ? 'LRCLIB (SYNC)' : 'LRCLIB (PLAIN)') : 'YouTube CC'}

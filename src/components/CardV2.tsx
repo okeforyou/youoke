@@ -156,7 +156,7 @@ export default function CardV2({
                     <div className="flex items-center gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
                         {activeIndex === 1 || activeIndex === 3 ? (
                             <div className="dropdown dropdown-end dropdown-top">
-                                <button tabIndex={0} className="p-1.5 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg text-gray-400 dark:text-zinc-500 hover:text-gray-900 dark:hover:text-white transition-colors">
+                                <button tabIndex={0} className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg text-gray-400 dark:text-zinc-500 hover:text-gray-900 dark:hover:text-white transition-colors">
                                     <EllipsisVerticalIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                                 </button>
                                 <ul tabIndex={0} className="dropdown-content z-[50] menu p-1 shadow-xl bg-white dark:bg-zinc-900 rounded-xl w-32 border border-gray-100 dark:border-zinc-800 text-xs font-bold">
@@ -167,7 +167,7 @@ export default function CardV2({
                                 </ul>
                             </div>
                         ) : (
-                            <button onClick={(e) => { e.preventDefault(); onLike && onLike(); }} className="p-1.5 hover:bg-pink-50 rounded-lg text-gray-300 hover:text-pink-500 transition-colors">
+                            <button onClick={(e) => { e.preventDefault(); onLike && onLike(); }} className="w-8 h-8 flex items-center justify-center hover:bg-pink-50 rounded-lg text-gray-300 hover:text-pink-500 transition-colors">
                                 <HandThumbUpIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                             </button>
                         )}
