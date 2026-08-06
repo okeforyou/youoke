@@ -15,12 +15,16 @@ import { useShallow } from 'zustand/react/shallow';
 import { QuotaIndicator } from "./QuotaIndicator";
 
 // Hooks
+import { MixerSettingsMobile } from './MixerSettingsMobile';
+import { PlayQueueMobile } from './PlayQueueMobile';
+import { QueueManagerMobile } from './QueueManagerMobile';
+import { SearchPanelMobile } from './SearchPanelMobile';
+import { FullscreenControlBar } from './FullscreenControlBar';
 import { usePlayerLifecycle } from "../hooks/usePlayerLifecycle";
 import { usePlayerSync } from "../hooks/usePlayerSync";
 import { useAiProcessor } from "../../../hooks/useAiProcessor";
 import { useCast } from "../../../plugins/cast/context/CastContext";
 import { ToastNotification } from './ToastNotification';
-import { MiniControls } from './MiniControls';
 
 import { Tv, Radio, Monitor, Power, PlayCircle } from 'lucide-react';
 
@@ -461,10 +465,9 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
 
             {/* Limit Indicator Removed (v2.10.3) */}
 
-            {/* 🎯 YOUTUBE-STYLE MINI CONTROLS (Fullscreen Only - Rounded Capsule - VANISHING MODE) */}
-            {/* 🎯 YOUTUBE-STYLE MINI CONTROLS */}
+            {/* 🎯 YOUTUBE-STYLE FULLSCREEN CONTROLS (Vanishing Mode) */}
             {!isPassive && (
-                <MiniControls showMiniControls={showMiniControls} layoutMode={layoutMode} />
+                <FullscreenControlBar showControls={showMiniControls} layoutMode={layoutMode} playerRef={playerRef} />
             )}
 
             {/* 🏝️ iOS DYNAMIC ISLAND STYLE NOTIFICATION */}

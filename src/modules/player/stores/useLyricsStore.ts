@@ -23,6 +23,9 @@ interface LyricsState {
     setLyricsEnabled: (enabled: boolean) => void;
     setPreferredSource: (src: 'auto' | 'youtube') => void;
     setSyncOffset: (offset: number) => void;
+    nudgeOffset: (delta: number) => void;
+    updateLineTime: (index: number, newTime: number) => void;
+    markLineTimestamp: (currentPlaybackTime: number, lineIndex: number) => void;
     setActiveLineText: (text: string) => void;
     fetchLyrics: (videoId: string, title: string, prefer?: 'auto' | 'youtube', duration?: number) => Promise<void>;
     clearLyrics: () => void;
@@ -143,6 +146,21 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
     setLyricsEnabled: (enabled) => set({ isEnabled: enabled }),
     setPreferredSource: (src) => set({ preferredSource: src }),
     setSyncOffset: (offset) => set({ syncOffset: offset }),
+    nudgeOffset: (delta) => set((state) => ({ syncOffset: Math.round((state.syncOffset + delta) * 10) / 10 })),
+    updateLineTime: (index, newTime) => set((state) => {
+        const newLyrics = [...state.lyrics];
+        if (newLyrics[index]) {
+            newLyrics[index] = { ...newLyrics[index], time: Math.max(0, newTime) };
+        }
+        return { lyrics: newLyrics };
+    }),
+    markLineTimestamp: (currentPlaybackTime, lineIndex) => set((state) => {
+        const newLyrics = [...state.lyrics];
+        if (newLyrics[lineIndex]) {
+            newLyrics[lineIndex] = { ...newLyrics[lineIndex], time: Math.max(0, currentPlaybackTime - state.syncOffset) };
+        }
+        return { lyrics: newLyrics };
+    }),
     setActiveLineText: (text) => set({ activeLineText: text }),
 
     clearLyrics: () => set({ lyrics: [], source: null, error: null, lyricsType: null, isLoading: false, syncOffset: 0, activeLineText: '' }),

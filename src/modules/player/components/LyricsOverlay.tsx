@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useLyricsStore } from '../stores/useLyricsStore';
 import { usePlayerStore } from '../stores/usePlayerStore';
+import { useDeepgramLyricsStore } from '../../lyrics/stores/useDeepgramLyricsStore';
 import clsx from 'clsx';
 
 interface LyricsOverlayProps {
@@ -8,7 +9,12 @@ interface LyricsOverlayProps {
 }
 
 export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
-    const { isEnabled, isKaraokeMode, lyrics, lyricsType, source, fetchLyrics, syncOffset, setActiveLineText } = useLyricsStore();
+    const { isEnabled, isKaraokeMode, lyrics: originalLyrics, lyricsType, source, fetchLyrics, syncOffset, setActiveLineText } = useLyricsStore();
+    const { alignedLyrics, hybridModeEnabled } = useDeepgramLyricsStore();
+    
+    // Switch between original lyrics and aligned lyrics based on Hybrid mode
+    const lyrics = hybridModeEnabled && alignedLyrics.length > 0 ? alignedLyrics : originalLyrics;
+    
     const { isPlaying } = usePlayerStore();
     const activeVideoId = usePlayerStore(state => state.currentVideo?.videoId || state.currentVideo?.id);
     const videoTitle = usePlayerStore(state => state.currentVideo?.title);
@@ -210,7 +216,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
             >
                 {source && (
                     <div className="absolute -top-6 left-4 bg-black/40 backdrop-blur-sm rounded-lg px-2 py-1 text-[10px] text-white/50 font-medium">
-                        เนื้อเพลงจาก: {source === 'lrclib' ? (lyricsType === 'synced' ? 'LRCLIB (SYNC)' : 'LRCLIB (PLAIN)') : 'YouTube CC'}
+                        เนื้อเพลงจาก: {hybridModeEnabled ? 'Deepgram AI (HYBRID)' : (source === 'lrclib' ? (lyricsType === 'synced' ? 'LRCLIB (SYNC)' : 'LRCLIB (PLAIN)') : 'YouTube CC')}
                     </div>
                 )}
 
