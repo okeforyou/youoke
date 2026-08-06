@@ -35,8 +35,28 @@ export const FullscreenControlBar = ({ showControls, layoutMode, playerRef }: Fu
     };
 
     const handleSync = async () => {
-        if (!currentVideo?.videoId || lyrics.length === 0) return;
-        await alignHybridLyrics(currentVideo.videoId, lyrics);
+        if (!currentVideo?.videoId) {
+            alert("ไม่สามารถเริ่ม AI Sync ได้: ไม่พบรหัสวิดีโอ");
+            return;
+        }
+        if (lyrics.length === 0) {
+            alert("ไม่สามารถเริ่ม AI Sync ได้: ไม่มีเนื้อเพลงที่จะจัดเรียง");
+            return;
+        }
+
+        try {
+            await alignHybridLyrics(currentVideo.videoId, lyrics);
+            
+            // Get updated state
+            const state = useDeepgramLyricsStore.getState();
+            if (state.alignmentStatus === 'error' && state.errorMessage) {
+                alert(`AI Sync ล้มเหลว:\n${state.errorMessage}`);
+            } else if (state.alignmentStatus === 'success') {
+                alert("AI Sync สำเร็จแล้ว! สลับไปใช้งานเนื้อเพลงระบบ AI Hybrid เรียบร้อยครับ");
+            }
+        } catch (err: any) {
+            alert(`AI Sync ล้มเหลว: ${err.message || err}`);
+        }
     };
 
     if (layoutMode !== 'fullscreen') return null;
