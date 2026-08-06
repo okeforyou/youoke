@@ -35,10 +35,11 @@ export default function StudioPage() {
     
     // Drag state
     const [draggingIdx, setDraggingIdx] = useState<number | null>(null);
-    const [dragAction, setDragAction] = useState<'move' | 'resize-right' | 'resize-left' | null>(null);
+    const [dragAction, setDragAction] = useState<'move' | 'resize-left' | 'resize-right' | null>(null);
     const [startX, setStartX] = useState(0);
     const [startTime, setStartTime] = useState(0);
     const [startEndTime, setStartEndTime] = useState(0);
+    const [initialDragLyrics, setInitialDragLyrics] = useState<LyricLine[]>([]);
 
     const { saveSync } = useWikiLyricsStore();
     const fetchLyrics = useLyricsStore(state => state.fetchLyrics);
@@ -152,16 +153,17 @@ export default function StudioPage() {
         setStartX(e.clientX);
         setStartTime(lyrics[idx].time);
         setStartEndTime(lyrics[idx].endTime || (lyrics[idx].time + 3));
+        setInitialDragLyrics(lyrics.map(l => ({...l})));
     };
 
     useEffect(() => {
         const handlePointerMove = (e: PointerEvent) => {
-            if (draggingIdx === null || !dragAction) return;
+            if (draggingIdx === null || !dragAction || initialDragLyrics.length === 0) return;
             const deltaX = e.clientX - startX;
             const deltaTime = deltaX / pixelsPerSecond;
             
-            setLyrics(prev => {
-                const next = [...prev];
+            setLyrics(() => {
+                const next = initialDragLyrics.map(l => ({...l}));
                 const line = next[draggingIdx];
                 const nextLineTime = next[draggingIdx + 1]?.time || Infinity;
                 const prevLineEndTime = draggingIdx > 0 ? (next[draggingIdx - 1]?.endTime || 0) : 0;
@@ -188,7 +190,6 @@ export default function StudioPage() {
                     line.time = newTime;
                 } else if (dragAction === 'resize-right') {
                     let newEnd = Math.max(startTime + 0.2, startEndTime + deltaTime); // Min duration 0.2s
-                    newEnd = Math.min(newEnd, nextLineTime); // Cap at next line
                     line.endTime = newEnd;
                 }
                 
@@ -199,6 +200,7 @@ export default function StudioPage() {
         const handlePointerUp = () => {
             setDraggingIdx(null);
             setDragAction(null);
+            setInitialDragLyrics([]);
         };
 
         if (draggingIdx !== null) {
@@ -210,7 +212,7 @@ export default function StudioPage() {
             window.removeEventListener('pointermove', handlePointerMove);
             window.removeEventListener('pointerup', handlePointerUp);
         };
-    }, [draggingIdx, dragAction, startX, startTime, startEndTime, pixelsPerSecond]);
+    }, [draggingIdx, dragAction, startX, startTime, startEndTime, pixelsPerSecond, isRippleEdit, initialDragLyrics]);
 
     const handleSave = async () => {
         if (!user) {
