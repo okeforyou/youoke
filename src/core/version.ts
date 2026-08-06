@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.241";
+export const SYSTEM_VERSION = "5.5.242";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.242",
+        date: new Date().toISOString().split('T')[0],
+        changes: [
+            "fix(ai-sync): Redirected Deepgram transcription to local bridge /transcribe endpoint to prevent browser CORS and Failed to fetch issues.",
+            "fix(ai-sync): Removed browser-level audio file downloading for transcription to optimize memory usage."
+        ]
+    },
     {
         version: "5.5.241",
         date: new Date().toISOString().split('T')[0],

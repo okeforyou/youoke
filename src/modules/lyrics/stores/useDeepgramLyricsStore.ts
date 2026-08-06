@@ -42,34 +42,32 @@ export const useDeepgramLyricsStore = create<DeepgramLyricsState>((set, get) => 
               throw new Error("ยังไม่ได้ตั้งค่า Deepgram API Key กรุณาตั้งค่าในหน้า AI Settings");
           }
 
-          // Fetch vocals from local bridge
+          // Get Local Bridge Base URL
           const baseUrl = await getActiveBridgeBaseUrl();
           if (!baseUrl) {
               throw new Error("Local Bridge ออฟไลน์ หรือยังไม่ได้เปิดโปรแกรม");
           }
 
-          const audioRes = await fetch(`${baseUrl}/files/${videoId}/vocals.m4a`);
-          if (!audioRes.ok) {
-              throw new Error("ไม่พบไฟล์เสียงร้อง (vocals.m4a) สำหรับเพลงนี้ กรุณาให้ระบบประมวลผลเสียงร้องก่อน");
-          }
-          const audioBlob = await audioRes.blob();
-
-          // Transcribe via Deepgram API
-          const res = await fetch('https://api.deepgram.com/v1/listen?model=nova-2&language=th&smart_format=true', {
+          // Call the local bridge /transcribe endpoint to handle file reading and transcription securely without CORS issues
+          const res = await fetch(`${baseUrl}/transcribe`, {
               method: 'POST',
               headers: {
-                  'Authorization': `Token ${deepgramKey}`,
-                  'Content-Type': 'audio/m4a'
+                  'Content-Type': 'application/json'
               },
-              body: audioBlob
+              body: JSON.stringify({
+                  video_id: videoId,
+                  api_key: deepgramKey,
+                  provider: 'deepgram'
+              })
           });
 
           if (!res.ok) {
-              throw new Error("เกิดข้อผิดพลาดในการดึงข้อมูลจาก Deepgram API");
+              const errData = await res.json().catch(() => ({}));
+              throw new Error(errData.detail || "เกิดข้อผิดพลาดในการดึงข้อมูลจาก Local Bridge /transcribe");
           }
 
           const dgData = await res.json();
-          deepgramWords = dgData.results?.channels?.[0]?.alternatives?.[0]?.words || [];
+          deepgramWords = dgData.words || [];
 
           if (deepgramWords.length === 0) {
               throw new Error("AI ไม่สามารถแกะเนื้อเพลงจากไฟล์เสียงร้องได้");
