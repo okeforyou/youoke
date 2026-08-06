@@ -6,7 +6,7 @@ import { useWikiLyricsStore, WikiLyricsSync } from '@/modules/player/stores/useW
 import { useLyricsStore, LyricLine } from '@/modules/player/stores/useLyricsStore';
 import { usePlayerStore } from '@/modules/player/stores/usePlayerStore';
 import YouTube from 'react-youtube';
-import { Play, Pause, Save, ArrowLeft, RefreshCw } from 'lucide-react';
+import { Play, Pause, Save, ArrowLeft, RefreshCw, ZoomIn, ZoomOut, GripVertical } from 'lucide-react';
 import { useUIStore } from '@/stores/useUIStore';
 
 export default function StudioPage() {
@@ -18,11 +18,21 @@ export default function StudioPage() {
     const playerRef = useRef<any>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
+    const [duration, setDuration] = useState(300); // default 5 mins
     const [activeLineIndex, setActiveLineIndex] = useState(-1);
     
     // Tap to sync state
     const [isRecording, setIsRecording] = useState(false);
     const [recordingIndex, setRecordingIndex] = useState(0);
+
+    // Timeline state
+    const timelineRef = useRef<HTMLDivElement>(null);
+    const [pixelsPerSecond, setPixelsPerSecond] = useState(100);
+    
+    // Drag state
+    const [draggingIdx, setDraggingIdx] = useState<number | null>(null);
+    const [startX, setStartX] = useState(0);
+    const [startTime, setStartTime] = useState(0);
 
     const { saveSync } = useWikiLyricsStore();
     const fetchLyrics = useLyricsStore(state => state.fetchLyrics);
@@ -44,11 +54,15 @@ export default function StudioPage() {
     // Tracker
     useEffect(() => {
         let interval: any;
-        if (isPlaying) {
+        if (isPlaying || draggingIdx !== null) {
             interval = setInterval(() => {
-                if (playerRef.current?.getCurrentTime) {
+                if (playerRef.current?.getCurrentTime && isPlaying) {
                     const time = playerRef.current.getCurrentTime();
                     setCurrentTime(time);
+                    
+                    if (playerRef.current?.getDuration) {
+                        setDuration(playerRef.current.getDuration() || 300);
+                    }
                     
                     // Update active line for display
                     if (lyrics.length > 0) {
@@ -62,7 +76,18 @@ export default function StudioPage() {
             }, 100);
         }
         return () => clearInterval(interval);
-    }, [isPlaying, lyrics]);
+    }, [isPlaying, lyrics, draggingIdx]);
+
+    // Auto-scroll timeline
+    useEffect(() => {
+        if (isPlaying && timelineRef.current && draggingIdx === null) {
+            const scrollLeft = currentTime * pixelsPerSecond - timelineRef.current.clientWidth / 2;
+            // Only auto-scroll if it's off-center by a bit to avoid jitter
+            if (Math.abs(timelineRef.current.scrollLeft - scrollLeft) > 10) {
+                timelineRef.current.scrollLeft = scrollLeft;
+            }
+        }
+    }, [currentTime, isPlaying, pixelsPerSecond, draggingIdx]);
 
     const handleTap = () => {
         if (!isRecording) return;
@@ -92,6 +117,43 @@ export default function StudioPage() {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [isRecording, recordingIndex, currentTime, lyrics]);
 
+    // Drag Logic
+    const handlePointerDown = (e: React.PointerEvent, idx: number) => {
+        e.preventDefault();
+        setDraggingIdx(idx);
+        setStartX(e.clientX);
+        setStartTime(lyrics[idx].time);
+    };
+
+    useEffect(() => {
+        const handlePointerMove = (e: PointerEvent) => {
+            if (draggingIdx === null) return;
+            const deltaX = e.clientX - startX;
+            const deltaTime = deltaX / pixelsPerSecond;
+            let newTime = Math.max(0, startTime + deltaTime);
+            
+            setLyrics(prev => {
+                const next = [...prev];
+                next[draggingIdx].time = newTime;
+                return next;
+            });
+        };
+
+        const handlePointerUp = () => {
+            setDraggingIdx(null);
+        };
+
+        if (draggingIdx !== null) {
+            window.addEventListener('pointermove', handlePointerMove);
+            window.addEventListener('pointerup', handlePointerUp);
+        }
+
+        return () => {
+            window.removeEventListener('pointermove', handlePointerMove);
+            window.removeEventListener('pointerup', handlePointerUp);
+        };
+    }, [draggingIdx, startX, startTime, pixelsPerSecond]);
+
     const handleSave = async () => {
         if (!user) {
             useUIStore.getState().showConfirm({
@@ -107,7 +169,6 @@ export default function StudioPage() {
 
         if (typeof videoId !== 'string') return;
 
-        // Convert lyrics back to LRC string
         let lrcContent = "";
         for (const line of lyrics) {
             const min = Math.floor(line.time / 60).toString().padStart(2, '0');
@@ -146,7 +207,7 @@ export default function StudioPage() {
     };
 
     return (
-        <div className="min-h-screen bg-black text-white flex flex-col">
+        <div className="h-screen w-screen bg-black text-white flex flex-col overflow-hidden">
             <Head>
                 <title>Wiki Studio - {title}</title>
             </Head>
@@ -167,49 +228,59 @@ export default function StudioPage() {
                 </div>
                 <button
                     onClick={handleSave}
-                    className="flex items-center gap-2 px-4 py-2 bg-primary rounded-full font-bold hover:bg-primary/80 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-primary rounded-full font-bold hover:bg-primary/80 transition-colors shadow-lg shadow-primary/20"
                 >
                     <Save size={18} /> Publish to Wiki
                 </button>
             </header>
 
-            <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-                {/* Left Side: Video & Controls */}
-                <div className="w-full md:w-1/2 p-4 flex flex-col gap-4 border-r border-white/10">
-                    <div className="w-full aspect-video rounded-xl overflow-hidden bg-zinc-900 shadow-xl relative group">
-                        {videoId && (
-                            <YouTube
-                                videoId={videoId as string}
-                                opts={{ width: '100%', height: '100%', playerVars: { autoplay: 0, controls: 0, cc_load_policy: 0, iv_load_policy: 3 } }}
-                                onReady={(e) => { playerRef.current = e.target; }}
-                                onPlay={() => setIsPlaying(true)}
-                                onPause={() => setIsPlaying(false)}
-                                className="w-full h-full absolute inset-0 pointer-events-none"
-                            />
-                        )}
-                        
-                        {/* Single-line Lyric Overlay */}
-                        <div className="absolute bottom-8 left-0 right-0 px-8 text-center pointer-events-none z-20 flex flex-col items-center">
-                            <span className="bg-black/60 px-4 py-2 rounded-lg text-2xl md:text-3xl font-bold text-white mb-2 shadow-2xl backdrop-blur-sm" style={{ textShadow: '0px 2px 4px rgba(0,0,0,0.8)' }}>
-                                {isRecording 
-                                    ? lyrics[recordingIndex]?.text || "..." 
-                                    : lyrics[activeLineIndex]?.text || ""}
-                            </span>
-                            {isRecording && <span className="text-yellow-400 font-bold text-sm bg-black/60 px-2 py-1 rounded">บรรทัดที่จะถูกบันทึกเมื่อกด Spacebar</span>}
-                        </div>
-                    </div>
+            {/* Top Half: Video & Controls */}
+            <div className="flex-[0.6] flex flex-col md:flex-row gap-4 p-4 border-b border-white/10 bg-zinc-950/50 min-h-[40vh]">
+                {/* Left: Video */}
+                <div className="w-full md:w-2/3 h-full rounded-xl overflow-hidden bg-zinc-900 shadow-xl relative group border border-white/5">
+                    {videoId && (
+                        <YouTube
+                            videoId={videoId as string}
+                            opts={{ width: '100%', height: '100%', playerVars: { autoplay: 0, controls: 0, cc_load_policy: 0, iv_load_policy: 3 } }}
+                            onReady={(e) => { playerRef.current = e.target; }}
+                            onPlay={() => setIsPlaying(true)}
+                            onPause={() => setIsPlaying(false)}
+                            className="w-full h-full absolute inset-0 pointer-events-none"
+                        />
+                    )}
                     
-                    <div className="flex items-center justify-center gap-4 bg-zinc-900/50 p-4 rounded-xl">
+                    {/* Single-line Lyric Overlay */}
+                    <div className="absolute bottom-8 left-0 right-0 px-8 text-center pointer-events-none z-20 flex flex-col items-center">
+                        <span className="bg-black/80 px-6 py-3 rounded-2xl text-2xl md:text-3xl font-bold text-white mb-2 shadow-2xl border border-white/10" style={{ textShadow: '0px 2px 8px rgba(0,0,0,0.8)' }}>
+                            {isRecording 
+                                ? lyrics[recordingIndex]?.text || "..." 
+                                : lyrics[activeLineIndex]?.text || ""}
+                        </span>
+                        {isRecording && <span className="text-yellow-400 font-bold text-sm bg-black/80 px-4 py-1.5 rounded-full border border-yellow-400/20 shadow-lg">บรรทัดที่จะถูกบันทึกเมื่อกด Spacebar</span>}
+                    </div>
+                </div>
+                
+                {/* Right: Controls */}
+                <div className="w-full md:w-1/3 flex flex-col gap-4 bg-zinc-900/50 p-6 rounded-xl border border-white/5 overflow-y-auto">
+                    <h3 className="font-bold text-lg text-white mb-2">Sync Controls</h3>
+                    
+                    <div className="flex items-center gap-4 bg-black/40 p-4 rounded-2xl border border-white/5">
                         <button
                             onClick={() => {
                                 if (isPlaying) playerRef.current?.pauseVideo();
                                 else playerRef.current?.playVideo();
                             }}
-                            className="w-12 h-12 bg-white text-black rounded-full flex items-center justify-center"
+                            className="w-14 h-14 bg-white hover:scale-105 active:scale-95 text-black rounded-full flex items-center justify-center transition-transform shadow-lg shadow-white/10 shrink-0"
                         >
-                            {isPlaying ? <Pause size={24} /> : <Play size={24} className="ml-1" />}
+                            {isPlaying ? <Pause size={28} /> : <Play size={28} className="ml-1" />}
                         </button>
+                        <div>
+                            <p className="font-mono text-xl font-bold text-white">{currentTime.toFixed(2)}s</p>
+                            <p className="text-xs text-zinc-400">Play/Pause to test sync</p>
+                        </div>
+                    </div>
 
+                    <div className="flex flex-col gap-2 mt-4">
                         <button
                             onClick={() => {
                                 setIsRecording(!isRecording);
@@ -217,84 +288,147 @@ export default function StudioPage() {
                                     playerRef.current?.playVideo();
                                 }
                             }}
-                            className={`px-6 py-3 rounded-full font-bold flex items-center gap-2 transition-all ${isRecording ? 'bg-red-500 text-white animate-pulse' : 'bg-white/10 text-white'}`}
+                            className={`px-6 py-4 rounded-2xl font-bold flex flex-col items-center justify-center gap-1 transition-all active:scale-95 shadow-lg ${isRecording ? 'bg-red-500 text-white animate-pulse shadow-red-500/20' : 'bg-white/10 text-white hover:bg-white/15'}`}
                         >
-                            {isRecording ? "🔴 Stop Recording (Tap Spacebar)" : "🎯 Start Tap-to-Sync"}
+                            <span className="flex items-center gap-2 text-lg">
+                                {isRecording ? "🔴 STOP RECORDING" : "🎯 START TAP-TO-SYNC"}
+                            </span>
+                            <span className="text-xs font-normal opacity-70">
+                                {isRecording ? "Press Spacebar to mark each line" : "Or drag blocks on the timeline below"}
+                            </span>
                         </button>
                         
-                        <button
-                            onClick={() => {
-                                setLyrics(originalLyrics);
-                                setRecordingIndex(0);
-                                setIsRecording(false);
-                            }}
-                            className="w-12 h-12 bg-white/10 text-white rounded-full flex items-center justify-center"
-                            title="Reset to Original"
-                        >
-                            <RefreshCw size={20} />
-                        </button>
-                    </div>
-                    
-                    {isRecording && (
-                        <div className="mt-4 p-6 bg-blue-500/10 border border-blue-500/20 rounded-xl text-center">
-                            <p className="text-blue-300 font-bold text-lg mb-2">Recording Mode Active</p>
-                            <p className="text-zinc-400 mb-4">Press <kbd className="px-2 py-1 bg-zinc-800 rounded">Spacebar</kbd> or the button below when the active line starts playing.</p>
-                            
+                        <div className="flex gap-2 mt-2">
                             <button
-                                onClick={handleTap}
-                                className="w-full h-24 bg-blue-500 hover:bg-blue-600 rounded-xl font-bold text-2xl shadow-lg active:scale-95 transition-all"
+                                onClick={() => setPixelsPerSecond(prev => Math.max(20, prev - 20))}
+                                className="flex-1 py-2 bg-white/5 hover:bg-white/10 rounded-xl flex items-center justify-center gap-2 transition-colors text-sm text-zinc-300"
                             >
-                                TAP!
+                                <ZoomOut size={16} /> ซูมออก
+                            </button>
+                            <button
+                                onClick={() => setPixelsPerSecond(prev => Math.min(300, prev + 20))}
+                                className="flex-1 py-2 bg-white/5 hover:bg-white/10 rounded-xl flex items-center justify-center gap-2 transition-colors text-sm text-zinc-300"
+                            >
+                                <ZoomIn size={16} /> ซูมเข้า
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setLyrics(originalLyrics);
+                                    setRecordingIndex(0);
+                                    setIsRecording(false);
+                                }}
+                                className="w-10 bg-white/5 hover:bg-white/10 rounded-xl flex items-center justify-center text-zinc-300 transition-colors"
+                                title="Reset to Original"
+                            >
+                                <RefreshCw size={16} />
                             </button>
                         </div>
-                    )}
+                    </div>
                 </div>
+            </div>
 
-                {/* Right Side: Timeline Editor */}
-                <div className="w-full md:w-1/2 overflow-y-auto p-4 flex flex-col gap-2 relative scroll-smooth" id="lyrics-container">
+            {/* Bottom Half: Horizontal Timeline */}
+            <div 
+                className="flex-[0.4] bg-zinc-950 relative overflow-x-auto overflow-y-hidden select-none border-t border-white/5 custom-scrollbar" 
+                ref={timelineRef}
+            >
+                {/* Timeline Track Container */}
+                <div 
+                    className="relative h-full min-h-[200px]" 
+                    style={{ width: `${Math.max(duration, 300) * pixelsPerSecond}px` }}
+                    onClick={(e) => {
+                        // Click to seek
+                        if (e.target === e.currentTarget && playerRef.current) {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            const x = e.clientX - rect.left;
+                            const newTime = x / pixelsPerSecond;
+                            playerRef.current.seekTo(newTime, true);
+                        }
+                    }}
+                >
+                    {/* Time Scale Markers (Every 5 seconds) */}
+                    {Array.from({ length: Math.ceil(Math.max(duration, 300) / 5) }).map((_, i) => (
+                        <div 
+                            key={`marker-${i}`}
+                            className="absolute top-0 bottom-0 border-l border-white/5 pointer-events-none flex flex-col"
+                            style={{ left: `${i * 5 * pixelsPerSecond}px` }}
+                        >
+                            <span className="text-[10px] text-zinc-500 p-1 font-mono">{i * 5}s</span>
+                        </div>
+                    ))}
+
+                    {/* Playhead (Red Line) */}
+                    <div 
+                        className="absolute top-0 bottom-0 w-0.5 bg-red-500 z-30 pointer-events-none shadow-[0_0_10px_rgba(239,68,68,0.5)]"
+                        style={{ left: `${currentTime * pixelsPerSecond}px` }}
+                    >
+                        <div className="w-3 h-3 bg-red-500 rounded-full absolute top-0 -left-[5px] shadow-[0_0_10px_rgba(239,68,68,0.8)]"></div>
+                    </div>
+
+                    {/* Lyric Blocks */}
                     {lyrics.map((line, idx) => {
+                        const nextTime = lyrics[idx+1]?.time || (line.time + 3);
+                        const width = Math.max((nextTime - line.time) * pixelsPerSecond, 50); // min width 50px
+                        const left = line.time * pixelsPerSecond;
                         const isActive = isRecording ? idx === recordingIndex : idx === activeLineIndex;
                         const isDone = isRecording && idx < recordingIndex;
+                        
                         return (
                             <div 
-                                key={idx}
-                                className={`flex items-center gap-4 p-3 rounded-lg border transition-all ${isActive ? 'bg-primary/20 border-primary scale-[1.02] shadow-lg shadow-primary/10' : isDone ? 'bg-white/5 border-white/10 text-white/50' : 'bg-transparent border-transparent text-white/80 hover:bg-white/5'}`}
+                                key={`block-${idx}`}
+                                className={`absolute top-10 h-14 rounded-lg flex overflow-hidden transition-colors z-20
+                                    ${isActive ? 'bg-primary/40 border-2 border-primary shadow-[0_0_15px_rgba(var(--color-primary),0.3)]' : 
+                                      isDone ? 'bg-zinc-800/80 border border-zinc-700/50 text-zinc-400' : 
+                                      'bg-zinc-800/80 border border-white/10 hover:border-white/30 text-white'}`}
+                                style={{ 
+                                    left: `${left}px`, 
+                                    width: `${width - 4}px`, // Add slight margin between blocks
+                                    cursor: draggingIdx === idx ? 'grabbing' : 'default',
+                                    transform: draggingIdx === idx ? 'scale(1.02)' : 'scale(1)',
+                                    zIndex: draggingIdx === idx ? 50 : (isActive ? 30 : 20)
+                                }}
                             >
-                                <span className="font-mono text-sm min-w-[60px] text-zinc-400">
-                                    {(line.time || 0).toFixed(2)}s
-                                </span>
+                                {/* Drag Handle */}
+                                <div 
+                                    className="w-6 h-full bg-black/20 hover:bg-black/40 cursor-ew-resize flex items-center justify-center border-r border-black/20 shrink-0"
+                                    onPointerDown={(e) => handlePointerDown(e, idx)}
+                                >
+                                    <GripVertical size={14} className="opacity-50" />
+                                </div>
+                                
+                                {/* Text Input */}
                                 <input 
-                                    className="flex-1 bg-transparent border-none outline-none text-lg"
+                                    className={`bg-transparent outline-none w-full h-full px-3 text-sm font-medium
+                                        ${isDone ? 'text-zinc-400' : 'text-white'}`}
                                     value={line.text}
                                     onChange={(e) => {
-                                        const newLyrics = [...lyrics];
-                                        newLyrics[idx].text = e.target.value;
-                                        setLyrics(newLyrics);
+                                        const next = [...lyrics];
+                                        next[idx].text = e.target.value;
+                                        setLyrics(next);
                                     }}
+                                    onPointerDown={(e) => e.stopPropagation()} // Prevent drag when focusing input
                                 />
-                                <div className="flex gap-2">
-                                    <button 
-                                        onClick={() => {
-                                            const newLyrics = [...lyrics];
-                                            newLyrics[idx].time = Math.max(0, newLyrics[idx].time - 0.1);
-                                            setLyrics(newLyrics);
-                                        }}
-                                        className="w-8 h-8 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center font-mono text-xs"
-                                    >-0.1</button>
-                                    <button 
-                                        onClick={() => {
-                                            const newLyrics = [...lyrics];
-                                            newLyrics[idx].time = newLyrics[idx].time + 0.1;
-                                            setLyrics(newLyrics);
-                                        }}
-                                        className="w-8 h-8 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center font-mono text-xs"
-                                    >+0.1</button>
-                                </div>
                             </div>
-                        )
+                        );
                     })}
                 </div>
             </div>
+            
+            <style jsx>{`
+                .custom-scrollbar::-webkit-scrollbar {
+                    height: 12px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-track {
+                    background: #09090b; 
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: #27272a; 
+                    border-radius: 6px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                    background: #3f3f46; 
+                }
+            `}</style>
         </div>
     );
 }
