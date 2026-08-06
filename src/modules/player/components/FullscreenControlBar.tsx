@@ -49,17 +49,6 @@ export const FullscreenControlBar = ({ showControls, layoutMode, playerRef }: Fu
             });
             return;
         }
-        if (lyrics.length === 0) {
-            showConfirm({
-                title: "ไม่สามารถเริ่ม AI Sync ได้",
-                message: "ไม่พบเนื้อเพลงสำหรับประมวลผลจัดเรียงเวลา",
-                type: "warning",
-                confirmText: "ตกลง",
-                cancelText: "none",
-                onConfirm: () => {}
-            });
-            return;
-        }
 
         try {
             await alignHybridLyrics(currentVideo.videoId, lyrics);
@@ -181,7 +170,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode, playerRef }: Fu
             <div className="flex items-center gap-1 bg-white/5 rounded-xl p-1 border border-white/5">
                 <button
                     onClick={handleSync}
-                    disabled={isAligning || lyrics.length === 0}
+                    disabled={isAligning}
                     className={`px-3 py-2 rounded-lg flex items-center gap-2 text-xs font-medium transition-all ${isAligning ? 'bg-primary/50 text-white cursor-not-allowed' : alignmentStatus === 'success' ? 'bg-green-500/20 text-green-400' : 'bg-transparent text-white/70 hover:bg-white/10 hover:text-white'}`}
                     title="ปรับ Sync อัตโนมัติด้วย AI (Deepgram)"
                 >
