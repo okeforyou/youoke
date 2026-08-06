@@ -58,6 +58,19 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
         return -1;
     }, [currentTime, lyrics, syncOffset]);
 
+    const activeIndex = Math.max(0, currentLineIndex);
+    const activeLine = lyrics && lyrics.length > 0 ? lyrics[activeIndex] : null;
+
+    // Sync active line text to store so other components (like Mixer modal) can show it in real-time!
+    // MUST BE CALLED BEFORE ANY EARLY RETURN to obey React Hook Rules
+    useEffect(() => {
+        if (activeLine && isEnabled && lyricsType !== 'plain') {
+            setActiveLineText(activeLine.text);
+        } else {
+            setActiveLineText('');
+        }
+    }, [activeLine, isEnabled, lyricsType, setActiveLineText]);
+
     if (!isEnabled || !lyrics || lyrics.length === 0) return null;
 
     if (lyricsType === 'plain') {
@@ -81,17 +94,6 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
     }
 
     // Single Line Layout Logic
-    const activeIndex = Math.max(0, currentLineIndex);
-    const activeLine = lyrics[activeIndex];
-
-    // Sync active line text to store so other components (like Mixer modal) can show it in real-time!
-    useEffect(() => {
-        if (activeLine && isEnabled) {
-            setActiveLineText(activeLine.text);
-        } else {
-            setActiveLineText('');
-        }
-    }, [activeLine, isEnabled, setActiveLineText]);
 
     const renderLine = (line: any, index: number) => {
         if (!line) return <div className="w-full" style={{ minHeight: 'clamp(1.5rem, 6.5cqw, 4rem)' }} />; // Empty slot
