@@ -4,6 +4,7 @@ import { usePlayerStore } from '../stores/usePlayerStore';
 import { useCast } from '../../../plugins/cast/context/CastContext';
 import { useDeepgramLyricsStore } from '../../lyrics/stores/useDeepgramLyricsStore';
 import { useLyricsStore } from '../stores/useLyricsStore';
+import { useUIStore } from '../../../stores/useUIStore';
 
 interface FullscreenControlBarProps {
     showControls: boolean;
@@ -35,12 +36,28 @@ export const FullscreenControlBar = ({ showControls, layoutMode, playerRef }: Fu
     };
 
     const handleSync = async () => {
+        const { showConfirm } = useUIStore.getState();
+
         if (!currentVideo?.videoId) {
-            alert("ไม่สามารถเริ่ม AI Sync ได้: ไม่พบรหัสวิดีโอ");
+            showConfirm({
+                title: "ไม่สามารถเริ่ม AI Sync ได้",
+                message: "ไม่พบรหัสวิดีโอของเพลงนี้",
+                type: "warning",
+                confirmText: "ตกลง",
+                cancelText: "none",
+                onConfirm: () => {}
+            });
             return;
         }
         if (lyrics.length === 0) {
-            alert("ไม่สามารถเริ่ม AI Sync ได้: ไม่มีเนื้อเพลงที่จะจัดเรียง");
+            showConfirm({
+                title: "ไม่สามารถเริ่ม AI Sync ได้",
+                message: "ไม่พบเนื้อเพลงสำหรับประมวลผลจัดเรียงเวลา",
+                type: "warning",
+                confirmText: "ตกลง",
+                cancelText: "none",
+                onConfirm: () => {}
+            });
             return;
         }
 
@@ -50,12 +67,33 @@ export const FullscreenControlBar = ({ showControls, layoutMode, playerRef }: Fu
             // Get updated state
             const state = useDeepgramLyricsStore.getState();
             if (state.alignmentStatus === 'error' && state.errorMessage) {
-                alert(`AI Sync ล้มเหลว:\n${state.errorMessage}`);
+                showConfirm({
+                    title: "AI Sync ล้มเหลว",
+                    message: state.errorMessage,
+                    type: "danger",
+                    confirmText: "ตกลง",
+                    cancelText: "none",
+                    onConfirm: () => {}
+                });
             } else if (state.alignmentStatus === 'success') {
-                alert("AI Sync สำเร็จแล้ว! สลับไปใช้งานเนื้อเพลงระบบ AI Hybrid เรียบร้อยครับ");
+                showConfirm({
+                    title: "AI Sync สำเร็จ",
+                    message: "ระบบได้ทำการจัดเรียงเนื้อเพลงและสลับไปใช้ระบบ AI Hybrid เรียบร้อยแล้วครับ",
+                    type: "success",
+                    confirmText: "ตกลง",
+                    cancelText: "none",
+                    onConfirm: () => {}
+                });
             }
         } catch (err: any) {
-            alert(`AI Sync ล้มเหลว: ${err.message || err}`);
+            showConfirm({
+                title: "AI Sync ล้มเหลว",
+                message: err.message || String(err),
+                type: "danger",
+                confirmText: "ตกลง",
+                cancelText: "none",
+                onConfirm: () => {}
+            });
         }
     };
 

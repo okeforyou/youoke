@@ -80,13 +80,15 @@ export const GlobalConfirmModal = () => {
                                     >
                                         {confirmText || 'ยืนยัน'}
                                     </button>
-                                    <button
-                                        type="button"
-                                        className="inline-flex w-full justify-center rounded-2xl bg-white dark:bg-zinc-800 px-5 py-4 text-sm font-bold text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-zinc-300 transition-colors focus:outline-none"
-                                        onClick={hideConfirm}
-                                    >
-                                        {cancelText || 'ยกเลิก'}
-                                    </button>
+                                    {cancelText !== 'none' && cancelText !== '' && (
+                                        <button
+                                            type="button"
+                                            className="inline-flex w-full justify-center rounded-2xl bg-white dark:bg-zinc-800 px-5 py-4 text-sm font-bold text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-zinc-300 transition-colors focus:outline-none"
+                                            onClick={hideConfirm}
+                                        >
+                                            {cancelText || 'ยกเลิก'}
+                                        </button>
+                                    )}
                                 </div>
                             </Dialog.Panel>
                         </Transition.Child>
