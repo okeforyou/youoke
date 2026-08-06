@@ -165,6 +165,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
         }
     }, [mounted, authLoading, config?.features?.guestMode, user, router]);
 
+    // Fallback if user is stuck in ai_karaoke mode from previous session
+    useEffect(() => {
+        if (searchMode === 'ai_karaoke') {
+            setSearchMode?.('karaoke');
+        }
+    }, [searchMode, setSearchMode]);
+
     // Unified Party Room Code (Always numeric PIN)
     // For Monitor/Receiver model, we don't auto-generate on Dashboard. 
     // We wait for the user to enter the PIN from the Monitor page.
