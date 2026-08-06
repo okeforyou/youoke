@@ -4,6 +4,7 @@ import { useWikiLyricsStore } from './useWikiLyricsStore';
 export interface LyricLine {
     time: number;
     text: string;
+    endTime?: number;
 }
 
 interface LyricsState {
