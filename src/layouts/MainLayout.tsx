@@ -3,7 +3,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
 import clsx from 'clsx';
-import { Menu, Search, ListMusic, Home, X, Monitor, MessageCircle, Shield, Key, Smartphone, Flame, Library, Mic, Mic2, Music, ChevronDown, ChevronRight, ChevronLeft, Cast, Disc, LogOut, UserCheck, Settings, Info, PartyPopper, Star, Trash2, EyeOff, User, Maximize, BarChart2, Headphones } from 'lucide-react'; // V2.28.0-VANISH
+import { Menu, Search, ListMusic, Home, X, Monitor, MessageCircle, Shield, Key, Smartphone, Flame, Library, Mic, Mic2, Music, ChevronDown, ChevronRight, ChevronLeft, Cast, Disc, LogOut, UserCheck, Settings, Info, PartyPopper, Star, Trash2, EyeOff, User, Maximize, BarChart2, Headphones, Sparkles } from 'lucide-react'; // V2.28.0-VANISH
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { DebounceInput } from 'react-debounce-input';
@@ -71,6 +71,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
     const { 
         searchTerm, setSearchTerm, activeIndex, setActiveIndex, isKaraoke, setIsKaraoke,
+        searchMode, setSearchMode,
         queue: playerQueue, addToQueue, reorderQueue, isPlaying, layoutMode, triggerFullscreen,
         currentVideo, currentIndex,
         searchHistory, addSearchHistory, removeSearchHistory, clearSearchHistory
@@ -82,6 +83,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
             setActiveIndex: state.setActiveIndex,
             isKaraoke: state.isKaraoke,
             setIsKaraoke: state.setIsKaraoke,
+            searchMode: state.searchMode || 'karaoke',
+            setSearchMode: state.setSearchMode || (() => {}),
             queue: state.queue,
             currentIndex: state.currentIndex,
             addToQueue: state.addToQueue,
@@ -595,34 +598,47 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     </div>
 
                     <div className="flex items-center gap-6 ml-6">
-                        {/* Search Toggle (Karaoke/Song) - Animated Switch */}
-                        <div className="relative flex items-center bg-gray-50 dark:bg-zinc-900 rounded-2xl p-1 h-11 w-[180px] border border-gray-100 dark:border-zinc-800">
+                        {/* Search Toggle (Song / AI Karaoke / Classic Karaoke) - Animated Switch */}
+                        <div className="relative flex items-center bg-gray-50 dark:bg-zinc-900 rounded-2xl p-1 h-11 w-[270px] border border-gray-100 dark:border-zinc-800">
                             {/* Sliding Active Background */}
                             <div
                                 className={clsx(
-                                    "absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white dark:bg-zinc-800 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
-                                    isKaraoke ? "left-[calc(50%+2px)]" : "left-1"
+                                    "absolute top-1 bottom-1 w-[calc(33.33%-4px)] bg-white dark:bg-zinc-800 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
+                                    searchMode === 'song' ? "left-1" : (searchMode === 'ai_karaoke' ? "left-[calc(33.33%+1px)]" : "left-[calc(66.66%+1px)]")
                                 )}
                             />
 
                             {/* Song Option */}
                             <button
-                                onClick={() => setIsKaraoke(false)}
+                                onClick={() => setSearchMode?.('song')}
                                 className={clsx(
                                     "relative flex-1 flex items-center justify-center gap-1.5 h-full rounded-xl text-[11px] font-black tracking-tight uppercase transition-colors z-10",
-                                    !isKaraoke ? "text-primary" : "text-black dark:text-zinc-400 hover:text-black dark:hover:text-white"
+                                    searchMode === 'song' ? "text-primary" : "text-black dark:text-zinc-400 hover:text-black dark:hover:text-white"
                                 )}
                             >
                                 <Music className="w-3.5 h-3.5" />
                                 <span>เพลง</span>
                             </button>
 
-                            {/* Karaoke Option */}
+                            {/* AI Karaoke Option */}
                             <button
-                                onClick={() => setIsKaraoke(true)}
+                                onClick={() => setSearchMode?.('ai_karaoke')}
                                 className={clsx(
                                     "relative flex-1 flex items-center justify-center gap-1.5 h-full rounded-xl text-[11px] font-black tracking-tight uppercase transition-colors z-10",
-                                    isKaraoke ? "text-primary" : "text-black dark:text-zinc-400 hover:text-black dark:hover:text-white"
+                                    searchMode === 'ai_karaoke' ? "text-primary" : "text-black dark:text-zinc-400 hover:text-black dark:hover:text-white"
+                                )}
+                                title="ร้องคาราโอเกะสตูดิโอ (แยกเสียง + เนื้อปาดตรง)"
+                            >
+                                <Sparkles className="w-3.5 h-3.5" />
+                                <span>แยกเสียง AI</span>
+                            </button>
+
+                            {/* Karaoke Option */}
+                            <button
+                                onClick={() => setSearchMode?.('karaoke')}
+                                className={clsx(
+                                    "relative flex-1 flex items-center justify-center gap-1.5 h-full rounded-xl text-[11px] font-black tracking-tight uppercase transition-colors z-10",
+                                    searchMode === 'karaoke' ? "text-primary" : "text-black dark:text-zinc-400 hover:text-black dark:hover:text-white"
                                 )}
                             >
                                 <Mic2 className="w-3.5 h-3.5" />
@@ -749,29 +765,39 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                 )}
                                             </div>
 
-                                            {/* Mode Switch (Song/Karaoke) - Animated Sliding Style */}
-                                            <div className="relative flex bg-gray-100 dark:bg-zinc-900 p-1 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-inner shrink-0 h-10 w-[84px] items-center">
+                                            {/* Mode Switch (Song/AI Karaoke/Classic Karaoke) - Animated Sliding Style */}
+                                            <div className="relative flex bg-gray-100 dark:bg-zinc-900 p-1 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-inner shrink-0 h-10 w-[126px] items-center">
                                                 {/* Sliding Background */}
                                                 <div
                                                     className={clsx(
                                                         "absolute h-8 w-9 bg-white dark:bg-zinc-800 rounded-xl shadow-sm transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
-                                                        isKaraoke ? "translate-x-9" : "translate-x-0"
+                                                        searchMode === 'song' ? "translate-x-0" : (searchMode === 'ai_karaoke' ? "translate-x-[40px]" : "translate-x-[80px]")
                                                     )}
                                                 />
                                                 <button
-                                                    onClick={() => setIsKaraoke(false)}
+                                                    onClick={() => setSearchMode?.('song')}
                                                     className={clsx(
                                                         "relative flex-1 h-8 flex items-center justify-center rounded-xl transition-all duration-300 z-10",
-                                                        !isKaraoke ? "text-primary scale-105" : "text-black/40 dark:text-zinc-600"
+                                                        searchMode === 'song' ? "text-primary scale-105" : "text-black/40 dark:text-zinc-600"
                                                     )}
                                                 >
                                                     <Music size={16} />
                                                 </button>
                                                 <button
-                                                    onClick={() => setIsKaraoke(true)}
+                                                    onClick={() => setSearchMode?.('ai_karaoke')}
                                                     className={clsx(
                                                         "relative flex-1 h-8 flex items-center justify-center rounded-xl transition-all duration-300 z-10",
-                                                        isKaraoke ? "text-primary scale-105" : "text-black/40 dark:text-zinc-600"
+                                                        searchMode === 'ai_karaoke' ? "text-primary scale-105" : "text-black/40 dark:text-zinc-600"
+                                                    )}
+                                                    title="แยกเสียง AI"
+                                                >
+                                                    <Sparkles size={16} />
+                                                </button>
+                                                <button
+                                                    onClick={() => setSearchMode?.('karaoke')}
+                                                    className={clsx(
+                                                        "relative flex-1 h-8 flex items-center justify-center rounded-xl transition-all duration-300 z-10",
+                                                        searchMode === 'karaoke' ? "text-primary scale-105" : "text-black/40 dark:text-zinc-600"
                                                     )}
                                                 >
                                                     <Mic2 size={16} />

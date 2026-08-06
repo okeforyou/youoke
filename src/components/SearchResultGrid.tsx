@@ -22,14 +22,15 @@ export default function SearchResultGrid({
 }: {
   onClick?: (video: SearchResult | RecommendedVideo) => void;
 }) {
-  const { searchTerm, curVideoId, isKaraoke } = usePlayerStore(
+  const { searchTerm, curVideoId, isKaraoke, searchMode } = usePlayerStore(
     useShallow(state => ({
       searchTerm: state.searchTerm,
       curVideoId: state.currentSource,
-      isKaraoke: state.isKaraoke
+      isKaraoke: state.isKaraoke,
+      searchMode: state.searchMode || 'karaoke'
     }))
   );
-  const prefix = isKaraoke ? '"karaoke" ' : "";
+  const prefix = searchMode === 'karaoke' ? '"karaoke" ' : (searchMode === 'ai_karaoke' ? 'official audio ' : "");
 
 
   const router = useRouter();

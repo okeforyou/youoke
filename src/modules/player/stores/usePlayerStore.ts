@@ -124,6 +124,7 @@ export const usePlayerStore = create<PlayerStore>()(
             // UI State (Unification)
             searchTerm: "",
             isKaraoke: true, // Default true
+            searchMode: 'karaoke', // Default to karaoke to match legacy default
             activeIndex: 1, // Default 1 (Recommend)
             searchHistory: [], // Native App History
 
@@ -132,8 +133,14 @@ export const usePlayerStore = create<PlayerStore>()(
                 broadcast({ searchTerm: term });
             },
             setIsKaraoke: (isKaraoke) => {
-                set({ isKaraoke });
-                broadcast({ isKaraoke });
+                const mode = isKaraoke ? 'karaoke' : 'song';
+                set({ isKaraoke, searchMode: mode });
+                broadcast({ isKaraoke, searchMode: mode });
+            },
+            setSearchMode: (mode) => {
+                const isKara = mode === 'karaoke';
+                set({ searchMode: mode, isKaraoke: isKara });
+                broadcast({ searchMode: mode, isKaraoke: isKara });
             },
             setActiveIndex: (index) => {
                 set({ activeIndex: index });
@@ -692,6 +699,7 @@ export const usePlayerStore = create<PlayerStore>()(
                 // Persist UI State
                 searchTerm: state.searchTerm,
                 isKaraoke: state.isKaraoke,
+                searchMode: state.searchMode,
                 activeIndex: state.activeIndex,
                 repeatMode: state.repeatMode,
                 searchHistory: state.searchHistory,

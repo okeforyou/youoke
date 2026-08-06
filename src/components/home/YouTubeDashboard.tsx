@@ -29,11 +29,15 @@ const fetchExplore = async () => {
     return data;
 };
 
-const fetchSearch = async (query: string, isKaraokeMode: boolean = false): Promise<YTItem[]> => {
+const fetchSearch = async (query: string, searchMode: 'song' | 'ai_karaoke' | 'karaoke' = 'karaoke'): Promise<YTItem[]> => {
     if (!query) return [];
     let finalQuery = query;
-    if (isKaraokeMode && !finalQuery.toLowerCase().includes('karaoke')) {
+    if (searchMode === 'karaoke' && !finalQuery.toLowerCase().includes('karaoke')) {
         finalQuery += " karaoke";
+    } else if (searchMode === 'ai_karaoke') {
+        if (!finalQuery.toLowerCase().includes('official audio') && !finalQuery.toLowerCase().includes('topic')) {
+            finalQuery += " official audio";
+        }
     }
     const { data } = await axios.get(`/api/modules/youtube/search?q=${encodeURIComponent(finalQuery)}`);
     return data.data || [];
@@ -46,7 +50,7 @@ const fetchPlaylist = async (id: string, type: string = 'playlist') => {
 };
 
 export default function YouTubeDashboard() {
-    const { addToQueue, searchTerm, isKaraoke, setSearchTerm, setActiveIndex } = usePlayerStore();
+    const { addToQueue, searchTerm, isKaraoke, searchMode, setSearchTerm, setActiveIndex } = usePlayerStore();
     const [debouncedTerm, setDebouncedTerm] = useState("");
     const [activePlaylist, setActivePlaylist] = useState<YTItem | null>(null);
     const [selectedShelfIndex, setSelectedShelfIndex] = useState(0);
@@ -128,8 +132,8 @@ export default function YouTubeDashboard() {
 
     // Search Query
     const searchQuery = useQuery({
-        queryKey: ["youtube-search", debouncedTerm, isKaraoke],
-        queryFn: () => fetchSearch(debouncedTerm, isKaraoke),
+        queryKey: ["youtube-search", debouncedTerm, searchMode],
+        queryFn: () => fetchSearch(debouncedTerm, searchMode || 'karaoke'),
         enabled: isSearching,
         placeholderData: keepPreviousData
     });

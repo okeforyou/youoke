@@ -70,6 +70,7 @@ export interface PlayerStore extends PlayerState {
     // UI State (Unification)
     searchTerm: string;
     isKaraoke: boolean;
+    searchMode?: 'song' | 'ai_karaoke' | 'karaoke'; // Support AI Studio Karaoke Mode
     activeIndex: number;
     searchHistory: string[]; // Native App History
 
@@ -92,6 +93,7 @@ export interface PlayerStore extends PlayerState {
     // UI Actions
     setSearchTerm: (term: string) => void;
     setIsKaraoke: (isKaraoke: boolean) => void;
+    setSearchMode?: (mode: 'song' | 'ai_karaoke' | 'karaoke') => void; // Support AI Studio Karaoke Mode
     setActiveIndex: (index: number) => void;
     addSearchHistory: (term: string) => void;
     removeSearchHistory: (term: string) => void;

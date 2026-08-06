@@ -39,6 +39,7 @@ export const HomePageContent = memo(({ onAddToQueue }: { onAddToQueue?: (video: 
 
     switch (activeIndex) {
         case 0: return <SearchResultGrid onClick={(video) => {
+            const { searchMode } = usePlayerStore.getState();
             const videoToAdd = {
                 id: video.videoId, // map videoId to id for Video type
                 sourceType: 'youtube', // default source
@@ -46,6 +47,7 @@ export const HomePageContent = memo(({ onAddToQueue }: { onAddToQueue?: (video: 
                 title: video.title,
                 author: video.author,
                 thumbnail: undefined,
+                aiVocalRequested: searchMode === 'ai_karaoke' ? true : undefined,
             } as any;
             
             if (onAddToQueue) {
