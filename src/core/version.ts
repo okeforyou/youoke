@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.248";
+export const SYSTEM_VERSION = "5.5.249";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.249",
+        date: new Date().toISOString().split('T')[0],
+        changes: [
+            "feat(ai-sync): Reverted to pure raw Deepgram transcription (bypassing LRCLIB alignment) for exact timing.",
+            "fix(ai-sync): Added silence gap detection (gaps > 3.0s) to insert instrumental indicators (🎸 (ดนตรี) 🎸) to prevent lyric freezing."
+        ]
+    },
     {
         version: "5.5.248",
         date: new Date().toISOString().split('T')[0],

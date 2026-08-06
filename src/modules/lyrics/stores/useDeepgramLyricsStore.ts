@@ -33,6 +33,18 @@ function groupDeepgramWordsIntoLines(words: DeepgramWord[]): LRCLIBLine[] {
         duration: lineEnd - lineStart,
         words: [...currentLineWords]
       });
+      
+      // If there is a long silence gap before the next line (e.g. > 3.0 seconds),
+      // insert an instrumental indicator line so the previous lyrics don't freeze on screen.
+      if (nextWord && nextWord.start - lineEnd > 3.0) {
+        lines.push({
+          time: lineEnd + 0.5,
+          text: "🎸 (ดนตรี) 🎸",
+          duration: nextWord.start - lineEnd - 1.0,
+          words: [] // Empty words list so it doesn't sweep, just displays the indicator
+        });
+      }
+      
       currentLineWords = [];
     }
   }
@@ -120,10 +132,8 @@ export const useDeepgramLyricsStore = create<DeepgramLyricsState>((set, get) => 
           localStorage.setItem(`ai_lyrics_${videoId}`, JSON.stringify(deepgramWords));
       }
       
-      // If we have original clean lyrics, align them; otherwise, fall back to raw Deepgram grouping
-      const alignedLines = originalLyrics && originalLyrics.length > 0
-        ? alignLyrics(deepgramWords, originalLyrics)
-        : groupDeepgramWordsIntoLines(deepgramWords);
+      // Use raw Deepgram words grouped into lines directly (bypassing messy clean-text alignment)
+      const alignedLines = groupDeepgramWordsIntoLines(deepgramWords);
       
       set({ 
         alignedLyrics: alignedLines, 
