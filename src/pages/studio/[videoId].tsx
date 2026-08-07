@@ -41,6 +41,11 @@ export default function StudioPage() {
     const [startEndTime, setStartEndTime] = useState(0);
     const [initialDragLyrics, setInitialDragLyrics] = useState<LyricLine[]>([]);
 
+    // Style Customizations (Karadeo style)
+    const [hasBackground, setHasBackground] = useState(false);
+    const [fontSize, setFontSize] = useState(36);
+    const [outlineThickness, setOutlineThickness] = useState(3);
+
     const { saveSync } = useWikiLyricsStore();
     const fetchLyrics = useLyricsStore(state => state.fetchLyrics);
     const originalLyrics = useLyricsStore(state => state.lyrics);
@@ -341,56 +346,132 @@ export default function StudioPage() {
                 </button>
             </header>
 
-            {/* Video Area */}
-            <div className="flex-1 flex justify-center items-center p-4 bg-zinc-950/80 min-h-0 overflow-hidden">
-                <div className="w-full max-w-5xl aspect-video max-h-full rounded-xl overflow-hidden bg-zinc-900 shadow-xl relative group border border-white/5">
-                    {videoId && (
-                        <YouTube
-                            videoId={videoId as string}
-                            opts={{ width: '100%', height: '100%', playerVars: { autoplay: 0, controls: 0, cc_load_policy: 0, iv_load_policy: 3 } }}
-                            onReady={(e) => { playerRef.current = e.target; }}
-                            onPlay={() => setIsPlaying(true)}
-                            onPause={() => setIsPlaying(false)}
-                            className="w-full h-full absolute inset-0 pointer-events-none z-0"
-                        />
-                    )}
+            {/* Main Workspace (Split into left player and right sidebar) */}
+            <div className="flex-1 flex min-h-0 bg-zinc-950/80">
+                {/* Left: Player Area */}
+                <div className="flex-1 flex flex-col p-4 justify-center items-center min-w-0">
+                    <div className="w-full max-w-5xl aspect-video max-h-full rounded-xl overflow-hidden bg-zinc-900 shadow-xl relative group border border-white/5">
+                        {videoId && (
+                            <div className="absolute inset-0 z-0 pointer-events-none">
+                                <YouTube
+                                    videoId={videoId as string}
+                                    opts={{ width: '100%', height: '100%', playerVars: { autoplay: 0, controls: 0, cc_load_policy: 0, iv_load_policy: 3 } }}
+                                    onReady={(e) => { playerRef.current = e.target; }}
+                                    onPlay={() => setIsPlaying(true)}
+                                    onPause={() => setIsPlaying(false)}
+                                    className="w-full h-full"
+                                />
+                            </div>
+                        )}
 
-                    {/* Lyric Overlay (Inside video container to scale with the video) */}
-                    <div className="absolute bottom-8 left-0 right-0 pointer-events-none z-20 flex flex-col items-center px-4">
-                        {(() => {
-                            let displayLyric = "";
-                            let isFaded = false;
-                            
-                            if (isRecording) {
-                                displayLyric = lyrics[recordingIndex]?.text || "";
-                            } else {
-                                if (activeLineIndex !== -1) {
-                                    displayLyric = lyrics[activeLineIndex]?.text || "";
+                        {/* Lyric Overlay (Inside video container to scale with the video) */}
+                        <div className="absolute bottom-8 left-0 right-0 pointer-events-none z-20 flex flex-col items-center px-4">
+                            {(() => {
+                                let displayLyric = "";
+                                let isFaded = false;
+                                
+                                if (isRecording) {
+                                    displayLyric = lyrics[recordingIndex]?.text || "";
                                 } else {
-                                    // Find next upcoming lyric (sort by time to be safe)
-                                    const upcoming = [...lyrics].sort((a,b) => a.time - b.time).find(l => l.time > currentTime);
-                                    if (upcoming) {
-                                        displayLyric = upcoming.text;
-                                        isFaded = true;
+                                    if (activeLineIndex !== -1) {
+                                        displayLyric = lyrics[activeLineIndex]?.text || "";
+                                    } else {
+                                        // Find next upcoming lyric (sort by time to be safe)
+                                        const upcoming = [...lyrics].sort((a,b) => a.time - b.time).find(l => l.time > currentTime);
+                                        if (upcoming) {
+                                            displayLyric = upcoming.text;
+                                            isFaded = true;
+                                        }
                                     }
                                 }
-                            }
-                            if (!displayLyric) return null;
 
-                            return (
-                                <div 
-                                    className={`px-4 py-2 text-3xl md:text-5xl font-extrabold text-white transition-all duration-200 text-center tracking-wide
-                                        ${isFaded ? 'opacity-40 scale-95' : 'opacity-100 scale-100'}`} 
-                                    style={{ 
-                                        textShadow: '3px 3px 0 #000, -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 0 3px 0 #000, 0 -3px 0 #000, 3px 0 #000, -3px 0 #000, 0px 4px 12px rgba(0,0,0,0.8)' 
-                                    }}
-                                >
-                                    {displayLyric}
-                                </div>
-                            );
-                        })()}
-                        {isRecording && <span className="text-yellow-400 font-bold text-sm bg-black/90 px-4 py-1.5 rounded-full border border-yellow-400/20 shadow-lg mt-3 z-10">บรรทัดที่จะถูกบันทึกเมื่อกด Spacebar</span>}
+                                if (!displayLyric) return null;
+
+                                return (
+                                    <div 
+                                        className={`px-6 py-2 transition-all duration-200 text-center tracking-wide font-extrabold text-white
+                                            ${isFaded ? 'opacity-40 scale-95' : 'opacity-100 scale-100'}
+                                            ${hasBackground ? 'bg-black/80 rounded-2xl border border-white/10 shadow-2xl' : ''}`} 
+                                        style={{ 
+                                            fontSize: `${fontSize}px`,
+                                            lineHeight: '1.2',
+                                            textShadow: hasBackground ? 'none' : `
+                                                ${outlineThickness}px ${outlineThickness}px 0 #000, 
+                                                -${outlineThickness}px -${outlineThickness}px 0 #000, 
+                                                ${outlineThickness}px -${outlineThickness}px 0 #000, 
+                                                -${outlineThickness}px ${outlineThickness}px 0 #000, 
+                                                0 ${outlineThickness}px 0 #000, 
+                                                0 -${outlineThickness}px 0 #000, 
+                                                ${outlineThickness}px 0 0 #000, 
+                                                -${outlineThickness}px 0 0 #000, 
+                                                0px 4px 12px rgba(0,0,0,0.8)`
+                                        }}
+                                    >
+                                        {displayLyric}
+                                    </div>
+                                );
+                            })()}
+                            {isRecording && <span className="text-yellow-400 font-bold text-sm bg-black/90 px-4 py-1.5 rounded-full border border-yellow-400/20 shadow-lg mt-3 z-10">บรรทัดที่จะถูกบันทึกเมื่อกด Spacebar</span>}
+                        </div>
                     </div>
+                </div>
+
+                {/* Right: Styles Panel (Sidebar like Karadeo) */}
+                <div className="w-80 shrink-0 border-l border-white/10 bg-zinc-900/50 flex flex-col z-20 overflow-y-auto custom-scrollbar p-6">
+                    <h2 className="font-bold text-sm text-zinc-400 mb-6 uppercase tracking-wider">Style Settings</h2>
+                    
+                    {/* Background Toggle */}
+                    <div className="mb-6">
+                        <label className="text-sm font-medium text-zinc-300 block mb-2">Lyric Background</label>
+                        <div className="flex gap-2 bg-black/40 p-1 rounded-lg border border-white/5">
+                            <button 
+                                onClick={() => setHasBackground(false)}
+                                className={`flex-1 py-1.5 rounded-md text-xs font-semibold transition-all ${!hasBackground ? 'bg-zinc-800 text-white shadow' : 'text-zinc-400 hover:text-zinc-200'}`}
+                            >
+                                Text Outline
+                            </button>
+                            <button 
+                                onClick={() => setHasBackground(true)}
+                                className={`flex-1 py-1.5 rounded-md text-xs font-semibold transition-all ${hasBackground ? 'bg-zinc-800 text-white shadow' : 'text-zinc-400 hover:text-zinc-200'}`}
+                            >
+                                Dark Box
+                            </button>
+                        </div>
+                    </div>
+                    
+                    {/* Font Size Slider */}
+                    <div className="mb-6">
+                        <div className="flex justify-between items-center mb-2">
+                            <label className="text-sm font-medium text-zinc-300">Font Size</label>
+                            <span className="text-xs font-mono text-zinc-500">{fontSize}px</span>
+                        </div>
+                        <input 
+                            type="range" 
+                            min="24" 
+                            max="64" 
+                            value={fontSize}
+                            onChange={(e) => setFontSize(Number(e.target.value))}
+                            className="w-full accent-primary bg-zinc-800 h-1 rounded-lg appearance-none cursor-pointer" 
+                        />
+                    </div>
+
+                    {/* Text Stroke Slider */}
+                    {!hasBackground && (
+                        <div className="mb-6">
+                            <div className="flex justify-between items-center mb-2">
+                                <label className="text-sm font-medium text-zinc-300">Outline Thickness</label>
+                                <span className="text-xs font-mono text-zinc-500">{outlineThickness}px</span>
+                            </div>
+                            <input 
+                                type="range" 
+                                min="0" 
+                                max="6" 
+                                value={outlineThickness}
+                                onChange={(e) => setOutlineThickness(Number(e.target.value))}
+                                className="w-full accent-primary bg-zinc-800 h-1 rounded-lg appearance-none cursor-pointer" 
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
             
