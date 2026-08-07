@@ -45,7 +45,10 @@ export default function StudioPage() {
     const [hasBackground, setHasBackground] = useState(false);
     const [fontSize, setFontSize] = useState(36);
     const [outlineThickness, setOutlineThickness] = useState(3);
-    const [lyricPosition, setLyricPosition] = useState<'top' | 'middle' | 'bottom'>('bottom');
+    const [lyricPos, setLyricPos] = useState({ x: 50, y: 85 });
+    const [isDraggingOverlay, setIsDraggingOverlay] = useState(false);
+    const overlayDragRef = useRef({ startX: 0, startY: 0, startPosX: 0, startPosY: 0 });
+    const videoContainerRef = useRef<HTMLDivElement>(null);
 
     const { saveSync } = useWikiLyricsStore();
     const fetchLyrics = useLyricsStore(state => state.fetchLyrics);
@@ -351,7 +354,10 @@ export default function StudioPage() {
             <div className="flex-1 flex min-h-0 bg-zinc-950/80">
                 {/* Left: Player Area */}
                 <div className="flex-1 flex flex-col p-4 justify-center items-center min-w-0">
-                    <div className="w-full max-w-5xl aspect-video max-h-full rounded-xl overflow-hidden bg-zinc-900 shadow-xl relative group border border-white/5">
+                    <div 
+                        ref={videoContainerRef}
+                        className="w-full max-w-5xl aspect-video max-h-full rounded-xl overflow-hidden bg-zinc-900 shadow-xl relative group border border-white/5"
+                    >
                         {videoId && (
                             <div className="absolute inset-0 z-0 pointer-events-none">
                                 <YouTube
@@ -372,11 +378,42 @@ export default function StudioPage() {
                         )}
 
                         {/* Lyric Overlay (Inside video container to scale with the video) */}
-                        <div className={`absolute left-0 right-0 pointer-events-none z-20 flex flex-col items-center px-4
-                            ${lyricPosition === 'top' ? 'top-8' : ''}
-                            ${lyricPosition === 'middle' ? 'top-1/2 -translate-y-1/2' : ''}
-                            ${lyricPosition === 'bottom' ? 'bottom-8' : ''}
-                        `}>
+                        <div 
+                            className={`absolute pointer-events-auto z-20 flex flex-col items-center px-4 cursor-move transition-transform
+                                ${isDraggingOverlay ? 'scale-105' : ''}`}
+                            style={{ 
+                                left: `${lyricPos.x}%`, 
+                                top: `${lyricPos.y}%`, 
+                                transform: 'translate(-50%, -50%)',
+                                touchAction: 'none'
+                            }}
+                            onPointerDown={(e) => {
+                                setIsDraggingOverlay(true);
+                                overlayDragRef.current = {
+                                    startX: e.clientX,
+                                    startY: e.clientY,
+                                    startPosX: lyricPos.x,
+                                    startPosY: lyricPos.y
+                                };
+                                e.currentTarget.setPointerCapture(e.pointerId);
+                            }}
+                            onPointerMove={(e) => {
+                                if (isDraggingOverlay && videoContainerRef.current) {
+                                    const rect = videoContainerRef.current.getBoundingClientRect();
+                                    const dx = ((e.clientX - overlayDragRef.current.startX) / rect.width) * 100;
+                                    const dy = ((e.clientY - overlayDragRef.current.startY) / rect.height) * 100;
+                                    
+                                    setLyricPos({
+                                        x: Math.max(0, Math.min(100, overlayDragRef.current.startPosX + dx)),
+                                        y: Math.max(0, Math.min(100, overlayDragRef.current.startPosY + dy))
+                                    });
+                                }
+                            }}
+                            onPointerUp={(e) => {
+                                setIsDraggingOverlay(false);
+                                e.currentTarget.releasePointerCapture(e.pointerId);
+                            }}
+                        >
                             {(() => {
                                 let displayLyric = "";
                                 let isFaded = false;
@@ -450,29 +487,18 @@ export default function StudioPage() {
                         </div>
                     </div>
 
-                    {/* Position Toggle */}
-                    <div className="mb-6">
-                        <label className="text-sm font-medium text-zinc-300 block mb-2">Vertical Position</label>
-                        <div className="flex gap-2 bg-black/40 p-1 rounded-lg border border-white/5">
-                            <button 
-                                onClick={() => setLyricPosition('top')}
-                                className={`flex-1 py-1.5 rounded-md text-xs font-semibold transition-all ${lyricPosition === 'top' ? 'bg-zinc-800 text-white shadow' : 'text-zinc-400 hover:text-zinc-200'}`}
-                            >
-                                Top
-                            </button>
-                            <button 
-                                onClick={() => setLyricPosition('middle')}
-                                className={`flex-1 py-1.5 rounded-md text-xs font-semibold transition-all ${lyricPosition === 'middle' ? 'bg-zinc-800 text-white shadow' : 'text-zinc-400 hover:text-zinc-200'}`}
-                            >
-                                Middle
-                            </button>
-                            <button 
-                                onClick={() => setLyricPosition('bottom')}
-                                className={`flex-1 py-1.5 rounded-md text-xs font-semibold transition-all ${lyricPosition === 'bottom' ? 'bg-zinc-800 text-white shadow' : 'text-zinc-400 hover:text-zinc-200'}`}
-                            >
-                                Bottom
-                            </button>
-                        </div>
+                    {/* Position Tip */}
+                    <div className="mb-6 bg-blue-500/10 border border-blue-500/20 p-3 rounded-lg text-sm text-blue-200">
+                        <p className="flex items-center gap-2 font-medium mb-1"><GripVertical size={14} /> Drag to Move</p>
+                        <p className="text-xs text-blue-300/80 leading-relaxed">
+                            คุณสามารถใช้เมาส์ลากที่ตัวข้อความเนื้อเพลงบนวิดีโอเพื่อปรับตำแหน่งได้อย่างอิสระ
+                        </p>
+                        <button 
+                            onClick={() => setLyricPos({ x: 50, y: 85 })} 
+                            className="mt-2 px-3 py-1 bg-black/40 hover:bg-black/60 rounded text-xs transition-colors"
+                        >
+                            รีเซ็ตตำแหน่ง
+                        </button>
                     </div>
                     
                     {/* Font Size Slider */}
