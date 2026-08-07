@@ -1,7 +1,7 @@
 // 🛡️ v5.5.65: Admin Utility & Remote Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.258";
+export const SYSTEM_VERSION = "5.5.259";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.259",
+        date: new Date().toISOString().split('T')[0],
+        changes: [
+            "feat(studio): Added 'upcoming lyric' preview (faded text) when paused before a line.",
+            "style(studio): Reduced timeline height to give more space for the video.",
+            "fix(studio): Missing empty state box fix when no lyric is active."
+        ]
+    },
     {
         version: "5.5.258",
         date: new Date().toISOString().split('T')[0],

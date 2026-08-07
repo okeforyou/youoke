@@ -357,11 +357,37 @@ export default function StudioPage() {
                     
                     {/* Lyric Overlay */}
                     <div className="absolute bottom-12 left-0 right-0 px-8 text-center pointer-events-none z-20 flex flex-col items-center">
-                        <span className="bg-black/80 px-6 py-3 rounded-2xl text-2xl md:text-4xl font-bold text-white mb-2 shadow-2xl border border-white/10" style={{ textShadow: '0px 2px 8px rgba(0,0,0,0.8)' }}>
-                            {isRecording 
-                                ? lyrics[recordingIndex]?.text || "..." 
-                                : lyrics[activeLineIndex]?.text || ""}
-                        </span>
+                        {(() => {
+                            let displayLyric = "";
+                            let isFaded = false;
+                            
+                            if (isRecording) {
+                                displayLyric = lyrics[recordingIndex]?.text || "";
+                            } else {
+                                if (activeLineIndex !== -1) {
+                                    displayLyric = lyrics[activeLineIndex]?.text || "";
+                                } else {
+                                    // Find next upcoming lyric
+                                    const nextLyric = lyrics.find(l => l.time > currentTime);
+                                    if (nextLyric) {
+                                        displayLyric = nextLyric.text;
+                                        isFaded = true;
+                                    }
+                                }
+                            }
+
+                            if (!displayLyric) return null;
+
+                            return (
+                                <span 
+                                    className={`px-6 py-3 rounded-2xl text-2xl md:text-4xl font-bold text-white mb-2 shadow-2xl border transition-all duration-200
+                                        ${isFaded ? 'bg-black/40 border-white/5 opacity-50' : 'bg-black/80 border-white/10 opacity-100'}`} 
+                                    style={{ textShadow: '0px 2px 8px rgba(0,0,0,0.8)' }}
+                                >
+                                    {displayLyric}
+                                </span>
+                            );
+                        })()}
                         {isRecording && <span className="text-yellow-400 font-bold text-sm bg-black/80 px-4 py-1.5 rounded-full border border-yellow-400/20 shadow-lg mt-2">บรรทัดที่จะถูกบันทึกเมื่อกด Spacebar</span>}
                     </div>
                 </div>
@@ -450,7 +476,7 @@ export default function StudioPage() {
 
             {/* Bottom Half: Horizontal Timeline */}
             <div 
-                className="h-56 shrink-0 bg-zinc-950 relative overflow-x-auto overflow-y-hidden select-none custom-scrollbar" 
+                className="h-32 shrink-0 bg-zinc-950 relative overflow-x-auto overflow-y-hidden select-none custom-scrollbar border-t border-white/5" 
                 ref={timelineRef}
             >
                 {/* Timeline Track Container */}
@@ -509,7 +535,7 @@ export default function StudioPage() {
                         return (
                             <div 
                                 key={`block-${idx}`}
-                                className={`absolute top-10 h-16 rounded-md flex overflow-hidden transition-colors z-20 group
+                                className={`absolute top-4 h-16 rounded-md flex overflow-hidden transition-colors z-20 group
                                     ${isActive ? 'bg-primary/40 border border-primary shadow-[0_0_15px_rgba(var(--color-primary),0.3)]' : 
                                       isDone ? 'bg-zinc-800/80 border border-zinc-700/50 text-zinc-400' : 
                                       'bg-zinc-800/80 border border-white/10 hover:border-white/30 text-white'}`}
