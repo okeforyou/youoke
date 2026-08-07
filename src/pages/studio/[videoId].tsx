@@ -100,12 +100,9 @@ export default function StudioPage() {
             const pointerPctX = ((e.clientX - rect.left) / rect.width) * 100;
             const pointerPctY = ((e.clientY - rect.top) / rect.height) * 100;
             
-            const targetX = pointerPctX - overlayDragRef.current.startX;
-            const targetY = pointerPctY - overlayDragRef.current.startY;
-            
             setLyricPos({
-                x: Math.max(0, Math.min(100, targetX)),
-                y: Math.max(0, Math.min(100, targetY))
+                x: Math.max(10, Math.min(90, pointerPctX)),
+                y: Math.max(10, Math.min(90, pointerPctY))
             });
         };
         
@@ -395,7 +392,7 @@ export default function StudioPage() {
                             <div className="absolute inset-0 z-0 pointer-events-none">
                                 <YouTube
                                     videoId={videoId as string}
-                                    opts={{ width: '100%', height: '100%', playerVars: { autoplay: 0, controls: 0, cc_load_policy: 0, iv_load_policy: 3, disablekb: 1 } }}
+                                    opts={{ width: '100%', height: '100%', playerVars: { autoplay: 0, controls: 0, cc_load_policy: 3, iv_load_policy: 3, disablekb: 1 } }}
                                     onReady={(e) => { 
                                         playerRef.current = e.target; 
                                         try {
@@ -429,25 +426,6 @@ export default function StudioPage() {
                             onPointerDown={(e) => {
                                 e.preventDefault(); // Prevent native text dragging
                                 setIsDraggingOverlay(true);
-                                const containerRect = videoContainerRef.current?.getBoundingClientRect();
-                                const elementRect = e.currentTarget.getBoundingClientRect();
-                                
-                                if (containerRect) {
-                                    // Calculate center of the dragging element
-                                    const elCenterX = elementRect.left + elementRect.width / 2;
-                                    const elCenterY = elementRect.top + elementRect.height / 2;
-                                    
-                                    // How far the mouse is from the element's center, as a percentage of the container
-                                    const offsetX = ((e.clientX - elCenterX) / containerRect.width) * 100;
-                                    const offsetY = ((e.clientY - elCenterY) / containerRect.height) * 100;
-                                    
-                                    overlayDragRef.current = {
-                                        startX: offsetX,
-                                        startY: offsetY,
-                                        startPosX: 0,
-                                        startPosY: 0
-                                    };
-                                }
                             }}
                         >
                             {(() => {
