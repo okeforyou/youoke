@@ -342,8 +342,8 @@ export default function StudioPage() {
             </header>
 
             {/* Video Area */}
-            <div className="flex-1 flex justify-center items-center p-4 bg-zinc-950/80 min-h-0">
-                <div className="h-full w-full max-w-5xl aspect-video rounded-xl overflow-hidden bg-zinc-900 shadow-xl relative group border border-white/5">
+            <div className="flex-1 flex justify-center items-center p-4 bg-zinc-950/80 min-h-0 overflow-hidden">
+                <div className="w-full max-w-5xl aspect-video max-h-full rounded-xl overflow-hidden bg-zinc-900 shadow-xl relative group border border-white/5">
                     {videoId && (
                         <YouTube
                             videoId={videoId as string}
@@ -355,14 +355,6 @@ export default function StudioPage() {
                         />
                     )}
                     
-                    {/* Debug Panel */}
-                    <div className="absolute top-4 left-4 bg-black/90 p-3 rounded-lg text-xs font-mono text-zinc-400 z-50 border border-white/10 pointer-events-none">
-                        <div>Active Idx: {activeLineIndex}</div>
-                        <div>Time: {currentTime.toFixed(2)}s</div>
-                        <div>Count: {lyrics.length}</div>
-                        <div>Text: {lyrics[activeLineIndex]?.text || 'NULL'}</div>
-                    </div>
-
                     {/* Lyric Overlay */}
                     <div className="absolute bottom-12 inset-x-0 pointer-events-none z-50 flex flex-col justify-end items-center px-4">
                         {(() => {
