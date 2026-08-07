@@ -379,7 +379,7 @@ export default function StudioPage() {
 
                         {/* Lyric Overlay (Inside video container to scale with the video) */}
                         <div 
-                            className={`absolute pointer-events-auto z-20 flex flex-col items-center px-4 cursor-move transition-transform
+                            className={`absolute pointer-events-auto z-20 flex flex-col items-center px-4 cursor-move transition-transform select-none
                                 ${isDraggingOverlay ? 'scale-105' : ''}`}
                             style={{ 
                                 left: `${lyricPos.x}%`, 
@@ -388,24 +388,44 @@ export default function StudioPage() {
                                 touchAction: 'none'
                             }}
                             onPointerDown={(e) => {
+                                e.preventDefault(); // Prevent native text dragging
                                 setIsDraggingOverlay(true);
-                                overlayDragRef.current = {
-                                    startX: e.clientX,
-                                    startY: e.clientY,
-                                    startPosX: lyricPos.x,
-                                    startPosY: lyricPos.y
-                                };
+                                const containerRect = videoContainerRef.current?.getBoundingClientRect();
+                                const elementRect = e.currentTarget.getBoundingClientRect();
+                                
+                                if (containerRect) {
+                                    // Calculate center of the dragging element
+                                    const elCenterX = elementRect.left + elementRect.width / 2;
+                                    const elCenterY = elementRect.top + elementRect.height / 2;
+                                    
+                                    // How far the mouse is from the element's center, as a percentage of the container
+                                    const offsetX = ((e.clientX - elCenterX) / containerRect.width) * 100;
+                                    const offsetY = ((e.clientY - elCenterY) / containerRect.height) * 100;
+                                    
+                                    overlayDragRef.current = {
+                                        startX: offsetX,
+                                        startY: offsetY,
+                                        startPosX: 0,
+                                        startPosY: 0
+                                    };
+                                }
                                 e.currentTarget.setPointerCapture(e.pointerId);
                             }}
                             onPointerMove={(e) => {
                                 if (isDraggingOverlay && videoContainerRef.current) {
                                     const rect = videoContainerRef.current.getBoundingClientRect();
-                                    const dx = ((e.clientX - overlayDragRef.current.startX) / rect.width) * 100;
-                                    const dy = ((e.clientY - overlayDragRef.current.startY) / rect.height) * 100;
+                                    
+                                    // Mouse position relative to container, in percentage
+                                    const pointerPctX = ((e.clientX - rect.left) / rect.width) * 100;
+                                    const pointerPctY = ((e.clientY - rect.top) / rect.height) * 100;
+                                    
+                                    // Desired center is pointer minus the initial grab offset
+                                    const targetX = pointerPctX - overlayDragRef.current.startX;
+                                    const targetY = pointerPctY - overlayDragRef.current.startY;
                                     
                                     setLyricPos({
-                                        x: Math.max(0, Math.min(100, overlayDragRef.current.startPosX + dx)),
-                                        y: Math.max(0, Math.min(100, overlayDragRef.current.startPosY + dy))
+                                        x: Math.max(0, Math.min(100, targetX)),
+                                        y: Math.max(0, Math.min(100, targetY))
                                     });
                                 }
                             }}
