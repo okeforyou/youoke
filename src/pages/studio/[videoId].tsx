@@ -343,22 +343,20 @@ export default function StudioPage() {
 
             {/* Video Area */}
             <div className="flex-1 flex justify-center items-center p-4 bg-zinc-950/80 min-h-0">
-                <div className="h-full w-full max-w-5xl aspect-video rounded-xl overflow-hidden bg-zinc-900 shadow-xl relative group border border-white/5 isolate">
+                <div className="h-full w-full max-w-5xl aspect-video rounded-xl overflow-hidden bg-zinc-900 shadow-xl relative group border border-white/5">
                     {videoId && (
-                        <div className="absolute inset-0 z-0 pointer-events-none">
-                            <YouTube
-                                videoId={videoId as string}
-                                opts={{ width: '100%', height: '100%', playerVars: { autoplay: 0, controls: 0, cc_load_policy: 0, iv_load_policy: 3 } }}
-                                onReady={(e) => { playerRef.current = e.target; }}
-                                onPlay={() => setIsPlaying(true)}
-                                onPause={() => setIsPlaying(false)}
-                                className="w-full h-full"
-                            />
-                        </div>
+                        <YouTube
+                            videoId={videoId as string}
+                            opts={{ width: '100%', height: '100%', playerVars: { autoplay: 0, controls: 0, cc_load_policy: 0, iv_load_policy: 3 } }}
+                            onReady={(e) => { playerRef.current = e.target; }}
+                            onPlay={() => setIsPlaying(true)}
+                            onPause={() => setIsPlaying(false)}
+                            className="w-full h-full absolute inset-0 pointer-events-none z-0"
+                        />
                     )}
                     
                     {/* Debug Panel */}
-                    <div className="absolute top-4 left-4 bg-black/90 p-3 rounded-lg text-xs font-mono text-zinc-400 z-[110] border border-white/10 pointer-events-none">
+                    <div className="absolute top-4 left-4 bg-black/90 p-3 rounded-lg text-xs font-mono text-zinc-400 z-50 border border-white/10 pointer-events-none">
                         <div>Active Idx: {activeLineIndex}</div>
                         <div>Time: {currentTime.toFixed(2)}s</div>
                         <div>Count: {lyrics.length}</div>
@@ -366,7 +364,7 @@ export default function StudioPage() {
                     </div>
 
                     {/* Lyric Overlay */}
-                    <div className="absolute bottom-12 inset-x-0 pointer-events-none z-[100] flex flex-col justify-end items-center px-4">
+                    <div className="absolute bottom-12 inset-x-0 pointer-events-none z-50 flex flex-col justify-end items-center px-4">
                         {(() => {
                             let displayLyric = "";
                             let isFaded = false;
