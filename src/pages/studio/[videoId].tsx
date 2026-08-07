@@ -91,6 +91,39 @@ export default function StudioPage() {
         return () => clearInterval(interval);
     }, [isPlaying, lyrics, draggingIdx]);
 
+    // Lyric Overlay Drag Logic
+    useEffect(() => {
+        const handleMove = (e: PointerEvent) => {
+            if (!isDraggingOverlay || !videoContainerRef.current) return;
+            const rect = videoContainerRef.current.getBoundingClientRect();
+            
+            const pointerPctX = ((e.clientX - rect.left) / rect.width) * 100;
+            const pointerPctY = ((e.clientY - rect.top) / rect.height) * 100;
+            
+            const targetX = pointerPctX - overlayDragRef.current.startX;
+            const targetY = pointerPctY - overlayDragRef.current.startY;
+            
+            setLyricPos({
+                x: Math.max(0, Math.min(100, targetX)),
+                y: Math.max(0, Math.min(100, targetY))
+            });
+        };
+        
+        const handleUp = () => {
+            setIsDraggingOverlay(false);
+        };
+
+        if (isDraggingOverlay) {
+            window.addEventListener('pointermove', handleMove);
+            window.addEventListener('pointerup', handleUp);
+        }
+
+        return () => {
+            window.removeEventListener('pointermove', handleMove);
+            window.removeEventListener('pointerup', handleUp);
+        };
+    }, [isDraggingOverlay]);
+
     // Keep activeLineIndex in sync with currentTime
     useEffect(() => {
         if (lyrics.length > 0) {
@@ -372,6 +405,12 @@ export default function StudioPage() {
                                     }}
                                     onPlay={() => setIsPlaying(true)}
                                     onPause={() => setIsPlaying(false)}
+                                    onStateChange={(e) => {
+                                        try {
+                                            e.target.unloadModule("captions");
+                                            e.target.unloadModule("cc");
+                                        } catch(err) {}
+                                    }}
                                     className="w-full h-full"
                                 />
                             </div>
@@ -409,29 +448,6 @@ export default function StudioPage() {
                                         startPosY: 0
                                     };
                                 }
-                                e.currentTarget.setPointerCapture(e.pointerId);
-                            }}
-                            onPointerMove={(e) => {
-                                if (isDraggingOverlay && videoContainerRef.current) {
-                                    const rect = videoContainerRef.current.getBoundingClientRect();
-                                    
-                                    // Mouse position relative to container, in percentage
-                                    const pointerPctX = ((e.clientX - rect.left) / rect.width) * 100;
-                                    const pointerPctY = ((e.clientY - rect.top) / rect.height) * 100;
-                                    
-                                    // Desired center is pointer minus the initial grab offset
-                                    const targetX = pointerPctX - overlayDragRef.current.startX;
-                                    const targetY = pointerPctY - overlayDragRef.current.startY;
-                                    
-                                    setLyricPos({
-                                        x: Math.max(0, Math.min(100, targetX)),
-                                        y: Math.max(0, Math.min(100, targetY))
-                                    });
-                                }
-                            }}
-                            onPointerUp={(e) => {
-                                setIsDraggingOverlay(false);
-                                e.currentTarget.releasePointerCapture(e.pointerId);
                             }}
                         >
                             {(() => {
