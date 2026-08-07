@@ -530,9 +530,9 @@ export default function StudioPage() {
 
                     {/* Position Tip */}
                     <div className="mb-6 bg-blue-500/10 border border-blue-500/20 p-3 rounded-lg text-sm text-blue-200">
-                        <p className="flex items-center gap-2 font-medium mb-1"><GripVertical size={14} /> Drag to Move</p>
+                        <p className="flex items-center gap-2 font-medium mb-1"><GripVertical size={14} /> Adjust Lyric Position</p>
                         <p className="text-xs text-blue-300/80 leading-relaxed">
-                            คุณสามารถใช้เมาส์ลากที่ตัวข้อความเนื้อเพลงบนวิดีโอเพื่อปรับตำแหน่งได้อย่างอิสระ
+                            สามารถใช้เมาส์ลากเนื้อเพลงบนวิดีโอ หรือใช้แถบปรับตำแหน่ง (Slider) ด้านล่างเพื่อความแม่นยำ
                         </p>
                         <button 
                             onClick={() => setLyricPos({ x: 50, y: 85 })} 
@@ -540,6 +540,37 @@ export default function StudioPage() {
                         >
                             รีเซ็ตตำแหน่ง
                         </button>
+                    </div>
+
+                    {/* Position Sliders */}
+                    <div className="mb-6">
+                        <div className="flex justify-between items-center mb-2">
+                            <label className="text-sm font-medium text-zinc-300">ตำแหน่งแนวตั้ง (Vertical)</label>
+                            <span className="text-xs font-mono text-zinc-500">{lyricPos.y}%</span>
+                        </div>
+                        <input 
+                            type="range" 
+                            min="5" 
+                            max="95" 
+                            value={lyricPos.y}
+                            onChange={(e) => setLyricPos(prev => ({ ...prev, y: Number(e.target.value) }))}
+                            className="w-full accent-primary bg-zinc-800 h-1 rounded-lg appearance-none cursor-pointer" 
+                        />
+                    </div>
+
+                    <div className="mb-6">
+                        <div className="flex justify-between items-center mb-2">
+                            <label className="text-sm font-medium text-zinc-300">ตำแหน่งแนวนอน (Horizontal)</label>
+                            <span className="text-xs font-mono text-zinc-500">{lyricPos.x}%</span>
+                        </div>
+                        <input 
+                            type="range" 
+                            min="5" 
+                            max="95" 
+                            value={lyricPos.x}
+                            onChange={(e) => setLyricPos(prev => ({ ...prev, x: Number(e.target.value) }))}
+                            className="w-full accent-primary bg-zinc-800 h-1 rounded-lg appearance-none cursor-pointer" 
+                        />
                     </div>
                     
                     {/* Font Size Slider */}
