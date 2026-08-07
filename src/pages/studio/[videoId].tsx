@@ -429,7 +429,9 @@ export default function StudioPage() {
                                 left: `${lyricPos.x}%`, 
                                 top: `${lyricPos.y}%`, 
                                 transform: 'translate(-50%, -50%)',
-                                touchAction: 'none'
+                                touchAction: 'none',
+                                width: 'auto',
+                                height: 'auto'
                             }}
                             onPointerDown={(e) => {
                                 e.preventDefault(); // Prevent native text dragging
