@@ -45,6 +45,7 @@ export default function StudioPage() {
     const [hasBackground, setHasBackground] = useState(false);
     const [fontSize, setFontSize] = useState(36);
     const [outlineThickness, setOutlineThickness] = useState(3);
+    const [lyricPosition, setLyricPosition] = useState<'top' | 'middle' | 'bottom'>('bottom');
 
     const { saveSync } = useWikiLyricsStore();
     const fetchLyrics = useLyricsStore(state => state.fetchLyrics);
@@ -355,8 +356,14 @@ export default function StudioPage() {
                             <div className="absolute inset-0 z-0 pointer-events-none">
                                 <YouTube
                                     videoId={videoId as string}
-                                    opts={{ width: '100%', height: '100%', playerVars: { autoplay: 0, controls: 0, cc_load_policy: 0, iv_load_policy: 3 } }}
-                                    onReady={(e) => { playerRef.current = e.target; }}
+                                    opts={{ width: '100%', height: '100%', playerVars: { autoplay: 0, controls: 0, cc_load_policy: 0, iv_load_policy: 3, disablekb: 1 } }}
+                                    onReady={(e) => { 
+                                        playerRef.current = e.target; 
+                                        try {
+                                            e.target.unloadModule("captions");
+                                            e.target.unloadModule("cc");
+                                        } catch (err) {}
+                                    }}
                                     onPlay={() => setIsPlaying(true)}
                                     onPause={() => setIsPlaying(false)}
                                     className="w-full h-full"
@@ -365,7 +372,11 @@ export default function StudioPage() {
                         )}
 
                         {/* Lyric Overlay (Inside video container to scale with the video) */}
-                        <div className="absolute bottom-8 left-0 right-0 pointer-events-none z-20 flex flex-col items-center px-4">
+                        <div className={`absolute left-0 right-0 pointer-events-none z-20 flex flex-col items-center px-4
+                            ${lyricPosition === 'top' ? 'top-8' : ''}
+                            ${lyricPosition === 'middle' ? 'top-1/2 -translate-y-1/2' : ''}
+                            ${lyricPosition === 'bottom' ? 'bottom-8' : ''}
+                        `}>
                             {(() => {
                                 let displayLyric = "";
                                 let isFaded = false;
@@ -435,6 +446,31 @@ export default function StudioPage() {
                                 className={`flex-1 py-1.5 rounded-md text-xs font-semibold transition-all ${hasBackground ? 'bg-zinc-800 text-white shadow' : 'text-zinc-400 hover:text-zinc-200'}`}
                             >
                                 Dark Box
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Position Toggle */}
+                    <div className="mb-6">
+                        <label className="text-sm font-medium text-zinc-300 block mb-2">Vertical Position</label>
+                        <div className="flex gap-2 bg-black/40 p-1 rounded-lg border border-white/5">
+                            <button 
+                                onClick={() => setLyricPosition('top')}
+                                className={`flex-1 py-1.5 rounded-md text-xs font-semibold transition-all ${lyricPosition === 'top' ? 'bg-zinc-800 text-white shadow' : 'text-zinc-400 hover:text-zinc-200'}`}
+                            >
+                                Top
+                            </button>
+                            <button 
+                                onClick={() => setLyricPosition('middle')}
+                                className={`flex-1 py-1.5 rounded-md text-xs font-semibold transition-all ${lyricPosition === 'middle' ? 'bg-zinc-800 text-white shadow' : 'text-zinc-400 hover:text-zinc-200'}`}
+                            >
+                                Middle
+                            </button>
+                            <button 
+                                onClick={() => setLyricPosition('bottom')}
+                                className={`flex-1 py-1.5 rounded-md text-xs font-semibold transition-all ${lyricPosition === 'bottom' ? 'bg-zinc-800 text-white shadow' : 'text-zinc-400 hover:text-zinc-200'}`}
+                            >
+                                Bottom
                             </button>
                         </div>
                     </div>
