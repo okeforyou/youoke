@@ -342,7 +342,7 @@ export default function StudioPage() {
             </header>
 
             {/* Video Area */}
-            <div className="flex-1 flex justify-center items-center p-4 bg-zinc-950/80 min-h-0 overflow-hidden">
+            <div className="flex-1 flex justify-center items-center p-4 bg-zinc-950/80 min-h-0 overflow-hidden relative">
                 <div className="w-full max-w-5xl aspect-video max-h-full rounded-xl overflow-hidden bg-zinc-900 shadow-xl relative group border border-white/5">
                     {videoId && (
                         <YouTube
@@ -354,42 +354,42 @@ export default function StudioPage() {
                             className="w-full h-full absolute inset-0 pointer-events-none z-0"
                         />
                     )}
-                    
-                    {/* Lyric Overlay */}
-                    <div className="absolute bottom-12 inset-x-0 pointer-events-none z-50 flex flex-col justify-end items-center px-4">
-                        {(() => {
-                            let displayLyric = "";
-                            let isFaded = false;
-                            
-                            if (isRecording) {
-                                displayLyric = lyrics[recordingIndex]?.text || "";
+                </div>
+
+                {/* Lyric Overlay (Outside video container to prevent aspect-ratio clipping) */}
+                <div className="absolute bottom-8 left-0 right-0 pointer-events-none z-50 flex flex-col items-center px-4">
+                    {(() => {
+                        let displayLyric = "";
+                        let isFaded = false;
+                        
+                        if (isRecording) {
+                            displayLyric = lyrics[recordingIndex]?.text || "";
+                        } else {
+                            if (activeLineIndex !== -1) {
+                                displayLyric = lyrics[activeLineIndex]?.text || "";
                             } else {
-                                if (activeLineIndex !== -1) {
-                                    displayLyric = lyrics[activeLineIndex]?.text || "";
-                                } else {
-                                    // Find next upcoming lyric (sort by time to be safe)
-                                    const upcoming = [...lyrics].sort((a,b) => a.time - b.time).find(l => l.time > currentTime);
-                                    if (upcoming) {
-                                        displayLyric = upcoming.text;
-                                        isFaded = true;
-                                    }
+                                // Find next upcoming lyric (sort by time to be safe)
+                                const upcoming = [...lyrics].sort((a,b) => a.time - b.time).find(l => l.time > currentTime);
+                                if (upcoming) {
+                                    displayLyric = upcoming.text;
+                                    isFaded = true;
                                 }
                             }
+                        }
 
-                            if (!displayLyric) return null;
+                        if (!displayLyric) return null;
 
-                            return (
-                                <div 
-                                    className={`px-8 py-3 rounded-2xl text-2xl md:text-4xl font-bold text-white shadow-2xl border transition-all duration-200 text-center
-                                        ${isFaded ? 'bg-black/60 border-white/10 opacity-70' : 'bg-black/90 border-white/20 opacity-100 scale-105'}`} 
-                                    style={{ textShadow: '0px 2px 10px rgba(0,0,0,1)' }}
-                                >
-                                    {displayLyric}
-                                </div>
-                            );
-                        })()}
-                        {isRecording && <span className="text-yellow-400 font-bold text-sm bg-black/90 px-4 py-1.5 rounded-full border border-yellow-400/20 shadow-lg mt-3 z-10">บรรทัดที่จะถูกบันทึกเมื่อกด Spacebar</span>}
-                    </div>
+                        return (
+                            <div 
+                                className={`px-8 py-3 rounded-2xl text-2xl md:text-4xl font-bold text-white shadow-2xl border transition-all duration-200 text-center
+                                    ${isFaded ? 'bg-black/60 border-white/10 opacity-70' : 'bg-black/90 border-white/20 opacity-100 scale-105'}`} 
+                                style={{ textShadow: '0px 2px 10px rgba(0,0,0,1)' }}
+                            >
+                                {displayLyric}
+                            </div>
+                        );
+                    })()}
+                    {isRecording && <span className="text-yellow-400 font-bold text-sm bg-black/90 px-4 py-1.5 rounded-full border border-yellow-400/20 shadow-lg mt-3 z-10">บรรทัดที่จะถูกบันทึกเมื่อกด Spacebar</span>}
                 </div>
             </div>
             
