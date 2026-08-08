@@ -63,7 +63,7 @@ export default function CreatorStudioPage() {
     const [fontOutline, setFontOutline] = useState(3);
     const [fontFamily, setFontFamily] = useState('Sukhumvit Set');
     const [activeTab, setActiveTab] = useState<'properties' | 'lyrics'>('properties');
-    const [audioTrack, setAudioTrack] = useState<'original' | 'vocals' | 'instrumental'>('original');
+    const [audioTrack, setAudioTrack] = useState<'original' | 'vocals' | 'instrumental'>('vocals');
     const [zoom, setZoom] = useState(50); // px per second
     
     // Refs
@@ -158,6 +158,10 @@ export default function CreatorStudioPage() {
                 ws.on('play', () => setIsPlaying(true));
                 ws.on('pause', () => setIsPlaying(false));
                 ws.on('timeupdate', (time) => setCurrentTime(time));
+                ws.on('error', (err: any) => {
+                    console.error("WaveSurfer error:", err);
+                    setError("ไม่สามารถโหลดไฟล์เสียงได้: " + (err.message || err));
+                });
                 
                 wsReg.on('region-updated', (region: any) => {
                     setLyrics(prev => {
@@ -654,6 +658,32 @@ export default function CreatorStudioPage() {
                                     <FileAudio size={14} className="text-zinc-500 shrink-0" />
                                 </div>
                             </div>
+
+                            {selectedSong && (
+                                <div>
+                                    <label className="text-xs text-zinc-400 mb-1 block">แทร็กเสียงที่ใช้แก้ไข</label>
+                                    <div className="flex gap-1 bg-zinc-900 p-1 rounded-lg border border-zinc-800">
+                                        <button
+                                            onClick={() => setAudioTrack('vocals')}
+                                            className={clsx(
+                                                "flex-1 py-1.5 text-xs font-medium rounded transition-colors",
+                                                audioTrack === 'vocals' ? "bg-purple-600 text-white" : "text-zinc-400 hover:text-zinc-200"
+                                            )}
+                                        >
+                                            เสียงร้อง (Vocals)
+                                        </button>
+                                        <button
+                                            onClick={() => setAudioTrack('instrumental')}
+                                            className={clsx(
+                                                "flex-1 py-1.5 text-xs font-medium rounded transition-colors",
+                                                audioTrack === 'instrumental' ? "bg-purple-600 text-white" : "text-zinc-400 hover:text-zinc-200"
+                                            )}
+                                        >
+                                            ดนตรี (Backing)
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                             
                             <div>
                                 <label className="text-xs text-zinc-400 mb-1 block">AI Lyrics (ถอดเสียงร้อง)</label>
