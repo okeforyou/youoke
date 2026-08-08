@@ -5,7 +5,7 @@ import { getActiveBridgeBaseUrl, useAIVocalStore } from '../stores/useAIVocalSto
 import { 
     Mic, Play, Pause, Save, Download, Video, Music, 
     ArrowLeft, Settings, Maximize, Type, UploadCloud, FileAudio,
-    Sparkles, FileText
+    Sparkles, FileText, Plus, X, ZoomIn, ZoomOut, Link, RefreshCw
 } from 'lucide-react';
 import WaveSurfer from 'wavesurfer.js';
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js';
@@ -28,7 +28,7 @@ interface LyricWord {
     word: string;
     start: number;
     end: number;
-    confidence: number;
+    confidence?: number;
 }
 
 export default function CreatorStudioPage() {
@@ -53,6 +53,17 @@ export default function CreatorStudioPage() {
     const videoContainerRef = useRef<HTMLDivElement>(null);
     const backingAudioRef = useRef<HTMLAudioElement | null>(null);
 
+    // Timeline Drag & Block States (from Studio)
+    const [draggingIdx, setDraggingIdx] = useState<number | null>(null);
+    const [dragAction, setDragAction] = useState<'move' | 'resize-right' | 'resize-left' | null>(null);
+    const [startX, setStartX] = useState(0);
+    const [startTime, setStartTime] = useState(0);
+    const [startEndTime, setStartEndTime] = useState(0);
+    const [initialDragLyrics, setInitialDragLyrics] = useState<LyricWord[]>([]);
+    const [isRippleEdit, setIsRippleEdit] = useState(false);
+    const timelineRef = useRef<HTMLDivElement>(null);
+    const [duration, setDuration] = useState(0);
+
     const extractYoutubeVideoId = (url: string) => {
         if (!url) return '';
         const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
@@ -74,8 +85,8 @@ export default function CreatorStudioPage() {
     const [fontOutline, setFontOutline] = useState(3);
     const [fontFamily, setFontFamily] = useState('Sukhumvit Set');
     const [activeTab, setActiveTab] = useState<'properties' | 'lyrics'>('properties');
-    const [audioTrack, setAudioTrack] = useState<'original' | 'vocals' | 'instrumental'>('vocals');
-    const [zoom, setZoom] = useState(50); // px per second
+    const [audioTrack, setAudioTrack] = useState<'original' | 'vocals' | 'instrumental'>('original');
+    const [zoom, setZoom] = useState(80); // px per second
     
     // Refs
     const containerRef = useRef<HTMLDivElement>(null);
@@ -174,7 +185,7 @@ export default function CreatorStudioPage() {
                     height: 100,
                     url,
                     normalize: true,
-                    minPxPerSec: 50,
+                    minPxPerSec: zoom,
                 });
                 
                 const wsReg = ws.registerPlugin(RegionsPlugin.create());
@@ -200,6 +211,9 @@ export default function CreatorStudioPage() {
                             backingAudioRef.current.currentTime = time;
                         }
                     }
+                });
+                ws.on('ready', () => {
+                    setDuration(ws.getDuration());
                 });
                 ws.on('error', (err: any) => {
                     console.error("WaveSurfer error:", err);
@@ -367,6 +381,114 @@ export default function CreatorStudioPage() {
         }
     };
 
+    // Timeline Pointer Drag Move & Resize Event Listeners (from Studio/[videoId].tsx)
+    useEffect(() => {
+        const handlePointerMove = (e: PointerEvent) => {
+            if (draggingIdx === null || !dragAction || !timelineRef.current) return;
+            
+            const rect = timelineRef.current.getBoundingClientRect();
+            const clientX = e.clientX;
+            const deltaX = clientX - startX;
+            const deltaTime = deltaX / zoom;
+            
+            setLyrics(prev => {
+                const updated = [...prev];
+                const item = { ...updated[draggingIdx] };
+                
+                if (dragAction === 'move') {
+                    let newStart = startTime + deltaTime;
+                    let duration = startEndTime - startTime;
+                    let newEnd = newStart + duration;
+                    
+                    if (newStart < 0) {
+                        newStart = 0;
+                        newEnd = duration;
+                    }
+                    
+                    item.start = Math.round(newStart * 100) / 100;
+                    item.end = Math.round(newEnd * 100) / 100;
+                    
+                    if (isRippleEdit) {
+                        const shift = item.start - prev[draggingIdx].start;
+                        for (let i = draggingIdx + 1; i < updated.length; i++) {
+                            updated[i] = {
+                                ...updated[i],
+                                start: Math.round((updated[i].start + shift) * 100) / 100,
+                                end: Math.round((updated[i].end + shift) * 100) / 100
+                            };
+                        }
+                    }
+                } else if (dragAction === 'resize-right') {
+                    let newEnd = startEndTime + deltaTime;
+                    if (newEnd < item.start + 0.1) {
+                        newEnd = item.start + 0.1;
+                    }
+                    item.end = Math.round(newEnd * 100) / 100;
+                } else if (dragAction === 'resize-left') {
+                    let newStart = startTime + deltaTime;
+                    if (newStart > item.end - 0.1) {
+                        newStart = item.end - 0.1;
+                    }
+                    if (newStart < 0) newStart = 0;
+                    item.start = Math.round(newStart * 100) / 100;
+                }
+                
+                updated[draggingIdx] = item;
+                return updated;
+            });
+        };
+        
+        const handlePointerUp = () => {
+            if (draggingIdx !== null) {
+                setDraggingIdx(null);
+                setDragAction(null);
+                rebuildRegions(lyrics);
+            }
+        };
+        
+        if (draggingIdx !== null) {
+            window.addEventListener('pointermove', handlePointerMove);
+            window.addEventListener('pointerup', handlePointerUp);
+        }
+        
+        return () => {
+            window.removeEventListener('pointermove', handlePointerMove);
+            window.removeEventListener('pointerup', handlePointerUp);
+        };
+    }, [draggingIdx, dragAction, startX, startTime, startEndTime, zoom, isRippleEdit, lyrics]);
+
+    const handleAddBlockAtPlayhead = () => {
+        if (!selectedSong) return;
+        const newBlock: LyricWord = {
+            word: "เนื้อร้องท่อนใหม่",
+            start: Math.round(currentTime * 100) / 100,
+            end: Math.round((currentTime + 2.0) * 100) / 100
+        };
+        
+        setLyrics(prev => {
+            const next = [...prev];
+            const insertIdx = next.findIndex(l => l.start > newBlock.start);
+            if (insertIdx === -1) {
+                next.push(newBlock);
+            } else {
+                next.splice(insertIdx, 0, newBlock);
+            }
+            setTimeout(() => rebuildRegions(next), 0);
+            return next;
+        });
+    };
+
+    // Auto-scroll timeline to keep playhead centered during playback
+    useEffect(() => {
+        if (isPlaying && wavesurfer.current && timelineRef.current) {
+            const time = currentTime;
+            const px = time * zoom;
+            const container = timelineRef.current;
+            const rect = container.getBoundingClientRect();
+            container.scrollLeft = px - rect.width / 2;
+        }
+    }, [currentTime, isPlaying, zoom]);
+
     const handleTranscribe = async () => {
         if (!selectedSong) return;
         if (!deepgramKey) {
@@ -378,7 +500,6 @@ export default function CreatorStudioPage() {
                 cancelText: "ยกเลิก",
                 onConfirm: () => {
                     useUIStore.getState().hideConfirm();
-                    // Just open settings modal from home in real app, but here we alert
                     addToast("กรุณากดกลับไปหน้าแรก แล้วเปิดเมนูตั้งค่า -> แท็บ AI ครับ");
                 }
             });
@@ -410,31 +531,51 @@ export default function CreatorStudioPage() {
 
             if (res.ok) {
                 const dgData = await res.json();
-                const words = dgData.results?.channels[0]?.alternatives[0]?.words || [];
+                const rawWords = dgData.results?.channels[0]?.alternatives[0]?.words || [];
                 
-                if (words.length === 0) {
+                if (rawWords.length === 0) {
                     throw new Error("AI ไม่สามารถแกะเนื้อเพลงจากไฟล์เสียงร้องได้");
                 }
                 
-                // Cache locally so it syncs with the player!
-                localStorage.setItem(`ai_lyrics_${selectedSong.video_id}`, JSON.stringify(words));
-
-                setLyrics(words);
+                // Group words into line-level sentence blocks (split on gap > 1.5s or length >= 8 words)
+                const groupedWords: LyricWord[] = [];
+                let currentGroup: { word: string; start: number; end: number }[] = [];
                 
-                if (wsRegions.current) {
-                    wsRegions.current.clearRegions();
-                    words.forEach((word: LyricWord, i: number) => {
-                        wsRegions.current.addRegion({
-                            id: `lyric-${i}`,
-                            start: word.start,
-                            end: word.end,
-                            content: word.word,
-                            color: 'rgba(168, 85, 247, 0.3)',
-                            drag: true,
-                            resize: true
+                for (let idx = 0; idx < rawWords.length; idx++) {
+                    const w = rawWords[idx];
+                    const prevW = idx > 0 ? rawWords[idx - 1] : null;
+                    const isGap = prevW && (w.start - prevW.end > 1.5);
+                    const isTooLong = currentGroup.length >= 8;
+                    
+                    if ((isGap || isTooLong) && currentGroup.length > 0) {
+                        const sentence = currentGroup.map(item => item.word).join(' ');
+                        groupedWords.push({
+                            word: sentence,
+                            start: currentGroup[0].start,
+                            end: currentGroup[currentGroup.length - 1].end
                         });
+                        currentGroup = [];
+                    }
+                    currentGroup.push({
+                        word: w.punctuated_word || w.word,
+                        start: w.start,
+                        end: w.end
                     });
                 }
+                if (currentGroup.length > 0) {
+                    const sentence = currentGroup.map(item => item.word).join(' ');
+                    groupedWords.push({
+                        word: sentence,
+                        start: currentGroup[0].start,
+                        end: currentGroup[currentGroup.length - 1].end
+                    });
+                }
+                
+                // Cache locally so it syncs with the player!
+                localStorage.setItem(`ai_lyrics_${selectedSong.video_id}`, JSON.stringify(groupedWords));
+
+                setLyrics(groupedWords);
+                rebuildRegions(groupedWords);
             } else {
                 const errData = await res.json().catch(() => ({}));
                 setError(errData.err_msg || 'เกิดข้อผิดพลาดในการเชื่อมต่อ Deepgram API');
@@ -510,7 +651,7 @@ export default function CreatorStudioPage() {
         try {
             await useWikiLyricsStore.getState().saveSync({
                 videoId: selectedSong.video_id,
-                authorId: user.uid,
+                authorId: user.uid || '',
                 authorName: user.displayName || 'Anonymous',
                 lrcContent,
                 globalOffset: 0
@@ -812,133 +953,130 @@ export default function CreatorStudioPage() {
                                     Canvas 1920x1080 (ลากข้อความเพื่อย้ายตำแหน่งได้)
                                 </div>
                             </div>
+                            
+                            {/* Canvas Toolbar with Quick Controls */}
+                            <div className="w-full max-w-4xl mt-3 flex items-center justify-between gap-4 bg-zinc-950 border border-zinc-800 p-2.5 rounded-xl font-sans shrink-0">
+                                <div className="flex items-center gap-1.5">
+                                    <button 
+                                        onClick={handleAddBlockAtPlayhead}
+                                        disabled={!selectedSong}
+                                        className="px-3.5 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 shadow"
+                                        title="เพิ่มบล็อกเนื้อร้องตรงเวลาที่กำลังเล่นปัจจุบัน"
+                                    >
+                                        <Plus size={14} />
+                                        เพิ่มบรรทัด
+                                    </button>
+                                    
+                                    <button 
+                                        onClick={() => setIsRippleEdit(!isRippleEdit)}
+                                        className={clsx(
+                                            "px-3.5 py-2 rounded-lg border text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95",
+                                            isRippleEdit 
+                                                ? "bg-amber-600/20 border-amber-500/50 text-amber-200" 
+                                                : "bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-400"
+                                        )}
+                                        title="ลากกลุ่ม (Ripple): เมื่อเลื่อน/ขยายบล็อก จะขยับบล็อกที่อยู่ตามหลังทั้งหมดไปพร้อมกัน"
+                                    >
+                                        <Link size={14} />
+                                        ลากกลุ่ม (Ripple)
+                                    </button>
+                                </div>
+                                
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={handleSaveToWiki}
+                                        disabled={!selectedSong || lyrics.length === 0}
+                                        className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 shadow"
+                                    >
+                                        <Save size={14} />
+                                        บันทึกข้อมูล
+                                    </button>
+                                </div>
+                            </div>
+
                         </div>
                     )}
                 </div>
 
-                {/* Right Sidebar (Properties) */}
-                <div className="w-80 border-l border-zinc-800 bg-zinc-950 flex flex-col shrink-0 hidden lg:flex">
-                    {/* Tabs */}
-                    <div className="flex border-b border-zinc-800 shrink-0">
-                        <button 
-                            className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider ${activeTab === 'properties' ? 'text-purple-400 border-b-2 border-purple-500 bg-zinc-900/50' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/20'}`}
-                            onClick={() => setActiveTab('properties')}
-                        >
-                            คุณสมบัติ
-                        </button>
-                        <button 
-                            className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider ${activeTab === 'lyrics' ? 'text-purple-400 border-b-2 border-purple-500 bg-zinc-900/50' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/20'}`}
-                            onClick={() => setActiveTab('lyrics')}
-                        >
-                            เนื้อเพลง (${lyrics.length})
-                        </button>
+                {/* Right Sidebar (Creator Tools) */}
+                <div className="w-80 border-l border-zinc-800 bg-zinc-950 flex flex-col shrink-0 hidden lg:flex font-sans">
+                    <div className="p-4 border-b border-zinc-800 shrink-0 flex items-center justify-between">
+                        <h2 className="font-bold text-sm text-zinc-300 uppercase tracking-wider flex items-center gap-2">
+                            <Settings size={16} className="text-purple-400" />
+                            เครื่องมือแต่งเนื้อร้อง
+                        </h2>
+                        {lyrics.length > 0 && (
+                            <span className="text-[10px] font-bold bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full border border-purple-500/30">
+                                {lyrics.length} บรรทัด
+                            </span>
+                        )}
                     </div>
 
-                    <div className="flex-1 overflow-y-auto custom-scrollbar">
-                    {activeTab === 'lyrics' ? (
-                        <div className="p-4 pb-20">
-                            {lyrics.length === 0 ? (
-                                <p className="text-sm text-zinc-500 text-center py-8">ยังไม่มีเนื้อเพลง</p>
-                            ) : (
-                                <div className="space-y-2">
-                                    <div className="text-[11px] text-zinc-500 mb-4 bg-zinc-900 p-3 rounded-lg border border-zinc-800">
-                                        💡 <b>ทริค:</b> กดปุ่มโซ่เพื่อรวมคำที่ถูกตัดแยกกัน และสามารถพิมพ์แก้คำผิดได้โดยตรง
-                                    </div>
-                                    {lyrics.map((l, i) => (
-                                        <div key={i} className="flex gap-2 items-center group">
-                                            <div className="text-[10px] text-zinc-600 font-mono w-10 shrink-0 text-right">
-                                                {formatTime(l.start)}
-                                            </div>
-                                            <input 
-                                                value={l.word}
-                                                onChange={(e) => handleWordChange(i, e.target.value)}
-                                                onBlur={handleWordBlur}
-                                                className="bg-zinc-900 border border-zinc-800 text-sm text-zinc-200 px-3 py-1.5 rounded-lg w-full outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
-                                            />
-                                            {i < lyrics.length - 1 && (
-                                                <button 
-                                                    onClick={() => handleMergeNext(i)} 
-                                                    className="p-1.5 text-zinc-500 hover:text-purple-400 hover:bg-purple-400/10 rounded transition-colors shrink-0"
-                                                    title="รวมคำนี้เข้ากับคำถัดไป"
-                                                >
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-                                                </button>
-                                            )}
-                                            <button 
-                                                onClick={() => handleDeleteWord(i)} 
-                                                className="p-1.5 text-zinc-500 hover:text-rose-400 hover:bg-rose-400/10 rounded transition-colors opacity-0 group-hover:opacity-100 shrink-0"
-                                                title="ลบคำนี้"
-                                            >
-                                                ✕
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    ) : (
-                        <>
-                        <div className="p-4 border-b border-zinc-800">
+                    <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-6">
                         
-                        <div className="space-y-4">
-                            <div>
-                                <label className="text-xs text-zinc-400 mb-1 block font-bold uppercase tracking-wider text-zinc-500">เครื่องมือเนื้อเพลง</label>
-                                <div className="space-y-2">
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <button 
-                                            onClick={handleImportFromWiki}
-                                            disabled={!selectedSong}
-                                            className="bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 disabled:opacity-50 text-zinc-300 text-xs py-2 px-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-1.5"
-                                            title="ดึงเนื้อร้องที่บันทึกไว้ในคลาวด์/Wiki"
-                                        >
-                                            <UploadCloud size={13} className="text-blue-400 shrink-0" />
-                                            นำเข้าจาก Wiki
-                                        </button>
-                                        <button 
-                                            onClick={() => setShowPasteModal(true)}
-                                            disabled={!selectedSong}
-                                            className="bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 disabled:opacity-50 text-zinc-300 text-xs py-2 px-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-1.5"
-                                            title="วางเนื้อร้องดิบเพื่อซิงค์เอง"
-                                        >
-                                            <FileText size={13} className="text-green-400 shrink-0" />
-                                            วางเนื้อร้องดิบ
-                                        </button>
-                                    </div>
-                                    <button 
-                                        onClick={handleTranscribe}
-                                        disabled={isTranscribing || !selectedSong}
-                                        className="w-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed text-zinc-200 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                                    >
-                                        {isTranscribing ? <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-zinc-400"></div> : <Mic size={16} className="text-purple-400" />}
-                                        {isTranscribing ? 'แกะเนื้อด้วย AI (Deepgram)...' : 'ถอดเสียงร้องด้วย AI'}
-                                    </button>
-                                    {lyrics.length > 0 && (
-                                        <button 
-                                            onClick={handleSaveToWiki}
-                                            disabled={!selectedSong}
-                                            className="w-full bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/40 text-purple-200 text-xs py-2.5 px-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-1.5"
-                                        >
-                                            <Save size={13} className="text-purple-400 shrink-0" />
-                                            บันทึกผลงานขึ้น Wiki (Cloud)
-                                        </button>
-                                    )}
-                                </div>
-                                {error && <p className="text-xs text-rose-500 mt-2">{error}</p>}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="p-4 border-b border-zinc-800">
-                        <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-4">รูปแบบตัวอักษร</h3>
+                        {/* Section 1: Lyric Source Selector */}
                         <div className="space-y-3">
-                            <div className="flex items-center justify-between bg-zinc-900 p-2 rounded-lg border border-zinc-800">
-                                <span className="text-xs text-zinc-400 flex-shrink-0 mr-2"><Type size={14} className="inline mr-1"/> Font</span>
+                            <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
+                                1. แหล่งข้อมูลเนื้อร้อง
+                            </h3>
+                            
+                            <button 
+                                onClick={handleImportFromWiki}
+                                disabled={!selectedSong}
+                                className="w-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 disabled:opacity-50 text-zinc-200 text-xs py-3 px-4 rounded-xl font-bold transition-all flex items-center gap-3 active:scale-95 shadow"
+                                title="ดึงข้อมูลเนื้อร้องที่มีอยู่แล้วบนคลาวด์/Wiki"
+                            >
+                                <UploadCloud size={16} className="text-sky-400 shrink-0" />
+                                <div className="text-left">
+                                    <p className="font-bold">ดึงเนื้อร้องออนไลน์ (คลาวด์)</p>
+                                    <p className="text-[10px] font-normal text-zinc-500">โหลดข้อมูลจากฐานข้อมูลกลาง</p>
+                                </div>
+                            </button>
+
+                            <button 
+                                onClick={() => setShowPasteModal(true)}
+                                disabled={!selectedSong}
+                                className="w-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 disabled:opacity-50 text-zinc-200 text-xs py-3 px-4 rounded-xl font-bold transition-all flex items-center gap-3 active:scale-95 shadow"
+                                title="พิมพ์หรือวางเนื้อเพลงดิบเพื่อจัดเวลาด้วยตัวเอง"
+                            >
+                                <FileText size={16} className="text-emerald-400 shrink-0" />
+                                <div className="text-left">
+                                    <p className="font-bold">พิมพ์ / วางเนื้อร้องเอง</p>
+                                    <p className="text-[10px] font-normal text-zinc-500">วางท่อนร้องดิบมาซิงค์จังหวะเอง</p>
+                                </div>
+                            </button>
+
+                            <button 
+                                onClick={handleTranscribe}
+                                disabled={isTranscribing || !selectedSong}
+                                className="w-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 disabled:opacity-50 text-zinc-200 text-xs py-3 px-4 rounded-xl font-bold transition-all flex items-center gap-3 active:scale-95 shadow"
+                            >
+                                {isTranscribing ? (
+                                    <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-purple-400 shrink-0"></div>
+                                ) : (
+                                    <Mic size={16} className="text-purple-400 shrink-0" />
+                                )}
+                                <div className="text-left">
+                                    <p className="font-bold">ถอดเนื้อร้องอัตโนมัติ (AI)</p>
+                                    <p className="text-[10px] font-normal text-zinc-500">ให้ปัญญาประดิษฐ์แกะเนื้อร้องไทย</p>
+                                </div>
+                            </button>
+                        </div>
+
+                        {/* Section 2: Canvas Text Overlay Styling */}
+                        <div className="space-y-4 pt-4 border-t border-zinc-900">
+                            <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
+                                2. รูปแบบตัวอักษรบนพรีวิว
+                            </h3>
+                            
+                            <div className="flex items-center justify-between bg-zinc-900 p-2.5 rounded-xl border border-zinc-800">
+                                <span className="text-xs text-zinc-400 flex items-center gap-1.5"><Type size={14} className="text-purple-400" /> รูปแบบฟอนต์</span>
                                 <select 
                                     value={fontFamily}
                                     onChange={(e) => setFontFamily(e.target.value)}
-                                    className="bg-transparent text-xs text-white outline-none w-full text-right cursor-pointer"
+                                    className="bg-transparent text-xs text-white outline-none w-max text-right cursor-pointer"
                                 >
-                                    <option value="Sukhumvit Set">Sukhumvit Set (Default)</option>
+                                    <option value="Sukhumvit Set">Sukhumvit (ค่าเริ่มต้น)</option>
                                     <option value="'Kanit', sans-serif">Kanit (คณิต)</option>
                                     <option value="'Prompt', sans-serif">Prompt (พร้อม)</option>
                                     <option value="'Sarabun', sans-serif">Sarabun (สารบรรณ)</option>
@@ -946,34 +1084,51 @@ export default function CreatorStudioPage() {
                                     <option value="'Itim', cursive">Itim (ไอติม)</option>
                                 </select>
                             </div>
-                            <div className="bg-zinc-900 p-3 rounded-lg border border-zinc-800 space-y-2">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-xs text-zinc-400">ขนาดตัวอักษร ({fontSize}px)</span>
+
+                            <div className="bg-zinc-900 p-3.5 rounded-xl border border-zinc-800 space-y-2">
+                                <div className="flex justify-between items-center text-xs">
+                                    <span className="text-zinc-400">ขนาดฟอนต์</span>
+                                    <span className="font-mono text-zinc-400">{fontSize}px</span>
                                 </div>
                                 <input 
                                     type="range" 
                                     min="24" max="100" 
                                     value={fontSize} 
                                     onChange={(e) => setFontSize(Number(e.target.value))}
-                                    className="w-full h-1 bg-zinc-700 rounded-lg appearance-none cursor-pointer"
+                                    className="w-full h-1 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
                                 />
                             </div>
-                            <div className="bg-zinc-900 p-3 rounded-lg border border-zinc-800 space-y-2">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-xs text-zinc-400">ขนาดขอบ ({fontOutline}px)</span>
+
+                            <div className="bg-zinc-900 p-3.5 rounded-xl border border-zinc-800 space-y-2">
+                                <div className="flex justify-between items-center text-xs">
+                                    <span className="text-zinc-400">ความหนาของขอบ</span>
+                                    <span className="font-mono text-zinc-400">{fontOutline}px</span>
                                 </div>
                                 <input 
                                     type="range" 
                                     min="0" max="10" step="0.5"
                                     value={fontOutline} 
                                     onChange={(e) => setFontOutline(Number(e.target.value))}
-                                    className="w-full h-1 bg-zinc-700 rounded-lg appearance-none cursor-pointer"
+                                    className="w-full h-1 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
                                 />
                             </div>
+
+                            <div className="bg-purple-950/20 border border-purple-500/25 p-3.5 rounded-xl text-xs text-purple-200">
+                                <p className="font-bold flex items-center gap-1.5 mb-1">
+                                    💡 เคล็ดลับจัดวางหน้าจอ
+                                </p>
+                                <p className="text-zinc-400 leading-relaxed mb-2.5">
+                                    ท่านสามารถคลิกแล้วลากข้อความพรีวิวเนื้อร้องบนจอวิดีโอเพื่อปรับแต่งตำแหน่งแสดงผลได้อย่างอิสระ
+                                </p>
+                                <button 
+                                    onClick={() => setLyricPos({ x: 50, y: 85 })} 
+                                    className="w-full bg-zinc-900 hover:bg-zinc-850 text-zinc-300 border border-zinc-800 py-1.5 rounded-lg font-semibold transition-colors active:scale-95"
+                                >
+                                    รีเซ็ตตำแหน่งตรงกลางล่าง
+                                </button>
+                            </div>
                         </div>
-                        </div>
-                    </>
-                    )}
+
                     </div>
                 </div>
             </div>
@@ -981,68 +1136,218 @@ export default function CreatorStudioPage() {
             {/* Bottom Timeline */}
             <div className="h-48 border-t border-zinc-800 bg-zinc-950 flex flex-col shrink-0 font-sans">
                 {/* Timeline Toolbar */}
-                <div className="h-10 border-b border-zinc-800/50 flex items-center justify-between px-4 bg-zinc-900/30">
-                    <div className="flex items-center gap-2 text-zinc-400">
-                        <button className="hover:text-white transition-colors p-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg" onClick={togglePlay}>
-                            {isPlaying ? <Pause size={14} /> : <Play size={14} />}
-                        </button>
-                        <span className="text-xs font-mono w-16">{formatTime(currentTime)}</span>
+                <div className="h-11 border-b border-zinc-800/50 flex items-center justify-between px-4 bg-zinc-900/30 shrink-0">
+                    <div className="flex items-center gap-4 text-zinc-400">
+                        <div className="flex items-center gap-1">
+                            <button className="hover:text-white transition-all p-2 bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 rounded-lg active:scale-90" onClick={togglePlay}>
+                                {isPlaying ? <Pause size={14} className="text-purple-400" /> : <Play size={14} />}
+                            </button>
+                        </div>
+                        <span className="text-xs font-mono text-zinc-300 w-16">{formatTime(currentTime)}</span>
+                        
+                        {selectedSong && (
+                            <div className="flex items-center bg-zinc-950 border border-zinc-800/80 p-0.5 rounded-lg ml-2">
+                                <button
+                                    onClick={() => setAudioTrack('vocals')}
+                                    className={clsx(
+                                        "p-1.5 rounded transition-all",
+                                        audioTrack === 'vocals' ? "bg-purple-600 text-white shadow" : "text-zinc-500 hover:text-zinc-300"
+                                    )}
+                                    title="เสียงร้องเท่านั้น (Vocals)"
+                                >
+                                    <Mic size={14} />
+                                </button>
+                                <button
+                                    onClick={() => setAudioTrack('instrumental')}
+                                    className={clsx(
+                                        "p-1.5 rounded transition-all",
+                                        audioTrack === 'instrumental' ? "bg-purple-600 text-white shadow" : "text-zinc-500 hover:text-zinc-300"
+                                    )}
+                                    title="ดนตรีเปล่า (Backing)"
+                                >
+                                    <Music size={14} />
+                                </button>
+                                <button
+                                    onClick={() => setAudioTrack('original')}
+                                    className={clsx(
+                                        "p-1.5 rounded transition-all",
+                                        audioTrack === 'original' ? "bg-purple-600 text-white shadow" : "text-zinc-500 hover:text-zinc-300"
+                                    )}
+                                    title="รวมเสียง (Mix)"
+                                >
+                                    <Sparkles size={14} />
+                                </button>
+                            </div>
+                        )}
                     </div>
 
-                    {selectedSong && (
-                        <div className="flex items-center bg-zinc-950 border border-zinc-800/80 p-0.5 rounded-lg">
-                            <button
-                                onClick={() => setAudioTrack('vocals')}
-                                className={clsx(
-                                    "px-3 py-1 text-[11px] font-semibold rounded transition-all",
-                                    audioTrack === 'vocals' ? "bg-purple-600 text-white shadow" : "text-zinc-400 hover:text-zinc-200"
-                                )}
-                            >
-                                เสียงร้อง (Vocals)
-                            </button>
-                            <button
-                                onClick={() => setAudioTrack('instrumental')}
-                                className={clsx(
-                                    "px-3 py-1 text-[11px] font-semibold rounded transition-all",
-                                    audioTrack === 'instrumental' ? "bg-purple-600 text-white shadow" : "text-zinc-400 hover:text-zinc-200"
-                                )}
-                            >
-                                ดนตรี (Backing)
-                            </button>
-                            <button
-                                onClick={() => setAudioTrack('original')}
-                                className={clsx(
-                                    "px-3 py-1 text-[11px] font-semibold rounded transition-all",
-                                    audioTrack === 'original' ? "bg-purple-600 text-white shadow" : "text-zinc-400 hover:text-zinc-200"
-                                )}
-                            >
-                                รวมเสียง (Mix)
-                            </button>
-                        </div>
-                    )}
-
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2">
-                            <span className="text-xs text-zinc-500">ซูมคลื่นเสียง:</span>
-                            <input 
-                                type="range" 
-                                min="10" max="300" 
-                                value={zoom} 
-                                onChange={handleZoomChange}
-                                className="w-24 h-1 bg-zinc-700 rounded-lg appearance-none cursor-pointer"
-                            />
-                        </div>
+                    <div className="flex items-center gap-2">
+                        <button 
+                            onClick={() => handleZoomChange({ target: { value: String(Math.max(10, zoom - 15)) } } as any)}
+                            className="p-1.5 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-lg border border-zinc-800 bg-zinc-900 transition-colors"
+                        >
+                            <ZoomOut size={13} />
+                        </button>
+                        <input 
+                            type="range" 
+                            min="10" max="300" 
+                            value={zoom} 
+                            onChange={handleZoomChange}
+                            className="w-28 h-1 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                        />
+                        <button 
+                            onClick={() => handleZoomChange({ target: { value: String(Math.min(300, zoom + 15)) } } as any)}
+                            className="p-1.5 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-lg border border-zinc-800 bg-zinc-900 transition-colors"
+                        >
+                            <ZoomIn size={13} />
+                        </button>
                     </div>
                 </div>
 
-                {/* Wavesurfer Area */}
-                <div className="flex-1 relative bg-zinc-900 overflow-hidden p-2 flex flex-col justify-center">
-                    {!selectedSong && (
-                        <div className="absolute inset-0 flex items-center justify-center text-zinc-600 text-sm z-10">
-                            ไม่มีแทร็กเสียง
+                {/* Wavesurfer & Draggable Block Timeline Area */}
+                <div 
+                    ref={timelineRef}
+                    className="flex-1 overflow-x-auto overflow-y-hidden relative bg-zinc-900 custom-scrollbar select-none"
+                >
+                    {selectedSong ? (
+                        <div 
+                            style={{ width: `${Math.max(duration, 300) * zoom}px` }} 
+                            className="h-full relative select-none"
+                            onClick={(e) => {
+                                if (e.target === e.currentTarget && wavesurfer.current) {
+                                    const rect = e.currentTarget.getBoundingClientRect();
+                                    const clickX = e.clientX - rect.left;
+                                    const clickTime = clickX / zoom;
+                                    wavesurfer.current.setTime(clickTime);
+                                }
+                            }}
+                        >
+                            {/* Waveform Background (WaveSurfer) */}
+                            <div className="absolute inset-x-0 top-0 bottom-6 pointer-events-none opacity-40">
+                                <div ref={containerRef} className="w-full h-full" />
+                            </div>
+                            
+                            {/* Timescale markers */}
+                            {Array.from({ length: Math.ceil(duration || 300) }).map((_, sec) => {
+                                if (sec % 5 === 0) {
+                                    return (
+                                        <div 
+                                            key={sec} 
+                                            style={{ left: `${sec * zoom}px` }} 
+                                            className="absolute bottom-0 top-0 border-l border-zinc-800/40 text-[9px] font-mono text-zinc-500 pl-1 pt-1 flex flex-col justify-between"
+                                        >
+                                            <span>{formatTime(sec)}</span>
+                                            <span className="mb-6">|</span>
+                                        </div>
+                                    );
+                                }
+                                return null;
+                            })}
+
+                            {/* Red Playhead Line */}
+                            <div 
+                                style={{ left: `${currentTime * zoom}px` }} 
+                                className="absolute top-0 bottom-0 w-0.5 bg-rose-500 z-30 pointer-events-none shadow-lg"
+                            >
+                                <div className="w-2.5 h-2.5 bg-rose-500 rounded-full -ml-1 -mt-0.5 shadow-md shadow-rose-950/50" />
+                            </div>
+
+                            {/* Lyric Blocks (Absolute Positioned React Components) */}
+                            {lyrics.map((word, idx) => {
+                                const left = word.start * zoom;
+                                const width = (word.end - word.start) * zoom;
+                                const isDragging = draggingIdx === idx;
+                                
+                                return (
+                                    <div 
+                                        key={idx}
+                                        style={{ 
+                                            left: `${left}px`, 
+                                            width: `${width}px`,
+                                            top: '24px',
+                                            height: '42px',
+                                        }}
+                                        className={clsx(
+                                            "absolute rounded-lg border flex items-center justify-between px-2 text-xs font-bold transition-all shadow-md group",
+                                            isDragging 
+                                                ? "bg-purple-600/40 border-purple-500 z-40 scale-[0.98] shadow-purple-950/20" 
+                                                : "bg-zinc-850 hover:bg-zinc-800 border-zinc-700 text-zinc-300 z-20 hover:border-purple-500/50"
+                                        )}
+                                        onPointerDown={(e) => {
+                                            if ((e.target as HTMLElement).closest('.action-btn')) return;
+                                            
+                                            e.preventDefault();
+                                            setDraggingIdx(idx);
+                                            setDragAction('move');
+                                            setStartX(e.clientX);
+                                            setStartTime(word.start);
+                                            setStartEndTime(word.end);
+                                        }}
+                                    >
+                                        {/* Drag handle left */}
+                                        <div 
+                                            onPointerDown={(e) => {
+                                                e.stopPropagation();
+                                                e.preventDefault();
+                                                setDraggingIdx(idx);
+                                                setDragAction('resize-left');
+                                                setStartX(e.clientX);
+                                                setStartTime(word.start);
+                                                setStartEndTime(word.end);
+                                            }}
+                                            className="absolute left-0 top-0 bottom-0 w-1.5 cursor-ew-resize hover:bg-purple-500/50 rounded-l-lg transition-colors"
+                                        />
+
+                                        {/* Editable Word Input */}
+                                        <input 
+                                            value={word.word}
+                                            onChange={(e) => handleWordChange(idx, e.target.value)}
+                                            onBlur={handleWordBlur}
+                                            className="bg-transparent border-none text-xs font-bold text-zinc-100 outline-none w-full text-center px-1 truncate select-text cursor-text"
+                                        />
+
+                                        {/* Actions overlay inside block */}
+                                        <div className="absolute top-[-18px] right-0 flex gap-0.5 bg-zinc-950/95 border border-zinc-800/80 p-0.5 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-50">
+                                            {idx < lyrics.length - 1 && (
+                                                <button 
+                                                    onClick={() => handleMergeNext(idx)} 
+                                                    className="action-btn p-1 text-[10px] text-zinc-400 hover:text-purple-400 hover:bg-purple-400/10 rounded transition-colors"
+                                                    title="รวมคำถัดไป"
+                                                >
+                                                    <Link size={10} />
+                                                </button>
+                                            )}
+                                            <button 
+                                                onClick={() => handleDeleteWord(idx)} 
+                                                className="action-btn p-1 text-[10px] text-zinc-400 hover:text-rose-400 hover:bg-rose-400/10 rounded transition-colors"
+                                                title="ลบ"
+                                            >
+                                                <X size={10} />
+                                            </button>
+                                        </div>
+
+                                        {/* Drag handle right */}
+                                        <div 
+                                            onPointerDown={(e) => {
+                                                e.stopPropagation();
+                                                e.preventDefault();
+                                                setDraggingIdx(idx);
+                                                setDragAction('resize-right');
+                                                setStartX(e.clientX);
+                                                setStartTime(word.start);
+                                                setStartEndTime(word.end);
+                                            }}
+                                            className="absolute right-0 top-0 bottom-0 w-1.5 cursor-ew-resize hover:bg-purple-500/50 rounded-r-lg transition-colors"
+                                        />
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <div className="absolute inset-0 flex items-center justify-center text-zinc-600 text-xs font-semibold">
+                            กรุณาเลือกเพลงจากคลังเพื่อเริ่มต้นแก้ไข
                         </div>
                     )}
-                    <div ref={containerRef} className="w-full"></div>
                 </div>
             </div>
 

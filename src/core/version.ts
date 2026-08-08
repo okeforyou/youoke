@@ -1,7 +1,7 @@
-// 🛡️ v5.5.65: Admin Utility & Remote Polish
+// 🛡️ v5.5.267: Local AI Creator Studio Re-engineering
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.266";
+export const SYSTEM_VERSION = "5.5.267";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,18 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.267",
+        date: new Date().toISOString().split('T')[0],
+        changes: [
+            "feat(creator): Re-engineered Local AI Creator Studio timeline to support interactive draggable React block components.",
+            "feat(creator): Relocated audio track buttons (vocals, instrumental, mix) under unified icon symbols next to the Play/Pause button.",
+            "feat(creator): Integrated speech-to-text hybrid line grouping with split threshold (>1.5s or 8 words limit) for cleaner transcription layout.",
+            "feat(creator): Added Ripple Edit toggle ('ลากกลุ่ม') to shift subsequent blocks concurrently during timeline edits.",
+            "feat(creator): Added playhead auto-centering scroll centering during playback.",
+            "feat(creator): Simplified sidebar into a single Thai-labeled panel ('เครื่องมือแต่งเนื้อร้อง')."
+        ]
+    },
     {
         version: "5.5.266",
         date: new Date().toISOString().split('T')[0],
