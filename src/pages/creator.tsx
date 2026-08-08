@@ -94,6 +94,8 @@ export default function CreatorStudioPage() {
     const wsRegions = useRef<any>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
+    const [isRecording, setIsRecording] = useState(false);
+    const [recordingIndex, setRecordingIndex] = useState(0);
 
     useEffect(() => {
         fetchSongs();
@@ -162,16 +164,13 @@ export default function CreatorStudioPage() {
             if (containerRef.current) {
                 containerRef.current.innerHTML = ''; // Force clear container just in case
                 
-                // If audioTrack is instrumental, load backing track. Otherwise load vocal track.
-                const url = `${baseUrl}/files/${song.video_id}/${audioTrack === 'instrumental' ? 'no_vocals.m4a' : 'vocals.m4a'}`;
+                // WaveSurfer always visualizes and plays vocals stem
+                const url = `${baseUrl}/files/${song.video_id}/vocals.m4a`;
                 
-                // Load backing track in hidden audio tag if playing in 'original' (Mix) mode
-                if (audioTrack === 'original' && backingAudioRef.current) {
+                // Backing audio element always loads instrumental stem in the background
+                if (backingAudioRef.current) {
                     backingAudioRef.current.src = `${baseUrl}/files/${song.video_id}/no_vocals.m4a`;
                     backingAudioRef.current.load();
-                } else if (backingAudioRef.current) {
-                    backingAudioRef.current.pause();
-                    backingAudioRef.current.src = '';
                 }
 
                 const ws = WaveSurfer.create({
@@ -192,8 +191,19 @@ export default function CreatorStudioPage() {
                 
                 ws.on('play', () => {
                     setIsPlaying(true);
-                    if (audioTrack === 'original' && backingAudioRef.current) {
+                    if (backingAudioRef.current) {
                         backingAudioRef.current.currentTime = ws.getCurrentTime();
+                        // Set volumes based on current audioTrack state
+                        if (audioTrack === 'vocals') {
+                            ws.setVolume(1.0);
+                            backingAudioRef.current.volume = 0.0;
+                        } else if (audioTrack === 'instrumental') {
+                            ws.setVolume(0.0);
+                            backingAudioRef.current.volume = 1.0;
+                        } else {
+                            ws.setVolume(1.0);
+                            backingAudioRef.current.volume = 1.0;
+                        }
                         backingAudioRef.current.play().catch(e => console.error(e));
                     }
                 });
@@ -205,9 +215,9 @@ export default function CreatorStudioPage() {
                 });
                 ws.on('timeupdate', (time) => {
                     setCurrentTime(time);
-                    if (audioTrack === 'original' && backingAudioRef.current) {
+                    if (backingAudioRef.current) {
                         const drift = Math.abs(backingAudioRef.current.currentTime - time);
-                        if (drift > 0.05) {
+                        if (drift > 0.08) {
                             backingAudioRef.current.currentTime = time;
                         }
                     }
@@ -240,41 +250,19 @@ export default function CreatorStudioPage() {
         }, 100);
     };
 
+    // Adjust volumes instantly without reloading WaveSurfer when audioTrack changes
     useEffect(() => {
-        if (wavesurfer.current && selectedSong) {
-            const loadTrack = async () => {
-                const baseUrl = await getActiveBridgeBaseUrl();
-                if (!baseUrl) return;
-                
-                const url = `${baseUrl}/files/${selectedSong.video_id}/${audioTrack === 'instrumental' ? 'no_vocals.m4a' : 'vocals.m4a'}`;
-                
-                if (audioTrack === 'original' && backingAudioRef.current) {
-                    backingAudioRef.current.src = `${baseUrl}/files/${selectedSong.video_id}/no_vocals.m4a`;
-                    backingAudioRef.current.load();
-                } else if (backingAudioRef.current) {
-                    backingAudioRef.current.pause();
-                    backingAudioRef.current.src = '';
-                }
-                
-                // Save current time
-                const time = wavesurfer.current?.getCurrentTime() || 0;
-                const isPlayingNow = wavesurfer.current?.isPlaying() || false;
-                
-                await wavesurfer.current?.load(url);
-                
-                // Rebuild regions after load since loading new url clears them
-                rebuildRegions(lyrics);
-                
-                wavesurfer.current?.setTime(time);
-                if (isPlayingNow) {
-                    wavesurfer.current?.play();
-                    if (audioTrack === 'original' && backingAudioRef.current) {
-                        backingAudioRef.current.currentTime = time;
-                        backingAudioRef.current.play().catch(e => console.error(e));
-                    }
-                }
-            };
-            loadTrack();
+        if (wavesurfer.current) {
+            if (audioTrack === 'vocals') {
+                wavesurfer.current.setVolume(1.0);
+                if (backingAudioRef.current) backingAudioRef.current.volume = 0.0;
+            } else if (audioTrack === 'instrumental') {
+                wavesurfer.current.setVolume(0.0);
+                if (backingAudioRef.current) backingAudioRef.current.volume = 1.0;
+            } else { // original/mix
+                wavesurfer.current.setVolume(1.0);
+                if (backingAudioRef.current) backingAudioRef.current.volume = 1.0;
+            }
         }
     }, [audioTrack]);
 
@@ -456,6 +444,63 @@ export default function CreatorStudioPage() {
             window.removeEventListener('pointerup', handlePointerUp);
         };
     }, [draggingIdx, dragAction, startX, startTime, startEndTime, zoom, isRippleEdit, lyrics]);
+
+    // Tap-to-Sync Handlers (port from studio)
+    const handleTap = () => {
+        if (!isRecording) return;
+        if (recordingIndex >= lyrics.length) {
+            setIsRecording(false);
+            return;
+        }
+
+        const newLyrics = [...lyrics];
+        const oldTime = newLyrics[recordingIndex].start;
+        const oldEndTime = newLyrics[recordingIndex].end || (oldTime + 3);
+        const blockDuration = oldEndTime - oldTime;
+
+        newLyrics[recordingIndex] = {
+            ...newLyrics[recordingIndex],
+            start: currentTime,
+            end: currentTime + blockDuration
+        };
+
+        if (recordingIndex > 0) {
+            const prev = newLyrics[recordingIndex - 1];
+            if (prev.end && prev.end > currentTime) {
+                newLyrics[recordingIndex - 1].end = currentTime;
+            }
+        }
+
+        setLyrics(newLyrics);
+        rebuildRegions(newLyrics);
+        setRecordingIndex(prev => prev + 1);
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.code === 'Space' && isRecording) {
+            if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') {
+                return;
+            }
+            e.preventDefault();
+            handleTap();
+        }
+    };
+
+    useEffect(() => {
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isRecording, recordingIndex, currentTime, lyrics]);
+
+    const handleToggleRecording = () => {
+        const nextState = !isRecording;
+        setIsRecording(nextState);
+        if (nextState) {
+            setRecordingIndex(0);
+            if (!isPlaying && wavesurfer.current) {
+                wavesurfer.current.play();
+            }
+        }
+    };
 
     const handleAddBlockAtPlayhead = () => {
         if (!selectedSong) return;
@@ -899,50 +944,50 @@ export default function CreatorStudioPage() {
                                         isDraggingOverlay ? "border-purple-500/30 bg-purple-500/5 scale-105" : "hover:border-zinc-800 hover:bg-zinc-900/10"
                                     )}
                                 >
-                                    <div className="space-y-4 w-full flex flex-col items-center pointer-events-none">
+                                    <div className="space-y-4 w-full flex flex-col items-center pointer-events-none font-sans">
                                         {lyrics.length > 0 ? (
-                                            [0, 1].map(position => {
-                                                const baseIdx = Math.max(0, activeLineIndex);
-                                                let lineIdx = position === 0 
-                                                    ? (baseIdx % 2 === 0 ? baseIdx : baseIdx + 1)
-                                                    : (baseIdx % 2 === 1 ? baseIdx : baseIdx + 1);
-
-                                                if (lineIdx >= lyricLines.length) {
-                                                    return <p key={`empty-${position}`} style={{ fontSize: `${fontSize}px`, opacity: 0 }}>&nbsp;</p>;
-                                                }
-
-                                                const line = lyricLines[lineIdx];
-                                                const isActive = lineIdx === activeLineIndex;
-                                                
+                                            (() => {
+                                                const activeLineIdx = activeLineIndex;
+                                                const currentLine = activeLineIdx !== -1 ? lyricLines[activeLineIdx] : null;
+                                                let nextLineIdx = activeLineIdx !== -1 ? activeLineIdx + 1
+                                                    : lyricLines.findIndex(line => line[0].start > currentTime);
+                                                const nextLine = nextLineIdx !== -1 && nextLineIdx < lyricLines.length ? lyricLines[nextLineIdx] : null;
                                                 return (
-                                                    <p key={lineIdx} 
-                                                        style={{ 
-                                                            fontSize: `${fontSize}px`, 
-                                                            fontFamily: fontFamily,
-                                                            WebkitTextStroke: `${fontOutline}px black`,
-                                                        }}
-                                                        className={clsx(
-                                                        "font-black text-white drop-shadow-[0_4px_4px_rgba(0,0,0,1)] leading-relaxed transition-all duration-300",
-                                                        isActive ? "opacity-100 scale-100" : "opacity-60 scale-95"
-                                                    )}>
-                                                        {line.map((l, i) => {
-                                                            const isPast = currentTime > l.end;
-                                                            const isCurrent = currentTime >= l.start && currentTime <= l.end;
-                                                            return (
-                                                                <span 
-                                                                    key={i} 
-                                                                    className={clsx(
-                                                                        "transition-colors duration-100 mx-1",
-                                                                        isPast ? "text-purple-400" : isCurrent ? "text-pink-400" : "text-white"
-                                                                    )}
-                                                                >
-                                                                    {l.word}
-                                                                </span>
-                                                            )
-                                                        })}
-                                                    </p>
-                                                )
-                                            })
+                                                    <div className="space-y-4 flex flex-col items-center">
+                                                        {/* Current Active Line */}
+                                                        <p
+                                                            style={{ fontSize: `${fontSize}px`, fontFamily: fontFamily, WebkitTextStroke: `${fontOutline}px black` }}
+                                                            className={clsx(
+                                                                "font-black text-white drop-shadow-[0_4px_4px_rgba(0,0,0,1)] leading-normal transition-all duration-300 text-center min-h-[1.5em]",
+                                                                currentLine ? "opacity-100 scale-100" : "opacity-0"
+                                                            )}
+                                                        >
+                                                            {currentLine ? currentLine.map((l, i) => {
+                                                                const isPast = currentTime > l.end;
+                                                                const isCurrent2 = currentTime >= l.start && currentTime <= l.end;
+                                                                return (
+                                                                    <span key={i} className={clsx(
+                                                                        "transition-colors duration-100 mx-1 inline-block",
+                                                                        isPast ? "text-purple-400" : isCurrent2 ? "text-pink-400" : "text-white"
+                                                                    )}>{l.word}</span>
+                                                                );
+                                                            }) : <span>&nbsp;</span>}
+                                                        </p>
+                                                        {/* Next Upcoming Line (Faded) */}
+                                                        <p
+                                                            style={{ fontSize: `${fontSize * 0.8}px`, fontFamily: fontFamily, WebkitTextStroke: `${fontOutline * 0.8}px black` }}
+                                                            className={clsx(
+                                                                "font-black text-zinc-300 drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] leading-normal transition-all duration-300 text-center min-h-[1.5em]",
+                                                                nextLine ? "opacity-40 scale-95" : "opacity-0"
+                                                            )}
+                                                        >
+                                                            {nextLine ? nextLine.map((l, i) => (
+                                                                <span key={i} className="mx-1 inline-block">{l.word}</span>
+                                                            )) : <span>&nbsp;</span>}
+                                                        </p>
+                                                    </div>
+                                                );
+                                            })()
                                         ) : (
                                             <span className="text-zinc-600 text-3xl font-bold">ไม่มีเนื้อเพลง (นำเข้า/วางเนื้อร้องด้านขวา)</span>
                                         )}
@@ -967,6 +1012,28 @@ export default function CreatorStudioPage() {
                                         เพิ่มบรรทัด
                                     </button>
                                     
+                                    {/* Tap-to-Sync Controls */}
+                                    <button
+                                        onClick={handleToggleRecording}
+                                        disabled={!selectedSong || lyrics.length === 0}
+                                        className={clsx(
+                                            "px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 shadow",
+                                            isRecording ? "bg-red-600 hover:bg-red-500 text-white animate-pulse" : "bg-zinc-700 hover:bg-zinc-600 text-zinc-200 disabled:opacity-50"
+                                        )}
+                                        title="เริ่ม/หยุด Tap-to-Sync (กด Spacebar เพื่อซิงค์เนื้อร้อง)"
+                                    >
+                                        {isRecording ? '⏹ หยุด Sync' : '🎯 Tap-to-Sync'}
+                                    </button>
+                                    {isRecording && (
+                                        <button
+                                            onClick={handleTap}
+                                            className="px-4 py-2 rounded-lg bg-pink-600 hover:bg-pink-500 text-white text-xs font-black transition-all active:scale-95 shadow"
+                                            title={`กด Tap! หรือ Spacebar เพื่อซิงค์บรรทัดที่ ${recordingIndex + 1}/${lyrics.length}`}
+                                        >
+                                            🎵 Tap! ({recordingIndex + 1}/{lyrics.length})
+                                        </button>
+                                    )}
+
                                     <button 
                                         onClick={() => setIsRippleEdit(!isRippleEdit)}
                                         className={clsx(

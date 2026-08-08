@@ -1,7 +1,7 @@
-// 🛡️ v5.5.268: Creator Studio Layout & Block Style Polish
+// 🛡️ v5.5.269: Creator - Dual-Stem Audio, Tap-to-Sync & Lyrics Overlay Fix
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.268";
+export const SYSTEM_VERSION = "5.5.269";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.269",
+        date: new Date().toISOString().split('T')[0],
+        changes: [
+            "feat(creator): Refactored audio engine to dual-stem architecture — WaveSurfer always plays vocals.m4a while a hidden <audio> element handles no_vocals.m4a in sync.",
+            "feat(creator): Replaced audioTrack reload (which caused pause/reset) with instant volume crossfading — switching tracks is now seamless without interrupting playback.",
+            "fix(creator): Fixed lyrics canvas overlay jiggling by replacing the alternating [0,1].map layout with a stable active-line + faded-next-line two-row layout.",
+            "feat(creator): Added Tap-to-Sync mode — press the toolbar button or Spacebar during playback to stamp each lyric block's start time in real-time."
+        ]
+    },
     {
         version: "5.5.268",
         date: new Date().toISOString().split('T')[0],
