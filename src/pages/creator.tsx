@@ -313,10 +313,10 @@ export default function CreatorStudioPage() {
                     id: `lyric-${i}`,
                     start: word.start,
                     end: word.end,
-                    content: word.word,
-                    color: 'rgba(168, 85, 247, 0.3)',
-                    drag: true,
-                    resize: true
+                    // No content label — React draggable blocks render the text instead
+                    color: 'rgba(0, 0, 0, 0)', // Transparent: WS regions used only for sync data, not display
+                    drag: false,
+                    resize: false
                 });
             });
         }
