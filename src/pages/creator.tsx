@@ -5,7 +5,7 @@ import { getActiveBridgeBaseUrl, useAIVocalStore } from '../stores/useAIVocalSto
 import { 
     Mic, Play, Pause, Save, Download, Video, Music, 
     ArrowLeft, Settings, Maximize, Type, UploadCloud, FileAudio,
-    Sparkles, FileText, Plus, X, ZoomIn, ZoomOut, Link, RefreshCw
+    Sparkles, FileText, Plus, X, ZoomIn, ZoomOut, Link, RefreshCw, GripVertical
 } from 'lucide-react';
 import WaveSurfer from 'wavesurfer.js';
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js';
@@ -862,7 +862,7 @@ export default function CreatorStudioPage() {
                             </div>
                         </div>
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center relative p-8 select-none">
+                        <div className="w-full h-full flex flex-col items-center justify-center relative p-8 select-none">
                             {/* Fake Video Canvas Area */}
                             <div ref={videoContainerRef} className="aspect-video w-full max-w-4xl bg-zinc-900 rounded-lg shadow-2xl border border-zinc-800 relative flex flex-col items-center justify-center overflow-hidden">
                                 <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 to-black/40 pointer-events-none" />
@@ -1252,11 +1252,13 @@ export default function CreatorStudioPage() {
                                 <div className="w-2.5 h-2.5 bg-rose-500 rounded-full -ml-1 -mt-0.5 shadow-md shadow-rose-950/50" />
                             </div>
 
-                            {/* Lyric Blocks (Absolute Positioned React Components) */}
+                            {/* Lyric Blocks (Absolute Positioned React Components - Studio Style) */}
                             {lyrics.map((word, idx) => {
                                 const left = word.start * zoom;
-                                const width = (word.end - word.start) * zoom;
+                                const width = Math.max((word.end - word.start) * zoom, 40); // Min width 40px to prevent zero-width clipping
                                 const isDragging = draggingIdx === idx;
+                                const isActive = idx === activeLineIndex;
+                                const isDone = currentTime > word.end;
                                 
                                 return (
                                     <div 
@@ -1264,14 +1266,18 @@ export default function CreatorStudioPage() {
                                         style={{ 
                                             left: `${left}px`, 
                                             width: `${width}px`,
-                                            top: '24px',
-                                            height: '42px',
+                                            top: '20px',
+                                            height: '64px',
+                                            cursor: draggingIdx === idx && dragAction === 'move' ? 'grabbing' : 'default',
+                                            zIndex: draggingIdx === idx ? 50 : (isActive ? 30 : 20)
                                         }}
                                         className={clsx(
-                                            "absolute rounded-lg border flex items-center justify-between px-2 text-xs font-bold transition-all shadow-md group",
-                                            isDragging 
-                                                ? "bg-purple-600/40 border-purple-500 z-40 scale-[0.98] shadow-purple-950/20" 
-                                                : "bg-zinc-850 hover:bg-zinc-800 border-zinc-700 text-zinc-300 z-20 hover:border-purple-500/50"
+                                            "absolute rounded-lg border flex overflow-hidden transition-all shadow-md group select-none",
+                                            isActive 
+                                                ? "bg-purple-600/40 border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.3)] text-white" 
+                                                : isDone
+                                                    ? "bg-zinc-850 border-zinc-700/50 text-zinc-400"
+                                                    : "bg-zinc-800/80 border-white/10 hover:border-white/30 text-white"
                                         )}
                                         onPointerDown={(e) => {
                                             if ((e.target as HTMLElement).closest('.action-btn')) return;
@@ -1284,7 +1290,7 @@ export default function CreatorStudioPage() {
                                             setStartEndTime(word.end);
                                         }}
                                     >
-                                        {/* Drag handle left */}
+                                        {/* Left Drag Handle (Move Block) */}
                                         <div 
                                             onPointerDown={(e) => {
                                                 e.stopPropagation();
@@ -1295,38 +1301,33 @@ export default function CreatorStudioPage() {
                                                 setStartTime(word.start);
                                                 setStartEndTime(word.end);
                                             }}
-                                            className="absolute left-0 top-0 bottom-0 w-1.5 cursor-ew-resize hover:bg-purple-500/50 rounded-l-lg transition-colors"
-                                        />
+                                            className="w-4 h-full bg-black/30 hover:bg-black/50 cursor-ew-resize flex items-center justify-center border-r border-black/20 shrink-0 opacity-60 hover:opacity-100 transition-opacity"
+                                        >
+                                            <GripVertical size={12} className="text-zinc-400" />
+                                        </div>
 
                                         {/* Editable Word Input */}
                                         <input 
                                             value={word.word}
                                             onChange={(e) => handleWordChange(idx, e.target.value)}
                                             onBlur={handleWordBlur}
-                                            className="bg-transparent border-none text-xs font-bold text-zinc-100 outline-none w-full text-center px-1 truncate select-text cursor-text"
+                                            onPointerDown={(e) => e.stopPropagation()} // Prevent dragging timeline when editing text
+                                            className="bg-transparent border-none text-sm font-semibold text-zinc-100 outline-none w-full text-center px-2 select-text cursor-text"
                                         />
 
-                                        {/* Actions overlay inside block */}
-                                        <div className="absolute top-[-18px] right-0 flex gap-0.5 bg-zinc-950/95 border border-zinc-800/80 p-0.5 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-50">
-                                            {idx < lyrics.length - 1 && (
-                                                <button 
-                                                    onClick={() => handleMergeNext(idx)} 
-                                                    className="action-btn p-1 text-[10px] text-zinc-400 hover:text-purple-400 hover:bg-purple-400/10 rounded transition-colors"
-                                                    title="รวมคำถัดไป"
-                                                >
-                                                    <Link size={10} />
-                                                </button>
-                                            )}
-                                            <button 
-                                                onClick={() => handleDeleteWord(idx)} 
-                                                className="action-btn p-1 text-[10px] text-zinc-400 hover:text-rose-400 hover:bg-rose-400/10 rounded transition-colors"
-                                                title="ลบ"
-                                            >
-                                                <X size={10} />
-                                            </button>
-                                        </div>
+                                        {/* Delete Button (appears on hover) */}
+                                        <button
+                                            className="action-btn absolute -top-1 -right-1 bg-rose-500 hover:bg-rose-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-50 shadow-md"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                e.preventDefault();
+                                                handleDeleteWord(idx);
+                                            }}
+                                        >
+                                            <X size={10} />
+                                        </button>
 
-                                        {/* Drag handle right */}
+                                        {/* Right Drag Handle (Resize Duration) */}
                                         <div 
                                             onPointerDown={(e) => {
                                                 e.stopPropagation();
@@ -1337,8 +1338,10 @@ export default function CreatorStudioPage() {
                                                 setStartTime(word.start);
                                                 setStartEndTime(word.end);
                                             }}
-                                            className="absolute right-0 top-0 bottom-0 w-1.5 cursor-ew-resize hover:bg-purple-500/50 rounded-r-lg transition-colors"
-                                        />
+                                            className="w-4 h-full bg-white/5 hover:bg-white/20 cursor-ew-resize flex items-center justify-center border-l border-white/10 shrink-0 opacity-60 hover:opacity-100 transition-opacity"
+                                        >
+                                            <div className="w-0.5 h-4 bg-zinc-400 rounded-sm"></div>
+                                        </div>
                                     </div>
                                 );
                             })}

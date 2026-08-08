@@ -1,7 +1,7 @@
-// 🛡️ v5.5.267: Local AI Creator Studio Re-engineering
+// 🛡️ v5.5.268: Creator Studio Layout & Block Style Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.267";
+export const SYSTEM_VERSION = "5.5.268";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.268",
+        date: new Date().toISOString().split('T')[0],
+        changes: [
+            "fix(creator): Changed parent preview wrapper layout direction to flex-col to resolve video aspect-ratio squeezing and vertical lyrics wrapping.",
+            "feat(creator): Styled timeline blocks exactly like the studio page (added GripVertical handle, h-16 height, hover delete button, and resize indicators)."
+        ]
+    },
     {
         version: "5.5.267",
         date: new Date().toISOString().split('T')[0],
