@@ -12,6 +12,9 @@ import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js';
 import { clsx } from 'clsx';
 import { useUIStore } from '@/stores/useUIStore';
 import { useToast } from "@/context/ToastContext";
+import { useAuthStore } from '@/modules/auth/useAuthStore';
+import { useWikiLyricsStore } from '@/modules/player/stores/useWikiLyricsStore';
+import { useLyricsStore } from '@/modules/player/stores/useLyricsStore';
 
 interface CachedSong {
     video_id: string;
@@ -32,6 +35,7 @@ export default function CreatorStudioPage() {
     const { addToast } = useToast() || { addToast: (msg: string) => window.alert(msg) };
     const router = useRouter();
     const { deepgramKey } = useAIVocalStore();
+    const { user } = useAuthStore();
     
     // States
     const [songs, setSongs] = useState<CachedSong[]>([]);
@@ -41,6 +45,13 @@ export default function CreatorStudioPage() {
     const [error, setError] = useState('');
     const [showLibraryModal, setShowLibraryModal] = useState(false);
     const [ytUrl, setYtUrl] = useState('');
+    const [rawText, setRawText] = useState('');
+    const [showPasteModal, setShowPasteModal] = useState(false);
+    const [lyricPos, setLyricPos] = useState({ x: 50, y: 85 });
+    const [isDraggingOverlay, setIsDraggingOverlay] = useState(false);
+    const overlayDragRef = useRef({ startX: 0, startY: 0, startPosX: 0, startPosY: 0 });
+    const videoContainerRef = useRef<HTMLDivElement>(null);
+    const backingAudioRef = useRef<HTMLAudioElement | null>(null);
 
     const extractYoutubeVideoId = (url: string) => {
         if (!url) return '';
@@ -139,6 +150,19 @@ export default function CreatorStudioPage() {
         setTimeout(() => {
             if (containerRef.current) {
                 containerRef.current.innerHTML = ''; // Force clear container just in case
+                
+                // If audioTrack is instrumental, load backing track. Otherwise load vocal track.
+                const url = `${baseUrl}/files/${song.video_id}/${audioTrack === 'instrumental' ? 'no_vocals.m4a' : 'vocals.m4a'}`;
+                
+                // Load backing track in hidden audio tag if playing in 'original' (Mix) mode
+                if (audioTrack === 'original' && backingAudioRef.current) {
+                    backingAudioRef.current.src = `${baseUrl}/files/${song.video_id}/no_vocals.m4a`;
+                    backingAudioRef.current.load();
+                } else if (backingAudioRef.current) {
+                    backingAudioRef.current.pause();
+                    backingAudioRef.current.src = '';
+                }
+
                 const ws = WaveSurfer.create({
                     container: containerRef.current,
                     waveColor: '#6366f1', // Indigo
@@ -148,16 +172,35 @@ export default function CreatorStudioPage() {
                     barGap: 2,
                     barRadius: 2,
                     height: 100,
-                    url: `${baseUrl}/files/${song.video_id}/${audioTrack === 'vocals' ? 'vocals.m4a' : audioTrack === 'instrumental' ? 'no_vocals.m4a' : 'original.audio'}`,
+                    url,
                     normalize: true,
                     minPxPerSec: 50,
                 });
                 
                 const wsReg = ws.registerPlugin(RegionsPlugin.create());
                 
-                ws.on('play', () => setIsPlaying(true));
-                ws.on('pause', () => setIsPlaying(false));
-                ws.on('timeupdate', (time) => setCurrentTime(time));
+                ws.on('play', () => {
+                    setIsPlaying(true);
+                    if (audioTrack === 'original' && backingAudioRef.current) {
+                        backingAudioRef.current.currentTime = ws.getCurrentTime();
+                        backingAudioRef.current.play().catch(e => console.error(e));
+                    }
+                });
+                ws.on('pause', () => {
+                    setIsPlaying(false);
+                    if (backingAudioRef.current) {
+                        backingAudioRef.current.pause();
+                    }
+                });
+                ws.on('timeupdate', (time) => {
+                    setCurrentTime(time);
+                    if (audioTrack === 'original' && backingAudioRef.current) {
+                        const drift = Math.abs(backingAudioRef.current.currentTime - time);
+                        if (drift > 0.05) {
+                            backingAudioRef.current.currentTime = time;
+                        }
+                    }
+                });
                 ws.on('error', (err: any) => {
                     console.error("WaveSurfer error:", err);
                     setError("ไม่สามารถโหลดไฟล์เสียงได้: " + (err.message || err));
@@ -188,7 +231,16 @@ export default function CreatorStudioPage() {
             const loadTrack = async () => {
                 const baseUrl = await getActiveBridgeBaseUrl();
                 if (!baseUrl) return;
-                const url = `${baseUrl}/files/${selectedSong.video_id}/${audioTrack === 'vocals' ? 'vocals.m4a' : audioTrack === 'instrumental' ? 'no_vocals.m4a' : 'original.audio'}`;
+                
+                const url = `${baseUrl}/files/${selectedSong.video_id}/${audioTrack === 'instrumental' ? 'no_vocals.m4a' : 'vocals.m4a'}`;
+                
+                if (audioTrack === 'original' && backingAudioRef.current) {
+                    backingAudioRef.current.src = `${baseUrl}/files/${selectedSong.video_id}/no_vocals.m4a`;
+                    backingAudioRef.current.load();
+                } else if (backingAudioRef.current) {
+                    backingAudioRef.current.pause();
+                    backingAudioRef.current.src = '';
+                }
                 
                 // Save current time
                 const time = wavesurfer.current?.getCurrentTime() || 0;
@@ -202,11 +254,47 @@ export default function CreatorStudioPage() {
                 wavesurfer.current?.setTime(time);
                 if (isPlayingNow) {
                     wavesurfer.current?.play();
+                    if (audioTrack === 'original' && backingAudioRef.current) {
+                        backingAudioRef.current.currentTime = time;
+                        backingAudioRef.current.play().catch(e => console.error(e));
+                    }
                 }
             };
             loadTrack();
         }
     }, [audioTrack]);
+
+    // Drag position event listener for preview lyrics
+    useEffect(() => {
+        const handleMove = (e: PointerEvent) => {
+            if (!isDraggingOverlay || !videoContainerRef.current) return;
+            const rect = videoContainerRef.current.getBoundingClientRect();
+            const pointerPctX = ((e.clientX - rect.left) / rect.width) * 100;
+            const pointerPctY = ((e.clientY - rect.top) / rect.height) * 100;
+            
+            const targetX = pointerPctX - overlayDragRef.current.startX;
+            const targetY = pointerPctY - overlayDragRef.current.startY;
+            
+            setLyricPos({
+                x: Math.max(5, Math.min(95, targetX)),
+                y: Math.max(5, Math.min(95, targetY))
+            });
+        };
+        
+        const handleUp = () => {
+            setIsDraggingOverlay(false);
+        };
+
+        if (isDraggingOverlay) {
+            window.addEventListener('pointermove', handleMove);
+            window.addEventListener('pointerup', handleUp);
+        }
+
+        return () => {
+            window.removeEventListener('pointermove', handleMove);
+            window.removeEventListener('pointerup', handleUp);
+        };
+    }, [isDraggingOverlay]);
 
     // Auto-save lyrics to localStorage when they change
     useEffect(() => {
@@ -358,6 +446,101 @@ export default function CreatorStudioPage() {
         }
     };
 
+    const handleImportFromWiki = async () => {
+        if (!selectedSong) return;
+        try {
+            const songTitle = selectedSong.title || "Unknown Title";
+            await useLyricsStore.getState().fetchLyrics(selectedSong.video_id, songTitle);
+            const cloudLyrics = useLyricsStore.getState().lyrics;
+            
+            if (!cloudLyrics || cloudLyrics.length === 0) {
+                addToast("ไม่พบเนื้อเพลงของวิดีโอนี้บนคลาวด์/Wiki");
+                return;
+            }
+            
+            const converted = cloudLyrics.map((line, i) => {
+                const duration = line.endTime ? (line.endTime - line.time) : 3.0;
+                return {
+                    word: line.text,
+                    start: line.time,
+                    end: line.endTime || (line.time + duration),
+                    confidence: 1.0
+                };
+            });
+            
+            setLyrics(converted);
+            rebuildRegions(converted);
+            addToast("นำเข้าเนื้อเพลงจากคลาวด์สำเร็จ!");
+        } catch (err: any) {
+            addToast("ไม่สามารถนำเข้าข้อมูลได้: " + err.message);
+        }
+    };
+
+    const handleSaveToWiki = async () => {
+        if (!selectedSong) return;
+        if (!user) {
+            useUIStore.getState().showConfirm({
+                title: "เข้าสู่ระบบ",
+                message: "คุณต้องเข้าสู่ระบบก่อนจึงจะสามารถบันทึกเนื้อเพลงลงใน Wiki ได้",
+                type: "warning",
+                confirmText: "ตกลง",
+                cancelText: "none",
+                onConfirm: () => {}
+            });
+            return;
+        }
+
+        let lrcContent = "";
+        for (let i = 0; i < lyrics.length; i++) {
+            const line = lyrics[i];
+            const min = Math.floor(line.start / 60).toString().padStart(2, '0');
+            const sec = (line.start % 60).toFixed(2).padStart(5, '0');
+            lrcContent += `[${min}:${sec}]${line.word}\n`;
+            
+            if (line.end) {
+                const nextTime = lyrics[i+1]?.start || Infinity;
+                if (line.end < nextTime - 0.1) {
+                    const endMin = Math.floor(line.end / 60).toString().padStart(2, '0');
+                    const endSec = (line.end % 60).toFixed(2).padStart(5, '0');
+                    lrcContent += `[${endMin}:${endSec}] \n`;
+                }
+            }
+        }
+
+        try {
+            await useWikiLyricsStore.getState().saveSync({
+                videoId: selectedSong.video_id,
+                authorId: user.uid,
+                authorName: user.displayName || 'Anonymous',
+                lrcContent,
+                globalOffset: 0
+            });
+            addToast("บันทึกเนื้อเพลงลงคลาวด์ (Wiki) สำเร็จแล้ว!");
+        } catch (err: any) {
+            addToast("บันทึกไม่สำเร็จ: " + err.message);
+        }
+    };
+
+    const handlePasteSubmit = () => {
+        if (!rawText.trim()) return;
+        const lines = rawText.split('\n')
+            .map(line => line.trim())
+            .filter(line => line.length > 0);
+            
+        const parsed = lines.map((line, i) => ({
+            word: line,
+            start: i * 4,
+            end: i * 4 + 3.5,
+            confidence: 1.0
+        }));
+        
+        setLyrics(parsed);
+        setTimeout(() => rebuildRegions(parsed), 50);
+        setShowPasteModal(false);
+        setRawText('');
+        addToast(`นำเข้าเนื้อเพลงดิบ ${lines.length} บรรทัดสำเร็จ! กรุณาลากปรับจังหวะกล่องข้อความบนคลื่นเสียง`);
+    };
+
     const handleExport = async () => {
         addToast("Exporting MP4 (FFmpeg process will run on Local Bridge) - Coming in next step!");
     };
@@ -370,9 +553,26 @@ export default function CreatorStudioPage() {
     };
 
 
+    // Check if the loaded lyrics are line-by-line or word-by-word
+    const isLineMode = React.useMemo(() => {
+        if (lyrics.length === 0) return false;
+        let spaceCount = 0;
+        let totalLen = 0;
+        const sample = lyrics.slice(0, 10);
+        sample.forEach(l => {
+            if (l.word.includes(' ')) spaceCount++;
+            totalLen += l.word.length;
+        });
+        return (totalLen / sample.length > 8) || (spaceCount > 1);
+    }, [lyrics]);
+
     // Group words into lines
     const lyricLines = React.useMemo(() => {
         if (lyrics.length === 0) return [];
+        if (isLineMode) {
+            return lyrics.map(l => [l]);
+        }
+        
         const lines = [];
         let currentLine = [];
         let lastEnd = 0;
@@ -386,7 +586,7 @@ export default function CreatorStudioPage() {
         }
         if (currentLine.length > 0) lines.push(currentLine);
         return lines;
-    }, [lyrics]);
+    }, [lyrics, isLineMode]);
 
     const activeLineIndex = React.useMemo(() => {
         if (lyricLines.length === 0) return -1;
@@ -521,14 +721,44 @@ export default function CreatorStudioPage() {
                             </div>
                         </div>
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center relative p-8">
+                        <div className="w-full h-full flex items-center justify-center relative p-8 select-none">
                             {/* Fake Video Canvas Area */}
-                            <div className="aspect-video w-full max-w-4xl bg-zinc-900 rounded-lg shadow-2xl border border-zinc-800 relative flex flex-col items-center justify-center overflow-hidden">
+                            <div ref={videoContainerRef} className="aspect-video w-full max-w-4xl bg-zinc-900 rounded-lg shadow-2xl border border-zinc-800 relative flex flex-col items-center justify-center overflow-hidden">
                                 <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 to-black/40 pointer-events-none" />
                                 
                                 {/* Lyrics Preview */}
-                                <div className="z-10 text-center px-12 pb-16 w-full absolute bottom-0 flex flex-col items-center justify-end pointer-events-none">
-                                    <div className="space-y-4 w-full flex flex-col items-center">
+                                <div 
+                                    style={{
+                                        left: `${lyricPos.x}%`,
+                                        top: `${lyricPos.y}%`,
+                                        transform: 'translate(-50%, -50%)',
+                                        cursor: isDraggingOverlay ? 'grabbing' : 'grab',
+                                        touchAction: 'none'
+                                    }}
+                                    onPointerDown={(e) => {
+                                        e.preventDefault();
+                                        setIsDraggingOverlay(true);
+                                        const containerRect = videoContainerRef.current?.getBoundingClientRect();
+                                        const elementRect = e.currentTarget.getBoundingClientRect();
+                                        if (containerRect) {
+                                            const elCenterX = elementRect.left + elementRect.width / 2;
+                                            const elCenterY = elementRect.top + elementRect.height / 2;
+                                            const offsetX = ((e.clientX - elCenterX) / containerRect.width) * 100;
+                                            const offsetY = ((e.clientY - elCenterY) / containerRect.height) * 100;
+                                            overlayDragRef.current = {
+                                                startX: offsetX,
+                                                startY: offsetY,
+                                                startPosX: 0,
+                                                startPosY: 0
+                                            };
+                                        }
+                                    }}
+                                    className={clsx(
+                                        "z-10 text-center px-12 py-4 absolute w-max max-w-[90%] flex flex-col items-center select-none rounded-xl border border-transparent transition-all",
+                                        isDraggingOverlay ? "border-purple-500/30 bg-purple-500/5 scale-105" : "hover:border-zinc-800 hover:bg-zinc-900/10"
+                                    )}
+                                >
+                                    <div className="space-y-4 w-full flex flex-col items-center pointer-events-none">
                                         {lyrics.length > 0 ? (
                                             [0, 1].map(position => {
                                                 const baseIdx = Math.max(0, activeLineIndex);
@@ -573,13 +803,13 @@ export default function CreatorStudioPage() {
                                                 )
                                             })
                                         ) : (
-                                            <span className="text-zinc-600 text-3xl font-bold">ไม่มีเนื้อเพลง (กดสร้างเนื้อเพลงด้านขวา)</span>
+                                            <span className="text-zinc-600 text-3xl font-bold">ไม่มีเนื้อเพลง (นำเข้า/วางเนื้อร้องด้านขวา)</span>
                                         )}
                                     </div>
                                 </div>
 
-                                <div className="absolute top-4 left-4 text-xs font-mono text-zinc-500">
-                                    Canvas 1920x1080
+                                <div className="absolute top-4 left-4 text-xs font-mono text-zinc-500 pointer-events-none">
+                                    Canvas 1920x1080 (ลากข้อความเพื่อย้ายตำแหน่งได้)
                                 </div>
                             </div>
                         </div>
@@ -652,49 +882,47 @@ export default function CreatorStudioPage() {
                         
                         <div className="space-y-4">
                             <div>
-                                <label className="text-xs text-zinc-400 mb-1 block">เพลงที่เลือก</label>
-                                <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-3 text-sm truncate flex items-center justify-between cursor-pointer hover:border-zinc-700" onClick={() => setShowLibraryModal(true)}>
-                                    <span className="truncate text-zinc-300">{selectedSong ? selectedSong.title : 'None'}</span>
-                                    <FileAudio size={14} className="text-zinc-500 shrink-0" />
-                                </div>
-                            </div>
-
-                            {selectedSong && (
-                                <div>
-                                    <label className="text-xs text-zinc-400 mb-1 block">แทร็กเสียงที่ใช้แก้ไข</label>
-                                    <div className="flex gap-1 bg-zinc-900 p-1 rounded-lg border border-zinc-800">
-                                        <button
-                                            onClick={() => setAudioTrack('vocals')}
-                                            className={clsx(
-                                                "flex-1 py-1.5 text-xs font-medium rounded transition-colors",
-                                                audioTrack === 'vocals' ? "bg-purple-600 text-white" : "text-zinc-400 hover:text-zinc-200"
-                                            )}
+                                <label className="text-xs text-zinc-400 mb-1 block font-bold uppercase tracking-wider text-zinc-500">เครื่องมือเนื้อเพลง</label>
+                                <div className="space-y-2">
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <button 
+                                            onClick={handleImportFromWiki}
+                                            disabled={!selectedSong}
+                                            className="bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 disabled:opacity-50 text-zinc-300 text-xs py-2 px-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-1.5"
+                                            title="ดึงเนื้อร้องที่บันทึกไว้ในคลาวด์/Wiki"
                                         >
-                                            เสียงร้อง (Vocals)
+                                            <UploadCloud size={13} className="text-blue-400 shrink-0" />
+                                            นำเข้าจาก Wiki
                                         </button>
-                                        <button
-                                            onClick={() => setAudioTrack('instrumental')}
-                                            className={clsx(
-                                                "flex-1 py-1.5 text-xs font-medium rounded transition-colors",
-                                                audioTrack === 'instrumental' ? "bg-purple-600 text-white" : "text-zinc-400 hover:text-zinc-200"
-                                            )}
+                                        <button 
+                                            onClick={() => setShowPasteModal(true)}
+                                            disabled={!selectedSong}
+                                            className="bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 disabled:opacity-50 text-zinc-300 text-xs py-2 px-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-1.5"
+                                            title="วางเนื้อร้องดิบเพื่อซิงค์เอง"
                                         >
-                                            ดนตรี (Backing)
+                                            <FileText size={13} className="text-green-400 shrink-0" />
+                                            วางเนื้อร้องดิบ
                                         </button>
                                     </div>
+                                    <button 
+                                        onClick={handleTranscribe}
+                                        disabled={isTranscribing || !selectedSong}
+                                        className="w-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed text-zinc-200 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        {isTranscribing ? <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-zinc-400"></div> : <Mic size={16} className="text-purple-400" />}
+                                        {isTranscribing ? 'แกะเนื้อด้วย AI (Deepgram)...' : 'ถอดเสียงร้องด้วย AI'}
+                                    </button>
+                                    {lyrics.length > 0 && (
+                                        <button 
+                                            onClick={handleSaveToWiki}
+                                            disabled={!selectedSong}
+                                            className="w-full bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/40 text-purple-200 text-xs py-2.5 px-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-1.5"
+                                        >
+                                            <Save size={13} className="text-purple-400 shrink-0" />
+                                            บันทึกผลงานขึ้น Wiki (Cloud)
+                                        </button>
+                                    )}
                                 </div>
-                            )}
-                            
-                            <div>
-                                <label className="text-xs text-zinc-400 mb-1 block">AI Lyrics (ถอดเสียงร้อง)</label>
-                                <button 
-                                    onClick={handleTranscribe}
-                                    disabled={isTranscribing || !selectedSong}
-                                    className="w-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed text-zinc-200 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                                >
-                                    {isTranscribing ? <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-zinc-400"></div> : <Mic size={16} className="text-purple-400" />}
-                                    {isTranscribing ? 'กำลังประมวลผล...' : 'สร้างเนื้อเพลง (AI)'}
-                                </button>
                                 {error && <p className="text-xs text-rose-500 mt-2">{error}</p>}
                             </div>
                         </div>
@@ -751,15 +979,48 @@ export default function CreatorStudioPage() {
             </div>
 
             {/* Bottom Timeline */}
-            <div className="h-48 border-t border-zinc-800 bg-zinc-950 flex flex-col shrink-0">
+            <div className="h-48 border-t border-zinc-800 bg-zinc-950 flex flex-col shrink-0 font-sans">
                 {/* Timeline Toolbar */}
                 <div className="h-10 border-b border-zinc-800/50 flex items-center justify-between px-4 bg-zinc-900/30">
                     <div className="flex items-center gap-2 text-zinc-400">
-                        <button className="hover:text-white transition-colors p-1" onClick={togglePlay}>
-                            {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+                        <button className="hover:text-white transition-colors p-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg" onClick={togglePlay}>
+                            {isPlaying ? <Pause size={14} /> : <Play size={14} />}
                         </button>
                         <span className="text-xs font-mono w-16">{formatTime(currentTime)}</span>
                     </div>
+
+                    {selectedSong && (
+                        <div className="flex items-center bg-zinc-950 border border-zinc-800/80 p-0.5 rounded-lg">
+                            <button
+                                onClick={() => setAudioTrack('vocals')}
+                                className={clsx(
+                                    "px-3 py-1 text-[11px] font-semibold rounded transition-all",
+                                    audioTrack === 'vocals' ? "bg-purple-600 text-white shadow" : "text-zinc-400 hover:text-zinc-200"
+                                )}
+                            >
+                                เสียงร้อง (Vocals)
+                            </button>
+                            <button
+                                onClick={() => setAudioTrack('instrumental')}
+                                className={clsx(
+                                    "px-3 py-1 text-[11px] font-semibold rounded transition-all",
+                                    audioTrack === 'instrumental' ? "bg-purple-600 text-white shadow" : "text-zinc-400 hover:text-zinc-200"
+                                )}
+                            >
+                                ดนตรี (Backing)
+                            </button>
+                            <button
+                                onClick={() => setAudioTrack('original')}
+                                className={clsx(
+                                    "px-3 py-1 text-[11px] font-semibold rounded transition-all",
+                                    audioTrack === 'original' ? "bg-purple-600 text-white shadow" : "text-zinc-400 hover:text-zinc-200"
+                                )}
+                            >
+                                รวมเสียง (Mix)
+                            </button>
+                        </div>
+                    )}
+
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2">
                             <span className="text-xs text-zinc-500">ซูมคลื่นเสียง:</span>
@@ -820,6 +1081,47 @@ export default function CreatorStudioPage() {
                     </div>
                 </div>
             )}
+
+            {/* Paste Lyrics Modal */}
+            {showPasteModal && (
+                <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+                    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-xl shadow-2xl flex flex-col max-h-[80vh]">
+                        <div className="p-4 border-b border-zinc-800 flex justify-between items-center">
+                            <h2 className="text-lg font-bold text-white">วางเนื้อเพลงดิบ</h2>
+                            <button onClick={() => setShowPasteModal(false)} className="text-zinc-500 hover:text-white">✕</button>
+                        </div>
+                        <div className="p-4 flex-1 flex flex-col gap-4">
+                            <p className="text-xs text-zinc-400 font-sans">
+                                วางเนื้อเพลงบรรทัดดิบที่ไม่มีข้อมูลไทม์แสตมป์ลงด้านล่าง ระบบจะแบ่งเนื้อเพลงทีละบรรทัดและกระจายช่วงเวลาเริ่มต้นให้โดยอัตโนมัติ เพื่อให้ท่านนำไปลากปรับจังหวะบนคลื่นเสียงต่อไป
+                            </p>
+                            <textarea
+                                value={rawText}
+                                onChange={(e) => setRawText(e.target.value)}
+                                placeholder="วางเนื้อเพลงที่นี่...&#10;เช่น:&#10;เขาคู่ควรอ้ายทิ้งป่ะ&#10;อ้ายอยู่กับเขาอ้ายหักศอกเอน"
+                                className="w-full flex-1 min-h-[250px] bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-sm text-zinc-200 outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all font-sans resize-none"
+                            />
+                        </div>
+                        <div className="p-4 border-t border-zinc-800 flex justify-end gap-2 bg-zinc-900/50 rounded-b-2xl">
+                            <button
+                                onClick={() => setShowPasteModal(false)}
+                                className="px-4 py-2 text-xs font-semibold text-zinc-400 hover:text-white transition-colors"
+                            >
+                                ยกเลิก
+                            </button>
+                            <button
+                                onClick={handlePasteSubmit}
+                                disabled={!rawText.trim()}
+                                className="px-5 py-2 text-xs font-semibold bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+                            >
+                                นำเข้าเนื้อเพลง
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Hidden backing track element */}
+            <audio ref={backingAudioRef} className="hidden" preload="auto" />
         </div>
     );
 }
