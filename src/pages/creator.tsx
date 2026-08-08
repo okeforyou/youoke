@@ -4,7 +4,8 @@ import { useRouter } from 'next/router';
 import { getActiveBridgeBaseUrl, useAIVocalStore } from '../stores/useAIVocalStore';
 import { 
     Mic, Play, Pause, Save, Download, Video, Music, 
-    ArrowLeft, Settings, Maximize, Type, UploadCloud, FileAudio 
+    ArrowLeft, Settings, Maximize, Type, UploadCloud, FileAudio,
+    Sparkles, FileText
 } from 'lucide-react';
 import WaveSurfer from 'wavesurfer.js';
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js';
@@ -39,6 +40,23 @@ export default function CreatorStudioPage() {
     const [isTranscribing, setIsTranscribing] = useState(false);
     const [error, setError] = useState('');
     const [showLibraryModal, setShowLibraryModal] = useState(false);
+    const [ytUrl, setYtUrl] = useState('');
+
+    const extractYoutubeVideoId = (url: string) => {
+        if (!url) return '';
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : url.trim();
+    };
+
+    const handleGoToWikiStudio = () => {
+        const videoId = extractYoutubeVideoId(ytUrl);
+        if (!videoId) {
+            addToast("กรุณากรอกลิงก์ YouTube หรือ Video ID ที่ถูกต้อง");
+            return;
+        }
+        router.push(`/studio/${videoId}`);
+    };
     
     // Font settings
     const [fontSize, setFontSize] = useState(48);
@@ -83,7 +101,7 @@ export default function CreatorStudioPage() {
                 // Remove the query param so refreshing doesn't force re-select
                 router.replace('/creator', undefined, { shallow: true });
             } else {
-                toast.error(`ไม่พบเพลง (ID: ${editId}) ใน Local Bridge`);
+                addToast(`ไม่พบเพลง (ID: ${editId}) ใน Local Bridge`);
             }
         }
     }, [router.isReady, router.query.edit, songs, selectedSong, router]);
@@ -424,16 +442,79 @@ export default function CreatorStudioPage() {
                 {/* Center Canvas (Preview) */}
                 <div className="flex-1 flex flex-col relative bg-black items-center justify-center overflow-hidden">
                     {!selectedSong ? (
-                        <div className="text-center p-8">
-                            <h2 className="text-2xl font-bold text-zinc-400 mb-4">เริ่มต้นสร้างคาราโอเกะ</h2>
-                            <p className="text-zinc-500 mb-8 text-sm">ดึงเพลงที่เคยแยกเสียงร้องไว้ในระบบมาทำคาราโอเกะได้ทันที</p>
-                            <button 
-                                onClick={() => setShowLibraryModal(true)}
-                                className="bg-zinc-800 hover:bg-zinc-700 text-white px-6 py-3 rounded-xl shadow-lg border border-zinc-700 transition-colors flex items-center gap-3 mx-auto"
-                            >
-                                <Music className="text-purple-400" />
-                                เลือกเพลงจากคลัง (Library)
-                            </button>
+                        <div className="max-w-4xl w-full mx-auto px-4 py-8 animate-in fade-in duration-500">
+                            <div className="text-center mb-12">
+                                <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 mb-3">
+                                    YouOke Creator Hub
+                                </h2>
+                                <p className="text-zinc-400 text-sm max-w-lg mx-auto">
+                                    เลือกช่องทางในการสร้างและเตรียมเพลงคาราโอเกะของคุณ 
+                                    ระบบจะบันทึกผลงานโดยอัตโนมัติเพื่อให้คุณร้องเพลงได้อย่างราบรื่นที่สุด
+                                </p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {/* Card 1: Wiki Lyrics Studio */}
+                                <div className="bg-zinc-900/60 backdrop-blur border border-zinc-800 hover:border-purple-500/40 rounded-3xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 shadow-xl group">
+                                    <div>
+                                        <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center mb-6 group-hover:scale-105 transition-transform duration-300">
+                                            <Sparkles className="text-purple-400 w-6 h-6" />
+                                        </div>
+                                        <h3 className="text-xl font-bold text-white mb-2">1. สตูดิโอเนื้อร้องคลาวด์ (Wiki Studio)</h3>
+                                        <p className="text-zinc-400 text-xs leading-relaxed mb-6">
+                                            จัดเรียงบรรทัดเนื้อเพลง ซิงค์จังหวะให้ตรง และปรับแต่งตำแหน่งแสดงผลแบบเรียลไทม์ เพื่อบันทึกเป็นฐานข้อมูล Wiki ให้ทุกคนร้องได้
+                                        </p>
+                                    </div>
+                                    
+                                    <div className="space-y-3 mt-4">
+                                        <div className="flex flex-col gap-2">
+                                            <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider text-left">ใส่ลิงก์ YouTube หรือ Video ID</label>
+                                            <div className="flex gap-2 bg-zinc-950 p-1.5 rounded-xl border border-zinc-800 focus-within:border-purple-500/50 transition-all">
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="เช่น https://www.youtube.com/watch?v=..."
+                                                    value={ytUrl}
+                                                    onChange={(e) => setYtUrl(e.target.value)}
+                                                    className="bg-transparent text-sm text-zinc-200 px-3 py-2 w-full outline-none"
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') handleGoToWikiStudio();
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                        <button 
+                                            onClick={handleGoToWikiStudio}
+                                            className="w-full bg-purple-600 hover:bg-purple-500 text-white py-3 rounded-xl text-sm font-bold shadow-lg shadow-purple-950/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                                        >
+                                            <FileText size={16} />
+                                            เริ่มแต่งเนื้อร้อง
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Card 2: Local AI Separation */}
+                                <div className="bg-zinc-900/60 backdrop-blur border border-zinc-800 hover:border-pink-500/40 rounded-3xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 shadow-xl group">
+                                    <div>
+                                        <div className="w-12 h-12 rounded-2xl bg-pink-500/10 flex items-center justify-center mb-6 group-hover:scale-105 transition-transform duration-300">
+                                            <Music className="text-pink-400 w-6 h-6" />
+                                        </div>
+                                        <h3 className="text-xl font-bold text-white mb-2">2. ถอดเสียงแยกคีย์ด้วย AI (Local Studio)</h3>
+                                        <p className="text-zinc-400 text-xs leading-relaxed mb-6">
+                                            ตัดเสียงคนร้องออกจากดนตรี และให้ปัญญาประดิษฐ์แกะเนื้อหาทีละพยางค์โดยอัตโนมัติ (เหมาะสำหรับการใช้เสียงร้องคุณภาพสูง)
+                                        </p>
+                                    </div>
+                                    
+                                    <div className="mt-8">
+                                        <button 
+                                            onClick={() => setShowLibraryModal(true)}
+                                            className="w-full bg-zinc-800 hover:bg-zinc-700 hover:text-white border border-zinc-700 text-zinc-200 py-3.5 rounded-xl text-sm font-bold active:scale-95 transition-all flex items-center justify-center gap-2 shadow-lg shadow-zinc-950/20"
+                                        >
+                                            <Music size={16} className="text-pink-400" />
+                                            เลือกเพลงจากคลัง Local
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     ) : (
                         <div className="w-full h-full flex items-center justify-center relative p-8">

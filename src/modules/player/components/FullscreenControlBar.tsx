@@ -49,11 +49,13 @@ export const FullscreenControlBar = ({ showControls, layoutMode, playerRef }: Fu
         saveLocalOffset(currentVideo.videoId, syncOffset);
         useUIStore.getState().showConfirm({
             title: "บันทึกเวลาสำเร็จ",
-            message: "บันทึกเวลาเริ่มต้นสำหรับเครื่องของคุณเรียบร้อยแล้ว หากต้องการให้ทุกคนได้ใช้ กรุณาเข้าโหมด Studio",
+            message: "บันทึกเวลาเริ่มต้นสำหรับเครื่องของคุณเรียบร้อยแล้ว",
             type: "success",
-            confirmText: "เข้าโหมด Studio",
-            cancelText: "ปิด",
-            onConfirm: () => router.push(`/studio/${currentVideo.videoId}`)
+            confirmText: "ตกลง",
+            cancelText: "none",
+            onConfirm: () => {
+                useUIStore.getState().hideConfirm();
+            }
         });
     };
 
@@ -172,20 +174,20 @@ export const FullscreenControlBar = ({ showControls, layoutMode, playerRef }: Fu
             <div className="flex items-center gap-1 bg-white/5 rounded-xl p-1 border border-white/5">
                 <button
                     onClick={() => handleVote('upvote')}
-                    disabled={!activeSync || (user && activeSync.voterIds?.includes(user.uid))}
+                    disabled={!activeSync || !user?.uid || activeSync.voterIds?.includes(user.uid || '')}
                     className="px-2 py-2 rounded-lg flex items-center gap-1 text-xs font-medium bg-transparent text-white/70 hover:bg-white/10 hover:text-white disabled:opacity-50"
                     title="โหวตว่าเนื้อร้องตรง"
                 >
-                    <ThumbsUp size={15} className={user && activeSync?.voterIds?.includes(user.uid) && activeSync?.upvotes > 0 ? "fill-green-400 text-green-400" : ""} />
+                    <ThumbsUp size={15} className={user?.uid && activeSync?.voterIds?.includes(user.uid || '') && activeSync?.upvotes > 0 ? "fill-green-400 text-green-400" : ""} />
                     {activeSync?.upvotes || 0}
                 </button>
                 <button
                     onClick={() => handleVote('downvote')}
-                    disabled={!activeSync || (user && activeSync.voterIds?.includes(user.uid))}
+                    disabled={!activeSync || !user?.uid || activeSync.voterIds?.includes(user.uid || '')}
                     className="px-2 py-2 rounded-lg flex items-center gap-1 text-xs font-medium bg-transparent text-white/70 hover:bg-white/10 hover:text-white disabled:opacity-50"
                     title="โหวตว่าเนื้อร้องไม่ตรง"
                 >
-                    <ThumbsDown size={15} className={user && activeSync?.voterIds?.includes(user.uid) && activeSync?.downvotes > 0 ? "fill-red-400 text-red-400" : ""} />
+                    <ThumbsDown size={15} className={user?.uid && activeSync?.voterIds?.includes(user.uid || '') && activeSync?.downvotes > 0 ? "fill-red-400 text-red-400" : ""} />
                 </button>
                 
                 <div className="w-[1px] h-4 bg-white/10 mx-1" />
@@ -196,11 +198,10 @@ export const FullscreenControlBar = ({ showControls, layoutMode, playerRef }: Fu
                             router.push(`/studio/${currentVideo.videoId}`);
                         }
                     }}
-                    className="px-3 py-2 rounded-lg flex items-center gap-2 text-xs font-medium bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 transition-all"
+                    className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-all"
                     title="เข้าสู่โหมด Studio เพื่อแก้ไขเนื้อเพลง"
                 >
                     <Edit2 size={15} />
-                    Studio
                 </button>
             </div>
 
