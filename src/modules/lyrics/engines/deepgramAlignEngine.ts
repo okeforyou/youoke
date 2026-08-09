@@ -20,17 +20,210 @@ export interface AlignedWord {
 
 export interface AlignedLine {
   id?: number;
-  time: number; // The new aligned start time
+  time: number;
   text: string;
   duration?: number;
   words?: AlignedWord[];
 }
 
+interface Edge {
+  s1Idx: number;
+  s2Idx: number;
+}
+
 /**
- * Calculates Normalized Levenshtein Distance (0.0 to 1.0)
- * 1.0 means exact match, 0.0 means completely different.
+ * Needleman-Wunsch character sequence alignment
  */
-function fuzzyMatch(s1: string, s2: string): number {
+function alignStrings(s1: string, s2: string): Edge[] {
+  const matchScore = 2;
+  const mismatchScore = -1;
+  const gapPenalty = -2;
+
+  const m = s1.length;
+  const n = s2.length;
+
+  const scoreMatrix: number[][] = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+
+  for (let i = 0; i <= m; i++) scoreMatrix[i][0] = i * gapPenalty;
+  for (let j = 0; j <= n; j++) scoreMatrix[0][j] = j * gapPenalty;
+
+  for (let i = 1; i <= m; i++) {
+    const c1 = s1[i - 1].toLowerCase();
+    for (let j = 1; j <= n; j++) {
+      const c2 = s2[j - 1].toLowerCase();
+      const scoreSub = c1 === c2 ? matchScore : mismatchScore;
+      scoreMatrix[i][j] = Math.max(
+        scoreMatrix[i - 1][j - 1] + scoreSub,
+        scoreMatrix[i - 1][j] + gapPenalty,
+        scoreMatrix[i][j - 1] + gapPenalty
+      );
+    }
+  }
+
+  let i = m;
+  let j = n;
+  const alignment: Edge[] = [];
+
+  while (i > 0 || j > 0) {
+    if (i > 0 && j > 0) {
+      const c1 = s1[i - 1].toLowerCase();
+      const c2 = s2[j - 1].toLowerCase();
+      const scoreSub = c1 === c2 ? matchScore : mismatchScore;
+      if (scoreMatrix[i][j] === scoreMatrix[i - 1][j - 1] + scoreSub) {
+        alignment.unshift({ s1Idx: i - 1, s2Idx: j - 1 });
+        i--;
+        j--;
+        continue;
+      }
+    }
+    if (i > 0 && (j === 0 || scoreMatrix[i][j] === scoreMatrix[i - 1][j] + gapPenalty)) {
+      alignment.unshift({ s1Idx: i - 1, s2Idx: -1 });
+      i--;
+    } else {
+      alignment.unshift({ s1Idx: -1, s2Idx: j - 1 });
+      j--;
+    }
+  }
+
+  return alignment;
+}
+
+/**
+ * Linearly interpolates character timestamps inside each Deepgram word
+ */
+interface CharTimestamp {
+  char: string;
+  start: number;
+  end: number;
+}
+
+function getCharacterTimestamps(dgWords: DeepgramWord[]): CharTimestamp[] {
+  const chars: CharTimestamp[] = [];
+  for (const w of dgWords) {
+    const wordLen = w.word.length;
+    const duration = w.end - w.start;
+    const charDuration = duration / Math.max(1, wordLen);
+    for (let i = 0; i < wordLen; i++) {
+      chars.push({
+        char: w.word[i],
+        start: w.start + i * charDuration,
+        end: w.start + (i + 1) * charDuration
+      });
+    }
+  }
+  return chars;
+}
+
+/**
+ * Word segmenter fallback for Thai
+ */
+function segmentWords(text: string): string[] {
+  if (typeof Intl !== 'undefined' && (Intl as any).Segmenter) {
+    try {
+      const segmenter = new (Intl as any).Segmenter('th', { granularity: 'word' });
+      return Array.from(segmenter.segment(text))
+        .map((s: any) => s.segment)
+        .filter(w => w.trim().length > 0);
+    } catch (e) {}
+  }
+  return text.split(/(\s+)/).filter(w => w.trim().length > 0);
+}
+
+/**
+ * Align an LRCLIB line with a list of Deepgram words at character level
+ */
+function alignSingleLine(
+  lrclibText: string,
+  dgWords: DeepgramWord[],
+  lineStartTime: number,
+  lineEndTime: number
+): AlignedWord[] {
+  const lineWords = segmentWords(lrclibText);
+  if (lineWords.length === 0) return [];
+
+  // 1. Get character-level timestamps for all Deepgram words in this window
+  const dgChars = getCharacterTimestamps(dgWords);
+  const dgText = dgChars.map(c => c.char).join('');
+
+  // 2. Perform Needleman-Wunsch character alignment
+  const alignment = alignStrings(lrclibText, dgText);
+
+  // 3. Map aligned character timestamps
+  const lrcCharTimes = Array.from({ length: lrclibText.length }, (_, idx) => ({
+    char: lrclibText[idx],
+    start: -1,
+    end: -1
+  }));
+
+  for (const edge of alignment) {
+    if (edge.s1Idx !== -1 && edge.s2Idx !== -1) {
+      lrcCharTimes[edge.s1Idx].start = dgChars[edge.s2Idx].start;
+      lrcCharTimes[edge.s1Idx].end = dgChars[edge.s2Idx].end;
+    }
+  }
+
+  // 4. Interpolate missing timestamps (unaligned characters)
+  let lastValEnd = lineStartTime;
+  for (let i = 0; i < lrcCharTimes.length; i++) {
+    if (lrcCharTimes[i].start === -1) {
+      let nextValStart = lineEndTime;
+      let nextAnchor = lrcCharTimes.length;
+      for (let k = i + 1; k < lrcCharTimes.length; k++) {
+        if (lrcCharTimes[k].start !== -1) {
+          nextValStart = lrcCharTimes[k].start;
+          nextAnchor = k;
+          break;
+        }
+      }
+
+      const gapSize = nextAnchor - i;
+      const totalGapTime = Math.max(0, nextValStart - lastValEnd);
+      const timePerChar = totalGapTime / gapSize;
+
+      for (let k = i; k < nextAnchor; k++) {
+        lrcCharTimes[k].start = lastValEnd + (k - i) * timePerChar;
+        lrcCharTimes[k].end = lastValEnd + (k - i + 1) * timePerChar;
+      }
+      i = nextAnchor - 1;
+    }
+    lastValEnd = lrcCharTimes[i].end;
+  }
+
+  // 5. Group characters back into words
+  const alignedWords: AlignedWord[] = [];
+  let charIdx = 0;
+
+  for (const word of lineWords) {
+    // Find where this word starts in the original text
+    const wordStartIdx = lrclibText.indexOf(word, charIdx);
+    if (wordStartIdx === -1) {
+      // Fallback if not found
+      alignedWords.push({ word, start: lineStartTime, end: lineEndTime });
+      continue;
+    }
+
+    const wordEndIdx = wordStartIdx + word.length;
+    const wordChars = lrcCharTimes.slice(wordStartIdx, wordEndIdx);
+    
+    const wordStart = wordChars[0]?.start ?? lineStartTime;
+    const wordEnd = wordChars[wordChars.length - 1]?.end ?? lineEndTime;
+
+    alignedWords.push({
+      word,
+      start: wordStart,
+      end: wordEnd
+    });
+
+    charIdx = wordEndIdx;
+  }
+
+  return alignedWords;
+}
+
+/**
+ * Calculates simple fuzzy match score between two strings (for finding windows in Mode 2)
+ */
+function simpleFuzzyMatch(s1: string, s2: string): number {
   const str1 = s1.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
   const str2 = s2.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
 
@@ -46,9 +239,9 @@ function fuzzyMatch(s1: string, s2: string): number {
     for (let j = 1; j <= str2.length; j++) {
       const cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
       matrix[i][j] = Math.min(
-        matrix[i - 1][j] + 1, // deletion
-        matrix[i][j - 1] + 1, // insertion
-        matrix[i - 1][j - 1] + cost // substitution
+        matrix[i - 1][j] + 1,
+        matrix[i][j - 1] + 1,
+        matrix[i - 1][j - 1] + cost
       );
     }
   }
@@ -56,22 +249,6 @@ function fuzzyMatch(s1: string, s2: string): number {
   const distance = matrix[str1.length][str2.length];
   const maxLength = Math.max(str1.length, str2.length);
   return 1.0 - distance / maxLength;
-}
-
-/**
- * Deepgram + LRCLIB Hybrid Alignment Engine
- */
-function segmentWords(text: string): string[] {
-  if (typeof Intl !== 'undefined' && (Intl as any).Segmenter) {
-    try {
-      const segmenter = new (Intl as any).Segmenter('th', { granularity: 'word' });
-      return Array.from(segmenter.segment(text))
-        .map((s: any) => s.segment)
-        .filter(w => w.trim().length > 0);
-    } catch (e) {}
-  }
-  // Fallback: split by spaces and keep them separate
-  return text.split(/(\s+)/).filter(w => w.trim().length > 0);
 }
 
 /**
@@ -85,11 +262,10 @@ export function alignLyrics(deepgramWords: DeepgramWord[], lrclibLines: LRCLIBLi
   const validWords = deepgramWords.filter(w => w.confidence >= 0.4);
   const alignedLines: AlignedLine[] = [];
   
-  // Check if lyrics are already synced (have timestamps > 0)
   const isSynced = lrclibLines.some(l => l.time > 0);
 
   if (isSynced) {
-    // Mode 1: Trust LRCLIB line times, just map Deepgram words into those time windows
+    // Mode 1: Trust LRCLIB line times, perform character-level alignment in the window
     for (let i = 0; i < lrclibLines.length; i++) {
       const line = lrclibLines[i];
       if (!line.text.trim()) {
@@ -104,90 +280,14 @@ export function alignLyrics(deepgramWords: DeepgramWord[], lrclibLines: LRCLIBLi
       }
       const duration = nextTime - startTime;
 
-      // Find deepgram words in this time window (with a 1.5s buffer)
-      const windowWords = validWords.filter(w => w.start >= startTime - 1.5 && w.start <= nextTime + 1.0);
+      // Find deepgram words in this time window (with a 2.0s buffer for safety)
+      const windowWords = validWords.filter(w => w.start >= startTime - 2.0 && w.start <= nextTime + 1.5);
 
-      const lineWords = segmentWords(line.text);
-      const alignedWords: AlignedWord[] = [];
-      let dgIdx = 0;
-
-      for (let wIdx = 0; wIdx < lineWords.length; wIdx++) {
-          const lWord = lineWords[wIdx];
-          const lWordClean = lWord.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
-          
-          let bestWordMatchIdx = -1;
-          let bestWordScore = 0;
-          
-          for (let k = dgIdx; k < Math.min(windowWords.length, dgIdx + 6); k++) {
-              const dgWordClean = windowWords[k].word.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
-              const score = fuzzyMatch(lWordClean, dgWordClean);
-              if (score > bestWordScore) {
-                  bestWordScore = score;
-                  bestWordMatchIdx = k;
-              }
-          }
-          
-          if (bestWordScore >= 0.4 && bestWordMatchIdx !== -1) {
-              alignedWords.push({
-                  word: lWord,
-                  start: windowWords[bestWordMatchIdx].start,
-                  end: windowWords[bestWordMatchIdx].end
-              });
-              dgIdx = bestWordMatchIdx + 1;
-          } else {
-              alignedWords.push({ word: lWord, start: -1, end: -1 });
-          }
-      }
-
-      // Linear interpolation for unaligned words
-      let firstMatchedStart = alignedWords.find(w => w.start !== -1)?.start ?? startTime;
-      let lastMatchedEnd = [...alignedWords].reverse().find(w => w.end !== -1)?.end ?? nextTime;
-      
-      if (firstMatchedStart < startTime - 2) firstMatchedStart = startTime;
-      if (lastMatchedEnd > nextTime + 2) lastMatchedEnd = nextTime;
-
-      for (let wIdx = 0; wIdx < alignedWords.length; wIdx++) {
-          if (alignedWords[wIdx].start === -1) {
-              let prevTime = firstMatchedStart;
-              for (let k = wIdx - 1; k >= 0; k--) {
-                  if (alignedWords[k].end !== -1) {
-                      prevTime = alignedWords[k].end;
-                      break;
-                  }
-              }
-              
-              let nextValidTime = lastMatchedEnd;
-              let nextAnchorIdx = alignedWords.length;
-              for (let k = wIdx + 1; k < alignedWords.length; k++) {
-                  if (alignedWords[k].start !== -1) {
-                      nextValidTime = alignedWords[k].start;
-                      nextAnchorIdx = k;
-                      break;
-                  }
-              }
-              
-              let segmentCharCount = 0;
-              for (let k = wIdx; k < nextAnchorIdx; k++) {
-                  segmentCharCount += alignedWords[k].word.length;
-              }
-              
-              const timeGap = Math.max(0.01, nextValidTime - prevTime);
-              let currentOffset = 0;
-              for (let k = wIdx; k < nextAnchorIdx; k++) {
-                  const wordWeight = alignedWords[k].word.length / Math.max(1, segmentCharCount);
-                  const wordDuration = timeGap * wordWeight;
-                  alignedWords[k].start = prevTime + currentOffset;
-                  alignedWords[k].end = prevTime + currentOffset + wordDuration;
-                  currentOffset += wordDuration;
-              }
-              
-              wIdx = nextAnchorIdx - 1;
-          }
-      }
+      const alignedWords = alignSingleLine(line.text, windowWords, startTime, nextTime);
 
       alignedLines.push({
           ...line,
-          time: startTime, // Trust LRCLIB!
+          time: startTime,
           duration: duration,
           words: alignedWords
       });
@@ -195,14 +295,14 @@ export function alignLyrics(deepgramWords: DeepgramWord[], lrclibLines: LRCLIBLi
     return alignedLines;
   }
 
-  // Mode 2: Unsynced Lyrics (Plain Text) - Fallback to fuzzy match sweeping
+  // Mode 2: Unsynced Lyrics (Plain Text)
   let currentWordIdx = 0;
   for (let i = 0; i < lrclibLines.length; i++) {
     const line = lrclibLines[i];
     if (!line.text.trim()) {
        alignedLines.push({ ...line });
        continue;
-    }
+      }
 
     const lineTextClean = line.text.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
     let bestMatchScore = 0;
@@ -214,7 +314,7 @@ export function alignLyrics(deepgramWords: DeepgramWord[], lrclibLines: LRCLIBLi
       let currentConcat = '';
       for (let end = start; end < Math.min(validWords.length, start + 10); end++) {
          currentConcat += validWords[end].word.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
-         const score = fuzzyMatch(lineTextClean, currentConcat);
+         const score = simpleFuzzyMatch(lineTextClean, currentConcat);
          if (score > bestMatchScore) {
              bestMatchScore = score;
              bestWindowStart = start;
@@ -227,90 +327,23 @@ export function alignLyrics(deepgramWords: DeepgramWord[], lrclibLines: LRCLIBLi
        const matchedStart = validWords[bestWindowStart].start;
        const matchedEnd = validWords[bestWindowEnd].end;
        
-       const lineWords = segmentWords(line.text);
        const matchedDgWords = validWords.slice(bestWindowStart, bestWindowEnd + 1);
-       const alignedWords: AlignedWord[] = [];
-       let dgIdx = 0;
-
-       for (let wIdx = 0; wIdx < lineWords.length; wIdx++) {
-           const lWord = lineWords[wIdx];
-           const lWordClean = lWord.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
-           
-           let bestWordMatchIdx = -1;
-           let bestWordScore = 0;
-           
-           for (let k = dgIdx; k < Math.min(matchedDgWords.length, dgIdx + 3); k++) {
-               const dgWordClean = matchedDgWords[k].word.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
-               const score = fuzzyMatch(lWordClean, dgWordClean);
-               if (score > bestWordScore) {
-                   bestWordScore = score;
-                   bestWordMatchIdx = k;
-               }
-           }
-           
-           if (bestWordScore >= 0.5 && bestWordMatchIdx !== -1) {
-               alignedWords.push({
-                   word: lWord,
-                   start: matchedDgWords[bestWordMatchIdx].start,
-                   end: matchedDgWords[bestWordMatchIdx].end
-               });
-               dgIdx = bestWordMatchIdx + 1;
-           } else {
-               alignedWords.push({ word: lWord, start: -1, end: -1 });
-           }
-       }
-
-       for (let wIdx = 0; wIdx < alignedWords.length; wIdx++) {
-           if (alignedWords[wIdx].start === -1) {
-               let prevTime = matchedStart;
-               for (let k = wIdx - 1; k >= 0; k--) {
-                   if (alignedWords[k].end !== -1) {
-                       prevTime = alignedWords[k].end;
-                       break;
-                   }
-               }
-               
-               let nextTime = matchedEnd;
-               let nextAnchorIdx = alignedWords.length;
-               for (let k = wIdx + 1; k < alignedWords.length; k++) {
-                   if (alignedWords[k].start !== -1) {
-                       nextTime = alignedWords[k].start;
-                       nextAnchorIdx = k;
-                       break;
-                   }
-               }
-               
-               let segmentCharCount = 0;
-               for (let k = wIdx; k < nextAnchorIdx; k++) {
-                   segmentCharCount += alignedWords[k].word.length;
-               }
-               
-               const timeGap = Math.max(0.01, nextTime - prevTime);
-               let currentOffset = 0;
-               for (let k = wIdx; k < nextAnchorIdx; k++) {
-                   const wordWeight = alignedWords[k].word.length / Math.max(1, segmentCharCount);
-                   const wordDuration = timeGap * wordWeight;
-                   alignedWords[k].start = prevTime + currentOffset;
-                   alignedWords[k].end = prevTime + currentOffset + wordDuration;
-                   currentOffset += wordDuration;
-               }
-               wIdx = nextAnchorIdx - 1;
-           }
-       }
+       const alignedWords = alignSingleLine(line.text, matchedDgWords, matchedStart, matchedEnd);
 
        alignedLines.push({
-           ...line,
-           time: matchedStart,
-           duration: matchedEnd - matchedStart,
-           words: alignedWords
+            ...line,
+            time: matchedStart,
+            duration: matchedEnd - matchedStart,
+            words: alignedWords
        });
-       
+        
        currentWordIdx = bestWindowEnd + 1;
        continue;
     }
     alignedLines.push({ ...line });
   }
 
+  // Interpolate missing line times in Mode 2
   let lastAnchorIdx = -1;
   for (let i = 0; i <= alignedLines.length; i++) {
       const isAnchor = i < alignedLines.length ? alignedLines[i].duration !== undefined : true;
