@@ -176,8 +176,8 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                                         {/* Swept text does NOT include space, so the clip-path hits 100% at the end of the letter, not the space */}
                                         {isKaraokeMode && (
                                             <span className="absolute left-0 top-0 text-[#2563eb] whitespace-pre" style={{ 
-                                                clipPath: `inset(-20% ${100 - (wordProgress * 100)}% -20% -20%)`,
-                                                transition: isActive ? 'clip-path 0.05s linear' : 'none',
+                                                clipPath: wordProgress >= 0.99 ? 'none' : `inset(-20% ${100 - (wordProgress * 100)}% -20% -20%)`,
+                                                transition: 'none',
                                                 WebkitTextStroke: 'clamp(2px, 0.4cqw, 4px) black',
                                                 paintOrder: 'stroke fill',
                                             }}>
