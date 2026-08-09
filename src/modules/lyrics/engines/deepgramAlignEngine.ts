@@ -121,12 +121,36 @@ function segmentWords(text: string): string[] {
   if (typeof Intl !== 'undefined' && (Intl as any).Segmenter) {
     try {
       const segmenter = new (Intl as any).Segmenter('th', { granularity: 'word' });
-      return Array.from(segmenter.segment(text))
-        .map((s: any) => s.segment)
-        .filter(w => w.trim().length > 0);
+      const segments = Array.from(segmenter.segment(text));
+      const words: string[] = [];
+      for (const seg of segments as any[]) {
+        if (seg.isWordLike) {
+          words.push(seg.segment);
+        } else {
+          if (words.length > 0) {
+            words[words.length - 1] += seg.segment;
+          } else {
+            words.push(seg.segment);
+          }
+        }
+      }
+      return words.filter(w => w.length > 0);
     } catch (e) {}
   }
-  return text.split(/(\s+)/).filter(w => w.trim().length > 0);
+  // Fallback: split by spaces and keep them attached
+  const parts = text.split(/(\s+)/);
+  const words: string[] = [];
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    if (part.trim().length > 0) {
+      words.push(part);
+    } else {
+      if (words.length > 0) {
+        words[words.length - 1] += part;
+      }
+    }
+  }
+  return words;
 }
 
 /**

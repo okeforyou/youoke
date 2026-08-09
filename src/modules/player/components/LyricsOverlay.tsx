@@ -156,8 +156,8 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                                 
                                 return (
                                     <span key={i} className="inline-block relative">
-                                        {/* Base text includes space so the layout is correct */}
-                                        <span className="whitespace-pre">{w.word} </span>
+                                        {/* Base text already includes correct spaces from segmentWords */}
+                                        <span className="whitespace-pre">{w.word}</span>
                                         {/* Swept text does NOT include space, so the clip-path hits 100% at the end of the letter, not the space */}
                                         {isKaraokeMode && (
                                             <span className="absolute left-0 top-0 text-[#2563eb] whitespace-pre" style={{ 
