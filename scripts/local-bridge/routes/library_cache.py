@@ -103,7 +103,7 @@ def list_cache():
                 
             youoke_json_path = os.path.join(song_dir, "youoke.json")
             vid = folder_name
-            title = f"ไฟล์เพลง {folder_name}"
+            title = f"{folder_name}"
             
             if os.path.exists(youoke_json_path):
                 try:

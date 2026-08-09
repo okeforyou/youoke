@@ -1,7 +1,7 @@
-// 🛡️ v5.5.272: Player - SidebarControls Compact UI & AI Sync Feedback
+// 🛡️ v5.5.273: Lyrics - AI Sync Strict LRCLIB Timing Mode
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.272";
+export const SYSTEM_VERSION = "5.5.273";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,17 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.273",
+        date: "2026-08-09",
+        changes: [
+            "feat(lyrics): Overhauled AI Sync alignment engine in deepgramAlignEngine.ts.",
+            "feat(lyrics): AI Sync now strictly trusts LRCLIB line timestamps as anchors when lyrics are already synced, solving out-of-sync drift issues.",
+            "feat(lyrics): Deepgram fuzzy matching is now restricted to narrow time windows, calculating precise word-level timestamps without overriding line bounds.",
+            "fix(ui): Corrected z-index stacking context for ToastContext to ensure toasts appear above modals like SidebarControls."
+        ]
+    },
+
     {
         version: "5.5.272",
         date: "2026-08-09",

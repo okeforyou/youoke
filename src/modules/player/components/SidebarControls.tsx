@@ -489,9 +489,9 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                         showLyrics ? "text-primary" : "text-black/70 dark:text-zinc-300"
                                     )}
                                 >
-                                    <div className="flex items-center gap-1">
+                                    <div className="flex items-center gap-1 shrink-0">
                                         <Type size={14} className={showLyrics ? "text-primary" : "opacity-60"} />
-                                        <span>เนื้อเพลง</span>
+                                        <span className="whitespace-nowrap">เนื้อเพลง</span>
                                         {showLyrics && source && (
                                             <span className={clsx("ml-1 text-[8px] px-1 py-0.5 rounded font-black", lyricsType === 'synced' ? "bg-green-500/10 text-green-600 dark:text-green-400" : "bg-gray-500/10 text-gray-500 dark:text-gray-400")}>
                                                 {lyricsType === 'synced' ? 'SYNC' : 'PLAIN'}
@@ -522,9 +522,9 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                             isKaraokeMode ? "text-primary" : "text-black/70 dark:text-zinc-300"
                                         )}
                                     >
-                                        <div className="flex items-center gap-1">
+                                        <div className="flex items-center gap-1 shrink-0">
                                             <Sparkles size={14} className={isKaraokeMode ? "text-primary" : "opacity-60"} />
-                                            <span>ปาดสี</span>
+                                            <span className="whitespace-nowrap">คาราโอเกะ</span>
                                         </div>
                                         <div className={clsx(
                                             "w-7 h-4 rounded-full p-0.5 transition-colors flex items-center shadow-inner",
@@ -567,9 +567,9 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                         )}
                                         title="ปรับจังหวะอัตโนมัติด้วย AI"
                                     >
-                                        <div className="flex items-center gap-1">
+                                        <div className="flex items-center gap-1 shrink-0">
                                             <Wand2 size={13} className={clsx(isAligning && "animate-pulse", hybridModeEnabled ? "text-primary" : "opacity-60")} />
-                                            <span>{isAligning ? "รอ..." : "AI Sync"}</span>
+                                            <span className="whitespace-nowrap">{isAligning ? "รอ..." : "AI Sync"}</span>
                                         </div>
                                         <div className={clsx(
                                             "w-7 h-4 rounded-full p-0.5 transition-colors flex items-center shadow-inner ml-1",

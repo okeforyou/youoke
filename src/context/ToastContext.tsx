@@ -40,7 +40,7 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
       {children}
 
       {/* 🏝️ DYNAMIC ISLAND STYLE TOAST NOTIFICATIONS (Top-Center) */}
-      <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[99999] flex flex-col items-center gap-3 pointer-events-none w-full max-w-[90vw] md:max-w-md">
+      <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[999999] flex flex-col items-center gap-3 pointer-events-none w-full max-w-[90vw] md:max-w-md">
         {toasts.map((toast) => {
           // Smart Icon Detection
           let icon = <Info size={14} />;
