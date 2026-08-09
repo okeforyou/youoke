@@ -3,8 +3,17 @@ import os
 import socket
 import urllib.request
 import time
+import ssl
 from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
+
+# Fix SSL: CERTIFICATE_VERIFY_FAILED on macOS
+try:
+    _create_unverified_https_context = ssl._create_unverified_context
+except AttributeError:
+    pass
+else:
+    ssl._create_default_https_context = _create_unverified_https_context
 
 # Initialize FastAPI app
 app = FastAPI(title="YouOke Local AI Bridge")
