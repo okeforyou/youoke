@@ -77,7 +77,26 @@ export default function CreatorStudioPage() {
             addToast("กรุณากรอกลิงก์ YouTube หรือ Video ID ที่ถูกต้อง");
             return;
         }
-        router.push(`/studio/${videoId}`);
+        // Instead of redirecting to /studio, load it in Creator!
+        const mockSong: CachedSong = {
+            video_id: videoId,
+            title: `YouTube Video: ${videoId}`,
+            mode: 'youtube',
+            size_mb: 0,
+            created_at: Date.now()
+        };
+        setSelectedSong(mockSong);
+        // Automatically import lyrics if available
+        useLyricsStore.getState().fetchLyrics(videoId, mockSong.title).then(() => {
+            const cloudLyrics = useLyricsStore.getState().lyrics;
+            if (cloudLyrics && cloudLyrics.length > 0) {
+                const converted = cloudLyrics.map((line: any) => {
+                    const duration = line.endTime ? (line.endTime - line.time) : 3.0;
+                    return { word: line.text, start: line.time, end: line.endTime || (line.time + duration), confidence: 1.0 };
+                });
+                setLyrics(converted);
+            }
+        });
     };
     
     // Font settings
@@ -159,7 +178,7 @@ export default function CreatorStudioPage() {
         }
 
         const baseUrl = await getActiveBridgeBaseUrl();
-        if (!baseUrl) return;
+            if (!baseUrl) return;
 
         // Initialize WaveSurfer after a short delay to ensure DOM is ready
         setTimeout(() => {
@@ -399,12 +418,12 @@ export default function CreatorStudioPage() {
                     item.end = Math.round(newEnd * 100) / 100;
                     
                     if (isRippleEdit) {
-                        const shift = item.start - prev[draggingIdx].start;
+                        const shift = item.start - initialDragLyrics[draggingIdx].start;
                         for (let i = draggingIdx + 1; i < updated.length; i++) {
                             updated[i] = {
-                                ...updated[i],
-                                start: Math.round((updated[i].start + shift) * 100) / 100,
-                                end: Math.round((updated[i].end + shift) * 100) / 100
+                                ...initialDragLyrics[i],
+                                start: Math.round((initialDragLyrics[i].start + shift) * 100) / 100,
+                                end: Math.round((initialDragLyrics[i].end + shift) * 100) / 100
                             };
                         }
                     }
@@ -634,7 +653,14 @@ export default function CreatorStudioPage() {
         }
     };
 
+    const handlePlayPause = () => {
+        if (wavesurfer.current) {
+            wavesurfer.current.playPause();
+        }
+    };
+    
     const handleImportFromWiki = async () => {
+
         if (!selectedSong) return;
         try {
             const songTitle = selectedSong.title || "Unknown Title";
@@ -1142,22 +1168,28 @@ export default function CreatorStudioPage() {
                 <div className="h-11 border-b border-zinc-800/50 flex items-center justify-between px-4 bg-zinc-900/30 shrink-0">
                     <div className="flex items-center gap-4 text-zinc-400">
                         <div className="flex items-center gap-2 mr-4 border-r border-zinc-800 pr-4">
+                            <button
+                                onClick={handlePlayPause}
+                                className="w-8 h-8 flex items-center justify-center bg-primary text-white rounded-full hover:scale-105 active:scale-95 transition-all shadow-md shadow-primary/20"
+                            >
+                                {isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" className="ml-1" />}
+                            </button>
+                        </div>
+                        <div className="flex items-center gap-2 mr-4 border-r border-zinc-800 pr-4">
                             <button 
                                 onClick={handleAddBlockAtPlayhead}
                                 disabled={!selectedSong}
-                                className="p-1.5 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-lg transition-colors"
+                                className="p-1.5 px-2.5 flex items-center gap-1.5 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-lg transition-colors text-xs font-bold"
                                 title="เพิ่มบล็อกเนื้อร้องตรงเวลาที่กำลังเล่นปัจจุบัน"
                             >
-                                <Plus size={16} />
-                            </button>
+                                <Plus size={14} /> เพิ่มบล็อก</button>
                             <button
                                 onClick={handleToggleRecording}
                                 disabled={!selectedSong || lyrics.length === 0}
                                 className={`p-1.5 rounded-lg transition-colors ${isRecording ? "bg-red-600/20 text-red-500 animate-pulse" : "hover:bg-zinc-800 text-zinc-400 hover:text-white disabled:opacity-50"}`}
                                 title="เริ่ม/หยุด Tap-to-Sync"
                             >
-                                {isRecording ? <Square size={16} /> : <Target size={16} />}
-                            </button>
+                                {isRecording ? <><Square size={14} /> หยุด Tap</> : <><Target size={14} /> Tap-to-Sync</>}</button>
                             {isRecording && (
                                 <button
                                     onClick={handleTap}
@@ -1171,8 +1203,7 @@ export default function CreatorStudioPage() {
                                 className={`p-1.5 rounded-lg transition-colors ${isRippleEdit ? "bg-amber-600/20 text-amber-500" : "hover:bg-zinc-800 text-zinc-400 hover:text-white"}`}
                                 title="ลากกลุ่ม (Ripple)"
                             >
-                                <Link size={16} />
-                            </button>
+                                <Link size={14} /> ลากกลุ่ม</button>
                         </div>
 
                         <div className="flex items-center gap-1">
@@ -1187,33 +1218,30 @@ export default function CreatorStudioPage() {
                                 <button
                                     onClick={() => setAudioTrack('vocals')}
                                     className={clsx(
-                                        "p-1.5 rounded transition-all",
+                                        "p-1.5 px-3 rounded transition-all flex items-center gap-1.5 text-xs font-bold",
                                         audioTrack === 'vocals' ? "bg-primary text-white shadow" : "text-zinc-500 hover:text-zinc-300"
                                     )}
                                     title="เสียงร้องเท่านั้น (Vocals)"
                                 >
-                                    <Mic size={14} />
-                                </button>
+                                    <Mic size={14} /> ร้องนำ</button>
                                 <button
                                     onClick={() => setAudioTrack('instrumental')}
                                     className={clsx(
-                                        "p-1.5 rounded transition-all",
+                                        "p-1.5 px-3 rounded transition-all flex items-center gap-1.5 text-xs font-bold",
                                         audioTrack === 'instrumental' ? "bg-primary text-white shadow" : "text-zinc-500 hover:text-zinc-300"
                                     )}
                                     title="ดนตรีเปล่า (Backing)"
                                 >
-                                    <Music size={14} />
-                                </button>
+                                    <Music size={14} /> ดนตรี</button>
                                 <button
                                     onClick={() => setAudioTrack('original')}
                                     className={clsx(
-                                        "p-1.5 rounded transition-all",
+                                        "p-1.5 px-3 rounded transition-all flex items-center gap-1.5 text-xs font-bold",
                                         audioTrack === 'original' ? "bg-primary text-white shadow" : "text-zinc-500 hover:text-zinc-300"
                                     )}
                                     title="รวมเสียง (Mix)"
                                 >
-                                    <Sparkles size={14} />
-                                </button>
+                                    <Sparkles size={14} /> รวมเสียง</button>
                             </div>
                         )}
                     </div>
@@ -1259,8 +1287,8 @@ export default function CreatorStudioPage() {
                                 }
                             }}
                         >
-                            {/* Waveform Background (WaveSurfer) */}
-                            <div className="absolute inset-x-0 top-0 bottom-6 pointer-events-none opacity-40">
+                            {/* Waveform Background (Channel 1) */}
+                            <div className="absolute top-0 left-0 right-0 h-16 pointer-events-none opacity-80 border-b border-zinc-800 bg-zinc-950/50">
                                 <div ref={containerRef} className="w-full h-full" />
                             </div>
                             
@@ -1289,10 +1317,14 @@ export default function CreatorStudioPage() {
                                 <div className="w-2.5 h-2.5 bg-rose-500 rounded-full -ml-1 -mt-0.5 shadow-md shadow-rose-950/50" />
                             </div>
 
-                            {/* Lyric Blocks (Absolute Positioned React Components - Studio Style) */}
+                            {/* Lyric Blocks (Track 2) */}
                             {lyrics.map((word, idx) => {
                                 const left = word.start * zoom;
-                                const width = Math.max((word.end - word.start) * zoom, 40); // Min width 40px to prevent zero-width clipping
+                                const width = Math.max((word.end - word.start) * zoom, 40);
+                                let row = 0;
+                                if (idx > 0 && word.start < lyrics[idx - 1].end) {
+                                    row = 1;
+                                } // Min width 40px to prevent zero-width clipping
                                 const isDragging = draggingIdx === idx;
                                 const isActive = idx === activeLineIndex;
                                 const isDone = currentTime > word.end;
