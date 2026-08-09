@@ -118,6 +118,17 @@ def list_cache():
                 if os.path.exists(title_path):
                     with open(title_path, "r", encoding="utf-8") as f:
                         title = f.read().strip()
+                
+                # Fallback: scan for original youtube m4a file (11 characters) to recover the video ID
+                try:
+                    for f in os.listdir(song_dir):
+                        if f.endswith(".m4a") and f not in ["vocals.m4a", "no_vocals.m4a", "bass.m4a", "drums.m4a", "other.m4a"]:
+                            possible_vid = f.replace(".m4a", "")
+                            if len(possible_vid) == 11 and all(c.isalnum() or c in "-_" for c in possible_vid):
+                                vid = possible_vid
+                                break
+                except Exception:
+                    pass
 
             total_size = sum(os.path.getsize(os.path.join(song_dir, f)) for f in os.listdir(song_dir) if os.path.isfile(os.path.join(song_dir, f)))
             size_mb = total_size / (1024 * 1024)

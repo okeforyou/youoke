@@ -19,35 +19,77 @@ async def list_cached_songs():
         for folder_name in os.listdir(directory):
             song_dir = os.path.join(directory, folder_name)
             if os.path.isdir(song_dir):
+                has_vocals = os.path.exists(os.path.join(song_dir, "vocals.m4a"))
+                if not has_vocals:
+                    continue
+                
+                vid = folder_name
+                title = f"{folder_name}"
+                data = {}
                 youoke_json_path = os.path.join(song_dir, "youoke.json")
+                
                 if os.path.exists(youoke_json_path):
                     try:
                         with open(youoke_json_path, "r", encoding="utf-8") as f:
                             data = json.load(f)
-                            
-                        has_vocals = os.path.exists(os.path.join(song_dir, "vocals.m4a"))
-                        has_no_vocals = os.path.exists(os.path.join(song_dir, "no_vocals.m4a"))
-                        has_drums = os.path.exists(os.path.join(song_dir, "drums.m4a"))
-                        has_bass = os.path.exists(os.path.join(song_dir, "bass.m4a"))
-                        has_other = os.path.exists(os.path.join(song_dir, "other.m4a"))
-                        
-                        mode = "basic"
-                        if os.path.exists(os.path.join(song_dir, "mode.txt")):
-                            with open(os.path.join(song_dir, "mode.txt"), "r") as mf:
-                                mode = mf.read().strip()
-                                
-                        data["local_status"] = {
-                            "has_vocals": has_vocals,
-                            "has_no_vocals": has_no_vocals,
-                            "has_drums": has_drums,
-                            "has_bass": has_bass,
-                            "has_other": has_other,
-                            "mode": mode
-                        }
-                        
-                        results.append(data)
+                            vid = data.get("videoId", folder_name)
+                            title = data.get("title", folder_name)
                     except:
                         pass
+                
+                if not data:
+                    title_path = os.path.join(song_dir, "title.txt")
+                    if os.path.exists(title_path):
+                        try:
+                            with open(title_path, "r", encoding="utf-8") as f:
+                                title = f.read().strip()
+                        except:
+                            pass
+                    
+                    # Fallback video_id: scan for m4a that is not a stem
+                    try:
+                        for f in os.listdir(song_dir):
+                            if f.endswith(".m4a") and f not in ["vocals.m4a", "no_vocals.m4a", "bass.m4a", "drums.m4a", "other.m4a"]:
+                                possible_vid = f.replace(".m4a", "")
+                                if len(possible_vid) == 11 and all(c.isalnum() or c in "-_" for c in possible_vid):
+                                    vid = possible_vid
+                                    break
+                    except:
+                        pass
+                        
+                    import time
+                    data = {
+                        "videoId": vid,
+                        "title": title,
+                        "createdAt": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(os.path.getctime(os.path.join(song_dir, "vocals.m4a")))),
+                        "version": "1.0"
+                    }
+                
+                try:
+                    has_no_vocals = os.path.exists(os.path.join(song_dir, "no_vocals.m4a"))
+                    has_drums = os.path.exists(os.path.join(song_dir, "drums.m4a"))
+                    has_bass = os.path.exists(os.path.join(song_dir, "bass.m4a"))
+                    has_other = os.path.exists(os.path.join(song_dir, "other.m4a"))
+                    
+                    mode = "basic"
+                    if os.path.exists(os.path.join(song_dir, "mode.txt")):
+                        with open(os.path.join(song_dir, "mode.txt"), "r") as mf:
+                            mode = mf.read().strip()
+                    elif has_drums:
+                        mode = "pro"
+                            
+                    data["local_status"] = {
+                        "has_vocals": has_vocals,
+                        "has_no_vocals": has_no_vocals,
+                        "has_drums": has_drums,
+                        "has_bass": has_bass,
+                        "has_other": has_other,
+                        "mode": mode
+                    }
+                    
+                    results.append(data)
+                except:
+                    pass
                         
     process_dir(active_dir)
     

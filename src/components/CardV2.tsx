@@ -47,7 +47,8 @@ export default function CardV2({
 }: CardV2Props) {
 
     // Logic: Image source or fallback - Use sddefault (640x480) for better quality than hq (480x360)
-    const imageSrc = thumbnail || (videoId ? `https://i.ytimg.com/vi/${videoId}/sddefault.jpg` : "");
+    const isValidYtId = videoId && videoId.length === 11 && !videoId.includes(" ");
+    const imageSrc = thumbnail || (isValidYtId ? `https://i.ytimg.com/vi/${videoId}/sddefault.jpg` : "");
     const isPrivate = type === "private" || type === "ส่วนตัว";
 
     return (

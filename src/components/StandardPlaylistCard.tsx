@@ -38,8 +38,8 @@ export default function PlaylistCard({
 }: PlaylistCardProps) {
 
     // Resolve Image Source
-    const imageSrc = thumbnail || (videoId ? `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg` : "");
-
+    const isValidYtId = videoId && videoId.length === 11 && !videoId.includes(" ");
+    const imageSrc = thumbnail || (isValidYtId ? `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg` : "");
     const isPrivate = type === "private" || type === "ส่วนตัว";
 
     return (

@@ -361,7 +361,10 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
       if (data.status === "success" && data.results) {
         const enriched = await Promise.all(data.results.map(async (r: any) => {
           let title = r.title;
-          if (!title) {
+          const isGenericTitle = !title || title === "Unknown Title" || title === "Unknown" || title === r.video_id;
+          const isValidYtId = r.video_id && r.video_id.length === 11 && !r.video_id.includes(" ");
+          
+          if (isGenericTitle && isValidYtId) {
             try {
               const noembedRes = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${r.video_id}`, { signal: AbortSignal.timeout(3000) });
               if (noembedRes.ok) {
