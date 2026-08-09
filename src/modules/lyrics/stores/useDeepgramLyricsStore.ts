@@ -153,6 +153,7 @@ export const useDeepgramLyricsStore = create<DeepgramLyricsState>((set, get) => 
         alignmentStatus: 'error', 
         errorMessage: err.message || 'Unknown error occurred'
       });
+      throw err;
     }
   },
   

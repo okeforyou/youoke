@@ -1,7 +1,7 @@
-// 🛡️ v5.5.271: Creator - All-in-One Editor Redesign (POC 3)
+// 🛡️ v5.5.272: Player - SidebarControls Compact UI & AI Sync Feedback
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.271";
+export const SYSTEM_VERSION = "5.5.272";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,17 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.272",
+        date: "2026-08-09",
+        changes: [
+            "ui(player): Compacted SidebarControls layout for Lyrics, Sweep, and AI Sync toggles to sit on a single responsive row.",
+            "ui(player): Updated AI Sync toggle appearance to match system primary color and standard toggle switch UI.",
+            "feat(player): Integrated native ToastContext for real-time loading, success, and error feedback during AI Sync.",
+            "fix(player): Fixed JSX syntax errors and removed unused react-hot-toast dependency."
+        ]
+    },
+
     {
         version: "5.5.271",
         date: "2026-08-09",

@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { useToast } from "../../../context/ToastContext";
 import { useRouter } from "next/router";
-import { Play, Pause, SkipForward, RotateCcw, Volume2, VolumeX, Maximize, Cast, Mic, MicOff, ChevronUp, Mic2, Music, SlidersHorizontal, Type, Drum, Guitar, Piano, MicVocal, X, Sparkles, FileQuestion, Edit2 } from "lucide-react";
+import { Play, Pause, SkipForward, RotateCcw, Volume2, VolumeX, Maximize, Cast, Mic, MicOff, ChevronUp, Mic2, Music, SlidersHorizontal, Type, Drum, Guitar, Piano, MicVocal, X, Sparkles, FileQuestion, Edit2, Wand2 } from "lucide-react";
 import { usePlayerStore } from "../stores/usePlayerStore";
 import { useLyricsStore } from "../stores/useLyricsStore";
 import { useMixerStore, type TrackType } from "../stores/useMixerStore";
@@ -63,6 +64,7 @@ interface SidebarControlsProps {
 
 export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => {
     const router = useRouter();
+    const { addToast } = useToast() || {};
     const {
         isPlaying,
         togglePlay,
@@ -483,7 +485,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                 <button 
                                     onClick={toggleLyrics}
                                     className={clsx(
-                                        "flex-[1.2] flex items-center justify-center gap-1.5 py-1.5 text-[13px] font-bold transition-colors",
+                                        "flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[11px] font-bold transition-colors",
                                         showLyrics ? "text-primary" : "text-black/70 dark:text-zinc-300"
                                     )}
                                 >
@@ -516,7 +518,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                     <button 
                                         onClick={toggleKaraokeMode}
                                         className={clsx(
-                                            "flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[13px] font-bold transition-colors",
+                                            "flex-[0.9] flex items-center justify-center gap-1.5 py-1.5 text-[11px] font-bold transition-colors",
                                             isKaraokeMode ? "text-primary" : "text-black/70 dark:text-zinc-300"
                                         )}
                                     >
@@ -546,20 +548,38 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                         onClick={async () => {
                                             if (hybridModeEnabled) {
                                                 setHybridModeEnabled(false);
+                                                addToast?.('ปิด AI Sync แล้ว', 'info');
                                             } else {
-                                                await alignHybridLyrics(activeVideoId!, lyrics);
+                                                addToast?.('AI Sync: กำลังฟังและเทียบจังหวะเนื้อเพลง...', 'info');
+                                                try {
+                                                    await alignHybridLyrics(activeVideoId!, lyrics);
+                                                    addToast?.('AI Sync: เทียบจังหวะสำเร็จ! เนื้อเพลงตรง 100%', 'success');
+                                                } catch (err: any) {
+                                                    addToast?.(`AI Sync ล้มเหลว: ${err.message || 'เกิดข้อผิดพลาด'}`, 'error');
+                                                }
                                             }
                                         }}
                                         disabled={isAligning || !lyrics || lyrics.length === 0}
                                         className={clsx(
-                                            "flex-1 flex items-center justify-center gap-1 py-1.5 text-[13px] font-bold transition-colors",
-                                            hybridModeEnabled ? "text-amber-500" : "text-black/70 dark:text-zinc-300",
+                                            "flex-[1.1] flex items-center justify-center gap-1 py-1.5 text-[11px] font-bold transition-colors",
+                                            hybridModeEnabled ? "text-primary" : "text-black/70 dark:text-zinc-300",
                                             (isAligning || !lyrics || lyrics.length === 0) && "opacity-50 cursor-not-allowed"
                                         )}
                                         title="ปรับจังหวะอัตโนมัติด้วย AI"
                                     >
-                                        <Sparkles size={14} className={clsx(isAligning && "animate-pulse")} />
-                                        <span>{isAligning ? "รอ..." : "AI Sync"}</span>
+                                        <div className="flex items-center gap-1">
+                                            <Wand2 size={13} className={clsx(isAligning && "animate-pulse", hybridModeEnabled ? "text-primary" : "opacity-60")} />
+                                            <span>{isAligning ? "รอ..." : "AI Sync"}</span>
+                                        </div>
+                                        <div className={clsx(
+                                            "w-7 h-4 rounded-full p-0.5 transition-colors flex items-center shadow-inner ml-1",
+                                            hybridModeEnabled ? "bg-primary" : "bg-gray-300 dark:bg-zinc-700"
+                                        )}>
+                                            <div className={clsx(
+                                                "w-3 h-3 bg-white rounded-full transition-transform shadow-sm",
+                                                hybridModeEnabled ? "translate-x-3" : "translate-x-0"
+                                            )} />
+                                        </div>
                                     </button>
                                 )}
                             </div>
