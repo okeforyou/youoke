@@ -1,7 +1,7 @@
-// 🛡️ v5.5.270: Creator - All-in-One Editor Redesign (POC 1)
+// 🛡️ v5.5.271: Creator - All-in-One Editor Redesign (POC 3)
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.270";
+export const SYSTEM_VERSION = "5.5.271";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.271",
+        date: "2026-08-09",
+        changes: [
+            "feat(creator): Ported Studio Timeline to Creator Studio to provide identical block dragging, ripple edit, and inline editing UX.",
+            "feat(creator): Redesigned Timeline Toolbar to center editing controls and reposition track selectors, mimicking the professional Studio layout."
+        ]
+    },
+
     {
         version: "5.5.270",
         date: "2026-08-09",

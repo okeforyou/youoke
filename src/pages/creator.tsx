@@ -384,87 +384,93 @@ export default function CreatorStudioPage() {
         }
     };
 
+    const handleToggleTapSync = () => {
+        setIsRecording(!isRecording);
+        if (!isRecording) {
+            setRecordingIndex(0);
+        }
+    };
+
     const togglePlay = () => {
         if (wavesurfer.current) {
             wavesurfer.current.playPause();
         }
     };
 
-    // Timeline Pointer Drag Move & Resize Event Listeners (from Studio/[videoId].tsx)
+    
+    // Timeline Drag System
+    const handlePointerDown = (e: React.PointerEvent, idx: number, action: 'move' | 'resize-right' | 'resize-left') => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDraggingIdx(idx);
+        setDragAction(action);
+        setStartX(e.clientX);
+        setStartTime(lyrics[idx].start);
+        setStartEndTime(lyrics[idx].end);
+        setInitialDragLyrics(lyrics.map(l => ({...l})));
+    };
+
+    // Timeline Pointer Drag Move & Resize Event Listeners
     useEffect(() => {
         const handlePointerMove = (e: PointerEvent) => {
-            if (draggingIdx === null || !dragAction || !timelineRef.current) return;
-            
-            const rect = timelineRef.current.getBoundingClientRect();
-            const clientX = e.clientX;
-            const deltaX = clientX - startX;
+            if (draggingIdx === null || !dragAction || initialDragLyrics.length === 0) return;
+            const deltaX = e.clientX - startX;
             const deltaTime = deltaX / zoom;
             
-            setLyrics(prev => {
-                const updated = [...prev];
-                const item = { ...updated[draggingIdx] };
+            setLyrics(() => {
+                const next = initialDragLyrics.map(l => ({...l}));
+                const item = next[draggingIdx];
                 
                 if (dragAction === 'move') {
-                    let newStart = startTime + deltaTime;
-                    let duration = startEndTime - startTime;
-                    let newEnd = newStart + duration;
+                    const blockDuration = startEndTime - startTime;
+                    let newTime = Math.max(0, startTime + deltaTime);
+                    const actualDelta = newTime - startTime;
                     
-                    if (newStart < 0) {
-                        newStart = 0;
-                        newEnd = duration;
-                    }
+                    item.start = newTime;
+                    item.end = newTime + blockDuration;
                     
-                    item.start = Math.round(newStart * 100) / 100;
-                    item.end = Math.round(newEnd * 100) / 100;
-                    
-                    if (isRippleEdit) {
-                        const shift = item.start - initialDragLyrics[draggingIdx].start;
-                        for (let i = draggingIdx + 1; i < updated.length; i++) {
-                            updated[i] = {
-                                ...initialDragLyrics[i],
-                                start: Math.round((initialDragLyrics[i].start + shift) * 100) / 100,
-                                end: Math.round((initialDragLyrics[i].end + shift) * 100) / 100
-                            };
+                    // Ripple Edit
+                    if (isRippleEdit || e.shiftKey) {
+                        for (let i = draggingIdx + 1; i < next.length; i++) {
+                            const dur = next[i].end - next[i].start;
+                            next[i].start = Math.max(0, next[i].start + actualDelta);
+                            next[i].end = next[i].start + dur;
                         }
                     }
-                } else if (dragAction === 'resize-right') {
-                    let newEnd = startEndTime + deltaTime;
-                    if (newEnd < item.start + 0.1) {
-                        newEnd = item.start + 0.1;
-                    }
-                    item.end = Math.round(newEnd * 100) / 100;
                 } else if (dragAction === 'resize-left') {
-                    let newStart = startTime + deltaTime;
-                    if (newStart > item.end - 0.1) {
-                        newStart = item.end - 0.1;
-                    }
-                    if (newStart < 0) newStart = 0;
-                    item.start = Math.round(newStart * 100) / 100;
+                    let newTime = Math.max(0, startTime + deltaTime);
+                    newTime = Math.min(newTime, startEndTime - 0.2);
+                    item.start = newTime;
+                } else if (dragAction === 'resize-right') {
+                    let newEnd = Math.max(startTime + 0.2, startEndTime + deltaTime);
+                    item.end = newEnd;
                 }
                 
-                updated[draggingIdx] = item;
-                return updated;
+                return next;
             });
         };
-        
+
         const handlePointerUp = () => {
-            if (draggingIdx !== null) {
-                setDraggingIdx(null);
-                setDragAction(null);
-                rebuildRegions(lyrics);
-            }
+            setDraggingIdx(null);
+            setDragAction(null);
+            setInitialDragLyrics([]);
+            setLyrics(prev => [...prev]); // Trigger update to regions if necessary
+            setTimeout(() => {
+                const currentLyrics = useLyricsStore.getState().lyrics;
+                // Optionally rebuild regions if you use them, but we might not even need regions anymore!
+            }, 50);
         };
-        
+
         if (draggingIdx !== null) {
             window.addEventListener('pointermove', handlePointerMove);
             window.addEventListener('pointerup', handlePointerUp);
         }
-        
+
         return () => {
             window.removeEventListener('pointermove', handlePointerMove);
             window.removeEventListener('pointerup', handlePointerUp);
         };
-    }, [draggingIdx, dragAction, startX, startTime, startEndTime, zoom, isRippleEdit, lyrics]);
+    }, [draggingIdx, dragAction, startX, startTime, startEndTime, zoom, isRippleEdit, initialDragLyrics]);
 
     // Tap-to-Sync Handlers (port from studio)
     const handleTap = () => {
@@ -523,7 +529,7 @@ export default function CreatorStudioPage() {
         }
     };
 
-    const handleAddBlockAtPlayhead = () => {
+    const handleAddWord = () => {
         if (!selectedSong) return;
         const newBlock: LyricWord = {
             word: "เนื้อร้องท่อนใหม่",
@@ -653,11 +659,6 @@ export default function CreatorStudioPage() {
         }
     };
 
-    const handlePlayPause = () => {
-        if (wavesurfer.current) {
-            wavesurfer.current.playPause();
-        }
-    };
     
     const handleImportFromWiki = async () => {
 
@@ -1164,108 +1165,85 @@ export default function CreatorStudioPage() {
 
             {/* Bottom Timeline */}
             <div className="h-48 border-t border-zinc-800 bg-zinc-950 flex flex-col shrink-0 font-sans">
-                {/* Timeline Toolbar */}
-                <div className="h-11 border-b border-zinc-800/50 flex items-center justify-between px-4 bg-zinc-900/30 shrink-0">
-                    <div className="flex items-center gap-4 text-zinc-400">
-                        <div className="flex items-center gap-2 mr-4 border-r border-zinc-800 pr-4">
-                            <button
-                                onClick={handlePlayPause}
-                                className="w-8 h-8 flex items-center justify-center bg-primary text-white rounded-full hover:scale-105 active:scale-95 transition-all shadow-md shadow-primary/20"
-                            >
-                                {isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" className="ml-1" />}
-                            </button>
-                        </div>
-                        <div className="flex items-center gap-2 mr-4 border-r border-zinc-800 pr-4">
-                            <button 
-                                onClick={handleAddBlockAtPlayhead}
-                                disabled={!selectedSong}
-                                className="p-1.5 px-2.5 flex items-center gap-1.5 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-lg transition-colors text-xs font-bold"
-                                title="เพิ่มบล็อกเนื้อร้องตรงเวลาที่กำลังเล่นปัจจุบัน"
-                            >
-                                <Plus size={14} /> เพิ่มบล็อก</button>
-                            <button
-                                onClick={handleToggleRecording}
-                                disabled={!selectedSong || lyrics.length === 0}
-                                className={`p-1.5 rounded-lg transition-colors ${isRecording ? "bg-red-600/20 text-red-500 animate-pulse" : "hover:bg-zinc-800 text-zinc-400 hover:text-white disabled:opacity-50"}`}
-                                title="เริ่ม/หยุด Tap-to-Sync"
-                            >
-                                {isRecording ? <><Square size={14} /> หยุด Tap</> : <><Target size={14} /> Tap-to-Sync</>}</button>
-                            {isRecording && (
-                                <button
-                                    onClick={handleTap}
-                                    className="px-2 py-1 rounded-md bg-primary text-white text-xs font-black transition-all active:scale-95 shadow"
-                                >
-                                    Tap! ({recordingIndex + 1})
-                                </button>
-                            )}
-                            <button 
-                                onClick={() => setIsRippleEdit(!isRippleEdit)}
-                                className={`p-1.5 rounded-lg transition-colors ${isRippleEdit ? "bg-amber-600/20 text-amber-500" : "hover:bg-zinc-800 text-zinc-400 hover:text-white"}`}
-                                title="ลากกลุ่ม (Ripple)"
-                            >
-                                <Link size={14} /> ลากกลุ่ม</button>
-                        </div>
-
-                        <div className="flex items-center gap-1">
-                            <button className="hover:text-white transition-all p-2 bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 rounded-lg active:scale-90" onClick={togglePlay}>
-                                {isPlaying ? <Pause size={14} className="text-primary" /> : <Play size={14} />}
-                            </button>
-                        </div>
-                        <span className="text-xs font-mono text-zinc-300 w-16">{formatTime(currentTime)}</span>
-                        
+                {/* Timeline Toolbar (Studio Style) */}
+                <div className="h-14 shrink-0 bg-zinc-900 border-y border-white/10 px-4 flex items-center justify-between z-30 shadow-lg select-none">
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={togglePlay}
+                            className="w-10 h-10 bg-white hover:scale-105 active:scale-95 text-black rounded-full flex items-center justify-center transition-transform shadow-lg shadow-white/10 shrink-0"
+                        >
+                            {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-1" />}
+                        </button>
+                        <span className="font-mono text-lg font-bold text-white min-w-[80px]">{formatTime(currentTime)}s</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => {}} 
+                            className="px-3 py-1.5 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all text-sm flex items-center gap-2"
+                            title="นำเข้าเนื้อเพลง"
+                        >
+                            <FileText size={16} /> <span className="hidden sm:inline">นำเข้าเนื้อเพลง</span>
+                        </button>
+                        <button
+                            onClick={handleAddWord}
+                            className="px-3 py-1.5 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all text-sm flex items-center gap-2"
+                            title="เพิ่มบรรทัด"
+                        >
+                            <Plus size={16} /> <span className="hidden sm:inline">เพิ่มบรรทัด</span>
+                        </button>
+                        <button
+                            onClick={() => setIsRippleEdit(!isRippleEdit)}
+                            className={`px-4 py-1.5 rounded-full font-bold flex items-center gap-2 transition-all active:scale-95 text-sm ${isRippleEdit ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-white/10 text-zinc-300 hover:bg-white/15'}`}
+                            title="ลากขยับพร้อมกันทั้งกลุ่ม"
+                        >
+                            <Link size={16} /> <span className="hidden sm:inline">Ripple</span>
+                        </button>
+                        <button
+                            onClick={handleToggleTapSync}
+                            className={`px-4 py-1.5 rounded-full font-bold flex items-center gap-2 transition-all active:scale-95 text-sm ${isRecording ? 'bg-red-500 text-white animate-pulse shadow-lg shadow-red-500/20' : 'bg-white/10 text-white hover:bg-white/15'}`}
+                        >
+                            {isRecording ? "🔴 STOP (Spacebar)" : "🎯 START TAP-TO-SYNC"}
+                        </button>
+                    </div>
+                    
+                    <div className="flex items-center gap-4">
                         {selectedSong && (
-                            <div className="flex items-center bg-zinc-950 border border-zinc-800/80 p-0.5 rounded-lg ml-2">
+                            <div className="flex items-center bg-black/40 border border-white/5 p-1 rounded-lg hidden md:flex">
                                 <button
                                     onClick={() => setAudioTrack('vocals')}
-                                    className={clsx(
-                                        "p-1.5 px-3 rounded transition-all flex items-center gap-1.5 text-xs font-bold",
-                                        audioTrack === 'vocals' ? "bg-primary text-white shadow" : "text-zinc-500 hover:text-zinc-300"
-                                    )}
-                                    title="เสียงร้องเท่านั้น (Vocals)"
+                                    className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 text-xs font-bold ${audioTrack === 'vocals' ? "bg-primary text-white shadow" : "text-zinc-400 hover:text-white hover:bg-white/10"}`}
                                 >
-                                    <Mic size={14} /> ร้องนำ</button>
+                                    <Mic size={14} /> ร้องนำ
+                                </button>
                                 <button
                                     onClick={() => setAudioTrack('instrumental')}
-                                    className={clsx(
-                                        "p-1.5 px-3 rounded transition-all flex items-center gap-1.5 text-xs font-bold",
-                                        audioTrack === 'instrumental' ? "bg-primary text-white shadow" : "text-zinc-500 hover:text-zinc-300"
-                                    )}
-                                    title="ดนตรีเปล่า (Backing)"
+                                    className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 text-xs font-bold ${audioTrack === 'instrumental' ? "bg-primary text-white shadow" : "text-zinc-400 hover:text-white hover:bg-white/10"}`}
                                 >
-                                    <Music size={14} /> ดนตรี</button>
+                                    <Music size={14} /> ดนตรี
+                                </button>
                                 <button
                                     onClick={() => setAudioTrack('original')}
-                                    className={clsx(
-                                        "p-1.5 px-3 rounded transition-all flex items-center gap-1.5 text-xs font-bold",
-                                        audioTrack === 'original' ? "bg-primary text-white shadow" : "text-zinc-500 hover:text-zinc-300"
-                                    )}
-                                    title="รวมเสียง (Mix)"
+                                    className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 text-xs font-bold ${audioTrack === 'original' ? "bg-primary text-white shadow" : "text-zinc-400 hover:text-white hover:bg-white/10"}`}
                                 >
-                                    <Sparkles size={14} /> รวมเสียง</button>
+                                    <Sparkles size={14} /> รวมเสียง
+                                </button>
                             </div>
                         )}
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        <button 
-                            onClick={() => handleZoomChange({ target: { value: String(Math.max(10, zoom - 15)) } } as any)}
-                            className="p-1.5 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-lg border border-zinc-800 bg-zinc-900 transition-colors"
-                        >
-                            <ZoomOut size={13} />
-                        </button>
-                        <input 
-                            type="range" 
-                            min="10" max="300" 
-                            value={zoom} 
-                            onChange={handleZoomChange}
-                            className="w-28 h-1 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-primary"
-                        />
-                        <button 
-                            onClick={() => handleZoomChange({ target: { value: String(Math.min(300, zoom + 15)) } } as any)}
-                            className="p-1.5 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-lg border border-zinc-800 bg-zinc-900 transition-colors"
-                        >
-                            <ZoomIn size={13} />
-                        </button>
+                        <div className="flex items-center gap-1 bg-black/40 rounded-lg p-1 border border-white/5">
+                            <button
+                                onClick={() => handleZoomChange({ target: { value: String(Math.max(10, zoom - 15)) } } as any)}
+                                className="px-3 py-1.5 hover:bg-white/10 rounded flex items-center justify-center text-zinc-300 transition-colors"
+                            >
+                                <ZoomOut size={16} />
+                            </button>
+                            <button
+                                onClick={() => handleZoomChange({ target: { value: String(Math.min(300, zoom + 15)) } } as any)}
+                                className="px-3 py-1.5 hover:bg-white/10 rounded flex items-center justify-center text-zinc-300 transition-colors"
+                            >
+                                <ZoomIn size={16} />
+                            </button>
+                        </div>
                     </div>
                 </div>
 
