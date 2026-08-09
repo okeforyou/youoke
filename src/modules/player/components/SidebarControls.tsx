@@ -478,37 +478,37 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                     </div>
 
                         <div className={clsx("mt-6 pt-5", isAiReady || isConnected ? "border-t border-gray-100 dark:border-zinc-800" : "")}>
-                            <div className="bg-gray-50 dark:bg-zinc-800/40 border border-gray-100 dark:border-zinc-700/50 rounded-2xl overflow-hidden flex flex-row items-center justify-between p-2">
+                            <div className="bg-gray-50 dark:bg-zinc-800/40 border border-gray-100 dark:border-zinc-700/50 rounded-2xl flex flex-row items-center justify-between p-1.5">
                                 {/* Lyrics Toggle */}
                                 <button 
                                     onClick={toggleLyrics}
                                     className={clsx(
-                                        "flex-1 flex items-center justify-center gap-2 py-2 text-sm font-bold transition-colors",
+                                        "flex-[1.2] flex items-center justify-center gap-1.5 py-1.5 text-[13px] font-bold transition-colors",
                                         showLyrics ? "text-primary" : "text-black/70 dark:text-zinc-300"
                                     )}
                                 >
-                                    <div className="flex items-center gap-1.5">
-                                        <Type size={16} className={showLyrics ? "text-primary" : "opacity-60"} />
+                                    <div className="flex items-center gap-1">
+                                        <Type size={14} className={showLyrics ? "text-primary" : "opacity-60"} />
                                         <span>เนื้อเพลง</span>
                                         {showLyrics && source && (
-                                            <span className={clsx("hidden sm:inline-block ml-1 text-[9px] px-1.5 py-0.5 rounded font-black", lyricsType === 'synced' ? "bg-green-500/10 text-green-600 dark:text-green-400" : "bg-gray-500/10 text-gray-500 dark:text-gray-400")}>
+                                            <span className={clsx("ml-1 text-[8px] px-1 py-0.5 rounded font-black", lyricsType === 'synced' ? "bg-green-500/10 text-green-600 dark:text-green-400" : "bg-gray-500/10 text-gray-500 dark:text-gray-400")}>
                                                 {lyricsType === 'synced' ? 'SYNC' : 'PLAIN'}
                                             </span>
                                         )}
                                     </div>
                                     <div className={clsx(
-                                        "w-8 h-4.5 rounded-full p-0.5 transition-colors flex items-center shadow-inner ml-2",
+                                        "w-7 h-4 rounded-full p-0.5 transition-colors flex items-center shadow-inner",
                                         showLyrics ? "bg-primary" : "bg-gray-300 dark:bg-zinc-700"
                                     )}>
                                         <div className={clsx(
-                                            "w-3.5 h-3.5 bg-white rounded-full transition-transform shadow-sm",
-                                            showLyrics ? "translate-x-3.5" : "translate-x-0"
+                                            "w-3 h-3 bg-white rounded-full transition-transform shadow-sm",
+                                            showLyrics ? "translate-x-3" : "translate-x-0"
                                         )} />
                                     </div>
                                 </button>
                                 
                                 {showLyrics && (
-                                    <div className="w-[1px] h-8 bg-gray-200 dark:bg-zinc-700/50 mx-1" />
+                                    <div className="w-[1px] h-6 bg-gray-200 dark:bg-zinc-700/50 mx-0.5" />
                                 )}
                                 
                                 {/* Sweep Toggle */}
@@ -516,28 +516,28 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                     <button 
                                         onClick={toggleKaraokeMode}
                                         className={clsx(
-                                            "flex-1 flex items-center justify-center gap-2 py-2 text-sm font-bold transition-colors",
+                                            "flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[13px] font-bold transition-colors",
                                             isKaraokeMode ? "text-primary" : "text-black/70 dark:text-zinc-300"
                                         )}
                                     >
-                                        <div className="flex items-center gap-1.5">
-                                            <Sparkles size={16} className={isKaraokeMode ? "text-primary" : "opacity-60"} />
+                                        <div className="flex items-center gap-1">
+                                            <Sparkles size={14} className={isKaraokeMode ? "text-primary" : "opacity-60"} />
                                             <span>ปาดสี</span>
                                         </div>
                                         <div className={clsx(
-                                            "w-8 h-4.5 rounded-full p-0.5 transition-colors flex items-center shadow-inner ml-2",
+                                            "w-7 h-4 rounded-full p-0.5 transition-colors flex items-center shadow-inner",
                                             isKaraokeMode ? "bg-primary" : "bg-gray-300 dark:bg-zinc-700"
                                         )}>
                                             <div className={clsx(
-                                                "w-3.5 h-3.5 bg-white rounded-full transition-transform shadow-sm",
-                                                isKaraokeMode ? "translate-x-3.5" : "translate-x-0"
+                                                "w-3 h-3 bg-white rounded-full transition-transform shadow-sm",
+                                                isKaraokeMode ? "translate-x-3" : "translate-x-0"
                                             )} />
                                         </div>
                                     </button>
                                 )}
                                 
                                 {showLyrics && (
-                                    <div className="w-[1px] h-8 bg-gray-200 dark:bg-zinc-700/50 mx-1" />
+                                    <div className="w-[1px] h-6 bg-gray-200 dark:bg-zinc-700/50 mx-0.5" />
                                 )}
                                 
                                 {/* AI Sync Toggle */}
@@ -552,14 +552,14 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                         }}
                                         disabled={isAligning || !lyrics || lyrics.length === 0}
                                         className={clsx(
-                                            "flex-1 flex items-center justify-center gap-2 py-2 text-sm font-bold transition-colors",
+                                            "flex-1 flex items-center justify-center gap-1 py-1.5 text-[13px] font-bold transition-colors",
                                             hybridModeEnabled ? "text-amber-500" : "text-black/70 dark:text-zinc-300",
                                             (isAligning || !lyrics || lyrics.length === 0) && "opacity-50 cursor-not-allowed"
                                         )}
                                         title="ปรับจังหวะอัตโนมัติด้วย AI"
                                     >
-                                        <Sparkles size={16} className={clsx(isAligning && "animate-pulse")} />
-                                        <span className="hidden sm:inline">{isAligning ? "รอ..." : "AI Sync"}</span>
+                                        <Sparkles size={14} className={clsx(isAligning && "animate-pulse")} />
+                                        <span>{isAligning ? "รอ..." : "AI Sync"}</span>
                                     </button>
                                 )}
                             </div>
