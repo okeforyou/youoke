@@ -1,56 +1,6 @@
 import { create } from 'zustand';
-import { LRCLIBLine, alignLyrics, DeepgramWord, AlignedWord } from '../engines/deepgramAlignEngine';
+import { LRCLIBLine, alignLyrics, DeepgramWord, AlignedWord, groupDeepgramWordsIntoLines } from '../engines/deepgramAlignEngine';
 import { useAIVocalStore, getActiveBridgeBaseUrl } from '../../../stores/useAIVocalStore';
-
-function groupDeepgramWordsIntoLines(words: DeepgramWord[]): LRCLIBLine[] {
-  if (!words || words.length === 0) return [];
-  
-  const lines: any[] = [];
-  let currentLineWords: AlignedWord[] = [];
-  
-  for (let i = 0; i < words.length; i++) {
-    const w = words[i];
-    currentLineWords.push({
-      word: w.word,
-      start: w.start,
-      end: w.end
-    });
-    
-    // Start a new line if:
-    // 1. We have accumulated 6 words, OR
-    // 2. The next word is starting more than 1.5 seconds after the current word ends
-    const nextWord = words[i + 1];
-    const isBigGap = nextWord ? (nextWord.start - w.end > 1.5) : false;
-    
-    if (currentLineWords.length >= 6 || isBigGap || i === words.length - 1) {
-      const lineStart = currentLineWords[0].start;
-      const lineEnd = currentLineWords[currentLineWords.length - 1].end;
-      const lineText = currentLineWords.map(cw => cw.word).join(' ');
-      
-      lines.push({
-        time: lineStart,
-        text: lineText,
-        duration: lineEnd - lineStart,
-        words: [...currentLineWords]
-      });
-      
-      // If there is a long silence gap before the next line (e.g. > 3.0 seconds),
-      // insert an instrumental indicator line so the previous lyrics don't freeze on screen.
-      if (nextWord && nextWord.start - lineEnd > 3.0) {
-        lines.push({
-          time: lineEnd + 0.5,
-          text: "🎸 (ดนตรี) 🎸",
-          duration: nextWord.start - lineEnd - 1.0,
-          words: [] // Empty words list so it doesn't sweep, just displays the indicator
-        });
-      }
-      
-      currentLineWords = [];
-    }
-  }
-  
-  return lines;
-}
 
 interface DeepgramLyricsState {
   alignedLyrics: LRCLIBLine[];

@@ -1,10 +1,12 @@
 import { create } from 'zustand';
 import { useWikiLyricsStore } from './useWikiLyricsStore';
+import { groupDeepgramWordsIntoLines } from '../../lyrics/engines/deepgramAlignEngine';
 
 export interface LyricLine {
     time: number;
     text: string;
     endTime?: number;
+    words?: any[];
 }
 
 interface LyricsState {
@@ -13,8 +15,8 @@ interface LyricsState {
     isLoading: boolean;
     lyrics: LyricLine[];
     lyricsType: 'synced' | 'plain' | null;
-    source: 'lrclib' | 'youtube' | null;
-    preferredSource: 'auto' | 'youtube';
+    source: 'lrclib' | 'youtube' | 'deepgram' | null;
+    preferredSource: 'auto' | 'youtube' | 'deepgram';
     error: string | null;
     
     syncOffset: number;
@@ -23,13 +25,13 @@ interface LyricsState {
     toggleLyrics: () => void;
     toggleKaraokeMode: () => void;
     setLyricsEnabled: (enabled: boolean) => void;
-    setPreferredSource: (src: 'auto' | 'youtube') => void;
+    setPreferredSource: (src: 'auto' | 'youtube' | 'deepgram') => void;
     setSyncOffset: (offset: number) => void;
     nudgeOffset: (delta: number) => void;
     updateLineTime: (index: number, newTime: number) => void;
     markLineTimestamp: (currentPlaybackTime: number, lineIndex: number) => void;
     setActiveLineText: (text: string) => void;
-    fetchLyrics: (videoId: string, title: string, prefer?: 'auto' | 'youtube', duration?: number) => Promise<void>;
+    fetchLyrics: (videoId: string, title: string, prefer?: 'auto' | 'youtube' | 'deepgram', duration?: number) => Promise<void>;
     clearLyrics: () => void;
 }
 
@@ -189,9 +191,59 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
 
     clearLyrics: () => set({ lyrics: [], source: null, error: null, lyricsType: null, isLoading: false, syncOffset: 0, activeLineText: '' }),
 
-    fetchLyrics: async (videoId: string, title: string, prefer?: 'auto' | 'youtube', duration?: number) => {
+    fetchLyrics: async (videoId: string, title: string, prefer?: 'auto' | 'youtube' | 'deepgram', duration?: number) => {
         set({ isLoading: true, error: null, lyrics: [], source: null, lyricsType: null, syncOffset: 0 });
         try {
+            const pref = prefer || get().preferredSource;
+
+            if (pref === 'deepgram') {
+                try {
+                    let deepgramWords = [];
+                    const cached = localStorage.getItem(`ai_lyrics_${videoId}`);
+                    if (cached) {
+                        deepgramWords = JSON.parse(cached);
+                    } else {
+                        const { deepgramKey } = (await import('../../../stores/useAIVocalStore')).useAIVocalStore.getState();
+                        if (!deepgramKey) {
+                            throw new Error("ยังไม่ได้ตั้งค่า Deepgram API Key กรุณาตั้งค่าในหน้า AI Settings");
+                        }
+                        const baseUrl = await (await import('../../../stores/useAIVocalStore')).getActiveBridgeBaseUrl();
+                        if (!baseUrl) {
+                            throw new Error("Local Bridge ออฟไลน์ หรือยังไม่ได้เปิดโปรแกรม");
+                        }
+                        
+                        const res = await fetch(`${baseUrl}/transcribe`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ video_id: videoId, api_key: deepgramKey, provider: 'deepgram' })
+                        });
+                        
+                        if (!res.ok) {
+                            const errData = await res.json().catch(() => ({}));
+                            throw new Error(errData.detail || `Local Bridge /transcribe Error (${res.status})`);
+                        }
+                        const dgData = await res.json();
+                        deepgramWords = dgData.words || [];
+                        if (deepgramWords.length === 0) {
+                            throw new Error("AI ไม่สามารถแกะเนื้อเพลงจากไฟล์เสียงร้องได้");
+                        }
+                        localStorage.setItem(`ai_lyrics_${videoId}`, JSON.stringify(deepgramWords));
+                    }
+                    
+                    const groupedLines = groupDeepgramWordsIntoLines(deepgramWords);
+                    set({
+                        lyrics: groupedLines,
+                        source: 'deepgram',
+                        lyricsType: 'synced',
+                        isLoading: false
+                    });
+                    return;
+                } catch (e: any) {
+                    set({ error: e.message || 'เกิดข้อผิดพลาดในการถอดเสียงร้องของ AI', isLoading: false });
+                    return;
+                }
+            }
+
             // 0. Check Wiki / Crowdsourced Sync first
             try {
                 const wikiStore = useWikiLyricsStore.getState();
@@ -213,7 +265,6 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
                 console.warn("Failed to fetch Wiki Lyrics", wikiErr);
             }
 
-            const pref = prefer || get().preferredSource;
             let onlineData: any = null;
 
             // 1. Fetch from our API route (handles LRCLIB + YouTube CC)

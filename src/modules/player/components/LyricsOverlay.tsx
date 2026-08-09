@@ -12,8 +12,8 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
     const { isEnabled, isKaraokeMode, lyrics: originalLyrics, lyricsType, source, fetchLyrics, syncOffset, setActiveLineText } = useLyricsStore();
     const { alignedLyrics, hybridModeEnabled } = useDeepgramLyricsStore();
     
-    // Switch between original lyrics and aligned lyrics based on Hybrid mode
-    const lyrics = hybridModeEnabled && alignedLyrics.length > 0 ? alignedLyrics : originalLyrics;
+    // Switch between original lyrics and aligned lyrics based on Hybrid mode (skip if pure deepgram)
+    const lyrics = (hybridModeEnabled && alignedLyrics.length > 0 && source !== 'deepgram') ? alignedLyrics : originalLyrics;
     
     const { isPlaying } = usePlayerStore();
     const activeVideoId = usePlayerStore(state => state.currentVideo?.videoId || state.currentVideo?.id);
@@ -211,7 +211,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
             >
                 {source && (
                     <div className="absolute -top-6 left-4 bg-black/40 backdrop-blur-sm rounded-lg px-2 py-1 text-[10px] text-white/50 font-medium">
-                        เนื้อเพลงจาก: {hybridModeEnabled ? 'Deepgram AI (HYBRID)' : (source === 'lrclib' ? (lyricsType === 'synced' ? 'LRCLIB (SYNC)' : 'LRCLIB (PLAIN)') : 'YouTube CC')}
+                        เนื้อเพลงจาก: {source === 'deepgram' ? 'Deepgram AI (PURE)' : (hybridModeEnabled ? 'Deepgram AI (HYBRID)' : (source === 'lrclib' ? (lyricsType === 'synced' ? 'LRCLIB (SYNC)' : 'LRCLIB (PLAIN)') : 'YouTube CC'))}
                     </div>
                 )}
 

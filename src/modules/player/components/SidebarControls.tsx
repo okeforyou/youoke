@@ -106,7 +106,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
     const { isEnabled: showLyrics, isKaraokeMode, toggleLyrics, toggleKaraokeMode, syncOffset, setSyncOffset, preferredSource, setPreferredSource, fetchLyrics, error: lyricsError, isLoading: lyricsLoading, lyricsType, source, activeLineText, lyrics } = useLyricsStore();
     const { alignHybridLyrics, isAligning, alignmentStatus, hybridModeEnabled, setHybridModeEnabled, errorMessage } = useDeepgramLyricsStore();
 
-    const handleSourceChange = (src: 'auto' | 'youtube') => {
+    const handleSourceChange = (src: 'auto' | 'youtube' | 'deepgram') => {
         setPreferredSource(src);
         const activeId = currentVideo?.videoId || currentVideo?.id;
         if (activeId) {
@@ -637,9 +637,9 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                 <div>
                                     <div className="flex items-center gap-2 mb-2 px-1">
                                         <div className="w-1 h-3 rounded-full bg-gray-300 dark:bg-zinc-600" />
-                                        <span className="text-[10px] font-bold text-gray-500 dark:text-zinc-400 tracking-wider">แหล่งข้อมูล (SOURCE)</span>
+                                        <span className="text-[10px] font-bold text-gray-500 dark:bg-zinc-400 tracking-wider">แหล่งข้อมูล (SOURCE)</span>
                                     </div>
-                                    <div className="flex items-center p-1 bg-gray-200/50 dark:bg-zinc-900/50 rounded-lg">
+                                    <div className="flex items-center p-1 bg-gray-200/50 dark:bg-zinc-900/50 rounded-lg gap-1">
                                         <button 
                                             onClick={() => handleSourceChange('auto')}
                                             className={clsx(
@@ -661,6 +661,17 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                             )}
                                         >
                                             YouTube CC
+                                        </button>
+                                        <button 
+                                            onClick={() => handleSourceChange('deepgram')}
+                                            className={clsx(
+                                                "flex-1 py-1.5 rounded-md shadow-sm text-[10px] font-bold transition-all",
+                                                preferredSource === 'deepgram' 
+                                                    ? "bg-white dark:bg-zinc-700 text-black dark:text-white shadow" 
+                                                    : "text-gray-500 dark:text-zinc-400 hover:text-black dark:hover:text-white shadow-none"
+                                            )}
+                                        >
+                                            Deepgram AI
                                         </button>
                                     </div>
                                 </div>
