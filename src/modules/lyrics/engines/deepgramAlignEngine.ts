@@ -289,18 +289,28 @@ function findGlobalOffset(lrclibLines: LRCLIBLine[], dgWords: DeepgramWord[]): n
   
   // Search only the first 60 seconds of Deepgram transcript for safe intro calculation
   const searchWords = dgWords.filter(w => w.start < 60);
+  const targetLength = lrcCombined.length;
+  
+  if (targetLength === 0) return 0;
   
   for (let startIdx = 0; startIdx < searchWords.length; startIdx++) {
     let currentConcat = "";
-    // Window limit up to 15 Deepgram words
-    for (let endIdx = startIdx; endIdx < Math.min(searchWords.length, startIdx + 15); endIdx++) {
+    // Dynamically expand the window up to 40 words, but stop if text length exceeds targetLength * 1.5
+    for (let endIdx = startIdx; endIdx < Math.min(searchWords.length, startIdx + 40); endIdx++) {
       currentConcat += searchWords[endIdx].word;
       const cleanConcat = currentConcat.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
       
-      const score = simpleFuzzyMatch(lrcCombined, cleanConcat);
-      if (score > bestScore) {
-        bestScore = score;
-        bestOffset = searchWords[startIdx].start - targetTime;
+      if (cleanConcat.length > targetLength * 1.5) {
+        break;
+      }
+      
+      // Only score if the window contains a reasonable amount of text relative to the target
+      if (cleanConcat.length >= targetLength * 0.5) {
+        const score = simpleFuzzyMatch(lrcCombined, cleanConcat);
+        if (score > bestScore) {
+          bestScore = score;
+          bestOffset = searchWords[startIdx].start - targetTime;
+        }
       }
     }
   }
