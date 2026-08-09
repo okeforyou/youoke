@@ -34,17 +34,32 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
         }
     }, [activeVideoId, videoTitle, videoDuration, fetchLyrics]);
 
-    // Fast precise time tracking loop for smooth sweep
+    // Fast precise time tracking loop for smooth sweep (uses clock interpolation to avoid YouTube API update stutter)
     useEffect(() => {
         if (!isEnabled || !isPlaying) return;
         
         let animationFrameId: number;
+        let lastRealTime = 0;
+        let lastLocalTime = 0;
+        
         const loop = () => {
             if (playerRef.current && typeof playerRef.current.getCurrentTime === 'function') {
                 try {
-                    const time = playerRef.current.getCurrentTime();
-                    if (typeof time === 'number') {
-                        setCurrentTime(time);
+                    const realTime = playerRef.current.getCurrentTime();
+                    if (typeof realTime === 'number') {
+                        const now = performance.now();
+                        if (realTime !== lastRealTime) {
+                            lastRealTime = realTime;
+                            lastLocalTime = now;
+                            setCurrentTime(realTime);
+                        } else {
+                            // Interpolate time elapsed since last realTime update
+                            const elapsed = (now - lastLocalTime) / 1000;
+                            // Limit interpolation to 0.5s to prevent runaway drift
+                            if (elapsed < 0.5) {
+                                setCurrentTime(realTime + elapsed);
+                            }
+                        }
                     }
                 } catch (e) {}
             }
@@ -155,7 +170,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                                 }
                                 
                                 return (
-                                    <span key={i} className="inline-block relative">
+                                    <span key={i} className="relative inline">
                                         {/* Base text already includes correct spaces from segmentWords */}
                                         <span className="whitespace-pre">{w.word}</span>
                                         {/* Swept text does NOT include space, so the clip-path hits 100% at the end of the letter, not the space */}
