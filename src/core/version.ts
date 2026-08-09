@@ -1,7 +1,7 @@
-// 🛡️ v5.5.269: Creator - Dual-Stem Audio, Tap-to-Sync & Lyrics Overlay Fix
+// 🛡️ v5.5.270: Creator - All-in-One Editor Redesign (POC 1)
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.269";
+export const SYSTEM_VERSION = "5.5.270";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,17 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.270",
+        date: "2026-08-09",
+        changes: [
+            "ui(creator): Redesigned Creator Studio into an All-in-One Professional Editor format (POC 1).",
+            "ui(creator): Replaced legacy purple theme with the system's primary dark/red unified color palette.",
+            "feat(creator): Introduced an Empty State (Creator Hub) to centralize lyric import tools (Cloud, Paste, AI) when initializing a project.",
+            "feat(creator): Consolidated timeline controls (Tap-to-sync, Ripple) into the bottom Timeline Toolbar to clear up Canvas space.",
+            "feat(creator): Converted the Right Sidebar into a dedicated Properties Panel with new Fill and Highlight Color Pickers for text overlays."
+        ]
+    },
     {
         version: "5.5.269",
         date: new Date().toISOString().split('T')[0],

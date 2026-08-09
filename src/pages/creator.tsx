@@ -5,7 +5,7 @@ import { getActiveBridgeBaseUrl, useAIVocalStore } from '../stores/useAIVocalSto
 import { 
     Mic, Play, Pause, Save, Download, Video, Music, 
     ArrowLeft, Settings, Maximize, Type, UploadCloud, FileAudio,
-    Sparkles, FileText, Plus, X, ZoomIn, ZoomOut, Link, RefreshCw, GripVertical
+    Sparkles, FileText, Plus, X, ZoomIn, ZoomOut, Link, RefreshCw, GripVertical, Square, Target
 } from 'lucide-react';
 import WaveSurfer from 'wavesurfer.js';
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js';
@@ -84,6 +84,8 @@ export default function CreatorStudioPage() {
     const [fontSize, setFontSize] = useState(48);
     const [fontOutline, setFontOutline] = useState(3);
     const [fontFamily, setFontFamily] = useState('Sukhumvit Set');
+    const [fillColor, setFillColor] = useState('#ffffff');
+    const [activeColor, setActiveColor] = useState('#E50914');
     const [activeTab, setActiveTab] = useState<'properties' | 'lyrics'>('properties');
     const [audioTrack, setAudioTrack] = useState<'original' | 'vocals' | 'instrumental'>('original');
     const [zoom, setZoom] = useState(80); // px per second
@@ -808,13 +810,22 @@ export default function CreatorStudioPage() {
                         <ArrowLeft size={20} />
                     </button>
                     <div className="font-bold text-lg flex items-center gap-2">
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">YouOke</span>
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500">YouOke</span>
                         <span className="text-zinc-300 font-medium text-sm border-l border-zinc-700 pl-2">Creator Studio</span>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-3">
                     <span className="text-xs text-zinc-500 hidden sm:inline-block">โปรเจกต์: {selectedSong ? selectedSong.title : 'ยังไม่เลือกเพลง'}</span>
+                    
+                    <button
+                        onClick={handleSaveToWiki}
+                        disabled={!selectedSong || lyrics.length === 0}
+                        className="bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-5 py-1.5 rounded-lg text-sm font-bold shadow-md transition-all flex items-center gap-2"
+                    >
+                        <Save size={16} />
+                        Save
+                    </button>
                     <button 
                         onClick={handleExport}
                         disabled={lyrics.length === 0}
@@ -834,7 +845,7 @@ export default function CreatorStudioPage() {
                     {!selectedSong ? (
                         <div className="max-w-4xl w-full mx-auto px-4 py-8 animate-in fade-in duration-500">
                             <div className="text-center mb-12">
-                                <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 mb-3">
+                                <h2 className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500 mb-3">
                                     YouOke Creator Hub
                                 </h2>
                                 <p className="text-zinc-400 text-sm max-w-lg mx-auto">
@@ -845,10 +856,10 @@ export default function CreatorStudioPage() {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 {/* Card 1: Wiki Lyrics Studio */}
-                                <div className="bg-zinc-900/60 backdrop-blur border border-zinc-800 hover:border-purple-500/40 rounded-3xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 shadow-xl group">
+                                <div className="bg-zinc-900/60 backdrop-blur border border-zinc-800 hover:border-primary/40 rounded-3xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 shadow-xl group">
                                     <div>
-                                        <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center mb-6 group-hover:scale-105 transition-transform duration-300">
-                                            <Sparkles className="text-purple-400 w-6 h-6" />
+                                        <div className="w-12 h-12 rounded-2xl bg-primary/80/10 flex items-center justify-center mb-6 group-hover:scale-105 transition-transform duration-300">
+                                            <Sparkles className="text-primary w-6 h-6" />
                                         </div>
                                         <h3 className="text-xl font-bold text-white mb-2">1. สตูดิโอเนื้อร้องคลาวด์ (Wiki Studio)</h3>
                                         <p className="text-zinc-400 text-xs leading-relaxed mb-6">
@@ -859,7 +870,7 @@ export default function CreatorStudioPage() {
                                     <div className="space-y-3 mt-4">
                                         <div className="flex flex-col gap-2">
                                             <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider text-left">ใส่ลิงก์ YouTube หรือ Video ID</label>
-                                            <div className="flex gap-2 bg-zinc-950 p-1.5 rounded-xl border border-zinc-800 focus-within:border-purple-500/50 transition-all">
+                                            <div className="flex gap-2 bg-zinc-950 p-1.5 rounded-xl border border-zinc-800 focus-within:border-primary/50 transition-all">
                                                 <input 
                                                     type="text" 
                                                     placeholder="เช่น https://www.youtube.com/watch?v=..."
@@ -874,7 +885,7 @@ export default function CreatorStudioPage() {
                                         </div>
                                         <button 
                                             onClick={handleGoToWikiStudio}
-                                            className="w-full bg-purple-600 hover:bg-purple-500 text-white py-3 rounded-xl text-sm font-bold shadow-lg shadow-purple-950/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                                            className="w-full bg-primary hover:bg-primary/80 text-white py-3 rounded-xl text-sm font-bold shadow-lg shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-2"
                                         >
                                             <FileText size={16} />
                                             เริ่มแต่งเนื้อร้อง
@@ -885,8 +896,8 @@ export default function CreatorStudioPage() {
                                 {/* Card 2: Local AI Separation */}
                                 <div className="bg-zinc-900/60 backdrop-blur border border-zinc-800 hover:border-pink-500/40 rounded-3xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 shadow-xl group">
                                     <div>
-                                        <div className="w-12 h-12 rounded-2xl bg-pink-500/10 flex items-center justify-center mb-6 group-hover:scale-105 transition-transform duration-300">
-                                            <Music className="text-pink-400 w-6 h-6" />
+                                        <div className="w-12 h-12 rounded-2xl bg-primary/80/10 flex items-center justify-center mb-6 group-hover:scale-105 transition-transform duration-300">
+                                            <Music className="text-orange-400 w-6 h-6" />
                                         </div>
                                         <h3 className="text-xl font-bold text-white mb-2">2. ถอดเสียงแยกคีย์ด้วย AI (Local Studio)</h3>
                                         <p className="text-zinc-400 text-xs leading-relaxed mb-6">
@@ -899,7 +910,7 @@ export default function CreatorStudioPage() {
                                             onClick={() => setShowLibraryModal(true)}
                                             className="w-full bg-zinc-800 hover:bg-zinc-700 hover:text-white border border-zinc-700 text-zinc-200 py-3.5 rounded-xl text-sm font-bold active:scale-95 transition-all flex items-center justify-center gap-2 shadow-lg shadow-zinc-950/20"
                                         >
-                                            <Music size={16} className="text-pink-400" />
+                                            <Music size={16} className="text-orange-400" />
                                             เลือกเพลงจากคลัง Local
                                         </button>
                                     </div>
@@ -910,7 +921,7 @@ export default function CreatorStudioPage() {
                         <div className="w-full h-full flex flex-col items-center justify-center relative p-8 select-none">
                             {/* Fake Video Canvas Area */}
                             <div ref={videoContainerRef} className="aspect-video w-full max-w-4xl bg-zinc-900 rounded-lg shadow-2xl border border-zinc-800 relative flex flex-col items-center justify-center overflow-hidden">
-                                <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 to-black/40 pointer-events-none" />
+                                <div className="absolute inset-0 bg-gradient-to-br from-red-900/20 to-black/40 pointer-events-none" />
                                 
                                 {/* Lyrics Preview */}
                                 <div 
@@ -941,7 +952,7 @@ export default function CreatorStudioPage() {
                                     }}
                                     className={clsx(
                                         "z-10 text-center px-12 py-4 absolute w-max max-w-[90%] flex flex-col items-center select-none rounded-xl border border-transparent transition-all",
-                                        isDraggingOverlay ? "border-purple-500/30 bg-purple-500/5 scale-105" : "hover:border-zinc-800 hover:bg-zinc-900/10"
+                                        isDraggingOverlay ? "border-primary/30 bg-primary/80/5 scale-105" : "hover:border-zinc-800 hover:bg-zinc-900/10"
                                     )}
                                 >
                                     <div className="space-y-4 w-full flex flex-col items-center pointer-events-none font-sans">
@@ -966,10 +977,7 @@ export default function CreatorStudioPage() {
                                                                 const isPast = currentTime > l.end;
                                                                 const isCurrent2 = currentTime >= l.start && currentTime <= l.end;
                                                                 return (
-                                                                    <span key={i} className={clsx(
-                                                                        "transition-colors duration-100 mx-1 inline-block",
-                                                                        isPast ? "text-purple-400" : isCurrent2 ? "text-pink-400" : "text-white"
-                                                                    )}>{l.word}</span>
+                                                                    <span key={i} className={clsx("transition-colors duration-100 mx-1 inline-block")} style={{ color: isPast ? activeColor : isCurrent2 ? activeColor : fillColor, opacity: isPast ? 1 : isCurrent2 ? 0.9 : 0.8 }}>{l.word}</span>
                                                                 );
                                                             }) : <span>&nbsp;</span>}
                                                         </p>
@@ -982,14 +990,33 @@ export default function CreatorStudioPage() {
                                                             )}
                                                         >
                                                             {nextLine ? nextLine.map((l, i) => (
-                                                                <span key={i} className="mx-1 inline-block">{l.word}</span>
+                                                                <span key={i} className="mx-1 inline-block" style={{ color: fillColor }}>{l.word}</span>
                                                             )) : <span>&nbsp;</span>}
                                                         </p>
                                                     </div>
                                                 );
                                             })()
                                         ) : (
-                                            <span className="text-zinc-600 text-3xl font-bold">ไม่มีเนื้อเพลง (นำเข้า/วางเนื้อร้องด้านขวา)</span>
+                                            <div className="flex flex-col items-center justify-center gap-6 animate-in fade-in zoom-in duration-500">
+                                                <div className="text-center">
+                                                    <h3 className="text-2xl font-black text-white mb-2">ยังไม่มีเนื้อร้อง</h3>
+                                                    <p className="text-zinc-400 text-sm">เลือกวิธีสร้างเนื้อร้องสำหรับโปรเจกต์นี้</p>
+                                                </div>
+                                                <div className="flex gap-4">
+                                                    <button onClick={handleTranscribe} disabled={isTranscribing} className="flex flex-col items-center gap-2 bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 hover:border-primary/50 p-6 rounded-2xl transition-all shadow-xl disabled:opacity-50 group">
+                                                        {isTranscribing ? <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div> : <Mic size={32} className="text-primary group-hover:scale-110 transition-transform" />}
+                                                        <span className="font-bold text-white">AI แกะเนื้อร้อง</span>
+                                                    </button>
+                                                    <button onClick={() => setShowPasteModal(true)} className="flex flex-col items-center gap-2 bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 hover:border-emerald-500/50 p-6 rounded-2xl transition-all shadow-xl group">
+                                                        <FileText size={32} className="text-emerald-500 group-hover:scale-110 transition-transform" />
+                                                        <span className="font-bold text-white">วางเนื้อร้องเอง</span>
+                                                    </button>
+                                                    <button onClick={handleImportFromWiki} className="flex flex-col items-center gap-2 bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 hover:border-sky-500/50 p-6 rounded-2xl transition-all shadow-xl group">
+                                                        <UploadCloud size={32} className="text-sky-500 group-hover:scale-110 transition-transform" />
+                                                        <span className="font-bold text-white">ดึงจาก Wiki</span>
+                                                    </button>
+                                                </div>
+                                            </div>
                                         )}
                                     </div>
                                 </div>
@@ -999,67 +1026,7 @@ export default function CreatorStudioPage() {
                                 </div>
                             </div>
                             
-                            {/* Canvas Toolbar with Quick Controls */}
-                            <div className="w-full max-w-4xl mt-3 flex items-center justify-between gap-4 bg-zinc-950 border border-zinc-800 p-2.5 rounded-xl font-sans shrink-0">
-                                <div className="flex items-center gap-1.5">
-                                    <button 
-                                        onClick={handleAddBlockAtPlayhead}
-                                        disabled={!selectedSong}
-                                        className="px-3.5 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 shadow"
-                                        title="เพิ่มบล็อกเนื้อร้องตรงเวลาที่กำลังเล่นปัจจุบัน"
-                                    >
-                                        <Plus size={14} />
-                                        เพิ่มบรรทัด
-                                    </button>
-                                    
-                                    {/* Tap-to-Sync Controls */}
-                                    <button
-                                        onClick={handleToggleRecording}
-                                        disabled={!selectedSong || lyrics.length === 0}
-                                        className={clsx(
-                                            "px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 shadow",
-                                            isRecording ? "bg-red-600 hover:bg-red-500 text-white animate-pulse" : "bg-zinc-700 hover:bg-zinc-600 text-zinc-200 disabled:opacity-50"
-                                        )}
-                                        title="เริ่ม/หยุด Tap-to-Sync (กด Spacebar เพื่อซิงค์เนื้อร้อง)"
-                                    >
-                                        {isRecording ? '⏹ หยุด Sync' : '🎯 Tap-to-Sync'}
-                                    </button>
-                                    {isRecording && (
-                                        <button
-                                            onClick={handleTap}
-                                            className="px-4 py-2 rounded-lg bg-pink-600 hover:bg-pink-500 text-white text-xs font-black transition-all active:scale-95 shadow"
-                                            title={`กด Tap! หรือ Spacebar เพื่อซิงค์บรรทัดที่ ${recordingIndex + 1}/${lyrics.length}`}
-                                        >
-                                            🎵 Tap! ({recordingIndex + 1}/{lyrics.length})
-                                        </button>
-                                    )}
-
-                                    <button 
-                                        onClick={() => setIsRippleEdit(!isRippleEdit)}
-                                        className={clsx(
-                                            "px-3.5 py-2 rounded-lg border text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95",
-                                            isRippleEdit 
-                                                ? "bg-amber-600/20 border-amber-500/50 text-amber-200" 
-                                                : "bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-400"
-                                        )}
-                                        title="ลากกลุ่ม (Ripple): เมื่อเลื่อน/ขยายบล็อก จะขยับบล็อกที่อยู่ตามหลังทั้งหมดไปพร้อมกัน"
-                                    >
-                                        <Link size={14} />
-                                        ลากกลุ่ม (Ripple)
-                                    </button>
-                                </div>
-                                
-                                <div className="flex items-center gap-2">
-                                    <button
-                                        onClick={handleSaveToWiki}
-                                        disabled={!selectedSong || lyrics.length === 0}
-                                        className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 shadow"
-                                    >
-                                        <Save size={14} />
-                                        บันทึกข้อมูล
-                                    </button>
-                                </div>
-                            </div>
+                            
 
                         </div>
                     )}
@@ -1069,11 +1036,11 @@ export default function CreatorStudioPage() {
                 <div className="w-80 border-l border-zinc-800 bg-zinc-950 flex flex-col shrink-0 hidden lg:flex font-sans">
                     <div className="p-4 border-b border-zinc-800 shrink-0 flex items-center justify-between">
                         <h2 className="font-bold text-sm text-zinc-300 uppercase tracking-wider flex items-center gap-2">
-                            <Settings size={16} className="text-purple-400" />
+                            <Settings size={16} className="text-primary" />
                             เครื่องมือแต่งเนื้อร้อง
                         </h2>
                         {lyrics.length > 0 && (
-                            <span className="text-[10px] font-bold bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full border border-purple-500/30">
+                            <span className="text-[10px] font-bold bg-primary/80/20 text-primary px-2 py-0.5 rounded-full border border-primary/30">
                                 {lyrics.length} บรรทัด
                             </span>
                         )}
@@ -1081,63 +1048,14 @@ export default function CreatorStudioPage() {
 
                     <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-6">
                         
-                        {/* Section 1: Lyric Source Selector */}
-                        <div className="space-y-3">
-                            <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
-                                1. แหล่งข้อมูลเนื้อร้อง
-                            </h3>
-                            
-                            <button 
-                                onClick={handleImportFromWiki}
-                                disabled={!selectedSong}
-                                className="w-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 disabled:opacity-50 text-zinc-200 text-xs py-3 px-4 rounded-xl font-bold transition-all flex items-center gap-3 active:scale-95 shadow"
-                                title="ดึงข้อมูลเนื้อร้องที่มีอยู่แล้วบนคลาวด์/Wiki"
-                            >
-                                <UploadCloud size={16} className="text-sky-400 shrink-0" />
-                                <div className="text-left">
-                                    <p className="font-bold">ดึงเนื้อร้องออนไลน์ (คลาวด์)</p>
-                                    <p className="text-[10px] font-normal text-zinc-500">โหลดข้อมูลจากฐานข้อมูลกลาง</p>
-                                </div>
-                            </button>
-
-                            <button 
-                                onClick={() => setShowPasteModal(true)}
-                                disabled={!selectedSong}
-                                className="w-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 disabled:opacity-50 text-zinc-200 text-xs py-3 px-4 rounded-xl font-bold transition-all flex items-center gap-3 active:scale-95 shadow"
-                                title="พิมพ์หรือวางเนื้อเพลงดิบเพื่อจัดเวลาด้วยตัวเอง"
-                            >
-                                <FileText size={16} className="text-emerald-400 shrink-0" />
-                                <div className="text-left">
-                                    <p className="font-bold">พิมพ์ / วางเนื้อร้องเอง</p>
-                                    <p className="text-[10px] font-normal text-zinc-500">วางท่อนร้องดิบมาซิงค์จังหวะเอง</p>
-                                </div>
-                            </button>
-
-                            <button 
-                                onClick={handleTranscribe}
-                                disabled={isTranscribing || !selectedSong}
-                                className="w-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 disabled:opacity-50 text-zinc-200 text-xs py-3 px-4 rounded-xl font-bold transition-all flex items-center gap-3 active:scale-95 shadow"
-                            >
-                                {isTranscribing ? (
-                                    <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-purple-400 shrink-0"></div>
-                                ) : (
-                                    <Mic size={16} className="text-purple-400 shrink-0" />
-                                )}
-                                <div className="text-left">
-                                    <p className="font-bold">ถอดเนื้อร้องอัตโนมัติ (AI)</p>
-                                    <p className="text-[10px] font-normal text-zinc-500">ให้ปัญญาประดิษฐ์แกะเนื้อร้องไทย</p>
-                                </div>
-                            </button>
-                        </div>
-
                         {/* Section 2: Canvas Text Overlay Styling */}
                         <div className="space-y-4 pt-4 border-t border-zinc-900">
                             <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
-                                2. รูปแบบตัวอักษรบนพรีวิว
+                                การจัดรูปแบบ (Properties)
                             </h3>
                             
                             <div className="flex items-center justify-between bg-zinc-900 p-2.5 rounded-xl border border-zinc-800">
-                                <span className="text-xs text-zinc-400 flex items-center gap-1.5"><Type size={14} className="text-purple-400" /> รูปแบบฟอนต์</span>
+                                <span className="text-xs text-zinc-400 flex items-center gap-1.5"><Type size={14} className="text-primary" /> รูปแบบฟอนต์</span>
                                 <select 
                                     value={fontFamily}
                                     onChange={(e) => setFontFamily(e.target.value)}
@@ -1152,6 +1070,24 @@ export default function CreatorStudioPage() {
                                 </select>
                             </div>
 
+                            <div className="bg-zinc-900 p-3.5 rounded-xl border border-zinc-800 space-y-3">
+                                <div className="flex justify-between items-center text-xs">
+                                    <span className="text-zinc-400">สีข้อความ (Fill)</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-mono text-zinc-500 uppercase">{fillColor}</span>
+                                        <input type="color" value={fillColor} onChange={(e) => setFillColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent p-0" />
+                                    </div>
+                                </div>
+                                <div className="flex justify-between items-center text-xs">
+                                    <span className="text-zinc-400">สีไฮไลท์ (Active)</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-mono text-zinc-500 uppercase">{activeColor}</span>
+                                        <input type="color" value={activeColor} onChange={(e) => setActiveColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent p-0" />
+                                    </div>
+                                </div>
+                            </div>
+
+
                             <div className="bg-zinc-900 p-3.5 rounded-xl border border-zinc-800 space-y-2">
                                 <div className="flex justify-between items-center text-xs">
                                     <span className="text-zinc-400">ขนาดฟอนต์</span>
@@ -1162,7 +1098,7 @@ export default function CreatorStudioPage() {
                                     min="24" max="100" 
                                     value={fontSize} 
                                     onChange={(e) => setFontSize(Number(e.target.value))}
-                                    className="w-full h-1 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                                    className="w-full h-1 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-primary"
                                 />
                             </div>
 
@@ -1176,11 +1112,11 @@ export default function CreatorStudioPage() {
                                     min="0" max="10" step="0.5"
                                     value={fontOutline} 
                                     onChange={(e) => setFontOutline(Number(e.target.value))}
-                                    className="w-full h-1 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                                    className="w-full h-1 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-primary"
                                 />
                             </div>
 
-                            <div className="bg-purple-950/20 border border-purple-500/25 p-3.5 rounded-xl text-xs text-purple-200">
+                            <div className="bg-red-950/20 border border-primary/25 p-3.5 rounded-xl text-xs text-red-200">
                                 <p className="font-bold flex items-center gap-1.5 mb-1">
                                     💡 เคล็ดลับจัดวางหน้าจอ
                                 </p>
@@ -1205,9 +1141,43 @@ export default function CreatorStudioPage() {
                 {/* Timeline Toolbar */}
                 <div className="h-11 border-b border-zinc-800/50 flex items-center justify-between px-4 bg-zinc-900/30 shrink-0">
                     <div className="flex items-center gap-4 text-zinc-400">
+                        <div className="flex items-center gap-2 mr-4 border-r border-zinc-800 pr-4">
+                            <button 
+                                onClick={handleAddBlockAtPlayhead}
+                                disabled={!selectedSong}
+                                className="p-1.5 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-lg transition-colors"
+                                title="เพิ่มบล็อกเนื้อร้องตรงเวลาที่กำลังเล่นปัจจุบัน"
+                            >
+                                <Plus size={16} />
+                            </button>
+                            <button
+                                onClick={handleToggleRecording}
+                                disabled={!selectedSong || lyrics.length === 0}
+                                className={`p-1.5 rounded-lg transition-colors ${isRecording ? "bg-red-600/20 text-red-500 animate-pulse" : "hover:bg-zinc-800 text-zinc-400 hover:text-white disabled:opacity-50"}`}
+                                title="เริ่ม/หยุด Tap-to-Sync"
+                            >
+                                {isRecording ? <Square size={16} /> : <Target size={16} />}
+                            </button>
+                            {isRecording && (
+                                <button
+                                    onClick={handleTap}
+                                    className="px-2 py-1 rounded-md bg-primary text-white text-xs font-black transition-all active:scale-95 shadow"
+                                >
+                                    Tap! ({recordingIndex + 1})
+                                </button>
+                            )}
+                            <button 
+                                onClick={() => setIsRippleEdit(!isRippleEdit)}
+                                className={`p-1.5 rounded-lg transition-colors ${isRippleEdit ? "bg-amber-600/20 text-amber-500" : "hover:bg-zinc-800 text-zinc-400 hover:text-white"}`}
+                                title="ลากกลุ่ม (Ripple)"
+                            >
+                                <Link size={16} />
+                            </button>
+                        </div>
+
                         <div className="flex items-center gap-1">
                             <button className="hover:text-white transition-all p-2 bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 rounded-lg active:scale-90" onClick={togglePlay}>
-                                {isPlaying ? <Pause size={14} className="text-purple-400" /> : <Play size={14} />}
+                                {isPlaying ? <Pause size={14} className="text-primary" /> : <Play size={14} />}
                             </button>
                         </div>
                         <span className="text-xs font-mono text-zinc-300 w-16">{formatTime(currentTime)}</span>
@@ -1218,7 +1188,7 @@ export default function CreatorStudioPage() {
                                     onClick={() => setAudioTrack('vocals')}
                                     className={clsx(
                                         "p-1.5 rounded transition-all",
-                                        audioTrack === 'vocals' ? "bg-purple-600 text-white shadow" : "text-zinc-500 hover:text-zinc-300"
+                                        audioTrack === 'vocals' ? "bg-primary text-white shadow" : "text-zinc-500 hover:text-zinc-300"
                                     )}
                                     title="เสียงร้องเท่านั้น (Vocals)"
                                 >
@@ -1228,7 +1198,7 @@ export default function CreatorStudioPage() {
                                     onClick={() => setAudioTrack('instrumental')}
                                     className={clsx(
                                         "p-1.5 rounded transition-all",
-                                        audioTrack === 'instrumental' ? "bg-purple-600 text-white shadow" : "text-zinc-500 hover:text-zinc-300"
+                                        audioTrack === 'instrumental' ? "bg-primary text-white shadow" : "text-zinc-500 hover:text-zinc-300"
                                     )}
                                     title="ดนตรีเปล่า (Backing)"
                                 >
@@ -1238,7 +1208,7 @@ export default function CreatorStudioPage() {
                                     onClick={() => setAudioTrack('original')}
                                     className={clsx(
                                         "p-1.5 rounded transition-all",
-                                        audioTrack === 'original' ? "bg-purple-600 text-white shadow" : "text-zinc-500 hover:text-zinc-300"
+                                        audioTrack === 'original' ? "bg-primary text-white shadow" : "text-zinc-500 hover:text-zinc-300"
                                     )}
                                     title="รวมเสียง (Mix)"
                                 >
@@ -1260,7 +1230,7 @@ export default function CreatorStudioPage() {
                             min="10" max="300" 
                             value={zoom} 
                             onChange={handleZoomChange}
-                            className="w-28 h-1 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                            className="w-28 h-1 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-primary"
                         />
                         <button 
                             onClick={() => handleZoomChange({ target: { value: String(Math.min(300, zoom + 15)) } } as any)}
@@ -1341,7 +1311,7 @@ export default function CreatorStudioPage() {
                                         className={clsx(
                                             "absolute rounded-lg border flex overflow-hidden transition-all shadow-md group select-none",
                                             isActive 
-                                                ? "bg-purple-600/40 border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.3)] text-white" 
+                                                ? "bg-primary/40 border-primary shadow-[0_0_15px_rgba(229,9,20,0.3)] text-white" 
                                                 : isDone
                                                     ? "bg-zinc-850 border-zinc-700/50 text-zinc-400"
                                                     : "bg-zinc-800/80 border-white/10 hover:border-white/30 text-white"
@@ -1473,7 +1443,7 @@ export default function CreatorStudioPage() {
                                 value={rawText}
                                 onChange={(e) => setRawText(e.target.value)}
                                 placeholder="วางเนื้อเพลงที่นี่...&#10;เช่น:&#10;เขาคู่ควรอ้ายทิ้งป่ะ&#10;อ้ายอยู่กับเขาอ้ายหักศอกเอน"
-                                className="w-full flex-1 min-h-[250px] bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-sm text-zinc-200 outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all font-sans resize-none"
+                                className="w-full flex-1 min-h-[250px] bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-sm text-zinc-200 outline-none focus:border-primary focus:ring-1 focus:ring-purple-500 transition-all font-sans resize-none"
                             />
                         </div>
                         <div className="p-4 border-t border-zinc-800 flex justify-end gap-2 bg-zinc-900/50 rounded-b-2xl">
@@ -1486,7 +1456,7 @@ export default function CreatorStudioPage() {
                             <button
                                 onClick={handlePasteSubmit}
                                 disabled={!rawText.trim()}
-                                className="px-5 py-2 text-xs font-semibold bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+                                className="px-5 py-2 text-xs font-semibold bg-primary hover:bg-primary/80 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
                             >
                                 นำเข้าเนื้อเพลง
                             </button>
