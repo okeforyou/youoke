@@ -535,7 +535,41 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                         </div>
                                     </button>
                                 )}
+                                
+                                {showLyrics && (
+                                    <div className="w-[1px] h-8 bg-gray-200 dark:bg-zinc-700/50 mx-1" />
+                                )}
+                                
+                                {/* AI Sync Toggle */}
+                                {showLyrics && (
+                                    <button 
+                                        onClick={async () => {
+                                            if (hybridModeEnabled) {
+                                                setHybridModeEnabled(false);
+                                            } else {
+                                                await alignHybridLyrics(activeVideoId!, lyrics);
+                                            }
+                                        }}
+                                        disabled={isAligning || !lyrics || lyrics.length === 0}
+                                        className={clsx(
+                                            "flex-1 flex items-center justify-center gap-2 py-2 text-sm font-bold transition-colors",
+                                            hybridModeEnabled ? "text-amber-500" : "text-black/70 dark:text-zinc-300",
+                                            (isAligning || !lyrics || lyrics.length === 0) && "opacity-50 cursor-not-allowed"
+                                        )}
+                                        title="ปรับจังหวะอัตโนมัติด้วย AI"
+                                    >
+                                        <Sparkles size={16} className={clsx(isAligning && "animate-pulse")} />
+                                        <span className="hidden sm:inline">{isAligning ? "รอ..." : "AI Sync"}</span>
+                                    </button>
+                                )}
                             </div>
+                            
+                            {/* Error message for AI Sync */}
+                            {errorMessage && (
+                                <p className="text-[10px] text-red-500 mt-2 text-center font-medium px-2">
+                                    {errorMessage}
+                                </p>
+                            )}
                         </div>
                         
                         {(lyricsError && showLyrics) && (
@@ -568,43 +602,15 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                             <div className="mt-3 p-4 bg-gray-50/80 dark:bg-zinc-800/40 rounded-2xl border border-gray-100 dark:border-zinc-700/50 flex flex-col gap-4">
                                 {/* Edit in Studio Button */}
                                 {currentVideo && (
-                                    <div className="flex flex-col gap-2 w-full">
-                                        <button
-                                            onClick={() => {
-                                                router.push(`/creator?edit=${currentVideo.id}`);
-                                            }}
-                                            className="w-full py-2.5 bg-zinc-900 hover:bg-black dark:bg-zinc-700 dark:hover:bg-zinc-600 text-white rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-2"
-                                        >
-                                            <Edit2 size={14} />
-                                            <span>แก้ไขเนื้อเพลงใน Studio</span>
-                                        </button>
-
-                                        <button
-                                            onClick={async () => {
-                                                if (hybridModeEnabled) {
-                                                    setHybridModeEnabled(false);
-                                                } else {
-                                                    await alignHybridLyrics(activeVideoId!, lyrics);
-                                                }
-                                            }}
-                                            disabled={isAligning || !lyrics || lyrics.length === 0}
-                                            className={clsx(
-                                                "w-full py-2.5 rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-2",
-                                                hybridModeEnabled 
-                                                    ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/50" 
-                                                    : "bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:from-violet-600 hover:to-fuchsia-600 text-white disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-                                            )}
-                                        >
-                                            <Sparkles size={14} className={clsx(isAligning && "animate-pulse")} />
-                                            <span>{isAligning ? "กำลังปรับจังหวะ..." : (hybridModeEnabled ? "ปิดโหมด AI Sync" : "ปรับจังหวะด้วย AI (Hybrid)")}</span>
-                                        </button>
-                                        
-                                        {errorMessage && (
-                                            <p className="text-[10px] text-red-500 text-center font-medium bg-red-50 dark:bg-red-900/10 p-2 rounded-lg border border-red-100 dark:border-red-900/30">
-                                                {errorMessage}
-                                            </p>
-                                        )}
-                                    </div>
+                                    <button
+                                        onClick={() => {
+                                            router.push(`/creator?edit=${currentVideo.id}`);
+                                        }}
+                                        className="w-full py-2.5 bg-zinc-900 hover:bg-black dark:bg-zinc-700 dark:hover:bg-zinc-600 text-white rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        <Edit2 size={14} />
+                                        <span>แก้ไขเนื้อเพลงใน Studio</span>
+                                    </button>
                                 )}
 
                                 {/* Source Selector */}
