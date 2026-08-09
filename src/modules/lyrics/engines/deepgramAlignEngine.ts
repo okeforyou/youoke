@@ -194,10 +194,8 @@ function alignSingleLine(
   let charIdx = 0;
 
   for (const word of lineWords) {
-    // Find where this word starts in the original text
     const wordStartIdx = lrclibText.indexOf(word, charIdx);
     if (wordStartIdx === -1) {
-      // Fallback if not found
       alignedWords.push({ word, start: lineStartTime, end: lineEndTime });
       continue;
     }
@@ -221,7 +219,7 @@ function alignSingleLine(
 }
 
 /**
- * Calculates simple fuzzy match score between two strings (for finding windows in Mode 2)
+ * Calculates Levenshtein-based fuzzy match score
  */
 function simpleFuzzyMatch(s1: string, s2: string): number {
   const str1 = s1.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
@@ -230,13 +228,15 @@ function simpleFuzzyMatch(s1: string, s2: string): number {
   if (str1 === str2) return 1.0;
   if (str1.length === 0 || str2.length === 0) return 0.0;
 
-  const matrix = Array.from({ length: str1.length + 1 }, () => Array(str2.length + 1).fill(0));
+  const m = str1.length;
+  const n = str2.length;
+  const matrix = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
 
-  for (let i = 0; i <= str1.length; i++) matrix[i][0] = i;
-  for (let j = 0; j <= str2.length; j++) matrix[0][j] = j;
+  for (let i = 0; i <= m; i++) matrix[i][0] = i;
+  for (let j = 0; j <= n; j++) matrix[0][j] = j;
 
-  for (let i = 1; i <= str1.length; i++) {
-    for (let j = 1; j <= str2.length; j++) {
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
       const cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
       matrix[i][j] = Math.min(
         matrix[i - 1][j] + 1,
@@ -246,9 +246,43 @@ function simpleFuzzyMatch(s1: string, s2: string): number {
     }
   }
 
-  const distance = matrix[str1.length][str2.length];
-  const maxLength = Math.max(str1.length, str2.length);
-  return 1.0 - distance / maxLength;
+  return 1.0 - matrix[m][n] / Math.max(m, n);
+}
+
+/**
+ * Automatically calculates a global offset to shift the entire LRCLIB timeline
+ */
+function findGlobalOffset(lrclibLines: LRCLIBLine[], dgWords: DeepgramWord[]): number {
+  // Find first 3 non-empty lines
+  const firstLines = lrclibLines.filter(l => l.text.trim().length > 0).slice(0, 3);
+  if (firstLines.length === 0) return 0;
+  
+  const lrcCombined = firstLines.map(l => l.text).join('').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
+  const targetTime = firstLines[0].time;
+  
+  let bestScore = 0;
+  let bestOffset = 0;
+  
+  // Search only the first 60 seconds of Deepgram transcript for safe intro calculation
+  const searchWords = dgWords.filter(w => w.start < 60);
+  
+  for (let startIdx = 0; startIdx < searchWords.length; startIdx++) {
+    let currentConcat = "";
+    // Window limit up to 15 Deepgram words
+    for (let endIdx = startIdx; endIdx < Math.min(searchWords.length, startIdx + 15); endIdx++) {
+      currentConcat += searchWords[endIdx].word;
+      const cleanConcat = currentConcat.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
+      
+      const score = simpleFuzzyMatch(lrcCombined, cleanConcat);
+      if (score > bestScore) {
+        bestScore = score;
+        bestOffset = searchWords[startIdx].start - targetTime;
+      }
+    }
+  }
+  
+  console.log(`[AI Sync] Global offset match score: ${bestScore.toFixed(2)}, offset: ${bestOffset.toFixed(2)}s`);
+  return bestScore >= 0.4 ? bestOffset : 0;
 }
 
 /**
@@ -265,18 +299,25 @@ export function alignLyrics(deepgramWords: DeepgramWord[], lrclibLines: LRCLIBLi
   const isSynced = lrclibLines.some(l => l.time > 0);
 
   if (isSynced) {
-    // Mode 1: Trust LRCLIB line times, perform character-level alignment in the window
+    // Calculate global offset to sync the first lines of LRCLIB to the actual audio
+    const globalOffset = findGlobalOffset(lrclibLines, validWords);
+    console.log(`[AI Sync] Shifting all line timelines by global offset: ${globalOffset.toFixed(2)}s`);
+
+    // Mode 1: Trust LRCLIB line times (shifted by global offset)
     for (let i = 0; i < lrclibLines.length; i++) {
       const line = lrclibLines[i];
       if (!line.text.trim()) {
-         alignedLines.push({ ...line });
+         alignedLines.push({
+           ...line,
+           time: Math.max(0, line.time + globalOffset)
+         });
          continue;
       }
 
-      const startTime = line.time;
+      const startTime = Math.max(0, line.time + globalOffset);
       let nextTime = startTime + 5;
-      if (i + 1 < lrclibLines.length && lrclibLines[i + 1].time > startTime) {
-         nextTime = lrclibLines[i + 1].time;
+      if (i + 1 < lrclibLines.length && lrclibLines[i + 1].time > line.time) {
+         nextTime = Math.max(0, lrclibLines[i + 1].time + globalOffset);
       }
       const duration = nextTime - startTime;
 
