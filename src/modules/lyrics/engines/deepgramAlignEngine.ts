@@ -31,8 +31,8 @@ export interface AlignedLine {
  * 1.0 means exact match, 0.0 means completely different.
  */
 function fuzzyMatch(s1: string, s2: string): number {
-  const str1 = s1.toLowerCase().replace(/[\s\W_]+/g, '');
-  const str2 = s2.toLowerCase().replace(/[\s\W_]+/g, '');
+  const str1 = s1.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
+  const str2 = s2.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
 
   if (str1 === str2) return 1.0;
   if (str1.length === 0 || str2.length === 0) return 0.0;
@@ -96,7 +96,7 @@ export function alignLyrics(deepgramWords: DeepgramWord[], lrclibLines: LRCLIBLi
     }
 
     // Strip spaces and special chars to match against Deepgram words
-    const lineTextClean = line.text.toLowerCase().replace(/[\s\W_]+/g, '');
+    const lineTextClean = line.text.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
     
     let bestMatchScore = 0;
     let bestWindowStart = currentWordIdx;
@@ -110,7 +110,7 @@ export function alignLyrics(deepgramWords: DeepgramWord[], lrclibLines: LRCLIBLi
     for (let start = currentWordIdx; start < windowLimit; start++) {
       let currentConcat = '';
       for (let end = start; end < Math.min(validWords.length, start + 10); end++) {
-         currentConcat += validWords[end].word.toLowerCase().replace(/[\s\W_]+/g, '');
+         currentConcat += validWords[end].word.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
          
          const score = fuzzyMatch(lineTextClean, currentConcat);
          if (score > bestMatchScore) {
@@ -137,14 +137,14 @@ export function alignLyrics(deepgramWords: DeepgramWord[], lrclibLines: LRCLIBLi
 
            for (let wIdx = 0; wIdx < lineWords.length; wIdx++) {
                const lWord = lineWords[wIdx];
-               const lWordClean = lWord.toLowerCase().replace(/[\s\W_]+/g, '');
+               const lWordClean = lWord.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
                
                let bestWordMatchIdx = -1;
                let bestWordScore = 0;
                
                // Lookahead of 3 words
                for (let k = dgIdx; k < Math.min(matchedDgWords.length, dgIdx + 3); k++) {
-                   const dgWordClean = matchedDgWords[k].word.toLowerCase().replace(/[\s\W_]+/g, '');
+                   const dgWordClean = matchedDgWords[k].word.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
                    const score = fuzzyMatch(lWordClean, dgWordClean);
                    if (score > bestWordScore) {
                        bestWordScore = score;

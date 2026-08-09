@@ -132,8 +132,12 @@ export const useDeepgramLyricsStore = create<DeepgramLyricsState>((set, get) => 
           localStorage.setItem(`ai_lyrics_${videoId}`, JSON.stringify(deepgramWords));
       }
       
-      // Use raw Deepgram words grouped into lines directly (bypassing messy clean-text alignment)
-      const alignedLines = groupDeepgramWordsIntoLines(deepgramWords);
+      if (!originalLyrics || originalLyrics.length === 0) {
+          throw new Error("ไม่พบเนื้อเพลงตั้งต้น (LRCLIB) สำหรับทำ Hybrid Sync");
+      }
+
+      // True Hybrid Approach: Align Deepgram times onto LRCLIB text
+      const alignedLines = alignLyrics(deepgramWords, originalLyrics);
       
       set({ 
         alignedLyrics: alignedLines, 
