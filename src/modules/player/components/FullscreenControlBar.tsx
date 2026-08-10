@@ -63,12 +63,14 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
     if (layoutMode !== 'fullscreen') return null;
 
     return (
-        <div className="relative">
-            {/* Popover Mixer Panel (Floating above the control bar) */}
+        <div
+            className={`absolute bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 p-2 bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}
+        >
+            {/* Popover Mixer Panel (Floating above the control bar, positioned absolutely relative to the bar) */}
             {showMixerPopover && (
                 <div 
                     ref={popoverRef}
-                    className="absolute bottom-20 left-1/2 -translate-x-1/2 bg-black/90 backdrop-blur-2xl border border-white/10 p-4 rounded-2xl shadow-2xl flex flex-col gap-4 w-[280px] z-50 pointer-events-auto transition-all"
+                    className="absolute bottom-16 left-1/2 -translate-x-1/2 bg-black/90 backdrop-blur-2xl border border-white/10 p-4 rounded-2xl shadow-2xl flex flex-col gap-4 w-[280px] z-50 pointer-events-auto transition-all"
                 >
                     <div className="flex justify-between items-center border-b border-white/10 pb-2">
                         <span className="text-white text-xs font-bold flex items-center gap-1.5">
@@ -192,78 +194,73 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                 </div>
             )}
 
-            {/* Main Fullscreen Control Bar */}
-            <div
-                className={`absolute bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 p-2 bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}
+            {/* 1. Toggle Lyrics */}
+            <button
+                onClick={toggleLyrics}
+                className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto ${showLyrics ? 'bg-primary/20 text-primary border border-primary/20' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
+                title={showLyrics ? "ปิดการแสดงเนื้อร้อง" : "เปิดการแสดงเนื้อร้อง"}
             >
-                {/* 1. Toggle Lyrics */}
-                <button
-                    onClick={toggleLyrics}
-                    className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto ${showLyrics ? 'bg-primary/20 text-primary border border-primary/20' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
-                    title={showLyrics ? "ปิดการแสดงเนื้อร้อง" : "เปิดการแสดงเนื้อร้อง"}
-                >
-                    <Type size={20} />
-                </button>
+                <Type size={20} />
+            </button>
 
-                {/* 2. Toggle Guide Vocal */}
-                <button
-                    onClick={() => {
-                        if (isAiReady) {
-                            toggleMute('vocals');
-                        } else if (currentVideo) {
-                            const uuid = currentVideo.uuid || currentVideo.id;
-                            if (uuid && activeVideoId) {
-                                useUIStore.getState().showVocalModeModal(uuid, activeVideoId);
-                            }
+            {/* 2. Toggle Guide Vocal */}
+            <button
+                onClick={() => {
+                    if (isAiReady) {
+                        toggleMute('vocals');
+                    } else if (currentVideo) {
+                        const uuid = currentVideo.uuid || currentVideo.id;
+                        if (uuid && activeVideoId) {
+                            useUIStore.getState().showVocalModeModal(uuid, activeVideoId);
                         }
-                    }}
-                    className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto ${isAiReady && trackStates.vocals.muted ? 'bg-red-500/20 text-red-400 border border-red-500/20' : (isAiReady ? 'bg-green-500/20 text-green-400 border border-green-500/20' : 'text-white/40 hover:text-white hover:bg-white/10')}`}
-                    title={isAiReady ? (trackStates.vocals.muted ? "เปิดเสียงร้องไกด์" : "ปิดเสียงร้องไกด์") : "แยกเสียงร้องด้วย AI"}
-                >
-                    {isAiReady ? (trackStates.vocals.muted ? <MicOff size={20} /> : <Mic size={20} />) : <Mic size={20} className="opacity-50" />}
-                </button>
+                    }
+                }}
+                className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto ${isAiReady && trackStates.vocals.muted ? 'bg-red-500/20 text-red-400 border border-red-500/20' : (isAiReady ? 'bg-green-500/20 text-green-400 border border-green-500/20' : 'text-white/40 hover:text-white hover:bg-white/10')}`}
+                title={isAiReady ? (trackStates.vocals.muted ? "เปิดเสียงร้องไกด์" : "ปิดเสียงร้องไกด์") : "แยกเสียงร้องด้วย AI"}
+            >
+                {isAiReady ? (trackStates.vocals.muted ? <MicOff size={20} /> : <Mic size={20} />) : <Mic size={20} className="opacity-50" />}
+            </button>
 
-                {/* 3. Open Popover Mixer */}
-                <button
-                    ref={mixerBtnRef}
-                    onClick={() => setShowMixerPopover(!showMixerPopover)}
-                    className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto ${showMixerPopover ? 'bg-white/10 text-white border border-white/20' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
-                    title="เปิดแผงมิกเซอร์ระดับเสียง"
-                >
-                    <SlidersHorizontal size={20} />
-                </button>
+            {/* 3. Open Popover Mixer */}
+            <button
+                ref={mixerBtnRef}
+                onClick={() => setShowMixerPopover(!showMixerPopover)}
+                className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto ${showMixerPopover ? 'bg-white/10 text-white border border-white/20' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
+                title="เปิดแผงมิกเซอร์ระดับเสียง"
+            >
+                <SlidersHorizontal size={20} />
+            </button>
 
-                <div className="w-[1px] h-6 bg-white/10 mx-0.5" />
+            <div className="w-[1px] h-6 bg-white/10 mx-0.5" />
 
-                {/* 4. Play/Pause */}
-                <button
-                    onClick={handlePlayPause}
-                    className={`w-12 h-12 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto ${isPlaying ? 'text-white/90 hover:text-white hover:bg-white/10 bg-white/5' : 'bg-primary text-white shadow-lg shadow-primary/30'}`}
-                    title={isPlaying ? "Pause" : "Play"}
-                >
-                    {isPlaying ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" className="ml-0.5" />}
-                </button>
+            {/* 4. Play/Pause */}
+            <button
+                onClick={handlePlayPause}
+                className={`w-12 h-12 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto ${isPlaying ? 'text-white/90 hover:text-white hover:bg-white/10 bg-white/5' : 'bg-primary text-white shadow-lg shadow-primary/30'}`}
+                title={isPlaying ? "Pause" : "Play"}
+            >
+                {isPlaying ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" className="ml-0.5" />}
+            </button>
 
-                <div className="w-[1px] h-6 bg-white/10 mx-0.5" />
+            <div className="w-[1px] h-6 bg-white/10 mx-0.5" />
 
-                {/* 5. Minimize Toggle */}
-                <button
-                    onClick={toggleFullscreen}
-                    className="w-11 h-11 flex items-center justify-center rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all active:scale-90 pointer-events-auto"
-                    title="ย่อหน้าจอ"
-                >
-                    <Minimize2 size={20} />
-                </button>
+            {/* 5. Minimize Toggle */}
+            <button
+                onClick={toggleFullscreen}
+                className="w-11 h-11 flex items-center justify-center rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all active:scale-90 pointer-events-auto"
+                title="ย่อหน้าจอ"
+            >
+                <Minimize2 size={20} />
+            </button>
 
-                {/* 6. Exit Fullscreen to Split Mode */}
-                <button
-                    onClick={() => usePlayerStore.getState().setLayoutMode('split')}
-                    className="w-11 h-11 flex items-center justify-center rounded-xl text-red-400/80 hover:text-white hover:bg-red-500/85 transition-all active:scale-90 pointer-events-auto"
-                    title="ออกจากหน้าจอเต็มจอ"
-                >
-                    <X size={20} strokeWidth={2.5} />
-                </button>
-            </div>
+            {/* 6. Exit Fullscreen to Split Mode */}
+            <button
+                onClick={() => usePlayerStore.getState().setLayoutMode('split')}
+                className="w-11 h-11 flex items-center justify-center rounded-xl text-red-400/80 hover:text-white hover:bg-red-500/85 transition-all active:scale-90 pointer-events-auto"
+                title="ออกจากหน้าจอเต็มจอ"
+            >
+                <X size={20} strokeWidth={2.5} />
+            </button>
         </div>
     );
 };
