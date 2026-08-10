@@ -1,12 +1,11 @@
-import React from 'react';
-import { Minimize2, X, Play, Pause, Wand2, RefreshCw, ThumbsUp, ThumbsDown, Save, Edit2 } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Minimize2, X, Play, Pause, Wand2, SlidersHorizontal, Mic, MicOff, Music, Type, Drum, Guitar, Piano, Sparkles } from 'lucide-react';
 import { usePlayerStore } from '../stores/usePlayerStore';
 import { useCast } from '../../../plugins/cast/context/CastContext';
 import { useLyricsStore } from '../stores/useLyricsStore';
-import { useWikiLyricsStore } from '../stores/useWikiLyricsStore';
-import { useAuthStore } from '../../auth/useAuthStore';
+import { useMixerStore } from '../stores/useMixerStore';
+import { useAIVocalStore } from '../../../stores/useAIVocalStore';
 import { useUIStore } from '../../../stores/useUIStore';
-import { useRouter } from 'next/router';
 
 interface FullscreenControlBarProps {
     showControls: boolean;
@@ -14,19 +13,40 @@ interface FullscreenControlBarProps {
     playerRef?: React.MutableRefObject<any>;
 }
 
-export const FullscreenControlBar = ({ showControls, layoutMode, playerRef }: FullscreenControlBarProps) => {
+export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenControlBarProps) => {
     const isPlaying = usePlayerStore(state => state.isPlaying);
     const cast = useCast();
-    const router = useRouter();
-    const { user } = useAuthStore();
-    
     const currentVideo = usePlayerStore(state => state.currentVideo);
 
-    // System 1: Manual Sync State & Actions
-    const { syncOffset, nudgeOffset, setSyncOffset, lyrics } = useLyricsStore();
-    
-    // Wiki Karaoke State
-    const { activeSync, voteSync, saveLocalOffset } = useWikiLyricsStore();
+    // Lyrics State & Actions
+    const { isEnabled: showLyrics, toggleLyrics } = useLyricsStore();
+
+    // AI Separation & Mixer Store
+    const { trackStates, volumes, setVolume, toggleMute } = useMixerStore();
+    const aiVocalStore = useAIVocalStore();
+    const activeVideoId = currentVideo?.videoId || currentVideo?.id;
+    const aiJob = activeVideoId ? aiVocalStore.jobs[activeVideoId] : null;
+    const isAiReady = Boolean(activeVideoId && aiJob?.status === 'ready');
+    const isProMode = aiJob?.mode === 'pro';
+
+    // UI States
+    const [showMixerPopover, setShowMixerPopover] = useState(false);
+    const popoverRef = useRef<HTMLDivElement>(null);
+    const mixerBtnRef = useRef<HTMLButtonElement>(null);
+
+    // Close popover when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                popoverRef.current && !popoverRef.current.contains(event.target as Node) &&
+                mixerBtnRef.current && !mixerBtnRef.current.contains(event.target as Node)
+            ) {
+                setShowMixerPopover(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const handlePlayPause = () => {
         if (cast.isConnected) {
@@ -40,202 +60,208 @@ export const FullscreenControlBar = ({ showControls, layoutMode, playerRef }: Fu
         usePlayerStore.getState().triggerFullscreen();
     };
 
-    const handleSync = async () => {
-        // Obsolete AI Sync function - kept for reference or to be completely removed
-    };
-
-    const handleSaveOffset = () => {
-        if (!currentVideo?.videoId) return;
-        saveLocalOffset(currentVideo.videoId, syncOffset);
-        useUIStore.getState().showConfirm({
-            title: "บันทึกเวลาสำเร็จ",
-            message: "บันทึกเวลาเริ่มต้นสำหรับเครื่องของคุณเรียบร้อยแล้ว",
-            type: "success",
-            confirmText: "ตกลง",
-            cancelText: "none",
-            onConfirm: () => {
-                useUIStore.getState().hideConfirm();
-            }
-        });
-    };
-
-    const handleVote = async (type: 'upvote' | 'downvote') => {
-        if (!user) {
-            useUIStore.getState().showConfirm({
-                title: "เข้าสู่ระบบ",
-                message: "กรุณาเข้าสู่ระบบเพื่อโหวตความแม่นยำของเนื้อเพลง",
-                type: "warning",
-                confirmText: "ตกลง",
-                cancelText: "none",
-                onConfirm: () => {}
-            });
-            return;
-        }
-        if (activeSync) {
-            await voteSync(activeSync.id, user.uid, type);
-        }
-    };
-
     if (layoutMode !== 'fullscreen') return null;
 
     return (
-        <div
-            className={`absolute bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 p-2 bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}
-        >
-            {/* System 1: Manual Offset & One-Tap Live Sync */}
-            <div className="flex items-center gap-1 bg-white/5 rounded-xl p-1 border border-white/5" title="ปรับเวลาเนื้อเพลงแบบ Manual">
-                <button
-                    onClick={() => nudgeOffset(-0.5)}
-                    className="px-2 py-1.5 rounded-lg bg-white/5 text-white/80 hover:bg-white/15 hover:text-white text-xs font-mono font-bold transition-all active:scale-95"
-                    title="ถอยหลัง 0.5 วินาที"
+        <div className="relative">
+            {/* Popover Mixer Panel (Floating above the control bar) */}
+            {showMixerPopover && (
+                <div 
+                    ref={popoverRef}
+                    className="absolute bottom-20 left-1/2 -translate-x-1/2 bg-black/90 backdrop-blur-2xl border border-white/10 p-4 rounded-2xl shadow-2xl flex flex-col gap-4 w-[280px] z-50 pointer-events-auto transition-all"
                 >
-                    -0.5s
-                </button>
+                    <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                        <span className="text-white text-xs font-bold flex items-center gap-1.5">
+                            <SlidersHorizontal size={14} className="text-primary" />
+                            ปรับระดับเสียงเครื่องดนตรี
+                        </span>
+                        <button onClick={() => setShowMixerPopover(false)} className="text-white/40 hover:text-white transition-colors">
+                            <X size={14} />
+                        </button>
+                    </div>
+
+                    <div className="flex flex-col gap-3.5">
+                        {isAiReady ? (
+                            <>
+                                {/* 1. Vocals Slider */}
+                                <div className="flex flex-col gap-1">
+                                    <div className="flex justify-between text-[11px] text-white/70">
+                                        <span className="flex items-center gap-1">
+                                            {trackStates.vocals.muted ? <MicOff size={12} className="text-red-400" /> : <Mic size={12} className="text-green-400" />}
+                                            เสียงร้องหลัก (Guide)
+                                        </span>
+                                        <span className="font-mono text-[10px]">{volumes.vocals}%</span>
+                                    </div>
+                                    <input 
+                                        type="range" min="0" max="100" value={volumes.vocals} 
+                                        onChange={(e) => setVolume('vocals', parseInt(e.target.value))}
+                                        className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                                    />
+                                </div>
+
+                                {/* 2. Instrumental Slider */}
+                                <div className="flex flex-col gap-1">
+                                    <div className="flex justify-between text-[11px] text-white/70">
+                                        <span className="flex items-center gap-1">
+                                            <Music size={12} className="text-blue-400" />
+                                            เสียงดนตรี (Backing)
+                                        </span>
+                                        <span className="font-mono text-[10px]">{volumes.instrumental}%</span>
+                                    </div>
+                                    <input 
+                                        type="range" min="0" max="100" value={volumes.instrumental} 
+                                        onChange={(e) => setVolume('instrumental', parseInt(e.target.value))}
+                                        className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                                    />
+                                </div>
+
+                                {isProMode && (
+                                    <>
+                                        {/* 3. Drums Slider */}
+                                        <div className="flex flex-col gap-1">
+                                            <div className="flex justify-between text-[11px] text-white/70">
+                                                <span className="flex items-center gap-1">
+                                                    <Drum size={12} className="text-amber-400" />
+                                                    เสียงกลอง (Drums)
+                                                </span>
+                                                <span className="font-mono text-[10px]">{volumes.drums}%</span>
+                                            </div>
+                                            <input 
+                                                type="range" min="0" max="100" value={volumes.drums} 
+                                                onChange={(e) => setVolume('drums', parseInt(e.target.value))}
+                                                className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                                            />
+                                        </div>
+
+                                        {/* 4. Bass Slider */}
+                                        <div className="flex flex-col gap-1">
+                                            <div className="flex justify-between text-[11px] text-white/70">
+                                                <span className="flex items-center gap-1">
+                                                    <Guitar size={12} className="text-purple-400" />
+                                                    เสียงเบส (Bass)
+                                                </span>
+                                                <span className="font-mono text-[10px]">{volumes.bass}%</span>
+                                            </div>
+                                            <input 
+                                                type="range" min="0" max="100" value={volumes.bass} 
+                                                onChange={(e) => setVolume('bass', parseInt(e.target.value))}
+                                                className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                                            />
+                                        </div>
+
+                                        {/* 5. Other Stems Slider */}
+                                        <div className="flex flex-col gap-1">
+                                            <div className="flex justify-between text-[11px] text-white/70">
+                                                <span className="flex items-center gap-1">
+                                                    <Piano size={12} className="text-teal-400" />
+                                                    เครื่องดนตรีอื่น (Other)
+                                                </span>
+                                                <span className="font-mono text-[10px]">{volumes.other}%</span>
+                                            </div>
+                                            <input 
+                                                type="range" min="0" max="100" value={volumes.other} 
+                                                onChange={(e) => setVolume('other', parseInt(e.target.value))}
+                                                className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary"
+                                            />
+                                        </div>
+                                    </>
+                                )}
+                            </>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-4 text-center gap-3">
+                                <Sparkles className="text-amber-400 animate-pulse" size={24} />
+                                <div className="text-[11px] text-white/60 leading-relaxed px-2">ยังไม่ได้ทำแยกเสียงด้วย AI เพื่อควบคุมระดับเสียงเครื่องดนตรีแต่ละชนิด</div>
+                                <button 
+                                    onClick={() => {
+                                        setShowMixerPopover(false);
+                                        if (currentVideo) {
+                                            const uuid = currentVideo.uuid || currentVideo.id;
+                                            if (uuid && activeVideoId) {
+                                                useUIStore.getState().showVocalModeModal(uuid, activeVideoId);
+                                            }
+                                        }
+                                    }}
+                                    className="px-3 py-1.5 rounded-lg bg-primary hover:bg-primary/80 text-white text-xs font-bold transition-all active:scale-95 flex items-center gap-1 shadow-lg shadow-primary/20 pointer-events-auto"
+                                >
+                                    <Wand2 size={13} />
+                                    แยกเสียงด้วย AI ตอนนี้
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Main Fullscreen Control Bar */}
+            <div
+                className={`absolute bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 p-2 bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}
+            >
+                {/* 1. Toggle Lyrics */}
                 <button
-                    onClick={() => nudgeOffset(-0.1)}
-                    className="px-1.5 py-1.5 rounded-lg bg-white/5 text-white/70 hover:bg-white/15 hover:text-white text-xs font-mono font-bold transition-all active:scale-95"
-                    title="ถอยหลัง 0.1 วินาที"
+                    onClick={toggleLyrics}
+                    className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto ${showLyrics ? 'bg-primary/20 text-primary border border-primary/20' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
+                    title={showLyrics ? "ปิดการแสดงเนื้อร้อง" : "เปิดการแสดงเนื้อร้อง"}
                 >
-                    -0.1s
+                    <Type size={20} />
                 </button>
 
+                {/* 2. Toggle Guide Vocal */}
                 <button
                     onClick={() => {
-                        if (playerRef?.current && typeof playerRef.current.getCurrentTime === 'function') {
-                            const currentTime = playerRef.current.getCurrentTime();
-                            if (typeof currentTime === 'number' && lyrics.length > 0) {
-                                // Find closest line using the absolute distance from current adjusted time
-                                const adjustedTime = currentTime - syncOffset;
-                                let closestLine = lyrics[0];
-                                let minDistance = Math.abs(adjustedTime - lyrics[0].time);
-
-                                for (let i = 1; i < lyrics.length; i++) {
-                                    const distance = Math.abs(adjustedTime - lyrics[i].time);
-                                    if (distance < minDistance) {
-                                        minDistance = distance;
-                                        closestLine = lyrics[i];
-                                    }
-                                }
-
-                                if (closestLine) {
-                                    const newOffset = currentTime - closestLine.time;
-                                    setSyncOffset(Math.round(newOffset * 10) / 10);
-                                }
+                        if (isAiReady) {
+                            toggleMute('vocals');
+                        } else if (currentVideo) {
+                            const uuid = currentVideo.uuid || currentVideo.id;
+                            if (uuid && activeVideoId) {
+                                useUIStore.getState().showVocalModeModal(uuid, activeVideoId);
                             }
                         }
                     }}
-                    className="px-2.5 py-1.5 rounded-lg bg-blue-500/30 hover:bg-blue-500/50 text-blue-300 font-bold text-xs flex items-center gap-1 transition-all active:scale-95 border border-blue-500/30"
-                    title="กดมาร์กเวลาตรงนี้ทันทีเมื่อนักร้องเริ่มร้องท่อนนี้ (Live Tap Sync)"
+                    className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto ${isAiReady && trackStates.vocals.muted ? 'bg-red-500/20 text-red-400 border border-red-500/20' : (isAiReady ? 'bg-green-500/20 text-green-400 border border-green-500/20' : 'text-white/40 hover:text-white hover:bg-white/10')}`}
+                    title={isAiReady ? (trackStates.vocals.muted ? "เปิดเสียงร้องไกด์" : "ปิดเสียงร้องไกด์") : "แยกเสียงร้องด้วย AI"}
                 >
-                    <span>🎯</span> <span>Sync</span>
+                    {isAiReady ? (trackStates.vocals.muted ? <MicOff size={20} /> : <Mic size={20} />) : <Mic size={20} className="opacity-50" />}
                 </button>
 
-                <div 
-                    onClick={() => setSyncOffset(0)}
-                    className={`px-2 py-1 text-xs font-mono font-semibold rounded-md cursor-pointer transition-all ${syncOffset !== 0 ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30' : 'text-white/40'}`}
-                    title="คลิกเพื่อรีเซ็ต Offset เป็น 0"
-                >
-                    {syncOffset > 0 ? `+${syncOffset.toFixed(1)}s` : `${syncOffset.toFixed(1)}s`}
-                </div>
-
+                {/* 3. Open Popover Mixer */}
                 <button
-                    onClick={() => nudgeOffset(0.1)}
-                    className="px-1.5 py-1.5 rounded-lg bg-white/5 text-white/70 hover:bg-white/15 hover:text-white text-xs font-mono font-bold transition-all active:scale-95"
-                    title="เดินหน้า 0.1 วินาที"
+                    ref={mixerBtnRef}
+                    onClick={() => setShowMixerPopover(!showMixerPopover)}
+                    className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto ${showMixerPopover ? 'bg-white/10 text-white border border-white/20' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
+                    title="เปิดแผงมิกเซอร์ระดับเสียง"
                 >
-                    +0.1s
+                    <SlidersHorizontal size={20} />
                 </button>
+
+                <div className="w-[1px] h-6 bg-white/10 mx-0.5" />
+
+                {/* 4. Play/Pause */}
                 <button
-                    onClick={() => nudgeOffset(0.5)}
-                    className="px-2 py-1.5 rounded-lg bg-white/5 text-white/80 hover:bg-white/15 hover:text-white text-xs font-mono font-bold transition-all active:scale-95"
-                    title="เดินหน้า 0.5 วินาที"
+                    onClick={handlePlayPause}
+                    className={`w-12 h-12 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto ${isPlaying ? 'text-white/90 hover:text-white hover:bg-white/10 bg-white/5' : 'bg-primary text-white shadow-lg shadow-primary/30'}`}
+                    title={isPlaying ? "Pause" : "Play"}
                 >
-                    +0.5s
+                    {isPlaying ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" className="ml-0.5" />}
                 </button>
-            </div>
 
-            <div className="w-[1px] h-8 bg-white/10 mx-1" />
+                <div className="w-[1px] h-6 bg-white/10 mx-0.5" />
 
-            {/* Save Offset Action */}
-            <div className="flex items-center gap-1 bg-white/5 rounded-xl p-1 border border-white/5">
-                <button
-                    onClick={handleSaveOffset}
-                    className={`px-3 py-2 rounded-lg flex items-center gap-2 text-xs font-medium transition-all ${syncOffset !== (activeSync?.globalOffset || 0) ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30' : 'bg-transparent text-white/50 hover:bg-white/10 hover:text-white'}`}
-                    title="บันทึก Offset ไว้ในเครื่อง"
-                >
-                    <Save size={15} />
-                    เซฟ
-                </button>
-            </div>
-
-            <div className="w-[1px] h-8 bg-white/10 mx-1" />
-
-            {/* Wiki Karaoke Actions */}
-            <div className="flex items-center gap-1 bg-white/5 rounded-xl p-1 border border-white/5">
-                <button
-                    onClick={() => handleVote('upvote')}
-                    disabled={!activeSync || !user?.uid || activeSync.voterIds?.includes(user.uid || '')}
-                    className="px-2 py-2 rounded-lg flex items-center gap-1 text-xs font-medium bg-transparent text-white/70 hover:bg-white/10 hover:text-white disabled:opacity-50"
-                    title="โหวตว่าเนื้อร้องตรง"
-                >
-                    <ThumbsUp size={15} className={user?.uid && activeSync?.voterIds?.includes(user.uid || '') && activeSync?.upvotes > 0 ? "fill-green-400 text-green-400" : ""} />
-                    {activeSync?.upvotes || 0}
-                </button>
-                <button
-                    onClick={() => handleVote('downvote')}
-                    disabled={!activeSync || !user?.uid || activeSync.voterIds?.includes(user.uid || '')}
-                    className="px-2 py-2 rounded-lg flex items-center gap-1 text-xs font-medium bg-transparent text-white/70 hover:bg-white/10 hover:text-white disabled:opacity-50"
-                    title="โหวตว่าเนื้อร้องไม่ตรง"
-                >
-                    <ThumbsDown size={15} className={user?.uid && activeSync?.voterIds?.includes(user.uid || '') && activeSync?.downvotes > 0 ? "fill-red-400 text-red-400" : ""} />
-                </button>
-                
-                <div className="w-[1px] h-4 bg-white/10 mx-1" />
-                
-                <button
-                    onClick={() => {
-                        if (currentVideo?.videoId) {
-                            router.push(`/studio/${currentVideo.videoId}`);
-                        }
-                    }}
-                    className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-all"
-                    title="เข้าสู่โหมด Studio เพื่อแก้ไขเนื้อเพลง"
-                >
-                    <Edit2 size={15} />
-                </button>
-            </div>
-
-            <div className="w-[1px] h-8 bg-white/10 mx-1" />
-
-            {/* Play/Pause */}
-            <button
-                onClick={handlePlayPause}
-                className={`w-12 h-12 flex items-center justify-center rounded-xl transition-all active:scale-90 ${isPlaying ? 'text-white/90 hover:text-white hover:bg-white/10 bg-white/5' : 'bg-primary text-white shadow-lg shadow-primary/30'}`}
-                title={isPlaying ? "Pause" : "Play"}
-            >
-                {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" className="ml-1" />}
-            </button>
-
-            <div className="w-[1px] h-8 bg-white/10 mx-2" />
-
-            {/* Layout Controls */}
-            <div className="flex items-center gap-1">
-                {/* Exit Fullscreen Toggle */}
+                {/* 5. Minimize Toggle */}
                 <button
                     onClick={toggleFullscreen}
-                    className="w-12 h-12 flex items-center justify-center rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all active:scale-90"
+                    className="w-11 h-11 flex items-center justify-center rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all active:scale-90 pointer-events-auto"
                     title="ย่อหน้าจอ"
                 >
-                    <Minimize2 size={22} />
+                    <Minimize2 size={20} />
                 </button>
 
-                {/* Exit to Split Mode */}
+                {/* 6. Exit Fullscreen to Split Mode */}
                 <button
                     onClick={() => usePlayerStore.getState().setLayoutMode('split')}
-                    className="w-12 h-12 flex items-center justify-center rounded-xl text-red-400/80 hover:text-white hover:bg-red-500/80 transition-all active:scale-90"
+                    className="w-11 h-11 flex items-center justify-center rounded-xl text-red-400/80 hover:text-white hover:bg-red-500/85 transition-all active:scale-90 pointer-events-auto"
                     title="ออกจากหน้าจอเต็มจอ"
                 >
-                    <X size={24} strokeWidth={2.5} />
+                    <X size={20} strokeWidth={2.5} />
                 </button>
             </div>
         </div>
