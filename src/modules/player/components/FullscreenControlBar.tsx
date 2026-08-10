@@ -6,6 +6,7 @@ import { useLyricsStore } from '../stores/useLyricsStore';
 import { useMixerStore } from '../stores/useMixerStore';
 import { useAIVocalStore } from '../../../stores/useAIVocalStore';
 import { useUIStore } from '../../../stores/useUIStore';
+import { useDeepgramLyricsStore } from '../../lyrics/stores/useDeepgramLyricsStore';
 
 interface FullscreenControlBarProps {
     showControls: boolean;
@@ -19,7 +20,16 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
     const currentVideo = usePlayerStore(state => state.currentVideo);
 
     // Lyrics State & Actions
-    const { isEnabled: showLyrics, toggleLyrics } = useLyricsStore();
+    const { isEnabled: showLyrics, toggleLyrics, isKaraokeMode, toggleKaraokeMode, lyrics: originalLyrics } = useLyricsStore();
+    const { 
+        alignedLyrics, 
+        isAligning, 
+        alignmentStatus, 
+        errorMessage, 
+        hybridModeEnabled, 
+        setHybridModeEnabled, 
+        alignHybridLyrics 
+    } = useDeepgramLyricsStore();
 
     // AI Separation & Mixer Store
     const { trackStates, volumes, setVolume, toggleMute } = useMixerStore();
@@ -75,13 +85,14 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                     <div className="flex justify-between items-center border-b border-white/10 pb-2">
                         <span className="text-white text-xs font-bold flex items-center gap-1.5">
                             <SlidersHorizontal size={14} className="text-primary" />
-                            ปรับระดับเสียงเครื่องดนตรี
+                            ปรับแต่งระบบคาราโอเกะ
                         </span>
                         <button onClick={() => setShowMixerPopover(false)} className="text-white/40 hover:text-white transition-colors">
                             <X size={14} />
                         </button>
                     </div>
 
+                    {/* Part 1: Mixer Levels */}
                     <div className="flex flex-col gap-3.5">
                         {isAiReady ? (
                             <>
@@ -170,7 +181,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                                 )}
                             </>
                         ) : (
-                            <div className="flex flex-col items-center justify-center py-4 text-center gap-3">
+                            <div className="flex flex-col items-center justify-center py-2 text-center gap-3">
                                 <Sparkles className="text-amber-400 animate-pulse" size={24} />
                                 <div className="text-[11px] text-white/60 leading-relaxed px-2">ยังไม่ได้ทำแยกเสียงด้วย AI เพื่อควบคุมระดับเสียงเครื่องดนตรีแต่ละชนิด</div>
                                 <button 
@@ -188,6 +199,66 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                                     <Wand2 size={13} />
                                     แยกเสียงด้วย AI ตอนนี้
                                 </button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Part 2: Lyrics Display & AI Sync Settings */}
+                    <div className="flex flex-col gap-3.5 border-t border-white/10 pt-3">
+                        <span className="text-white/50 text-[10px] uppercase font-bold tracking-wider">
+                            ตั้งค่าเนื้อร้อง
+                        </span>
+
+                        {/* 1. Toggle Karaoke Sweeping */}
+                        <div className="flex justify-between items-center text-xs text-white/90">
+                            <span>ปาดสีเนื้อร้อง (คาราโอเกะ)</span>
+                            <button 
+                                onClick={toggleKaraokeMode}
+                                className={`px-2.5 py-1 rounded-md text-[10px] font-bold transition-all ${isKaraokeMode ? 'bg-primary text-white shadow-md shadow-primary/20' : 'bg-white/5 text-white/50 border border-white/5 hover:bg-white/15'}`}
+                            >
+                                {isKaraokeMode ? 'เปิด' : 'ปิด'}
+                            </button>
+                        </div>
+
+                        {/* 2. AI Sync (Hybrid) Trigger & Toggle */}
+                        {originalLyrics && originalLyrics.length > 0 && (
+                            <div className="flex flex-col gap-2 border-t border-white/5 pt-2">
+                                <div className="flex justify-between items-center text-xs text-white/90">
+                                    <span className="flex items-center gap-1">
+                                        <Sparkles size={12} className={hybridModeEnabled ? "text-amber-400" : "text-white/40"} />
+                                        ซิงก์เนื้อร้องตรงด้วย AI
+                                    </span>
+                                    {alignedLyrics.length > 0 ? (
+                                        <button 
+                                            onClick={() => setHybridModeEnabled(!hybridModeEnabled)}
+                                            className={`px-2.5 py-1 rounded-md text-[10px] font-bold transition-all ${hybridModeEnabled ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-white/5 text-white/50 border border-white/5 hover:bg-white/15'}`}
+                                        >
+                                            {hybridModeEnabled ? 'เปิดใช้งาน' : 'ปิด'}
+                                        </button>
+                                    ) : (
+                                        <button 
+                                            onClick={() => {
+                                                if (activeVideoId) {
+                                                    alignHybridLyrics(activeVideoId, originalLyrics).catch(console.error);
+                                                }
+                                            }}
+                                            disabled={isAligning}
+                                            className="px-2.5 py-1 rounded-md text-[10px] font-bold bg-primary hover:bg-primary/80 disabled:opacity-50 text-white shadow-md shadow-primary/10 transition-all flex items-center gap-1"
+                                        >
+                                            {isAligning ? 'กำลังซิงก์...' : 'เริ่มซิงก์'}
+                                        </button>
+                                    )}
+                                </div>
+                                {isAligning && (
+                                    <div className="text-[9px] text-amber-400 animate-pulse text-center">
+                                        AI กำลังวิเคราะห์และซิงก์เวลาตรง...
+                                    </div>
+                                )}
+                                {alignmentStatus === 'error' && errorMessage && (
+                                    <div className="text-[9px] text-red-400 leading-tight text-center">
+                                        ข้อผิดพลาด: {errorMessage}
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>

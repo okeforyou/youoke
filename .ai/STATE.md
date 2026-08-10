@@ -1,5 +1,5 @@
 # 📍 Active State (RAM)
-*Last Updated: 2026-08-10 20:30*
+*Last Updated: 2026-08-10 20:36*
 
 ## 🚀 Current Objective
 - [x] Fix Sara I clipping issue where blue sweep sliver appears prematurely.
@@ -11,15 +11,16 @@
 - [x] Move "เนื้อเพลงจาก..." source indicator to the top-left of the player view.
 - [x] Replace sync offset controls with vocal, lyrics, and floating mixer panel inside FullscreenControlBar.tsx.
 - [x] Fix absolute positioning root layout element of FullscreenControlBar.tsx to restore visibility.
+- [x] Add dynamic Karaoke Sweeping toggle and AI Hybrid Sync controls into the FullscreenControlBar popover.
 
 ## 📋 Action Plan
 - [x] `src/modules/player/components/LyricsOverlay.tsx`: Conditional render sweeping span only when `wordProgress > 0`, adjust container wrapping, reposition source badge to top-left, and increase clip-path margins to -100%.
 - [x] `src/modules/lyrics/engines/deepgramAlignEngine.ts`: Update missing timestamp interpolation capping logic and end-anchoring.
-- [x] `src/modules/player/components/FullscreenControlBar.tsx`: Integrate lyrics, guide vocals, and popover mixer controls directly into the fullscreen controller, removing legacy offset adjusters and restoring correct absolute layout.
+- [x] `src/modules/player/components/FullscreenControlBar.tsx`: Integrate lyrics, guide vocals, and popover mixer controls directly into the fullscreen controller, removing legacy offset adjusters and adding Karaoke/AI Sync setting toggles.
 - [ ] Investigate Local Whisper Separation Engine (Pathway B) in the future.
 
 ## ⚠️ Blockers
 - None.
 
 ## 📌 Next AI Action
-- [ ] Monitor user feedback regarding the integrated fullscreen control bar UX.
+- [ ] Monitor user feedback regarding the integrated fullscreen settings popover (Mixer, Karaoke Toggle, AI Sync).
