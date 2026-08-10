@@ -150,7 +150,13 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                         "transition-colors duration-200 break-words whitespace-pre-wrap max-w-full text-center"
                     )}
                     style={{
-                        fontSize: 'clamp(1.5rem, 8cqw, 5.5rem)',
+                        // Dynamically scale down font size for longer lines to prevent overflow clipping on small screens
+                        fontSize: (() => {
+                            const charCount = line?.text ? line.text.length : 0;
+                            const baseCqw = charCount > 30 ? '4.2cqw' : charCount > 20 ? '5.5cqw' : '7cqw';
+                            const maxFontSize = charCount > 30 ? '3.5rem' : charCount > 20 ? '4.2rem' : '5rem';
+                            return `clamp(1.1rem, ${baseCqw}, ${maxFontSize})`;
+                        })(),
                         lineHeight: '1.2',
                         WebkitTextStroke: 'clamp(2px, 0.4cqw, 4px) black',
                         paintOrder: 'stroke fill',
@@ -176,7 +182,8 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                                         {/* Swept text does NOT include space, so the clip-path hits 100% at the end of the letter, not the space */}
                                         {isKaraokeMode && wordProgress > 0 && (
                                             <span className="absolute left-0 top-0 text-[#2563eb] whitespace-pre" style={{ 
-                                                clipPath: wordProgress >= 0.99 ? 'none' : `inset(-20% ${100 - (wordProgress * 100)}% -20% -20%)`,
+                                                // Using -100% on top/bottom/left to prevent clipping stacked Thai vowels & tone marks (e.g. ฟื้น, พี่)
+                                                clipPath: wordProgress >= 0.99 ? 'none' : `inset(-100% ${100 - (wordProgress * 100)}% -100% -100%)`,
                                                 transition: 'none',
                                                 WebkitTextStroke: 'clamp(2px, 0.4cqw, 4px) black',
                                                 paintOrder: 'stroke fill',
@@ -219,19 +226,18 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                 paddingBottom: 'clamp(4rem, 15vh, 15rem)' // Use vh so it scales with player height
             }}
         >
+            {/* Source indicator relocated to top-left corner of the player view */}
+            {source && (
+                <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-md rounded-lg px-2.5 py-1 text-[10px] text-white/60 font-medium shadow-md border border-white/5 pointer-events-none select-none">
+                    เนื้อเพลงจาก: {source === 'deepgram' ? 'Deepgram AI (PURE)' : (hybridModeEnabled ? 'Deepgram AI (HYBRID)' : (source === 'lrclib' ? (lyricsType === 'synced' ? 'LRCLIB (SYNC)' : 'LRCLIB (PLAIN)') : 'YouTube CC'))}
+                </div>
+            )}
+
             {/* Lyrics Container */}
             <div 
                 className="w-[95%] max-w-5xl flex flex-col space-y-1 px-4 sm:px-6 relative group"
                 style={{ containerType: 'inline-size' }}
             >
-                {source && (
-                    <div className="absolute -top-6 left-4 bg-black/40 backdrop-blur-sm rounded-lg px-2 py-1 text-[10px] text-white/50 font-medium">
-                        เนื้อเพลงจาก: {source === 'deepgram' ? 'Deepgram AI (PURE)' : (hybridModeEnabled ? 'Deepgram AI (HYBRID)' : (source === 'lrclib' ? (lyricsType === 'synced' ? 'LRCLIB (SYNC)' : 'LRCLIB (PLAIN)') : 'YouTube CC'))}
-                    </div>
-                )}
-
-
-
                 {renderLine(activeLine, activeIndex)}
             </div>
         </div>
