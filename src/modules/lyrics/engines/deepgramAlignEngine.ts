@@ -186,7 +186,7 @@ function alignSingleLine(
     }
   }
 
-  // 4. Interpolate missing timestamps (unaligned characters)
+  // 4. Interpolate missing timestamps (unaligned characters) with speed capping to avoid slow drags
   let lastValEnd = lineStartTime;
   for (let i = 0; i < lrcCharTimes.length; i++) {
     if (lrcCharTimes[i].start === -1) {
@@ -202,11 +202,18 @@ function alignSingleLine(
 
       const gapSize = nextAnchor - i;
       const totalGapTime = Math.max(0, nextValStart - lastValEnd);
-      const timePerChar = totalGapTime / gapSize;
+      
+      // Limit character sweep time to max 0.22 seconds (220ms) to prevent unnatural slow sweeps.
+      // Anchor the active sweep window to the end of the gap (before the next word starts)
+      // to keep lyrics in sync with actual singing timing.
+      const maxCharTime = 0.22;
+      const timePerChar = Math.min(maxCharTime, totalGapTime / gapSize);
+      const activeDuration = gapSize * timePerChar;
+      const activeStart = Math.max(lastValEnd, nextValStart - activeDuration);
 
       for (let k = i; k < nextAnchor; k++) {
-        lrcCharTimes[k].start = lastValEnd + (k - i) * timePerChar;
-        lrcCharTimes[k].end = lastValEnd + (k - i + 1) * timePerChar;
+        lrcCharTimes[k].start = activeStart + (k - i) * timePerChar;
+        lrcCharTimes[k].end = activeStart + (k - i + 1) * timePerChar;
       }
       i = nextAnchor - 1;
     }

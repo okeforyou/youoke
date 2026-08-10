@@ -157,7 +157,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                     }}
                 >
                     {line.words && line.words.length > 0 ? (
-                        <span className="text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] flex flex-wrap justify-center">
+                        <span className="text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] flex flex-nowrap justify-center whitespace-nowrap select-none">
                             {line.words.map((w: any, i: number) => {
                                 let wordProgress = 0;
                                 if (index < currentLineIndex) {
@@ -174,7 +174,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                                         {/* Base text already includes correct spaces from segmentWords */}
                                         <span className="whitespace-pre">{w.word}</span>
                                         {/* Swept text does NOT include space, so the clip-path hits 100% at the end of the letter, not the space */}
-                                        {isKaraokeMode && (
+                                        {isKaraokeMode && wordProgress > 0 && (
                                             <span className="absolute left-0 top-0 text-[#2563eb] whitespace-pre" style={{ 
                                                 clipPath: wordProgress >= 0.99 ? 'none' : `inset(-20% ${100 - (wordProgress * 100)}% -20% -20%)`,
                                                 transition: 'none',
