@@ -1,5 +1,5 @@
 # 📍 Active State (RAM)
-*Last Updated: 2026-08-10 20:36*
+*Last Updated: 2026-08-11 10:30*
 
 ## 🚀 Current Objective
 - [x] Fix Sara I clipping issue where blue sweep sliver appears prematurely.
@@ -9,18 +9,18 @@
 - [x] Fix vertical clipping on tall Thai vowels and tone marks (e.g. ฟื้น) by expanding inset bounds to -100%.
 - [x] Implement responsive dynamic font sizing based on character length of the line.
 - [x] Move "เนื้อเพลงจาก..." source indicator to the top-left of the player view.
-- [x] Replace sync offset controls with vocal, lyrics, and floating mixer panel inside FullscreenControlBar.tsx.
-- [x] Fix absolute positioning root layout element of FullscreenControlBar.tsx to restore visibility.
-- [x] Add dynamic Karaoke Sweeping toggle and AI Hybrid Sync controls into the FullscreenControlBar popover.
+- [x] Replace sync offset controls with inline vocal, backing, drums, bass, and other stem controls directly on the bar.
+- [x] Implement expandable-on-hover horizontal sliders for each stem directly inside FullscreenControlBar.tsx.
+- [x] Implement a 3-tab segmented lyrics toggle (`ปิดเนื้อ`, `LRCLIB`, `AI Sync`) directly on the bar.
 
 ## 📋 Action Plan
 - [x] `src/modules/player/components/LyricsOverlay.tsx`: Conditional render sweeping span only when `wordProgress > 0`, adjust container wrapping, reposition source badge to top-left, and increase clip-path margins to -100%.
 - [x] `src/modules/lyrics/engines/deepgramAlignEngine.ts`: Update missing timestamp interpolation capping logic and end-anchoring.
-- [x] `src/modules/player/components/FullscreenControlBar.tsx`: Integrate lyrics, guide vocals, and popover mixer controls directly into the fullscreen controller, removing legacy offset adjusters and adding Karaoke/AI Sync setting toggles.
+- [x] `src/modules/player/components/FullscreenControlBar.tsx`: Move all stem tracks inline with CSS hover-expandable volume sliders, and add lyrics 3-pill segment selector.
 - [ ] Investigate Local Whisper Separation Engine (Pathway B) in the future.
 
 ## ⚠️ Blockers
 - None.
 
 ## 📌 Next AI Action
-- [ ] Monitor user feedback regarding the integrated fullscreen settings popover (Mixer, Karaoke Toggle, AI Sync).
+- [ ] Gather user feedback on the inline hover-expandable stem sliders and segmented lyrics bar UX.
