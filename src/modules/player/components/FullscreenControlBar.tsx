@@ -81,15 +81,9 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
         usePlayerStore.getState().triggerFullscreen();
     };
 
-    // Handles volume adjustments and updates the mute status reactively
+    // Handles volume adjustments (useMixerStore's setVolume already handles auto-mute at 0 and auto-unmute above 0)
     const handleVolumeChange = (track: 'vocals' | 'instrumental' | 'drums' | 'bass' | 'other', value: number) => {
         setVolume(track, value);
-        const isCurrentlyMuted = trackStates[track].muted;
-        if (value > 0 && isCurrentlyMuted) {
-            toggleMute(track);
-        } else if (value === 0 && !isCurrentlyMuted) {
-            toggleMute(track);
-        }
     };
 
     if (layoutMode !== 'fullscreen') return null;

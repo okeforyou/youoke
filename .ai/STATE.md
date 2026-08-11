@@ -1,5 +1,5 @@
 # 📍 Active State (RAM)
-*Last Updated: 2026-08-11 12:02*
+*Last Updated: 2026-08-11 12:30*
 
 ## 🚀 Current Objective
 - [x] Fix Sara I clipping issue where blue sweep sliver appears prematurely.
@@ -12,6 +12,7 @@
 - [x] Replace sync offset controls with inline vocal, backing, drums, bass, and other stem controls directly on the bar.
 - [x] Implement a 3-tab segmented lyrics toggle (`ปิดเนื้อ`, `LRCLIB`, `AI Sync`) directly on the bar.
 - [x] Restore single combined Mixer Popover layout above the control bar, and sync individual range values with mute states automatically.
+- [x] Fix volume slider bounce-back bug when dragging to 0% by delegating mute state handling directly to useMixerStore's native setVolume action.
 
 ## 📋 Action Plan
 - [x] `src/modules/player/components/LyricsOverlay.tsx`: Conditional render sweeping span only when `wordProgress > 0`, adjust container wrapping, reposition source badge to top-left, and increase clip-path margins to -100%.
