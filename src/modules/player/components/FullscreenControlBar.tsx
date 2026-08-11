@@ -180,7 +180,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
             {showMixerPopover && (
                 <div 
                     ref={popoverRef}
-                    className="absolute bottom-16 left-1/2 -translate-x-1/2 bg-black/95 backdrop-blur-2xl border border-white/10 p-4 rounded-2xl shadow-2xl flex flex-col gap-4 w-[280px] z-50 pointer-events-auto transition-all animate-in fade-in slide-in-from-bottom-2 duration-200"
+                    className="absolute bottom-16 right-0 bg-black/95 backdrop-blur-2xl border border-white/10 p-4 rounded-2xl shadow-2xl flex flex-col gap-4 w-[280px] z-50 pointer-events-auto transition-all animate-in fade-in slide-in-from-bottom-2 duration-200"
                 >
                     {/* Header */}
                     <div className="flex justify-between items-center border-b border-white/10 pb-2">
@@ -233,8 +233,8 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                         )}
                     </div>
 
-                    {/* Pointing Tooltip Arrow at the bottom center */}
-                    <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-black/95 border-r border-b border-white/10 rotate-45 z-[-1]" />
+                    {/* Pointing Tooltip Arrow aligned to the Mixer button (right side) */}
+                    <div className="absolute -bottom-1.5 right-[18px] w-3 h-3 bg-black/95 border-r border-b border-white/10 rotate-45 z-[-1]" />
                 </div>
             )}
 
@@ -265,7 +265,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                     <button 
                         onClick={() => handleLyricsTabClick(2)}
                         disabled={isAligning}
-                        className={`relative z-10 w-[80px] h-full rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-0.5 ${activeTabIndex === 2 ? 'text-black' : 'text-white/40 hover:text-white/70'} ${isAligning ? 'animate-pulse' : ''}`}
+                        className={`relative z-10 w-[80px] h-full rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-0.5 ${activeTabIndex === 2 ? 'text-white' : 'text-white/40 hover:text-white/70'} ${isAligning ? 'animate-pulse' : ''}`}
                     >
                         <Sparkles size={11} />
                         {isAligning ? 'ซิงก์...' : 'ซิงก์ AI'}
