@@ -111,12 +111,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
             <div className="relative flex flex-col items-center pointer-events-auto shrink-0">
                 {/* Floating Volume Box (Positioned above, Click to open/close) */}
                 {isOpen && (
-                    <div 
-                        className="absolute bottom-[48px] left-1/2 -translate-x-1/2 pb-2 z-50"
-                        onClick={(e) => e.stopPropagation()}
-                        onMouseDown={(e) => e.stopPropagation()}
-                        onTouchStart={(e) => e.stopPropagation()}
-                    >
+                    <div className="absolute bottom-[48px] left-1/2 -translate-x-1/2 pb-2 z-50">
                         <div className="bg-black/95 backdrop-blur-md border border-white/10 p-2.5 rounded-xl shadow-2xl flex items-center gap-2 w-48 pointer-events-auto">
                             {/* Mute Toggle inside popover */}
                             <button
@@ -135,7 +130,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                                 type="range"
                                 min="0"
                                 max="100"
-                                value={isMuted ? 0 : vol}
+                                value={vol}
                                 onChange={(e) => handleVolumeChange(track, parseInt(e.target.value))}
                                 className="flex-1 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-primary"
                             />
