@@ -46,6 +46,21 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
 
     // State to track which track is being hovered to prevent parent group-hover conflicts
     const [hoveredTrack, setHoveredTrack] = useState<string | null>(null);
+    // State to keep track of active dragging to keep slider visible even if mouse leaves container
+    const [activeDraggingTrack, setActiveDraggingTrack] = useState<string | null>(null);
+
+    // Global listener to release dragging state when mouse is released anywhere
+    useEffect(() => {
+        const handleGlobalMouseUp = () => {
+            setActiveDraggingTrack(null);
+        };
+        window.addEventListener('mouseup', handleGlobalMouseUp);
+        window.addEventListener('touchend', handleGlobalMouseUp);
+        return () => {
+            window.removeEventListener('mouseup', handleGlobalMouseUp);
+            window.removeEventListener('touchend', handleGlobalMouseUp);
+        };
+    }, []);
 
     const handlePlayPause = () => {
         if (cast.isConnected) {
@@ -75,7 +90,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
     }) => {
         const isMuted = trackStates[track].muted;
         const vol = volumes[track];
-        const isHovered = hoveredTrack === track;
+        const isHovered = hoveredTrack === track || activeDraggingTrack === track;
         
         return (
             <div 
@@ -94,6 +109,8 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                                 max="100"
                                 value={isMuted ? 0 : vol}
                                 onChange={(e) => setVolume(track, parseInt(e.target.value))}
+                                onMouseDown={() => setActiveDraggingTrack(track)}
+                                onTouchStart={() => setActiveDraggingTrack(track)}
                                 className="w-full h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-primary"
                             />
                         </div>
