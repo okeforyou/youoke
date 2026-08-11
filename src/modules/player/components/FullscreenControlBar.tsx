@@ -176,67 +176,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
         <div
             className={`absolute bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 md:gap-2.5 p-1.5 md:p-2 bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}
         >
-            {/* Popover Mixer Panel (Floating above the control bar, positioned absolutely relative to the bar) */}
-            {showMixerPopover && (
-                <div 
-                    ref={popoverRef}
-                    className="absolute bottom-16 right-0 bg-black/95 backdrop-blur-2xl border border-white/10 p-4 rounded-2xl shadow-2xl flex flex-col gap-4 w-[280px] z-50 pointer-events-auto transition-all animate-in fade-in slide-in-from-bottom-2 duration-200"
-                >
-                    {/* Header */}
-                    <div className="flex justify-between items-center border-b border-white/10 pb-2">
-                        <span className="text-white text-xs font-bold flex items-center gap-1.5">
-                            <SlidersHorizontal size={14} className="text-primary" />
-                            ตั้งค่าเสียง (MIXER)
-                        </span>
-                        <button onClick={() => setShowMixerPopover(false)} className="text-white/40 hover:text-white transition-colors">
-                            <X size={14} />
-                        </button>
-                    </div>
 
-                    {/* Audio Separation Sliders */}
-                    <div className="flex flex-col gap-3.5">
-                        {isAiReady ? (
-                            <>
-                                {renderMixerRow('vocals', Mic, 'เสียงร้อง (Vocals)')}
-                                
-                                {!isProMode ? (
-                                    renderMixerRow('instrumental', Music, 'เสียงดนตรี (Backing)')
-                                ) : (
-                                    <>
-                                        {renderMixerRow('drums', Drum, 'กลอง (Drums)')}
-                                        {renderMixerRow('bass', Guitar, 'เบส (Bass)')}
-                                        {renderMixerRow('other', Piano, 'ดนตรีอื่นๆ (Other)')}
-                                    </>
-                                )}
-                            </>
-                        ) : (
-                            /* Separate Trigger inside Mixer Popover when stems are offline */
-                            <div className="py-2 flex flex-col gap-2 items-center text-center">
-                                <span className="text-[10px] text-white/40">ยังไม่ได้แยกแทร็กเสียงดนตรีด้วย AI</span>
-                                <button
-                                    onClick={() => {
-                                        setShowMixerPopover(false);
-                                        if (currentVideo) {
-                                            const uuid = currentVideo.uuid || currentVideo.id;
-                                            if (uuid && activeVideoId) {
-                                                useUIStore.getState().showVocalModeModal(uuid, activeVideoId);
-                                            }
-                                        }
-                                    }}
-                                    className="w-full py-2 flex items-center justify-center gap-1.5 rounded-xl bg-primary text-white hover:bg-primary/90 transition-all text-xs font-bold"
-                                    title="แยกเสียงร้อง/ดนตรีด้วย AI"
-                                >
-                                    <Sparkles size={14} />
-                                    แยกเสียงด้วย AI
-                                </button>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Pointing Tooltip Arrow aligned to the Mixer button (right side) */}
-                    <div className="absolute -bottom-1.5 right-[18px] w-3 h-3 bg-black/95 border-r border-b border-white/10 rotate-45 z-[-1]" />
-                </div>
-            )}
 
             {/* 1. Lyrics Selection Segmented Pill Control (Animate-sliding active tab indicator) */}
             <div className="relative flex bg-white/5 border border-white/10 rounded-xl p-0.5 pointer-events-auto shrink-0 select-none w-[244px] h-[38px] items-center">
@@ -267,7 +207,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                         disabled={isAligning}
                         className={`relative z-10 w-[80px] h-full rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-0.5 ${activeTabIndex === 2 ? 'text-white' : 'text-white/40 hover:text-white/70'} ${isAligning ? 'animate-pulse' : ''}`}
                     >
-                        <Sparkles size={11} />
+                        <Sparkles size={11} className={activeTabIndex === 2 ? 'text-white' : 'text-white/40'} />
                         {isAligning ? 'ซิงก์...' : 'ซิงก์ AI'}
                     </button>
                 )}
@@ -308,15 +248,76 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                 </div>
             )}
 
-            {/* 4. Main Mixer Toggle Button */}
-            <button
-                ref={mixerBtnRef}
-                onClick={() => setShowMixerPopover(!showMixerPopover)}
-                className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 ${showMixerPopover ? 'bg-primary/25 text-primary border border-primary/20' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
-                title="ตั้งค่าเสียง (MIXER)"
-            >
-                <SlidersHorizontal size={20} />
-            </button>
+            {/* 4. Main Mixer Toggle Button — popover is relative to this wrapper */}
+            <div className="relative shrink-0">
+                {showMixerPopover && (
+                    <div 
+                        ref={popoverRef}
+                        className="absolute bottom-14 right-0 bg-black/95 backdrop-blur-2xl border border-white/10 p-4 rounded-2xl shadow-2xl flex flex-col gap-4 w-[280px] z-50 pointer-events-auto animate-in fade-in slide-in-from-bottom-2 duration-200"
+                    >
+                        {/* Header */}
+                        <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                            <span className="text-white text-xs font-bold flex items-center gap-1.5">
+                                <SlidersHorizontal size={14} className="text-primary" />
+                                ตั้งค่าเสียง (MIXER)
+                            </span>
+                            <button onClick={() => setShowMixerPopover(false)} className="text-white/40 hover:text-white transition-colors">
+                                <X size={14} />
+                            </button>
+                        </div>
+
+                        {/* Audio Separation Sliders */}
+                        <div className="flex flex-col gap-3.5">
+                            {isAiReady ? (
+                                <>
+                                    {renderMixerRow('vocals', Mic, 'เสียงร้อง (Vocals)')}
+                                    
+                                    {!isProMode ? (
+                                        renderMixerRow('instrumental', Music, 'เสียงดนตรี (Backing)')
+                                    ) : (
+                                        <>
+                                            {renderMixerRow('drums', Drum, 'กลอง (Drums)')}
+                                            {renderMixerRow('bass', Guitar, 'เบส (Bass)')}
+                                            {renderMixerRow('other', Piano, 'ดนตรีอื่นๆ (Other)')}
+                                        </>
+                                    )}
+                                </>
+                            ) : (
+                                <div className="py-2 flex flex-col gap-2 items-center text-center">
+                                    <span className="text-[10px] text-white/40">ยังไม่ได้แยกแทร็กเสียงดนตรีด้วย AI</span>
+                                    <button
+                                        onClick={() => {
+                                            setShowMixerPopover(false);
+                                            if (currentVideo) {
+                                                const uuid = currentVideo.uuid || currentVideo.id;
+                                                if (uuid && activeVideoId) {
+                                                    useUIStore.getState().showVocalModeModal(uuid, activeVideoId);
+                                                }
+                                            }
+                                        }}
+                                        className="w-full py-2 flex items-center justify-center gap-1.5 rounded-xl bg-primary text-white hover:bg-primary/90 transition-all text-xs font-bold"
+                                    >
+                                        <Sparkles size={14} />
+                                        แยกเสียงด้วย AI
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Tooltip Arrow pointing down toward the Mixer button */}
+                        <div className="absolute -bottom-1.5 right-[18px] w-3 h-3 bg-black/95 border-r border-b border-white/10 rotate-45" />
+                    </div>
+                )}
+
+                <button
+                    ref={mixerBtnRef}
+                    onClick={() => setShowMixerPopover(!showMixerPopover)}
+                    className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto ${showMixerPopover ? 'bg-primary/25 text-primary border border-primary/20' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
+                    title="ตั้งค่าเสียง (MIXER)"
+                >
+                    <SlidersHorizontal size={20} />
+                </button>
+            </div>
 
             <div className="w-[1px] h-6 bg-white/10 mx-0.5 shrink-0" />
 
