@@ -44,21 +44,28 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
     const isAiReady = Boolean(activeVideoId && aiJob?.status === 'ready');
     const isProMode = aiJob?.mode === 'pro';
 
-    // State to track which track is being hovered to prevent parent group-hover conflicts
-    const [hoveredTrack, setHoveredTrack] = useState<string | null>(null);
-    // State to keep track of active dragging to keep slider visible even if mouse leaves container
-    const [activeDraggingTrack, setActiveDraggingTrack] = useState<string | null>(null);
+    // State to track which track's popover is currently active (Click-to-Open)
+    const [activePopover, setActivePopover] = useState<'vocals' | 'instrumental' | 'drums' | 'bass' | 'other' | null>(null);
 
-    // Global listener to release dragging state when mouse is released anywhere
+    // Ref for the entire control bar to handle click-outside detection
+    const barRef = useRef<HTMLDivElement>(null);
+
+    const togglePopover = (track: 'vocals' | 'instrumental' | 'drums' | 'bass' | 'other') => {
+        setActivePopover(prev => prev === track ? null : track);
+    };
+
+    // Close popover when clicking outside the control bar
     useEffect(() => {
-        const handleGlobalMouseUp = () => {
-            setActiveDraggingTrack(null);
+        const handleClickOutside = (event: MouseEvent) => {
+            if (barRef.current && !barRef.current.contains(event.target as Node)) {
+                setActivePopover(null);
+            }
         };
-        window.addEventListener('mouseup', handleGlobalMouseUp);
-        window.addEventListener('touchend', handleGlobalMouseUp);
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
         return () => {
-            window.removeEventListener('mouseup', handleGlobalMouseUp);
-            window.removeEventListener('touchend', handleGlobalMouseUp);
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
         };
     }, []);
 
@@ -76,7 +83,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
 
     if (layoutMode !== 'fullscreen') return null;
 
-    // Hover-expandable Slider Track Component (Positioned above the button)
+    // Click-to-Open Slider Track Component
     const TrackControl = ({ 
         track, 
         icon: Icon, 
@@ -90,38 +97,44 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
     }) => {
         const isMuted = trackStates[track].muted;
         const vol = volumes[track];
-        const isHovered = hoveredTrack === track || activeDraggingTrack === track;
+        const isOpen = activePopover === track;
         
         return (
-            <div 
-                onMouseEnter={() => setHoveredTrack(track)}
-                onMouseLeave={() => setHoveredTrack(null)}
-                className="relative flex flex-col items-center pointer-events-auto shrink-0"
-            >
-                {/* Floating Volume Box (Positioned above with a contiguous hover wrapper to prevent flickering) */}
-                {isHovered && (
-                    <div className="absolute bottom-[44px] left-1/2 -translate-x-1/2 pb-2 z-50">
-                        <div className="bg-black/90 backdrop-blur-md border border-white/10 p-2.5 rounded-xl shadow-xl flex flex-col items-center gap-1.5 w-32 pointer-events-auto">
-                            <span className="text-[10px] text-white/70 font-semibold">{label}: {vol}%</span>
+            <div className="relative flex flex-col items-center pointer-events-auto shrink-0">
+                {/* Floating Volume Box (Positioned above, Click to open/close) */}
+                {isOpen && (
+                    <div className="absolute bottom-[48px] left-1/2 -translate-x-1/2 pb-2 z-50">
+                        <div className="bg-black/95 backdrop-blur-md border border-white/10 p-2.5 rounded-xl shadow-2xl flex items-center gap-2 w-48 pointer-events-auto">
+                            {/* Mute Toggle inside popover */}
+                            <button
+                                onClick={() => toggleMute(track)}
+                                className={`p-1.5 rounded-lg transition-all active:scale-95 ${isMuted ? 'text-white/30 bg-white/5' : 'text-primary bg-primary/10'}`}
+                                title={isMuted ? "เปิดเสียง" : "ปิดเสียง"}
+                            >
+                                <Icon size={14} />
+                            </button>
+                            
+                            {/* Horizontal Slider */}
                             <input
                                 type="range"
                                 min="0"
                                 max="100"
                                 value={isMuted ? 0 : vol}
                                 onChange={(e) => setVolume(track, parseInt(e.target.value))}
-                                onMouseDown={() => setActiveDraggingTrack(track)}
-                                onTouchStart={() => setActiveDraggingTrack(track)}
-                                className="w-full h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-primary"
+                                className="flex-1 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-primary"
                             />
+                            
+                            {/* Percentage Indicator */}
+                            <span className="text-[10px] font-mono text-white/70 w-8 text-right font-semibold">{vol}%</span>
                         </div>
                     </div>
                 )}
                 
-                {/* Button */}
+                {/* Main Bar Button (Click to Toggle Popover) */}
                 <button
-                    onClick={() => toggleMute(track)}
-                    className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 ${isMuted ? 'text-white/30 bg-white/5 border border-white/5' : colorClass}`}
-                    title={`${label} (คลิกเพื่อ เปิด/ปิด, ชี้เพื่อปรับเสียง)`}
+                    onClick={() => togglePopover(track)}
+                    className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 ${isMuted ? 'text-white/30 bg-white/5 border border-white/5' : isOpen ? 'bg-primary text-white shadow-lg shadow-primary/20' : colorClass}`}
+                    title={`${label} (คลิกเพื่อปรับเสียง)`}
                 >
                     <Icon size={20} />
                 </button>
@@ -131,6 +144,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
 
     return (
         <div
+            ref={barRef}
             className={`absolute bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 md:gap-2.5 p-1.5 md:p-2 bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}
         >
             {/* 1. Lyrics Selection Segmented Pill Control */}
