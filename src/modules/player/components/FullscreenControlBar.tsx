@@ -76,7 +76,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
         return (
             <div className="relative group flex flex-col items-center pointer-events-auto shrink-0">
                 {/* Floating Volume Box (Positioned above with a contiguous hover wrapper to prevent flickering) */}
-                <div className="absolute bottom-[44px] left-1/2 -translate-x-1/2 pb-2 opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-200 z-50">
+                <div className="absolute bottom-[44px] left-1/2 -translate-x-1/2 pb-2 hidden group-hover:block z-50">
                     <div className="bg-black/90 backdrop-blur-md border border-white/10 p-2.5 rounded-xl shadow-xl flex flex-col items-center gap-1.5 w-32 pointer-events-auto">
                         <span className="text-[10px] text-white/70 font-semibold">{label}: {vol}%</span>
                         <input
