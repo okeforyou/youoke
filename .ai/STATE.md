@@ -1,5 +1,5 @@
 # 📍 Active State (RAM)
-*Last Updated: 2026-08-11 11:17*
+*Last Updated: 2026-08-11 11:39*
 
 ## 🚀 Current Objective
 - [x] Fix Sara I clipping issue where blue sweep sliver appears prematurely.
@@ -13,6 +13,7 @@
 - [x] Implement a 3-tab segmented lyrics toggle (`ปิดเนื้อ`, `LRCLIB`, `AI Sync`) directly on the bar.
 - [x] Re-architect stem controllers to use Click-to-Open and Click-Outside-to-Close popovers directly above the buttons, preventing all slider dragging stutter/lag.
 - [x] Fix range slider click-to-drag bugs by removing wrapper event blockers and binding value directly to track volume (vol) instead of locking to 0 when muted.
+- [x] Solve slider lag/step-by-step update bug by extracting TrackControl to a standalone component outside of FullscreenControlBar, preventing DOM tree unmounting/remounting during slider drags.
 
 ## 📋 Action Plan
 - [x] `src/modules/player/components/LyricsOverlay.tsx`: Conditional render sweeping span only when `wordProgress > 0`, adjust container wrapping, reposition source badge to top-left, and increase clip-path margins to -100%.

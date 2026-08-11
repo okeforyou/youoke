@@ -14,6 +14,85 @@ interface FullscreenControlBarProps {
     playerRef?: React.MutableRefObject<any>;
 }
 
+interface TrackControlProps {
+    track: 'vocals' | 'instrumental' | 'drums' | 'bass' | 'other';
+    icon: any;
+    label: string;
+    colorClass: string;
+    isOpen: boolean;
+    onToggle: () => void;
+}
+
+// Standalone TrackControl component defined outside parent to prevent DOM unmounting on state updates.
+// This preserves focus and drag states on the range slider, delivering a buttery smooth drag experience.
+const TrackControl = ({ 
+    track, 
+    icon: Icon, 
+    label, 
+    colorClass,
+    isOpen,
+    onToggle
+}: TrackControlProps) => {
+    const { trackStates, volumes, setVolume, toggleMute } = useMixerStore();
+    const isMuted = trackStates[track].muted;
+    const vol = volumes[track];
+
+    const handleVolumeChange = (value: number) => {
+        setVolume(track, value);
+        if (value > 0 && trackStates[track].muted) {
+            toggleMute(track);
+        }
+    };
+    
+    return (
+        <div className="relative flex flex-col items-center pointer-events-auto shrink-0">
+            {/* Floating Volume Box (Positioned above, Click to open/close) */}
+            {isOpen && (
+                <div className="absolute bottom-[48px] left-1/2 -translate-x-1/2 pb-2 z-50">
+                    <div className="bg-black/95 backdrop-blur-md border border-white/10 p-2.5 rounded-xl shadow-2xl flex items-center gap-2 w-48 pointer-events-auto">
+                        {/* Mute Toggle inside popover */}
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                toggleMute(track);
+                            }}
+                            className={`p-1.5 rounded-lg transition-all active:scale-95 ${isMuted ? 'text-white/30 bg-white/5' : 'text-primary bg-primary/10'}`}
+                            title={isMuted ? "เปิดเสียง" : "ปิดเสียง"}
+                        >
+                            <Icon size={14} />
+                        </button>
+                        
+                        {/* Horizontal Slider */}
+                        <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={vol}
+                            onChange={(e) => handleVolumeChange(parseInt(e.target.value))}
+                            className="flex-1 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-primary"
+                        />
+                        
+                        {/* Percentage Indicator */}
+                        <span className="text-[10px] font-mono text-white/70 w-8 text-right font-semibold">{vol}%</span>
+                    </div>
+                </div>
+            )}
+            
+            {/* Main Bar Button (Click to Toggle Popover) */}
+            <button
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onToggle();
+                }}
+                className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 ${isMuted ? 'text-white/30 bg-white/5 border border-white/5' : isOpen ? 'bg-primary text-white shadow-lg shadow-primary/20' : colorClass}`}
+                title={`${label} (คลิกเพื่อปรับเสียง)`}
+            >
+                <Icon size={20} />
+            </button>
+        </div>
+    );
+};
+
 export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenControlBarProps) => {
     const isPlaying = usePlayerStore(state => state.isPlaying);
     const cast = useCast();
@@ -37,7 +116,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
     } = useDeepgramLyricsStore();
 
     // AI Separation & Mixer Store
-    const { trackStates, volumes, setVolume, toggleMute } = useMixerStore();
+    const { trackStates } = useMixerStore();
     const aiVocalStore = useAIVocalStore();
     const activeVideoId = currentVideo?.videoId || currentVideo?.id;
     const aiJob = activeVideoId ? aiVocalStore.jobs[activeVideoId] : null;
@@ -69,14 +148,6 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
         };
     }, []);
 
-    // Helper function to handle volume adjustments and automatically unmute when volume is increased
-    const handleVolumeChange = (track: 'vocals' | 'instrumental' | 'drums' | 'bass' | 'other', value: number) => {
-        setVolume(track, value);
-        if (value > 0 && trackStates[track].muted) {
-            toggleMute(track);
-        }
-    };
-
     const handlePlayPause = () => {
         if (cast.isConnected) {
             isPlaying ? cast.pause() : cast.play();
@@ -90,71 +161,6 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
     };
 
     if (layoutMode !== 'fullscreen') return null;
-
-    // Click-to-Open Slider Track Component
-    const TrackControl = ({ 
-        track, 
-        icon: Icon, 
-        label, 
-        colorClass 
-    }: { 
-        track: 'vocals' | 'instrumental' | 'drums' | 'bass' | 'other', 
-        icon: any, 
-        label: string, 
-        colorClass: string 
-    }) => {
-        const isMuted = trackStates[track].muted;
-        const vol = volumes[track];
-        const isOpen = activePopover === track;
-        
-        return (
-            <div className="relative flex flex-col items-center pointer-events-auto shrink-0">
-                {/* Floating Volume Box (Positioned above, Click to open/close) */}
-                {isOpen && (
-                    <div className="absolute bottom-[48px] left-1/2 -translate-x-1/2 pb-2 z-50">
-                        <div className="bg-black/95 backdrop-blur-md border border-white/10 p-2.5 rounded-xl shadow-2xl flex items-center gap-2 w-48 pointer-events-auto">
-                            {/* Mute Toggle inside popover */}
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    toggleMute(track);
-                                }}
-                                className={`p-1.5 rounded-lg transition-all active:scale-95 ${isMuted ? 'text-white/30 bg-white/5' : 'text-primary bg-primary/10'}`}
-                                title={isMuted ? "เปิดเสียง" : "ปิดเสียง"}
-                            >
-                                <Icon size={14} />
-                            </button>
-                            
-                            {/* Horizontal Slider */}
-                            <input
-                                type="range"
-                                min="0"
-                                max="100"
-                                value={vol}
-                                onChange={(e) => handleVolumeChange(track, parseInt(e.target.value))}
-                                className="flex-1 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-primary"
-                            />
-                            
-                            {/* Percentage Indicator */}
-                            <span className="text-[10px] font-mono text-white/70 w-8 text-right font-semibold">{vol}%</span>
-                        </div>
-                    </div>
-                )}
-                
-                {/* Main Bar Button (Click to Toggle Popover) */}
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        togglePopover(track);
-                    }}
-                    className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 ${isMuted ? 'text-white/30 bg-white/5 border border-white/5' : isOpen ? 'bg-primary text-white shadow-lg shadow-primary/20' : colorClass}`}
-                    title={`${label} (คลิกเพื่อปรับเสียง)`}
-                >
-                    <Icon size={20} />
-                </button>
-            </div>
-        );
-    };
 
     return (
         <div
@@ -220,6 +226,8 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                         icon={trackStates.vocals.muted ? MicOff : Mic} 
                         label="เสียงร้อง" 
                         colorClass="text-green-400 bg-green-500/10 border-green-500/20" 
+                        isOpen={activePopover === 'vocals'}
+                        onToggle={() => togglePopover('vocals')}
                     />
                     
                     {/* Stems Controls based on Mode (Basic 2CH vs Pro 4CH) */}
@@ -229,6 +237,8 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                             icon={Music} 
                             label="ดนตรี" 
                             colorClass="text-blue-400 bg-blue-500/10 border-blue-500/20" 
+                            isOpen={activePopover === 'instrumental'}
+                            onToggle={() => togglePopover('instrumental')}
                         />
                     ) : (
                         <>
@@ -237,18 +247,24 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                                 icon={Drum} 
                                 label="กลอง" 
                                 colorClass="text-amber-400 bg-amber-500/10 border-amber-500/20" 
+                                isOpen={activePopover === 'drums'}
+                                onToggle={() => togglePopover('drums')}
                             />
                             <TrackControl 
                                 track="bass" 
                                 icon={Guitar} 
                                 label="เบส" 
                                 colorClass="text-purple-400 bg-purple-500/10 border-purple-500/20" 
+                                isOpen={activePopover === 'bass'}
+                                onToggle={() => togglePopover('bass')}
                             />
                             <TrackControl 
                                 track="other" 
                                 icon={Piano} 
                                 label="อื่นๆ" 
                                 colorClass="text-teal-400 bg-teal-500/10 border-teal-500/20" 
+                                isOpen={activePopover === 'other'}
+                                onToggle={() => togglePopover('other')}
                             />
                         </>
                     )}
