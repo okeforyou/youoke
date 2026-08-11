@@ -1,5 +1,5 @@
 # 📍 Active State (RAM)
-*Last Updated: 2026-08-11 10:30*
+*Last Updated: 2026-08-11 10:36*
 
 ## 🚀 Current Objective
 - [x] Fix Sara I clipping issue where blue sweep sliver appears prematurely.
@@ -12,15 +12,16 @@
 - [x] Replace sync offset controls with inline vocal, backing, drums, bass, and other stem controls directly on the bar.
 - [x] Implement expandable-on-hover horizontal sliders for each stem directly inside FullscreenControlBar.tsx.
 - [x] Implement a 3-tab segmented lyrics toggle (`ปิดเนื้อ`, `LRCLIB`, `AI Sync`) directly on the bar.
+- [x] Fix hover flickering on stem sliders by placing the slider card directly *above* the button with a contiguous hover bridge.
 
 ## 📋 Action Plan
 - [x] `src/modules/player/components/LyricsOverlay.tsx`: Conditional render sweeping span only when `wordProgress > 0`, adjust container wrapping, reposition source badge to top-left, and increase clip-path margins to -100%.
 - [x] `src/modules/lyrics/engines/deepgramAlignEngine.ts`: Update missing timestamp interpolation capping logic and end-anchoring.
-- [x] `src/modules/player/components/FullscreenControlBar.tsx`: Move all stem tracks inline with CSS hover-expandable volume sliders, and add lyrics 3-pill segment selector.
+- [x] `src/modules/player/components/FullscreenControlBar.tsx`: Move all stem tracks inline with CSS hover-expandable volume sliders positioned above the buttons, and add lyrics 3-pill segment selector.
 - [ ] Investigate Local Whisper Separation Engine (Pathway B) in the future.
 
 ## ⚠️ Blockers
 - None.
 
 ## 📌 Next AI Action
-- [ ] Gather user feedback on the inline hover-expandable stem sliders and segmented lyrics bar UX.
+- [ ] Gather user feedback on the floating hover-expandable stem sliders and segmented lyrics bar UX.

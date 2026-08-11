@@ -58,7 +58,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
 
     if (layoutMode !== 'fullscreen') return null;
 
-    // Hover-expandable Slider Track Component
+    // Hover-expandable Slider Track Component (Positioned above the button)
     const TrackControl = ({ 
         track, 
         icon: Icon, 
@@ -74,28 +74,30 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
         const vol = volumes[track];
         
         return (
-            <div className="group relative flex items-center bg-white/5 border border-white/10 rounded-xl p-1 gap-1.5 transition-all duration-300 hover:bg-white/10 hover:w-[150px] w-11 h-11 overflow-hidden pointer-events-auto shrink-0">
-                {/* Button / Icon */}
+            <div className="relative group flex flex-col items-center pointer-events-auto shrink-0">
+                {/* Floating Volume Box (Positioned above with a contiguous hover wrapper to prevent flickering) */}
+                <div className="absolute bottom-[44px] left-1/2 -translate-x-1/2 pb-2 opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-200 z-50">
+                    <div className="bg-black/90 backdrop-blur-md border border-white/10 p-2.5 rounded-xl shadow-xl flex flex-col items-center gap-1.5 w-32 pointer-events-auto">
+                        <span className="text-[10px] text-white/70 font-semibold">{label}: {vol}%</span>
+                        <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={isMuted ? 0 : vol}
+                            onChange={(e) => setVolume(track, parseInt(e.target.value))}
+                            className="w-full h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-primary"
+                        />
+                    </div>
+                </div>
+                
+                {/* Button */}
                 <button
                     onClick={() => toggleMute(track)}
-                    className={`w-9 h-9 shrink-0 flex items-center justify-center rounded-lg transition-all ${isMuted ? 'text-white/30 bg-white/5' : colorClass}`}
-                    title={`${label} (คลิกเพื่อ เปิด/ปิด)`}
+                    className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 ${isMuted ? 'text-white/30 bg-white/5 border border-white/5' : colorClass}`}
+                    title={`${label} (คลิกเพื่อ เปิด/ปิด, ชี้เพื่อปรับเสียง)`}
                 >
-                    <Icon size={18} />
+                    <Icon size={20} />
                 </button>
-                
-                {/* Volume Slider (Expands & Fades in on Hover) */}
-                <div className="flex-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center pr-2">
-                    <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        value={isMuted ? 0 : vol}
-                        onChange={(e) => setVolume(track, parseInt(e.target.value))}
-                        className="w-full h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-primary"
-                        title={`ปรับเสียง ${label}`}
-                    />
-                </div>
             </div>
         );
     };
