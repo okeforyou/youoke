@@ -44,6 +44,9 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
     const isAiReady = Boolean(activeVideoId && aiJob?.status === 'ready');
     const isProMode = aiJob?.mode === 'pro';
 
+    // State to track which track is being hovered to prevent parent group-hover conflicts
+    const [hoveredTrack, setHoveredTrack] = useState<string | null>(null);
+
     const handlePlayPause = () => {
         if (cast.isConnected) {
             isPlaying ? cast.pause() : cast.play();
@@ -72,23 +75,30 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
     }) => {
         const isMuted = trackStates[track].muted;
         const vol = volumes[track];
+        const isHovered = hoveredTrack === track;
         
         return (
-            <div className="relative group flex flex-col items-center pointer-events-auto shrink-0">
+            <div 
+                onMouseEnter={() => setHoveredTrack(track)}
+                onMouseLeave={() => setHoveredTrack(null)}
+                className="relative flex flex-col items-center pointer-events-auto shrink-0"
+            >
                 {/* Floating Volume Box (Positioned above with a contiguous hover wrapper to prevent flickering) */}
-                <div className="absolute bottom-[44px] left-1/2 -translate-x-1/2 pb-2 hidden group-hover:block z-50">
-                    <div className="bg-black/90 backdrop-blur-md border border-white/10 p-2.5 rounded-xl shadow-xl flex flex-col items-center gap-1.5 w-32 pointer-events-auto">
-                        <span className="text-[10px] text-white/70 font-semibold">{label}: {vol}%</span>
-                        <input
-                            type="range"
-                            min="0"
-                            max="100"
-                            value={isMuted ? 0 : vol}
-                            onChange={(e) => setVolume(track, parseInt(e.target.value))}
-                            className="w-full h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-primary"
-                        />
+                {isHovered && (
+                    <div className="absolute bottom-[44px] left-1/2 -translate-x-1/2 pb-2 z-50">
+                        <div className="bg-black/90 backdrop-blur-md border border-white/10 p-2.5 rounded-xl shadow-xl flex flex-col items-center gap-1.5 w-32 pointer-events-auto">
+                            <span className="text-[10px] text-white/70 font-semibold">{label}: {vol}%</span>
+                            <input
+                                type="range"
+                                min="0"
+                                max="100"
+                                value={isMuted ? 0 : vol}
+                                onChange={(e) => setVolume(track, parseInt(e.target.value))}
+                                className="w-full h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-primary"
+                            />
+                        </div>
                     </div>
-                </div>
+                )}
                 
                 {/* Button */}
                 <button
