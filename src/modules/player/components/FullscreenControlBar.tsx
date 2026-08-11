@@ -69,6 +69,14 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
         };
     }, []);
 
+    // Helper function to handle volume adjustments and automatically unmute when volume is increased
+    const handleVolumeChange = (track: 'vocals' | 'instrumental' | 'drums' | 'bass' | 'other', value: number) => {
+        setVolume(track, value);
+        if (value > 0 && trackStates[track].muted) {
+            toggleMute(track);
+        }
+    };
+
     const handlePlayPause = () => {
         if (cast.isConnected) {
             isPlaying ? cast.pause() : cast.play();
@@ -103,11 +111,19 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
             <div className="relative flex flex-col items-center pointer-events-auto shrink-0">
                 {/* Floating Volume Box (Positioned above, Click to open/close) */}
                 {isOpen && (
-                    <div className="absolute bottom-[48px] left-1/2 -translate-x-1/2 pb-2 z-50">
+                    <div 
+                        className="absolute bottom-[48px] left-1/2 -translate-x-1/2 pb-2 z-50"
+                        onClick={(e) => e.stopPropagation()}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
+                    >
                         <div className="bg-black/95 backdrop-blur-md border border-white/10 p-2.5 rounded-xl shadow-2xl flex items-center gap-2 w-48 pointer-events-auto">
                             {/* Mute Toggle inside popover */}
                             <button
-                                onClick={() => toggleMute(track)}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleMute(track);
+                                }}
                                 className={`p-1.5 rounded-lg transition-all active:scale-95 ${isMuted ? 'text-white/30 bg-white/5' : 'text-primary bg-primary/10'}`}
                                 title={isMuted ? "เปิดเสียง" : "ปิดเสียง"}
                             >
@@ -120,7 +136,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                                 min="0"
                                 max="100"
                                 value={isMuted ? 0 : vol}
-                                onChange={(e) => setVolume(track, parseInt(e.target.value))}
+                                onChange={(e) => handleVolumeChange(track, parseInt(e.target.value))}
                                 className="flex-1 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-primary"
                             />
                             
@@ -132,7 +148,10 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                 
                 {/* Main Bar Button (Click to Toggle Popover) */}
                 <button
-                    onClick={() => togglePopover(track)}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        togglePopover(track);
+                    }}
                     className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 ${isMuted ? 'text-white/30 bg-white/5 border border-white/5' : isOpen ? 'bg-primary text-white shadow-lg shadow-primary/20' : colorClass}`}
                     title={`${label} (คลิกเพื่อปรับเสียง)`}
                 >

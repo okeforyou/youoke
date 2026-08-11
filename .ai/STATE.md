@@ -1,5 +1,5 @@
 # 📍 Active State (RAM)
-*Last Updated: 2026-08-11 11:03*
+*Last Updated: 2026-08-11 11:10*
 
 ## 🚀 Current Objective
 - [x] Fix Sara I clipping issue where blue sweep sliver appears prematurely.
@@ -12,6 +12,7 @@
 - [x] Replace sync offset controls with inline vocal, backing, drums, bass, and other stem controls directly on the bar.
 - [x] Implement a 3-tab segmented lyrics toggle (`ปิดเนื้อ`, `LRCLIB`, `AI Sync`) directly on the bar.
 - [x] Re-architect stem controllers to use Click-to-Open and Click-Outside-to-Close popovers directly above the buttons, preventing all slider dragging stutter/lag.
+- [x] Fix range slider click-to-drag bugs by stopping event propagation on mouse/touch interaction and adding automatic unmuting logic when sliding.
 
 ## 📋 Action Plan
 - [x] `src/modules/player/components/LyricsOverlay.tsx`: Conditional render sweeping span only when `wordProgress > 0`, adjust container wrapping, reposition source badge to top-left, and increase clip-path margins to -100%.
