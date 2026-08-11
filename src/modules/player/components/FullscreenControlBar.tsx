@@ -24,7 +24,6 @@ interface TrackControlProps {
 }
 
 // Standalone TrackControl component defined outside parent to prevent DOM unmounting on state updates.
-// This preserves focus and drag states on the range slider, delivering a buttery smooth drag experience.
 const TrackControl = ({ 
     track, 
     icon: Icon, 
@@ -37,19 +36,27 @@ const TrackControl = ({
     const isMuted = trackStates[track].muted;
     const vol = volumes[track];
 
+    // Handles volume dragging and ensures bidirectional synchronization with the mute state
     const handleVolumeChange = (value: number) => {
         setVolume(track, value);
-        if (value > 0 && trackStates[track].muted) {
+        // Automatically unmute if dragged above 0 while muted
+        if (value > 0 && isMuted) {
+            toggleMute(track);
+        } 
+        // Automatically mute if dragged down to 0 while unmuted
+        else if (value === 0 && !isMuted) {
             toggleMute(track);
         }
     };
     
+    const displayValue = isMuted ? 0 : vol;
+    
     return (
         <div className="relative flex flex-col items-center pointer-events-auto shrink-0">
-            {/* Floating Volume Box (Positioned above, Click to open/close) */}
+            {/* Floating Volume Box (w-52 layout to prevent text clipping) */}
             {isOpen && (
                 <div className="absolute bottom-[48px] left-1/2 -translate-x-1/2 pb-2 z-50">
-                    <div className="bg-black/95 backdrop-blur-md border border-white/10 p-2.5 rounded-xl shadow-2xl flex items-center gap-2 w-48 pointer-events-auto">
+                    <div className="bg-black/95 backdrop-blur-md border border-white/10 p-2.5 rounded-xl shadow-2xl flex items-center gap-2 w-52 pointer-events-auto">
                         {/* Mute Toggle inside popover */}
                         <button
                             onClick={(e) => {
@@ -67,13 +74,15 @@ const TrackControl = ({
                             type="range"
                             min="0"
                             max="100"
-                            value={vol}
+                            value={displayValue}
                             onChange={(e) => handleVolumeChange(parseInt(e.target.value))}
                             className="flex-1 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-primary"
                         />
                         
-                        {/* Percentage Indicator */}
-                        <span className="text-[10px] font-mono text-white/70 w-8 text-right font-semibold">{vol}%</span>
+                        {/* Percentage Indicator (min-w-[36px] ensures it fits nicely inside the frame) */}
+                        <span className="text-[10px] font-mono text-white/70 min-w-[36px] text-right font-semibold">
+                            {displayValue}%
+                        </span>
                     </div>
                 </div>
             )}
