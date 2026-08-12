@@ -1,0 +1,1 @@
+- [ ] Add background job status indicator to YouOke Plugin (Backend & Frontend) to show currently separating songs and allow cancelling them.
