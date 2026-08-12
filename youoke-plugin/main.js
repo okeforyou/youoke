@@ -1,4 +1,4 @@
-const { app, Tray, Menu, dialog, nativeImage, shell } = require('electron');
+const { app, Tray, Menu, dialog, nativeImage, shell, BrowserWindow } = require('electron');
 const { autoUpdater } = require('electron-updater');
 const { spawn, exec } = require('child_process');
 const path = require('path');
@@ -7,6 +7,44 @@ const fs = require('fs');
 
 let tray = null;
 let serverProcess = null;
+let dashboardWindow = null;
+
+function createDashboardWindow() {
+  if (dashboardWindow) {
+    dashboardWindow.focus();
+    return;
+  }
+
+  if (app.dock) app.dock.show();
+
+  dashboardWindow = new BrowserWindow({
+    width: 420,
+    height: 580,
+    minWidth: 380,
+    minHeight: 500,
+    resizable: true,
+    maximizable: false,
+    title: "YouOke AI Dashboard",
+    icon: path.join(__dirname, 'assets', 'icon.png'),
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true
+    }
+  });
+
+  dashboardWindow.loadFile(path.join(__dirname, 'dashboard.html'));
+
+  // Open external links in default browser
+  dashboardWindow.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url);
+    return { action: 'deny' };
+  });
+
+  dashboardWindow.on('closed', () => {
+    dashboardWindow = null;
+    if (app.dock) app.dock.hide();
+  });
+}
 
 // Determine the path to the bundled Python executable
 function getServerExecutablePath() {
@@ -146,7 +184,7 @@ app.whenReady().then(() => {
   const contextMenu = Menu.buildFromTemplate([
     { label: `YouOke Plugin v${appVersion}`, enabled: false },
     { type: 'separator' },
-    { label: 'ระบบจัดการ YouOke AI', enabled: false },
+    { label: 'เปิดแดชบอร์ดจัดการ (Dashboard)...', click: () => { createDashboardWindow(); } },
     { type: 'separator' },
     { label: 'รีสตาร์ทระบบ AI', click: () => { stopServer(); setTimeout(startServer, 1000); } },
     { label: 'ตรวจสอบอัปเดต', click: () => { autoUpdater.checkForUpdatesAndNotify(); } },
@@ -155,6 +193,11 @@ app.whenReady().then(() => {
   ]);
   
   tray.setContextMenu(contextMenu);
+
+  // Open dashboard window on double click
+  tray.on('double-click', () => {
+    createDashboardWindow();
+  });
 
   // Auto updater config
   // Point to our Vercel API proxy so it can securely access private GitHub releases!

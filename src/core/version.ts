@@ -1,7 +1,7 @@
-// 🛡️ v5.5.273: Lyrics - AI Sync Strict LRCLIB Timing Mode
+// 🛡️ v5.5.274: Plugin - YouOke AI Dashboard & Storage Queue Manager
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.273";
+export const SYSTEM_VERSION = "5.5.274";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.274",
+        date: "2026-08-12",
+        changes: [
+            "feat(plugin): Added YouOke AI Dashboard window in Electron app to manage active separation queues and storage cache.",
+            "feat(plugin): Added POST /cancel/{video_id} and GET /jobs to Python server for real-time background task cancellation and status tracking.",
+            "fix(plugin): Resolved cache folder deletion bug when using custom storage paths in Python server."
+        ]
+    },
+
     {
         version: "5.5.273",
         date: "2026-08-09",

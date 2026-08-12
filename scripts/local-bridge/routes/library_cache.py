@@ -158,9 +158,40 @@ def delete_cache(video_id: str):
         if not video_id or ".." in video_id or "/" in video_id:
             raise HTTPException(status_code=400, detail="Invalid video_id")
             
+        deleted = False
+        
+        # 1. Delete from default CACHE_DIR
         song_dir = os.path.join(CACHE_DIR, video_id)
         if os.path.exists(song_dir):
             shutil.rmtree(song_dir)
+            deleted = True
+            
+        # 2. Delete from custom storage path if active and different
+        active_dir = get_active_storage_dir()
+        if active_dir != CACHE_DIR and os.path.exists(active_dir):
+            for folder_name in os.listdir(active_dir):
+                sub_dir = os.path.join(active_dir, folder_name)
+                if not os.path.isdir(sub_dir):
+                    continue
+                
+                # Check for video_id match in youoke.json
+                json_path = os.path.join(sub_dir, "youoke.json")
+                if os.path.exists(json_path):
+                    try:
+                        with open(json_path, "r", encoding="utf-8") as yf:
+                            ydata = json.load(yf)
+                            if ydata.get("videoId") == video_id:
+                                shutil.rmtree(sub_dir)
+                                deleted = True
+                                print(f"[Cache Delete] Deleted custom storage folder: {sub_dir}")
+                    except Exception as e:
+                        print(f"[Cache Delete] Failed to delete custom folder {sub_dir}: {e}")
+                else:
+                    if folder_name == video_id:
+                        shutil.rmtree(sub_dir)
+                        deleted = True
+        
+        if deleted:
             return {"status": "success", "message": f"Deleted cache for {video_id}"}
         else:
             return {"status": "error", "message": "Cache not found"}

@@ -11,11 +11,46 @@ from utils.logger import log_download_attempt
 from utils.audio import convert_audio, is_valid_audio, get_ffmpeg_path
 from routes.library_cache import load_library
 from models import SeparateRequest
-from server_state import progress_store, rapidapi_quota
+from server_state import progress_store, rapidapi_quota, active_processes
 
 router = APIRouter()
 
-progress_store = {}
+def set_progress(vid: str, status: str, percent: int, message: str, mode: str = None, title: str = None):
+    current = progress_store.get(vid, {})
+    current_title = title or current.get("title", vid)
+    data = {
+        "status": status,
+        "percent": percent,
+        "message": message,
+        "title": current_title
+    }
+    if mode:
+        data["mode"] = mode
+    elif "mode" in current:
+        data["mode"] = current["mode"]
+    progress_store[vid] = data
+
+@router.get("/jobs")
+def list_jobs():
+    return [{"video_id": vid, **info} for vid, info in progress_store.items()]
+
+@router.post("/cancel/{video_id}")
+def cancel_job(video_id: str):
+    if video_id in active_processes:
+        process = active_processes[video_id]
+        try:
+            process.kill()
+            print(f"[Cancel] Terminated process for {video_id}")
+        except Exception as e:
+            print(f"[Cancel] Process kill failed: {e}")
+        
+        set_progress(video_id, "cancelled", 0, "ยกเลิกแล้ว")
+        return {"status": "success", "message": f"Cancelled separation for {video_id}"}
+    else:
+        if video_id in progress_store:
+            set_progress(video_id, "cancelled", 0, "ยกเลิกแล้ว")
+            return {"status": "success", "message": f"Cancelled task for {video_id}"}
+        return {"status": "error", "message": "Job not found or not running"}
 
 @router.get("/progress/{video_id}")
 def get_progress(video_id: str):
@@ -43,7 +78,7 @@ def separate(req: SeparateRequest):
     mode = req.mode
     song_dir = os.path.join(CACHE_DIR, vid)
     
-    progress_store[vid] = {"status": "starting", "percent": 0, "message": "กำลังตรวจสอบข้อมูล..."}
+    set_progress(vid, "starting", 0, "กำลังตรวจสอบข้อมูล...", title=req.title)
     
     # Check if already cached
     vocal_m4a = os.path.join(song_dir, "vocals.m4a")
@@ -62,7 +97,7 @@ def separate(req: SeparateRequest):
         is_cached = True
         
     if is_cached:
-        progress_store[vid] = {"status": "success", "percent": 100, "message": "ดึงข้อมูลจากแคชสำเร็จ!", "mode": mode}
+        set_progress(vid, "success", 100, "ดึงข้อมูลจากแคชสำเร็จ!", mode=mode)
         return {"status": "cached", "video_id": vid, "mode": mode}
         
     os.makedirs(song_dir, exist_ok=True)
@@ -97,7 +132,7 @@ def separate(req: SeparateRequest):
 
     # --- DOWNLOAD PHASE (Multi-strategy, resilient) ---
     # Strategy order: yt-dlp binary (new clients) → yt-dlp Python module → pytubefix (many clients) → innertube+ffmpeg
-    progress_store[vid] = {"status": "downloading", "percent": 10, "message": "กำลังดาวน์โหลดวิดีโอจาก YouTube..."}
+    set_progress(vid, "downloading", 10, "กำลังดาวน์โหลดวิดีโอจาก YouTube...")
     m4a_path = os.path.join(song_dir, f"{vid}.m4a")
     yt_url = f"https://www.youtube.com/watch?v={vid}"
     download_success = False
@@ -446,22 +481,22 @@ def separate(req: SeparateRequest):
                 os.remove(m4a_path)
             except:
                 pass
-        progress_store[vid] = {"status": "error", "percent": 0, "message": "ดาวน์โหลดล้มเหลวจากทุกช่องทาง"}
+        set_progress(vid, "error", 0, "ดาวน์โหลดล้มเหลวจากทุกช่องทาง")
         return {"status": "error", "message": f"Download failed from all {len(attempts)} sources. Check /download/history for details."}
         
     # 2. Convert to WAV for demucs
-    progress_store[vid] = {"status": "converting", "percent": 20, "message": "เตรียมไฟล์สำหรับ AI..."}
+    set_progress(vid, "converting", 20, "เตรียมไฟล์สำหรับ AI...")
     try:
         wav_path = os.path.join(song_dir, f"{vid}.wav")
         convert_audio(m4a_path, wav_path, fmt="wav")
     except Exception as e:
-        progress_store[vid] = {"status": "error", "percent": 0, "message": "แปลงไฟล์ล้มเหลว"}
+        set_progress(vid, "error", 0, "แปลงไฟล์ล้มเหลว")
         return {"status": "error", "message": str(e)}
         
     device = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
 
     # 3. Run Demucs
-    progress_store[vid] = {"status": "separating", "percent": 25, "message": "AI กำลังแยกเสียงร้องและดนตรี (อาจใช้เวลา 2-3 นาที)..."}
+    set_progress(vid, "separating", 25, "AI กำลังแยกเสียงร้องและดนตรี (อาจใช้เวลา 2-3 นาที)...")
     try:
         # Use --segment 2 and -j 1 to drastically reduce RAM/VRAM usage and prevent system freezes
         demucs_args = ["-n", "htdemucs_ft", "--shifts=0", "-d", device, "--segment", "2", "-j", "1", "-o", song_dir, wav_path]
@@ -474,6 +509,7 @@ def separate(req: SeparateRequest):
             cmd = [sys.executable, "-m", "demucs.separate"] + demucs_args
 
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True)
+        active_processes[vid] = process
 
         buffer = ""
         full_log = ""
@@ -487,13 +523,15 @@ def separate(req: SeparateRequest):
                 if match:
                     demucs_pct = int(match.group(1))
                     overall_pct = 25 + int(demucs_pct * 0.70) # Demucs takes up 70% of total progress (25% to 95%)
-                    progress_store[vid] = {"status": "separating", "percent": overall_pct, "message": f"AI กำลังแยกเสียงร้องและดนตรี... {demucs_pct}%"}
+                    set_progress(vid, "separating", overall_pct, f"AI กำลังแยกเสียงร้องและดนตรี... {demucs_pct}%")
                 buffer = ""
             else:
                 buffer += char
 
         process.wait()
         if process.returncode != 0:
+            if progress_store.get(vid, {}).get("status") == "cancelled":
+                raise Exception("Job cancelled by user")
             raise Exception(f"Exit code {process.returncode}. Log: {full_log[-1000:]}")
 
         demucs_out_dir = os.path.join(song_dir, "htdemucs_ft", vid)
@@ -503,7 +541,7 @@ def separate(req: SeparateRequest):
             raise Exception("Demucs output files not found.")
 
         # 4. Convert back to M4A to save space
-        progress_store[vid] = {"status": "compressing", "percent": 95, "message": "กำลังบีบอัดไฟล์ขั้นสุดท้าย..."}
+        set_progress(vid, "compressing", 95, "กำลังบีบอัดไฟล์ขั้นสุดท้าย...")
 
         # Always convert vocals
         convert_audio(vocal_wav, vocal_m4a, fmt="m4a")
@@ -573,13 +611,17 @@ def separate(req: SeparateRequest):
         with open(os.path.join(song_dir, "title.txt"), "w", encoding="utf-8") as f:
             f.write(req.title)
 
-        progress_store[vid] = {"status": "success", "percent": 100, "message": "เสร็จสมบูรณ์!", "mode": mode}
+        set_progress(vid, "success", 100, "เสร็จสมบูรณ์!", mode=mode)
 
     except Exception as e:
-        progress_store[vid] = {"status": "error", "percent": 0, "message": "การแยกเสียงล้มเหลว"}
+        if progress_store.get(vid, {}).get("status") == "cancelled":
+            pass
+        else:
+            set_progress(vid, "error", 0, "การแยกเสียงล้มเหลว")
         return {"status": "error", "message": f"Demucs separation failed: {str(e)}"}
         
     finally:
+        active_processes.pop(vid, None)
         # Cleanup temporary files (WAV is huge) MUST run even if there's an error
         for tmp_file in [m4a_path, wav_path]:
             try:
@@ -594,6 +636,15 @@ def separate(req: SeparateRequest):
                 shutil.rmtree(demucs_dir, ignore_errors=True)
         except Exception as e:
             print(f"Failed to remove demucs dir: {e}")
+
+        # If job was cancelled, delete output folder so we don't leave broken files
+        if progress_store.get(vid, {}).get("status") == "cancelled":
+            try:
+                if os.path.exists(song_dir):
+                    shutil.rmtree(song_dir)
+                    print(f"[Cancel] Cleaned up cancelled song folder: {song_dir}")
+            except Exception as e:
+                print(f"[Cancel] Failed to remove cancelled song directory: {e}")
             
     return {"status": "success", "video_id": vid, "mode": mode}
 
