@@ -1,7 +1,7 @@
-// 🛡️ v5.5.278: Lyrics - Fix Client-side React Hook Exception #310
+// 🛡️ v5.5.279: Lyrics - Multi-Layout, Auto-Sync & Cache Deletion Fix
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.278";
+export const SYSTEM_VERSION = "5.5.279";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,17 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.279",
+        date: "2026-08-13",
+        changes: [
+            "feat(lyrics): Added layout selector in Fullscreen control bar to switch between scrolling layout and bottom sweeping overlay on synced songs.",
+            "feat(lyrics): Implemented background Smart Auto-Sync for plain songs if local vocals cache is present.",
+            "ui(lyrics): Relocated plain lyrics sync status badge to the top-left corner, enlarged lyric text, and expanded vertical spacing.",
+            "fix(plugin): Resolved cache folder deletion failures (Cache not found) in both local bridge backend and library frontend."
+        ]
+    },
+
     {
         version: "5.5.278",
         date: "2026-08-13",

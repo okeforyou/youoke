@@ -21,6 +21,7 @@ interface LyricsState {
     
     syncOffset: number;
     activeLineText: string;
+    lyricsLayout: 'scroll' | 'karaoke';
     
     toggleLyrics: () => void;
     toggleKaraokeMode: () => void;
@@ -31,6 +32,7 @@ interface LyricsState {
     updateLineTime: (index: number, newTime: number) => void;
     markLineTimestamp: (currentPlaybackTime: number, lineIndex: number) => void;
     setActiveLineText: (text: string) => void;
+    setLyricsLayout: (layout: 'scroll' | 'karaoke') => void;
     fetchLyrics: (videoId: string, title: string, prefer?: 'auto' | 'youtube' | 'deepgram', duration?: number) => Promise<void>;
     clearLyrics: () => void;
 }
@@ -166,6 +168,7 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
     error: null,
     syncOffset: 0,
     activeLineText: '',
+    lyricsLayout: 'karaoke',
     
     toggleLyrics: () => set((state) => ({ isEnabled: !state.isEnabled })),
     toggleKaraokeMode: () => set((state) => ({ isKaraokeMode: !state.isKaraokeMode })),
@@ -188,11 +191,12 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
         return { lyrics: newLyrics };
     }),
     setActiveLineText: (text) => set({ activeLineText: text }),
+    setLyricsLayout: (layout) => set({ lyricsLayout: layout }),
 
-    clearLyrics: () => set({ lyrics: [], source: null, error: null, lyricsType: null, isLoading: false, syncOffset: 0, activeLineText: '' }),
+    clearLyrics: () => set({ lyrics: [], source: null, error: null, lyricsType: null, isLoading: false, syncOffset: 0, activeLineText: '', lyricsLayout: 'karaoke' }),
 
     fetchLyrics: async (videoId: string, title: string, prefer?: 'auto' | 'youtube' | 'deepgram', duration?: number) => {
-        set({ isLoading: true, error: null, lyrics: [], source: null, lyricsType: null, syncOffset: 0 });
+        set({ isLoading: true, error: null, lyrics: [], source: null, lyricsType: null, syncOffset: 0, lyricsLayout: 'karaoke' });
         try {
             const pref = prefer || get().preferredSource;
 

@@ -27,7 +27,10 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
         setLyricsEnabled, 
         isKaraokeMode, 
         toggleKaraokeMode, 
-        lyrics: originalLyrics 
+        lyrics: originalLyrics,
+        lyricsType,
+        lyricsLayout,
+        setLyricsLayout
     } = useLyricsStore();
     
     const { 
@@ -181,6 +184,8 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
         return 'bg-amber-500 shadow-lg shadow-amber-500/25';
     };
 
+    const isSynced = (originalLyrics && originalLyrics.some(l => l.time >= 0)) || (alignedLyrics && alignedLyrics.length > 0);
+
     return (
         <div
             className={`absolute bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 md:gap-2.5 p-1.5 md:p-2 bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}
@@ -230,6 +235,16 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                 title={isKaraokeMode ? "ปิดการปาดสี (อ่านข้อความนิ่ง)" : "เปิดการปาดสี (แบบคาราโอเกะ)"}
             >
                 <Wand2 size={20} />
+            </button>
+
+            {/* Layout Toggle (Scroll list vs Bottom Sweep overlay) */}
+            <button
+                onClick={() => setLyricsLayout(lyricsLayout === 'scroll' ? 'karaoke' : 'scroll')}
+                disabled={!showLyrics || !isSynced}
+                className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 ${(!showLyrics || !isSynced) ? 'opacity-30 cursor-not-allowed' : (lyricsLayout === 'scroll' ? 'bg-amber-500/25 text-amber-500 border border-amber-500/20' : 'text-white/50 hover:text-white hover:bg-white/10')}`}
+                title={lyricsLayout === 'scroll' ? "เปลี่ยนเป็นแบบปาดคาราโอเกะ" : "เปลี่ยนเป็นแบบเลื่อนแนวตั้ง (YouTube Music)"}
+            >
+                <Type size={20} />
             </button>
 
             <div className="w-[1px] h-6 bg-white/10 mx-0.5 shrink-0" />

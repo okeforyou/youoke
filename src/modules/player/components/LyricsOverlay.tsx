@@ -3,6 +3,7 @@ import { useLyricsStore } from '../stores/useLyricsStore';
 import { usePlayerStore } from '../stores/usePlayerStore';
 import { useDeepgramLyricsStore } from '../../lyrics/stores/useDeepgramLyricsStore';
 import { useCast } from '../../../plugins/cast/context/CastContext';
+import { useAIVocalStore } from '../../../stores/useAIVocalStore';
 import clsx from 'clsx';
 
 interface LyricsOverlayProps {
@@ -10,8 +11,8 @@ interface LyricsOverlayProps {
 }
 
 export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
-    const { isEnabled, isKaraokeMode, lyrics: originalLyrics, lyricsType, source, fetchLyrics, syncOffset, setActiveLineText } = useLyricsStore();
-    const { alignedLyrics, hybridModeEnabled } = useDeepgramLyricsStore();
+    const { isEnabled, isKaraokeMode, lyrics: originalLyrics, lyricsType, source, fetchLyrics, syncOffset, setActiveLineText, lyricsLayout } = useLyricsStore();
+    const { alignedLyrics, hybridModeEnabled, isAligning, alignHybridLyrics } = useDeepgramLyricsStore();
     const cast = useCast();
     const seekTo = usePlayerStore(state => state.seekTo);
     
@@ -26,6 +27,37 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
     const videoDuration = usePlayerStore(state => state.currentVideo?.duration);
     
     const [currentTime, setCurrentTime] = useState(0);
+
+    const aiVocalStore = useAIVocalStore();
+    const aiJob = activeVideoId ? aiVocalStore.jobs[activeVideoId] : null;
+    const isAiReady = Boolean(activeVideoId && aiJob?.status === 'ready');
+    
+    const isSynced = useMemo(() => {
+        return lyrics && lyrics.some(l => l.time >= 0);
+    }, [lyrics]);
+
+    // Smart Auto-Sync: if plain lyrics, AI is ready, and not yet aligned, run aligner silently in the background
+    useEffect(() => {
+        if (
+            lyricsType === 'plain' &&
+            isAiReady &&
+            activeVideoId &&
+            originalLyrics &&
+            originalLyrics.length > 0 &&
+            alignedLyrics.length === 0 &&
+            !isAligning &&
+            useDeepgramLyricsStore.getState().alignmentStatus === 'idle'
+        ) {
+            console.log("[Smart Auto Sync] Cached vocals found! Triggering background AI alignment...");
+            alignHybridLyrics(activeVideoId, originalLyrics)
+                .then(() => {
+                    console.log("[Smart Auto Sync] Background alignment successful!");
+                })
+                .catch((err) => {
+                    console.warn("[Smart Auto Sync] Background alignment failed:", err);
+                });
+        }
+    }, [lyricsType, isAiReady, activeVideoId, originalLyrics, alignedLyrics.length, isAligning, alignHybridLyrics]);
 
     // Fetch lyrics when video changes
     useEffect(() => {
@@ -95,17 +127,18 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
     // Sync active line text to store so other components (like Mixer modal) can show it in real-time!
     // MUST BE CALLED BEFORE ANY EARLY RETURN to obey React Hook Rules
     useEffect(() => {
-        if (activeLine && isEnabled && lyricsType !== 'plain') {
+        if (activeLine && isEnabled && isSynced) {
             setActiveLineText(activeLine.text);
         } else {
             setActiveLineText('');
         }
-    }, [activeLine, isEnabled, lyricsType, setActiveLineText]);
+    }, [activeLine, isEnabled, isSynced, setActiveLineText]);
 
-    // Auto-scroll logic for plain lyrics layout
+    // Auto-scroll logic for plain lyrics layout / scroll layout
     // MUST BE CALLED BEFORE ANY EARLY RETURN to obey React Hook Rules
     useEffect(() => {
-        if (lyricsType === 'plain' && containerRef.current && currentLineIndex >= 0) {
+        const currentLayout = !isSynced ? 'scroll' : lyricsLayout;
+        if (currentLayout === 'scroll' && containerRef.current && currentLineIndex >= 0) {
             const activeEl = containerRef.current.querySelector(`[data-line-index="${currentLineIndex}"]`);
             if (activeEl) {
                 activeEl.scrollIntoView({
@@ -114,7 +147,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                 });
             }
         }
-    }, [currentLineIndex, lyricsType]);
+    }, [currentLineIndex, lyricsLayout, isSynced]);
 
     if (!isEnabled || !lyrics || lyrics.length === 0) return null;
 
@@ -128,10 +161,25 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
         }
     };
 
-    if (lyricsType === 'plain') {
-        const isSynced = lyrics.some(l => l.time >= 0);
+    const currentLayout = !isSynced ? 'scroll' : lyricsLayout;
+
+    if (currentLayout === 'scroll') {
         return (
             <div className="absolute inset-0 pointer-events-none z-40 flex items-center justify-center p-4">
+                {/* Source/Sync status badge in top-left corner */}
+                <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-md text-[10px] sm:text-xs text-white/60 font-medium px-2.5 py-1 rounded-lg shadow-md border border-white/5 flex items-center gap-1.5 pointer-events-none select-none">
+                    <div className={clsx(
+                        "w-1.5 h-1.5 rounded-full animate-pulse",
+                        isSynced ? "bg-amber-400" : "bg-gray-400"
+                    )} />
+                    <span>
+                        {isSynced 
+                            ? (hybridModeEnabled ? "เนื้อเพลงซิงก์ด้วย AI Sync" : "เนื้อเพลงแบบเลื่อนตามจังหวะ") 
+                            : "เนื้อเพลงแบบอ่านปกติ (กด ซิงก์ AI เพื่อเลื่อนตามเพลง)"
+                        }
+                    </span>
+                </div>
+
                 <div 
                     ref={containerRef}
                     className="w-full max-w-3xl h-[80%] max-h-[600px] overflow-y-auto scrollbar-hide text-center flex flex-col gap-8 py-20 pointer-events-auto transition-all"
@@ -140,22 +188,8 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                         maskImage: 'linear-gradient(to bottom, transparent 0%, white 20%, white 80%, transparent 100%)',
                     }}
                 >
-                    {/* Header badge */}
-                    <div className="sticky top-0 z-50 mx-auto mb-4 pointer-events-none select-none">
-                        <div className="bg-black/50 backdrop-blur-md text-[10px] sm:text-xs text-white/70 font-semibold px-4 py-2 rounded-full w-fit shadow-md border border-white/5 flex items-center gap-2">
-                            <div className={clsx(
-                                "w-2 h-2 rounded-full animate-pulse",
-                                isSynced ? "bg-amber-400" : "bg-gray-400"
-                            )} />
-                            {isSynced 
-                                ? (hybridModeEnabled ? "เนื้อเพลงซิงก์ด้วย AI Sync" : "เนื้อเพลงแบบเลื่อนตามจังหวะ") 
-                                : "เนื้อเพลงแบบอ่านปกติ (กด ซิงก์ AI เพื่อเลื่อนตามเพลง)"
-                            }
-                        </div>
-                    </div>
-
                     {/* Lyric Lines */}
-                    <div className="flex flex-col gap-6 py-4">
+                    <div className="flex flex-col gap-8 py-4">
                         {lyrics.map((line: any, i: number) => {
                             const isActive = isSynced && i === currentLineIndex;
                             return (
@@ -167,10 +201,10 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                                         "transition-all duration-500 ease-out select-none px-4",
                                         isSynced ? "cursor-pointer" : "cursor-default",
                                         isActive 
-                                            ? "text-white font-black text-2xl sm:text-3xl md:text-4xl scale-[1.05] opacity-100 drop-shadow-[0_4px_12px_rgba(255,255,255,0.25)]" 
+                                            ? "text-white font-black text-3xl sm:text-4xl md:text-[2.75rem] scale-[1.05] opacity-100 drop-shadow-[0_4px_12px_rgba(255,255,255,0.25)]" 
                                             : isSynced 
-                                                ? "text-white/30 hover:text-white/75 font-bold text-lg sm:text-xl md:text-2xl scale-100 opacity-100" 
-                                                : "text-white/80 font-bold text-lg sm:text-xl md:text-2xl opacity-100"
+                                                ? "text-white/30 hover:text-white/75 font-bold text-xl sm:text-2xl md:text-[1.85rem] scale-100 opacity-100" 
+                                                : "text-white/80 font-bold text-xl sm:text-2xl md:text-[1.85rem] opacity-100"
                                     )}
                                     style={{
                                         lineHeight: '1.4',

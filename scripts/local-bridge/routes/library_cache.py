@@ -160,21 +160,22 @@ def delete_cache(video_id: str):
             
         deleted = False
         
-        # 1. Delete from default CACHE_DIR
-        song_dir = os.path.join(CACHE_DIR, video_id)
-        if os.path.exists(song_dir):
-            shutil.rmtree(song_dir)
-            deleted = True
-            
-        # 2. Delete from custom storage path if active and different
+        # Scan CACHE_DIR and custom active storage dir (avoiding duplicates)
+        dirs_to_scan = [CACHE_DIR]
         active_dir = get_active_storage_dir()
-        if active_dir != CACHE_DIR and os.path.exists(active_dir):
-            for folder_name in os.listdir(active_dir):
-                sub_dir = os.path.join(active_dir, folder_name)
+        if active_dir and active_dir not in dirs_to_scan:
+            dirs_to_scan.append(active_dir)
+            
+        for base_dir in dirs_to_scan:
+            if not base_dir or not os.path.exists(base_dir):
+                continue
+                
+            for folder_name in os.listdir(base_dir):
+                sub_dir = os.path.join(base_dir, folder_name)
                 if not os.path.isdir(sub_dir):
                     continue
                 
-                # Check for video_id match in youoke.json
+                # 1. Match by youoke.json metadata videoId
                 json_path = os.path.join(sub_dir, "youoke.json")
                 if os.path.exists(json_path):
                     try:
@@ -183,13 +184,24 @@ def delete_cache(video_id: str):
                             if ydata.get("videoId") == video_id:
                                 shutil.rmtree(sub_dir)
                                 deleted = True
-                                print(f"[Cache Delete] Deleted custom storage folder: {sub_dir}")
+                                print(f"[Cache Delete] Deleted custom storage folder by youoke.json: {sub_dir}")
+                                continue
                     except Exception as e:
                         print(f"[Cache Delete] Failed to delete custom folder {sub_dir}: {e}")
-                else:
-                    if folder_name == video_id:
-                        shutil.rmtree(sub_dir)
-                        deleted = True
+                
+                # 2. Match by exact folder name
+                if folder_name == video_id:
+                    shutil.rmtree(sub_dir)
+                    deleted = True
+                    print(f"[Cache Delete] Deleted folder by name: {sub_dir}")
+                    continue
+                    
+                # 3. Match by name prefixes (e.g. video_id_basic, video_id_pro)
+                if folder_name.startswith(video_id) and any(folder_name.endswith(s) for s in ["_basic", "_pro"]):
+                    shutil.rmtree(sub_dir)
+                    deleted = True
+                    print(f"[Cache Delete] Deleted folder by suffix pattern: {sub_dir}")
+                    continue
         
         if deleted:
             return {"status": "success", "message": f"Deleted cache for {video_id}"}

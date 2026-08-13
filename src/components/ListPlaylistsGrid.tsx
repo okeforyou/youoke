@@ -16,7 +16,7 @@ import Image from "next/image";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { useUIStore } from "../stores/useUIStore";
-import { useAIVocalStore } from "../stores/useAIVocalStore";
+import { useAIVocalStore, getActiveBridgeBaseUrl } from "../stores/useAIVocalStore";
 import clsx from "clsx";
 
 import {
@@ -409,7 +409,8 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
   const deleteAiCache = async (videoId: string) => {
     if (!confirm("ลบไฟล์เพลงที่แยกเสียงไว้นี้ออกจากเครื่องใช่หรือไม่?")) return;
     try {
-      const res = await fetch(`http://127.0.0.1:5050/cache/${videoId}`, { method: 'DELETE' });
+      const baseUrl = await getActiveBridgeBaseUrl() || "http://127.0.0.1:5050";
+      const res = await fetch(`${baseUrl}/cache/${videoId}`, { method: 'DELETE' });
       const data = await res.json();
       if (data.status === "success") {
         setAiCacheList(prev => prev.filter(item => item.video_id !== videoId));
