@@ -85,7 +85,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
     }, [currentTime, lyrics, syncOffset]);
 
     const activeIndex = Math.max(0, currentLineIndex);
-    const activeLine = lyrics && lyrics.length > 0 ? lyrics[activeIndex] : null;
+    const activeLine = lyrics && lyrics.length > 0 && currentLineIndex >= 0 ? lyrics[currentLineIndex] : null;
 
     // Sync active line text to store so other components (like Mixer modal) can show it in real-time!
     // MUST BE CALLED BEFORE ANY EARLY RETURN to obey React Hook Rules

@@ -118,9 +118,12 @@ function getCharacterTimestamps(dgWords: DeepgramWord[]): CharTimestamp[] {
  * Word segmenter fallback for Thai
  */
 function segmentWords(text: string): string[] {
+  const isThai = /[\u0e00-\u0e7f]/.test(text);
+  const locale = isThai ? 'th' : 'en';
+
   if (typeof Intl !== 'undefined' && (Intl as any).Segmenter) {
     try {
-      const segmenter = new (Intl as any).Segmenter('th', { granularity: 'word' });
+      const segmenter = new (Intl as any).Segmenter(locale, { granularity: 'word' });
       const segments = Array.from(segmenter.segment(text));
       const words: string[] = [];
       for (const seg of segments as any[]) {
@@ -150,7 +153,139 @@ function segmentWords(text: string): string[] {
       }
     }
   }
-  return words;
+  return words.filter(w => w.length > 0);
+}
+
+/**
+ * Word-level Needleman-Wunsch sequence alignment
+ */
+function alignWordArrays(w1: string[], w2: string[]): Edge[] {
+  const matchScore = 4;
+  const mismatchScore = -2;
+  const gapPenalty = -3;
+
+  const m = w1.length;
+  const n = w2.length;
+  const scoreMatrix: number[][] = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+
+  for (let i = 0; i <= m; i++) scoreMatrix[i][0] = i * gapPenalty;
+  for (let j = 0; j <= n; j++) scoreMatrix[0][j] = j * gapPenalty;
+
+  const cleanWord = (w: string) => w.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
+
+  for (let i = 1; i <= m; i++) {
+    const clean1 = cleanWord(w1[i - 1]);
+    for (let j = 1; j <= n; j++) {
+      const clean2 = cleanWord(w2[j - 1]);
+      if (clean1.length === 0 || clean2.length === 0) {
+        scoreMatrix[i][j] = scoreMatrix[i - 1][j - 1] + mismatchScore;
+        continue;
+      }
+      const similarity = simpleFuzzyMatch(clean1, clean2);
+      const scoreSub = similarity >= 0.6 ? Math.round(similarity * matchScore) : mismatchScore;
+      scoreMatrix[i][j] = Math.max(
+        scoreMatrix[i - 1][j - 1] + scoreSub,
+        scoreMatrix[i - 1][j] + gapPenalty,
+        scoreMatrix[i][j - 1] + gapPenalty
+      );
+    }
+  }
+
+  let i = m;
+  let j = n;
+  const alignment: Edge[] = [];
+
+  while (i > 0 || j > 0) {
+    if (i > 0 && j > 0) {
+      const clean1 = cleanWord(w1[i - 1]);
+      const clean2 = cleanWord(w2[j - 1]);
+      const similarity = simpleFuzzyMatch(clean1, clean2);
+      const scoreSub = similarity >= 0.6 ? Math.round(similarity * matchScore) : mismatchScore;
+      if (scoreMatrix[i][j] === scoreMatrix[i - 1][j - 1] + scoreSub) {
+        alignment.unshift({ s1Idx: i - 1, s2Idx: j - 1 });
+        i--;
+        j--;
+        continue;
+      }
+    }
+    if (i > 0 && (j === 0 || scoreMatrix[i][j] === scoreMatrix[i - 1][j] + gapPenalty)) {
+      alignment.unshift({ s1Idx: i - 1, s2Idx: -1 });
+      i--;
+    } else {
+      alignment.unshift({ s1Idx: -1, s2Idx: j - 1 });
+      j--;
+    }
+  }
+
+  return alignment;
+}
+
+/**
+ * Align an English LRCLIB line using word-level alignment and character interpolation
+ */
+function alignEnglishLine(
+  lrclibText: string,
+  dgWords: DeepgramWord[],
+  lineStartTime: number,
+  lineEndTime: number
+): AlignedWord[] {
+  const lineWords = segmentWords(lrclibText);
+  if (lineWords.length === 0) return [];
+
+  const cleanLrc = lineWords.map(w => w.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ''));
+  const cleanDg = dgWords.map(w => w.word.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ''));
+
+  const alignment = alignWordArrays(cleanLrc, cleanDg);
+  const alignedWords: AlignedWord[] = lineWords.map(word => ({
+    word,
+    start: -1,
+    end: -1
+  }));
+
+  for (const edge of alignment) {
+    if (edge.s1Idx !== -1 && edge.s2Idx !== -1) {
+      alignedWords[edge.s1Idx].start = dgWords[edge.s2Idx].start;
+      alignedWords[edge.s1Idx].end = dgWords[edge.s2Idx].end;
+    }
+  }
+
+  // Interpolate unmatched words
+  let lastValEnd = lineStartTime;
+  for (let i = 0; i < alignedWords.length; i++) {
+    if (alignedWords[i].start === -1) {
+      let nextValStart = lineEndTime;
+      let nextAnchor = alignedWords.length;
+      for (let k = i + 1; k < alignedWords.length; k++) {
+        if (alignedWords[k].start !== -1) {
+          nextValStart = alignedWords[k].start;
+          nextAnchor = k;
+          break;
+        }
+      }
+
+      const gapSize = nextAnchor - i;
+      const totalGapTime = Math.max(0, nextValStart - lastValEnd);
+      const isAtEnd = nextAnchor === alignedWords.length;
+      
+      const timePerWord = isAtEnd
+        ? Math.min(0.35, totalGapTime / gapSize)
+        : (totalGapTime / gapSize);
+
+      const activeDuration = gapSize * timePerWord;
+      const activeStart = isAtEnd
+        ? lastValEnd
+        : Math.max(lastValEnd, nextValStart - activeDuration);
+
+      for (let k = i; k < nextAnchor; k++) {
+        alignedWords[k].start = activeStart + (k - i) * timePerWord;
+        alignedWords[k].end = activeStart + (k - i + 1) * timePerWord;
+      }
+      i = nextAnchor - 1;
+    }
+    lastValEnd = alignedWords[i].end;
+  }
+
+  return alignedWords;
 }
 
 /**
@@ -162,6 +297,12 @@ function alignSingleLine(
   lineStartTime: number,
   lineEndTime: number
 ): AlignedWord[] {
+  // Delegate to English word-level alignment if the text does not contain Thai characters
+  const isThai = /[\u0e00-\u0e7f]/.test(lrclibText);
+  if (!isThai) {
+    return alignEnglishLine(lrclibText, dgWords, lineStartTime, lineEndTime);
+  }
+
   const lineWords = segmentWords(lrclibText);
   if (lineWords.length === 0) return [];
 
@@ -203,18 +344,25 @@ function alignSingleLine(
       const gapSize = nextAnchor - i;
       const totalGapTime = Math.max(0, nextValStart - lastValEnd);
       
-      // If gap is short (<= 1.2s), we distribute characters evenly over the entire gap.
-      // If gap is long (> 1.2s), we cap the sweep speed (max 0.22s per char) and anchor to the end.
+      const isAtEnd = nextAnchor === lrcCharTimes.length;
       const isShortGap = totalGapTime <= 1.2;
       const maxCharTime = 0.22;
-      const timePerChar = isShortGap 
-        ? (totalGapTime / gapSize) 
-        : Math.min(maxCharTime, totalGapTime / gapSize);
-        
-      const activeDuration = gapSize * timePerChar;
-      const activeStart = isShortGap 
-        ? lastValEnd 
-        : Math.max(lastValEnd, nextValStart - activeDuration);
+      
+      let timePerChar = 0;
+      let activeStart = 0;
+      
+      if (isAtEnd) {
+        // Sweep immediately from lastValEnd and cap character duration at 180ms
+        timePerChar = Math.min(0.18, totalGapTime / gapSize);
+        activeStart = lastValEnd;
+      } else if (isShortGap) {
+        timePerChar = totalGapTime / gapSize;
+        activeStart = lastValEnd;
+      } else {
+        timePerChar = Math.min(maxCharTime, totalGapTime / gapSize);
+        const activeDuration = gapSize * timePerChar;
+        activeStart = Math.max(lastValEnd, nextValStart - activeDuration);
+      }
 
       for (let k = i; k < nextAnchor; k++) {
         lrcCharTimes[k].start = activeStart + (k - i) * timePerChar;

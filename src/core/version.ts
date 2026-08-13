@@ -1,7 +1,7 @@
-// 🛡️ v5.5.275: Lyrics - AI Karaoke Syllable Synchronization Tuning & Responsive Display
+// 🛡️ v5.5.276: Lyrics - End-of-line Sweeps, English Alignment & Intro Hide
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.275";
+export const SYSTEM_VERSION = "5.5.276";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.276",
+        date: "2026-08-13",
+        changes: [
+            "feat(lyrics): Added word-level Needleman-Wunsch alignment for English lyrics to prevent global character alignment drift.",
+            "feat(lyrics): Fixed trailing gap sweep delay; unaligned words at end of lines now sweep immediately at normal speed instead of waiting for the next line start.",
+            "ui(player): Hide lyrics overlay on initial song load when current time is before the first line's timestamp."
+        ]
+    },
+
     {
         version: "5.5.275",
         date: "2026-08-13",
