@@ -1,7 +1,7 @@
-// 🛡️ v5.5.277: Lyrics - Smooth Scrolling Plain View, Seek Support & Toast Feedback
+// 🛡️ v5.5.278: Lyrics - Fix Client-side React Hook Exception #310
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.277";
+export const SYSTEM_VERSION = "5.5.278";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.278",
+        date: "2026-08-13",
+        changes: [
+            "fix(lyrics): Resolved client-side React exception #310 caused by rendering auto-scroll useEffect after an early return."
+        ]
+    },
+
     {
         version: "5.5.277",
         date: "2026-08-13",

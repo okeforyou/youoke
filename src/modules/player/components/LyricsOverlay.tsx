@@ -102,19 +102,8 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
         }
     }, [activeLine, isEnabled, lyricsType, setActiveLineText]);
 
-    if (!isEnabled || !lyrics || lyrics.length === 0) return null;
-
-    // Click-to-seek logic for interactive lyrics
-    const handleLineSeek = (time: number) => {
-        if (time >= 0) {
-            seekTo(time);
-            if (cast && cast.isCasting && typeof cast.seekTo === 'function') {
-                cast.seekTo(time);
-            }
-        }
-    };
-
     // Auto-scroll logic for plain lyrics layout
+    // MUST BE CALLED BEFORE ANY EARLY RETURN to obey React Hook Rules
     useEffect(() => {
         if (lyricsType === 'plain' && containerRef.current && currentLineIndex >= 0) {
             const activeEl = containerRef.current.querySelector(`[data-line-index="${currentLineIndex}"]`);
@@ -126,6 +115,18 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
             }
         }
     }, [currentLineIndex, lyricsType]);
+
+    if (!isEnabled || !lyrics || lyrics.length === 0) return null;
+
+    // Click-to-seek logic for interactive lyrics
+    const handleLineSeek = (time: number) => {
+        if (time >= 0) {
+            seekTo(time);
+            if (cast && cast.isCasting && typeof cast.seekTo === 'function') {
+                cast.seekTo(time);
+            }
+        }
+    };
 
     if (lyricsType === 'plain') {
         const isSynced = lyrics.some(l => l.time >= 0);
