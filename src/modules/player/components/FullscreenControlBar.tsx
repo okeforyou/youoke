@@ -7,6 +7,7 @@ import { useMixerStore } from '../stores/useMixerStore';
 import { useAIVocalStore } from '../../../stores/useAIVocalStore';
 import { useUIStore } from '../../../stores/useUIStore';
 import { useDeepgramLyricsStore } from '../../lyrics/stores/useDeepgramLyricsStore';
+import { useToast } from '../../../context/ToastContext';
 
 interface FullscreenControlBarProps {
     showControls: boolean;
@@ -15,6 +16,7 @@ interface FullscreenControlBarProps {
 }
 
 export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenControlBarProps) => {
+    const { addToast } = useToast() || {};
     const isPlaying = usePlayerStore(state => state.isPlaying);
     const cast = useCast();
     const currentVideo = usePlayerStore(state => state.currentVideo);
@@ -157,7 +159,14 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
         } else if (index === 2) {
             if (alignedLyrics.length === 0) {
                 if (activeVideoId) {
-                    alignHybridLyrics(activeVideoId, originalLyrics).catch(console.error);
+                    addToast?.('AI Sync: กำลังฟังและเทียบจังหวะเนื้อเพลง...', 'info');
+                    alignHybridLyrics(activeVideoId, originalLyrics)
+                        .then(() => {
+                            addToast?.('AI Sync: เทียบจังหวะสำเร็จ! เนื้อเพลงตรง 100%', 'success');
+                        })
+                        .catch((err) => {
+                            addToast?.(`AI Sync ล้มเหลว: ${err.message || 'เกิดข้อผิดพลาด'}`, 'error');
+                        });
                 }
             } else {
                 setLyricsEnabled(true);

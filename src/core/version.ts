@@ -1,7 +1,7 @@
-// 🛡️ v5.5.276: Lyrics - End-of-line Sweeps, English Alignment & Intro Hide
+// 🛡️ v5.5.277: Lyrics - Smooth Scrolling Plain View, Seek Support & Toast Feedback
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.276";
+export const SYSTEM_VERSION = "5.5.277";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.277",
+        date: "2026-08-13",
+        changes: [
+            "feat(lyrics): Added Toast feedback (loading/success/error) for AI Sync clicks in Fullscreen control bar to eliminate silent failures.",
+            "ui(lyrics): Replaced blurry plain lyrics panel with a transparent, edge-faded scrolling view styled like YouTube Music.",
+            "ui(lyrics): Added smooth auto-scrolling to keep the active line centered, and interactive click-to-seek support."
+        ]
+    },
+
     {
         version: "5.5.276",
         date: "2026-08-13",

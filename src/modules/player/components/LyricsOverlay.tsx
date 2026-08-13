@@ -1,7 +1,8 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { useLyricsStore } from '../stores/useLyricsStore';
 import { usePlayerStore } from '../stores/usePlayerStore';
 import { useDeepgramLyricsStore } from '../../lyrics/stores/useDeepgramLyricsStore';
+import { useCast } from '../../../plugins/cast/context/CastContext';
 import clsx from 'clsx';
 
 interface LyricsOverlayProps {
@@ -11,9 +12,13 @@ interface LyricsOverlayProps {
 export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
     const { isEnabled, isKaraokeMode, lyrics: originalLyrics, lyricsType, source, fetchLyrics, syncOffset, setActiveLineText } = useLyricsStore();
     const { alignedLyrics, hybridModeEnabled } = useDeepgramLyricsStore();
+    const cast = useCast();
+    const seekTo = usePlayerStore(state => state.seekTo);
     
     // Switch between original lyrics and aligned lyrics based on Hybrid mode (skip if pure deepgram)
     const lyrics = (hybridModeEnabled && alignedLyrics.length > 0 && source !== 'deepgram') ? alignedLyrics : originalLyrics;
+    
+    const containerRef = useRef<HTMLDivElement>(null);
     
     const { isPlaying } = usePlayerStore();
     const activeVideoId = usePlayerStore(state => state.currentVideo?.videoId || state.currentVideo?.id);
@@ -99,20 +104,83 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
 
     if (!isEnabled || !lyrics || lyrics.length === 0) return null;
 
+    // Click-to-seek logic for interactive lyrics
+    const handleLineSeek = (time: number) => {
+        if (time >= 0) {
+            seekTo(time);
+            if (cast && cast.isCasting && typeof cast.seekTo === 'function') {
+                cast.seekTo(time);
+            }
+        }
+    };
+
+    // Auto-scroll logic for plain lyrics layout
+    useEffect(() => {
+        if (lyricsType === 'plain' && containerRef.current && currentLineIndex >= 0) {
+            const activeEl = containerRef.current.querySelector(`[data-line-index="${currentLineIndex}"]`);
+            if (activeEl) {
+                activeEl.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            }
+        }
+    }, [currentLineIndex, lyricsType]);
+
     if (lyricsType === 'plain') {
+        const isSynced = lyrics.some(l => l.time >= 0);
         return (
-            <div className="absolute inset-0 pointer-events-none z-40 flex items-center justify-center p-8">
-                <div className="w-full max-w-2xl h-[70%] max-h-[500px] overflow-y-auto rounded-2xl bg-black/40 backdrop-blur-md p-6 sm:p-10 scrollbar-hide text-center flex flex-col gap-6 pointer-events-auto shadow-2xl border border-white/10">
-                    <div className="sticky top-0 bg-black/80 backdrop-blur-md text-xs text-white/70 font-medium px-4 py-2 rounded-full w-fit mx-auto mb-2 shadow-lg border border-white/5 z-10 flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-gray-400 animate-pulse" />
-                        เนื้อเพลงแบบ PLAIN ธรรมดา
+            <div className="absolute inset-0 pointer-events-none z-40 flex items-center justify-center p-4">
+                <div 
+                    ref={containerRef}
+                    className="w-full max-w-3xl h-[80%] max-h-[600px] overflow-y-auto scrollbar-hide text-center flex flex-col gap-8 py-20 pointer-events-auto transition-all"
+                    style={{
+                        WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, white 20%, white 80%, transparent 100%)',
+                        maskImage: 'linear-gradient(to bottom, transparent 0%, white 20%, white 80%, transparent 100%)',
+                    }}
+                >
+                    {/* Header badge */}
+                    <div className="sticky top-0 z-50 mx-auto mb-4 pointer-events-none select-none">
+                        <div className="bg-black/50 backdrop-blur-md text-[10px] sm:text-xs text-white/70 font-semibold px-4 py-2 rounded-full w-fit shadow-md border border-white/5 flex items-center gap-2">
+                            <div className={clsx(
+                                "w-2 h-2 rounded-full animate-pulse",
+                                isSynced ? "bg-amber-400" : "bg-gray-400"
+                            )} />
+                            {isSynced 
+                                ? (hybridModeEnabled ? "เนื้อเพลงซิงก์ด้วย AI Sync" : "เนื้อเพลงแบบเลื่อนตามจังหวะ") 
+                                : "เนื้อเพลงแบบอ่านปกติ (กด ซิงก์ AI เพื่อเลื่อนตามเพลง)"
+                            }
+                        </div>
                     </div>
-                    <div className="flex flex-col gap-4">
-                        {lyrics.map((line: any, i: number) => (
-                            <div key={i} className="text-white/90 font-bold text-lg md:text-2xl drop-shadow-md leading-relaxed">
-                                {line.text}
-                            </div>
-                        ))}
+
+                    {/* Lyric Lines */}
+                    <div className="flex flex-col gap-6 py-4">
+                        {lyrics.map((line: any, i: number) => {
+                            const isActive = isSynced && i === currentLineIndex;
+                            return (
+                                <div 
+                                    key={i} 
+                                    data-line-index={i}
+                                    onClick={() => handleLineSeek(line.time)}
+                                    className={clsx(
+                                        "transition-all duration-500 ease-out select-none px-4",
+                                        isSynced ? "cursor-pointer" : "cursor-default",
+                                        isActive 
+                                            ? "text-white font-black text-2xl sm:text-3xl md:text-4xl scale-[1.05] opacity-100 drop-shadow-[0_4px_12px_rgba(255,255,255,0.25)]" 
+                                            : isSynced 
+                                                ? "text-white/30 hover:text-white/75 font-bold text-lg sm:text-xl md:text-2xl scale-100 opacity-100" 
+                                                : "text-white/80 font-bold text-lg sm:text-xl md:text-2xl opacity-100"
+                                    )}
+                                    style={{
+                                        lineHeight: '1.4',
+                                        WebkitTextStroke: isActive ? '1.5px rgba(0,0,0,0.8)' : '1px rgba(0,0,0,0.5)',
+                                        paintOrder: 'stroke fill',
+                                    }}
+                                >
+                                    {line.text}
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             </div>
