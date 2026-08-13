@@ -203,13 +203,18 @@ function alignSingleLine(
       const gapSize = nextAnchor - i;
       const totalGapTime = Math.max(0, nextValStart - lastValEnd);
       
-      // Limit character sweep time to max 0.22 seconds (220ms) to prevent unnatural slow sweeps.
-      // Anchor the active sweep window to the end of the gap (before the next word starts)
-      // to keep lyrics in sync with actual singing timing.
+      // If gap is short (<= 1.2s), we distribute characters evenly over the entire gap.
+      // If gap is long (> 1.2s), we cap the sweep speed (max 0.22s per char) and anchor to the end.
+      const isShortGap = totalGapTime <= 1.2;
       const maxCharTime = 0.22;
-      const timePerChar = Math.min(maxCharTime, totalGapTime / gapSize);
+      const timePerChar = isShortGap 
+        ? (totalGapTime / gapSize) 
+        : Math.min(maxCharTime, totalGapTime / gapSize);
+        
       const activeDuration = gapSize * timePerChar;
-      const activeStart = Math.max(lastValEnd, nextValStart - activeDuration);
+      const activeStart = isShortGap 
+        ? lastValEnd 
+        : Math.max(lastValEnd, nextValStart - activeDuration);
 
       for (let k = i; k < nextAnchor; k++) {
         lrcCharTimes[k].start = activeStart + (k - i) * timePerChar;
@@ -334,7 +339,15 @@ export function alignLyrics(deepgramWords: DeepgramWord[], lrclibLines: LRCLIBLi
     return lrclibLines;
   }
 
-  const validWords = deepgramWords.filter(w => w.confidence >= 0.4);
+  // Apply a systematic STT model latency compensation of 150ms.
+  // This shifts all Deepgram word boundaries 150ms earlier to match actual vocal audio.
+  const validWords = deepgramWords
+    .filter(w => w.confidence >= 0.4)
+    .map(w => ({
+      ...w,
+      start: Math.max(0, w.start - 0.15),
+      end: Math.max(0, w.end - 0.15)
+    }));
   const alignedLines: AlignedLine[] = [];
   
   const isSynced = lrclibLines.some(l => l.time > 0);
@@ -452,12 +465,19 @@ export function alignLyrics(deepgramWords: DeepgramWord[], lrclibLines: LRCLIBLi
 
 export function groupDeepgramWordsIntoLines(words: DeepgramWord[]): LRCLIBLine[] {
   if (!words || words.length === 0) return [];
+
+  // Apply the same 150ms latency compensation for pure Deepgram AI source mode
+  const compensatedWords = words.map(w => ({
+    ...w,
+    start: Math.max(0, w.start - 0.15),
+    end: Math.max(0, w.end - 0.15)
+  }));
   
   const lines: any[] = [];
   let currentLineWords: AlignedWord[] = [];
   
-  for (let i = 0; i < words.length; i++) {
-    const w = words[i];
+  for (let i = 0; i < compensatedWords.length; i++) {
+    const w = compensatedWords[i];
     currentLineWords.push({
       word: w.word,
       start: w.start,

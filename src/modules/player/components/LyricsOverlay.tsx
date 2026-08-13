@@ -142,7 +142,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
         return (
             <div 
                 className={`flex w-full justify-center items-center px-4`}
-                style={{ minHeight: 'clamp(1.5rem, 6.5cqw, 4rem)' }}
+                style={{ minHeight: 'clamp(3rem, 10cqw, 7.5rem)' }}
             >
                 <div 
                     className={clsx(
@@ -150,20 +150,14 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                         "transition-colors duration-200 break-words whitespace-pre-wrap max-w-full text-center"
                     )}
                     style={{
-                        // Dynamically scale down font size for longer lines to prevent overflow clipping on small screens
-                        fontSize: (() => {
-                            const charCount = line?.text ? line.text.length : 0;
-                            const baseCqw = charCount > 30 ? '4.2cqw' : charCount > 20 ? '5.5cqw' : '7cqw';
-                            const maxFontSize = charCount > 30 ? '3.5rem' : charCount > 20 ? '4.2rem' : '5rem';
-                            return `clamp(1.1rem, ${baseCqw}, ${maxFontSize})`;
-                        })(),
-                        lineHeight: '1.2',
+                        fontSize: 'clamp(2.2rem, 8cqw, 5.2rem)',
+                        lineHeight: '1.4',
                         WebkitTextStroke: 'clamp(2px, 0.4cqw, 4px) black',
                         paintOrder: 'stroke fill',
                     }}
                 >
                     {line.words && line.words.length > 0 ? (
-                        <span className="text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] flex flex-nowrap justify-center whitespace-nowrap select-none">
+                        <span className="text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] flex flex-wrap justify-center select-none leading-relaxed">
                             {line.words.map((w: any, i: number) => {
                                 let wordProgress = 0;
                                 if (index < currentLineIndex) {
@@ -176,9 +170,9 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                                 }
                                 
                                 return (
-                                    <span key={i} className="relative inline">
+                                    <span key={i} className="relative inline-block whitespace-pre">
                                         {/* Base text already includes correct spaces from segmentWords */}
-                                        <span className="whitespace-pre">{w.word}</span>
+                                        <span>{w.word}</span>
                                         {/* Swept text does NOT include space, so the clip-path hits 100% at the end of the letter, not the space */}
                                         {isKaraokeMode && wordProgress > 0 && (
                                             <span className="absolute left-0 top-0 text-[#2563eb] whitespace-pre" style={{ 
@@ -200,7 +194,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                             {/* Simple Line Render (No sweeping to prevent word cutoffs) */}
                                 <span 
                                     className={clsx(
-                                        "text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] whitespace-pre-wrap break-words max-w-full transition-colors duration-200 text-center",
+                                        "text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] whitespace-pre-wrap break-words max-w-full transition-colors duration-200 text-center leading-relaxed",
                                         isActive && (source === 'youtube' || source === 'lrclib') && "text-[#2563eb]"
                                     )}
                                 style={{

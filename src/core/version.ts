@@ -1,7 +1,7 @@
-// 🛡️ v5.5.274: Plugin - YouOke AI Dashboard & Storage Queue Manager
+// 🛡️ v5.5.275: Lyrics - AI Karaoke Syllable Synchronization Tuning & Responsive Display
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.274";
+export const SYSTEM_VERSION = "5.5.275";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.275",
+        date: "2026-08-13",
+        changes: [
+            "feat(lyrics): Optimized unaligned word interpolation and added 150ms STT latency compensation to resolve sync lag in deepgramAlignEngine.ts.",
+            "ui(lyrics): Stabilized and enlarged lyric font size, enabled word-boundary wrapping, and optimized line height for professional karaoke display."
+        ]
+    },
+
     {
         version: "5.5.274",
         date: "2026-08-12",
