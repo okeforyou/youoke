@@ -1,7 +1,7 @@
-// 🛡️ v5.5.291: Controls - Tooltips & Lyrics Bottom Offset
+// 🛡️ v5.5.292: Controls - Named Tooltip Groups Fix
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.291";
+export const SYSTEM_VERSION = "5.5.292";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.292",
+        date: "2026-08-14",
+        changes: [
+            "fix(controls): Converted tooltips to Tailwind named groups (group/tooltip and group-hover/tooltip:block) to resolve full-player group hover conflict displaying all tooltips simultaneously."
+        ]
+    },
+
     {
         version: "5.5.291",
         date: "2026-08-14",
