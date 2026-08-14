@@ -1,7 +1,7 @@
-// 🛡️ v5.5.281: Lyrics - Responsive Font Restore, Blue Active Highlights & no-scrollbar Fix
+// 🛡️ v5.5.282: Lyrics - Karaoke Naming, Paintbrush Toggle, Close Margin & Fading Blur Overlay
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.281";
+export const SYSTEM_VERSION = "5.5.282";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,18 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.282",
+        date: "2026-08-14",
+        changes: [
+            "ui(lyrics): Renamed layout modes to คาราโอเกะ and แบบสไลด์ in fullscreen control bar, and updated icons to Mic and AlignLeft.",
+            "ui(lyrics): Swapped sweeping mode toggle button icon to Paintbrush to represent color painting, and simplified tooltips.",
+            "ui(lyrics): Fixed close button X right margin cut-off in control bar rounded container.",
+            "ui(lyrics): Implemented edge-masked gradient backdrop blur overlay behind vertical scrolling lyrics.",
+            "ui(lyrics): Restored small mobile font sizing, highlighted active scroll lyrics in clean white at scale-[1.35], and dimmed inactive lyrics to text-white/25."
+        ]
+    },
+
     {
         version: "5.5.281",
         date: "2026-08-14",

@@ -166,6 +166,15 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
     if (currentLayout === 'scroll') {
         return (
             <div className="absolute inset-0 pointer-events-none z-40 flex items-center justify-center p-4">
+                {/* Fading Backdrop Blur background layer */}
+                <div 
+                    className="absolute inset-y-16 inset-x-4 md:inset-x-20 bg-black/10 backdrop-blur-xl rounded-[2.5rem] pointer-events-none"
+                    style={{
+                        WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, white 15%, white 85%, transparent 100%)',
+                        maskImage: 'linear-gradient(to bottom, transparent 0%, white 15%, white 85%, transparent 100%)',
+                    }}
+                />
+
                 {/* Source/Sync status badge in top-left corner */}
                 <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-md text-[10px] sm:text-xs text-white/60 font-medium px-2.5 py-1 rounded-lg shadow-md border border-white/5 flex items-center gap-1.5 pointer-events-none select-none">
                     <div className={clsx(
@@ -201,10 +210,10 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                                         "transition-all duration-500 ease-out select-none px-4 origin-center",
                                         isSynced ? "cursor-pointer" : "cursor-default",
                                         isActive 
-                                            ? "text-[#2563eb] font-black text-lg md:text-2xl scale-[1.2] opacity-100 drop-shadow-[0_4px_12px_rgba(37,99,235,0.25)] z-10" 
+                                            ? "text-white font-black text-base md:text-xl scale-[1.35] opacity-100 drop-shadow-[0_4px_12px_rgba(255,255,255,0.3)] z-10" 
                                             : isSynced 
-                                                ? "text-white/35 hover:text-white/75 font-bold text-lg md:text-2xl scale-100" 
-                                                : "text-white/80 font-bold text-lg md:text-2xl scale-100 opacity-100"
+                                                ? "text-white/25 hover:text-white/75 font-bold text-base md:text-xl scale-100" 
+                                                : "text-white/80 font-bold text-base md:text-xl scale-100 opacity-100"
                                     )}
                                     style={{
                                         lineHeight: '1.4',

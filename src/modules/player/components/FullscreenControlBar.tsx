@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Minimize2, X, Play, Pause, Wand2, Mic, MicOff, Music, Type, Drum, Guitar, Piano, Sparkles, SlidersHorizontal, AlignLeft } from 'lucide-react';
+import { Minimize2, X, Play, Pause, Wand2, Mic, MicOff, Music, Type, Drum, Guitar, Piano, Sparkles, SlidersHorizontal, AlignLeft, Paintbrush } from 'lucide-react';
 import { usePlayerStore } from '../stores/usePlayerStore';
 import { useCast } from '../../../plugins/cast/context/CastContext';
 import { useLyricsStore } from '../stores/useLyricsStore';
@@ -209,14 +209,14 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                     className={`relative z-10 w-[90px] h-full rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 ${activeLayoutTab === 1 ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
                 >
                     <Mic size={12} />
-                    ปาดล่าง
+                    คาราโอเกะ
                 </button>
                 <button 
                     onClick={() => handleLayoutTabClick(2)}
                     className={`relative z-10 w-[90px] h-full rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 ${activeLayoutTab === 2 ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
                 >
                     <AlignLeft size={12} />
-                    แนวตั้ง
+                    แบบสไลด์
                 </button>
             </div>
 
@@ -251,9 +251,9 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                 <button
                     onClick={toggleKaraokeMode}
                     className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 ${isKaraokeMode ? 'bg-primary/20 text-primary border border-primary/20' : 'text-white/50 hover:text-white hover:bg-white/10'}`}
-                    title={isKaraokeMode ? "ปิดการปาดสี (อ่านข้อความนิ่ง)" : "เปิดการปาดสี (แบบคาราโอเกะ)"}
+                    title={isKaraokeMode ? "โหมดปาดสีคำร้อง (เปิดอยู่ - วิ่งสีตามตัวอักษร)" : "โหมดปาดสีคำร้อง (ปิดอยู่ - แสดงตัวร้องหนาไม่มีสีปาด)"}
                 >
-                    <Wand2 size={20} />
+                    <Paintbrush size={20} />
                 </button>
             )}
 
@@ -378,7 +378,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
             {/* 7. Close Fullscreen (Return to Split Mode) */}
             <button
                 onClick={() => usePlayerStore.getState().setLayoutMode('split')}
-                className="w-11 h-11 flex items-center justify-center rounded-xl text-red-400/80 hover:text-white hover:bg-red-500/85 transition-all active:scale-90 pointer-events-auto shrink-0"
+                className="w-11 h-11 mr-1.5 md:mr-2 flex items-center justify-center rounded-xl text-red-400/80 hover:text-white hover:bg-red-500/85 transition-all active:scale-90 pointer-events-auto shrink-0"
                 title="ออกจากหน้าจอเต็มจอ"
             >
                 <X size={20} strokeWidth={2.5} />
