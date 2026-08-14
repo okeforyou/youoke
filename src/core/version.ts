@@ -1,7 +1,7 @@
-// 🛡️ v5.5.293: Lyrics - Adaptive Bottom Positioning & Simplified UX
+// 🛡️ v5.5.294: Lyrics & Premium Plugin Dashboard redesign
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.293";
+export const SYSTEM_VERSION = "5.5.294";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.294",
+        date: "2026-08-14",
+        changes: [
+            "fix(lyrics): Resolved vertical cutting of lyrics on small screen vertical layout by making scroll container padding and gap responsive (py-8 sm:py-20, gap-4 sm:gap-8).",
+            "fix(lyrics): Prevented word wrapping in Karaoke mode by scaling maximum font size from 4.5rem to 3.2rem.",
+            "fix(lyrics): Adjusted fullscreen bottom spacing to bring lyrics closer above the player control bar.",
+            "ui(dashboard): Redesigned YouOke AI Dashboard plugin to match web app premium dark zinc and crimson red aesthetics."
+        ]
+    },
     {
         version: "5.5.293",
         date: "2026-08-14",
