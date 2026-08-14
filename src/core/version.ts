@@ -1,7 +1,7 @@
-// 🛡️ v5.5.298: AI Vocal Concurrency Queue, Pause/Resume, Deletion Fix & Dashboard Theme
+// 🛡️ v5.5.299: AI Transcribe Button in Fullscreen & Sidebar empty states
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.298";
+export const SYSTEM_VERSION = "5.5.299";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.299",
+        date: "2026-08-14",
+        changes: [
+            "feat(ai-lyrics): Added prominent 'แกะเนื้อร้องด้วย AI' (AI Transcribe) button in both Fullscreen Player control bar and Sidebar empty state when vocal separation is completed but no lyrics are found.",
+            "ux(lyrics): Onboarded users when vocal separation is not ready in SidebarControls by suggesting to separate vocals first."
+        ]
+    },
     {
         version: "5.5.298",
         date: "2026-08-14",

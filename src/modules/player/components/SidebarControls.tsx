@@ -103,7 +103,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
         setVolume
     } = useMixerStore();
 
-    const { isEnabled: showLyrics, isKaraokeMode, toggleLyrics, toggleKaraokeMode, syncOffset, setSyncOffset, preferredSource, setPreferredSource, fetchLyrics, error: lyricsError, isLoading: lyricsLoading, lyricsType, source, activeLineText, lyrics } = useLyricsStore();
+    const { isEnabled: showLyrics, setLyricsEnabled, isKaraokeMode, toggleLyrics, toggleKaraokeMode, syncOffset, setSyncOffset, preferredSource, setPreferredSource, fetchLyrics, error: lyricsError, isLoading: lyricsLoading, lyricsType, source, activeLineText, lyrics } = useLyricsStore();
     const { alignHybridLyrics, isAligning, alignmentStatus, hybridModeEnabled, setHybridModeEnabled, errorMessage } = useDeepgramLyricsStore();
 
     const handleSourceChange = (src: 'auto' | 'youtube' | 'deepgram') => {
@@ -606,6 +606,29 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                             ? "เพลงนี้ยังไม่มีคำบรรยาย (CC) บน YouTube" 
                                             : "เพลงนี้ยังไม่มีเนื้อเพลงในฐานข้อมูล LRCLIB"}
                                     </p>
+                                    {isAiReady ? (
+                                        <button
+                                            onClick={async () => {
+                                                if (lyricsLoading) return;
+                                                const activeId = currentVideo?.videoId || currentVideo?.id;
+                                                if (activeId && currentVideo) {
+                                                    addToast?.('AI Transcribe: กำลังถอดเนื้อร้องจากเสียงร้องไกด์...', 'info');
+                                                    setPreferredSource('deepgram');
+                                                    await fetchLyrics(activeId, currentVideo.title || '', 'deepgram', currentVideo.duration);
+                                                    setLyricsEnabled(true);
+                                                }
+                                            }}
+                                            disabled={lyricsLoading}
+                                            className="mt-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-black rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-md shadow-amber-500/10 disabled:opacity-50"
+                                        >
+                                            <Sparkles size={13} className={lyricsLoading ? 'animate-spin' : ''} />
+                                            <span>{lyricsLoading ? 'กำลังแกะเนื้อ...' : 'แกะเนื้อร้องด้วย AI'}</span>
+                                        </button>
+                                    ) : (
+                                        <p className="text-[10px] text-gray-400 mt-2 font-medium">
+                                            💡 กดแยกเสียงร้องก่อนเพื่อใช้ AI แกะเนื้อเพลงได้
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         )}

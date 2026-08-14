@@ -30,7 +30,10 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
         lyrics: originalLyrics,
         lyricsType,
         lyricsLayout,
-        setLyricsLayout
+        setLyricsLayout,
+        fetchLyrics,
+        setPreferredSource,
+        isLoading: lyricsLoading
     } = useLyricsStore();
     
     const { 
@@ -225,30 +228,50 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                 </button>
             </div>
 
-            {/* AI Sync Action Button */}
-            {originalLyrics && originalLyrics.length > 0 && (
-                <button
-                    onClick={async () => {
-                        if (isAligning) return;
-                        if (activeVideoId) {
-                            addToast?.('AI Sync: กำลังฟังและเทียบจังหวะเนื้อเพลง...', 'info');
-                            try {
-                                await alignHybridLyrics(activeVideoId, originalLyrics);
-                                addToast?.('AI Sync: เทียบจังหวะสำเร็จ! เนื้อเพลงตรง 100%', 'success');
-                                setLyricsEnabled(true);
-                                setLyricsLayout('karaoke');
-                            } catch (err: any) {
-                                addToast?.(`AI Sync ล้มเหลว: ${err.message || 'เกิดข้อผิดพลาด'}`, 'error');
+            {/* AI Sync / Transcribe Action Button */}
+            {isAiReady && (
+                originalLyrics && originalLyrics.length > 0 ? (
+                    <button
+                        onClick={async () => {
+                            if (isAligning) return;
+                            if (activeVideoId) {
+                                addToast?.('AI Sync: กำลังฟังและเทียบจังหวะเนื้อเพลง...', 'info');
+                                try {
+                                    await alignHybridLyrics(activeVideoId, originalLyrics);
+                                    addToast?.('AI Sync: เทียบจังหวะสำเร็จ! เนื้อเพลงตรง 100%', 'success');
+                                    setLyricsEnabled(true);
+                                    setLyricsLayout('karaoke');
+                                } catch (err: any) {
+                                    addToast?.(`AI Sync ล้มเหลว: ${err.message || 'เกิดข้อผิดพลาด'}`, 'error');
+                                }
                             }
-                        }
-                    }}
-                    disabled={isAligning}
-                    className={`group/tooltip relative h-11 px-4 flex items-center justify-center gap-1.5 rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 font-bold text-xs ${isAligning ? 'animate-pulse text-white/50 bg-white/5 border border-white/5' : (!isSynced ? 'bg-amber-500 hover:bg-amber-600 text-black shadow-lg shadow-amber-500/25 border border-amber-500/30' : 'text-white/60 hover:text-white bg-white/5 border border-white/10')}`}
-                >
-                    <Sparkles size={14} className={isAligning ? 'animate-spin' : ''} />
-                    <span>{isAligning ? 'กำลังจัดจังหวะ...' : (isSynced ? 'ซิงก์แล้ว' : 'จัดจังหวะ AI')}</span>
-                    <span className={tooltipClassName}>{isSynced ? 'จังหวะตรงเรียบร้อยแล้ว' : 'จัดจังหวะคำร้องด้วย AI'}</span>
-                </button>
+                        }}
+                        disabled={isAligning}
+                        className={`group/tooltip relative h-11 px-4 flex items-center justify-center gap-1.5 rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 font-bold text-xs ${isAligning ? 'animate-pulse text-white/50 bg-white/5 border border-white/5' : (!isSynced ? 'bg-amber-500 hover:bg-amber-600 text-black shadow-lg shadow-amber-500/25 border border-amber-500/30' : 'text-white/60 hover:text-white bg-white/5 border border-white/10')}`}
+                    >
+                        <Sparkles size={14} className={isAligning ? 'animate-spin' : ''} />
+                        <span>{isAligning ? 'กำลังจัดจังหวะ...' : (isSynced ? 'ซิงก์แล้ว' : 'จัดจังหวะ AI')}</span>
+                        <span className={tooltipClassName}>{isSynced ? 'จังหวะตรงเรียบร้อยแล้ว' : 'จัดจังหวะคำร้องด้วย AI'}</span>
+                    </button>
+                ) : (
+                    <button
+                        onClick={async () => {
+                            if (lyricsLoading) return;
+                            if (activeVideoId && currentVideo) {
+                                addToast?.('AI Transcribe: กำลังถอดเนื้อร้องจากเสียงร้องไกด์...', 'info');
+                                setPreferredSource('deepgram');
+                                await fetchLyrics(activeVideoId, currentVideo.title || '', 'deepgram', currentVideo.duration);
+                                setLyricsEnabled(true);
+                            }
+                        }}
+                        disabled={lyricsLoading}
+                        className={`group/tooltip relative h-11 px-4 flex items-center justify-center gap-1.5 rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 font-bold text-xs bg-amber-500 hover:bg-amber-600 text-black shadow-lg shadow-amber-500/25 border border-amber-500/30 disabled:opacity-50`}
+                    >
+                        <Sparkles size={14} className={lyricsLoading ? 'animate-spin' : ''} />
+                        <span>{lyricsLoading ? 'กำลังแกะเนื้อ...' : 'แกะเนื้อร้อง AI'}</span>
+                        <span className={tooltipClassName}>แกะเนื้อร้องจากไฟล์เสียงร้องไกด์โดยอัตโนมัติด้วย AI</span>
+                    </button>
+                )
             )}
 
             {/* 2. Toggle Karaoke Sweeping Mode (Color Sweeping vs Plain Text) */}
