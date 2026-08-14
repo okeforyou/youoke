@@ -1,7 +1,7 @@
-// 🛡️ v5.5.290: Lyrics - layout font-sizing & max single-line width
+// 🛡️ v5.5.291: Controls - Tooltips & Lyrics Bottom Offset
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.290";
+export const SYSTEM_VERSION = "5.5.291";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.291",
+        date: "2026-08-14",
+        changes: [
+            "fix(lyrics): Shifted bottom overlay container bottom offset to bottom-[5.5rem] (and responsive equivalents) to sit cleanly above player control bar.",
+            "ui(controls): Integrated custom dark-glass hover tooltips with concise Thai explanations to all fullscreen player controls."
+        ]
+    },
+
     {
         version: "5.5.290",
         date: "2026-08-14",

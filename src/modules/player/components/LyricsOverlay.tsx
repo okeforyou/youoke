@@ -331,7 +331,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
 
             {/* Lyrics Container */}
             <div 
-                className="absolute bottom-3 sm:bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 w-[95%] max-w-5xl flex flex-col space-y-1 px-4 sm:px-6 group"
+                className="absolute bottom-[5.5rem] sm:bottom-[6.5rem] md:bottom-[7.5rem] left-1/2 -translate-x-1/2 w-[95%] max-w-5xl flex flex-col space-y-1 px-4 sm:px-6 group"
                 style={{ containerType: 'inline-size' }}
             >
                 {renderLine(activeLine, activeIndex)}

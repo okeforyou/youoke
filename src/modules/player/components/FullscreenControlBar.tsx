@@ -180,6 +180,8 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
 
     const isSynced = (originalLyrics && originalLyrics.some(l => l.time >= 0)) || (alignedLyrics && alignedLyrics.length > 0);
 
+    const tooltipClassName = "absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 hidden group-hover:block bg-black/90 backdrop-blur-md text-white text-[10px] sm:text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-white/10 whitespace-nowrap shadow-xl z-50 pointer-events-none transition-all";
+
     return (
         <div
             className={`absolute bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 md:gap-2.5 p-1.5 md:p-2 bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}
@@ -199,24 +201,27 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                 
                 <button 
                     onClick={() => handleLayoutTabClick(0)}
-                    className={`relative z-10 w-[90px] h-full rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 ${activeLayoutTab === 0 ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
+                    className={`group relative z-10 w-[90px] h-full rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 ${activeLayoutTab === 0 ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
                 >
                     <MicOff size={12} />
                     ปิดเนื้อ
+                    <span className={tooltipClassName}>ปิดเนื้อร้อง</span>
                 </button>
                 <button 
                     onClick={() => handleLayoutTabClick(1)}
-                    className={`relative z-10 w-[90px] h-full rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 ${activeLayoutTab === 1 ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
+                    className={`group relative z-10 w-[90px] h-full rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 ${activeLayoutTab === 1 ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
                 >
                     <Mic size={12} />
                     คาราโอเกะ
+                    <span className={tooltipClassName}>โหมดคาราโอเกะ</span>
                 </button>
                 <button 
                     onClick={() => handleLayoutTabClick(2)}
-                    className={`relative z-10 w-[90px] h-full rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 ${activeLayoutTab === 2 ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
+                    className={`group relative z-10 w-[90px] h-full rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 ${activeLayoutTab === 2 ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
                 >
                     <AlignLeft size={12} />
                     แบบสไลด์
+                    <span className={tooltipClassName}>โหมดสไลด์แนวตั้ง</span>
                 </button>
             </div>
 
@@ -238,11 +243,11 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                         }
                     }}
                     disabled={isAligning}
-                    className={`h-11 px-4 flex items-center justify-center gap-1.5 rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 font-bold text-xs ${isAligning ? 'animate-pulse text-white/50 bg-white/5 border border-white/5' : (!isSynced ? 'bg-amber-500 hover:bg-amber-600 text-black shadow-lg shadow-amber-500/25 border border-amber-500/30' : 'text-white/60 hover:text-white bg-white/5 border border-white/10')}`}
-                    title="ซิงก์จังหวะเนื้อเพลงด้วย AI (AI Sync)"
+                    className={`group relative h-11 px-4 flex items-center justify-center gap-1.5 rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 font-bold text-xs ${isAligning ? 'animate-pulse text-white/50 bg-white/5 border border-white/5' : (!isSynced ? 'bg-amber-500 hover:bg-amber-600 text-black shadow-lg shadow-amber-500/25 border border-amber-500/30' : 'text-white/60 hover:text-white bg-white/5 border border-white/10')}`}
                 >
                     <Sparkles size={14} className={isAligning ? 'animate-spin' : ''} />
                     <span>{isAligning ? 'กำลังซิงก์...' : 'ซิงก์ AI'}</span>
+                    <span className={tooltipClassName}>ซิงก์จังหวะด้วย AI</span>
                 </button>
             )}
 
@@ -250,10 +255,10 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
             {showLyrics && lyricsLayout === 'karaoke' && (
                 <button
                     onClick={toggleKaraokeMode}
-                    className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 ${isKaraokeMode ? 'bg-primary/20 text-primary border border-primary/20' : 'text-white/50 hover:text-white hover:bg-white/10'}`}
-                    title={isKaraokeMode ? "โหมดปาดสีคำร้อง (เปิดอยู่ - วิ่งสีตามตัวอักษร)" : "โหมดปาดสีคำร้อง (ปิดอยู่ - แสดงตัวร้องหนาไม่มีสีปาด)"}
+                    className={`group relative w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 ${isKaraokeMode ? 'bg-primary/20 text-primary border border-primary/20' : 'text-white/50 hover:text-white hover:bg-white/10'}`}
                 >
                     <Paintbrush size={20} />
+                    <span className={tooltipClassName}>{isKaraokeMode ? "ปิดการปาดสี" : "เปิดการปาดสี"}</span>
                 </button>
             )}
 
@@ -265,19 +270,19 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                     {/* Quick Vocals Toggle */}
                     <button
                         onClick={() => toggleMute('vocals')}
-                        className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 ${trackStates.vocals.muted ? 'text-white/30 bg-white/5 border border-white/5' : 'text-green-400 bg-green-500/10 border border-green-500/15'}`}
-                        title={trackStates.vocals.muted ? "เปิดเสียงร้องไกด์" : "ปิดเสียงร้องไกด์"}
+                        className={`group relative w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 ${trackStates.vocals.muted ? 'text-white/30 bg-white/5 border border-white/5' : 'text-green-400 bg-green-500/10 border border-green-500/15'}`}
                     >
                         {trackStates.vocals.muted ? <MicOff size={20} /> : <Mic size={20} />}
+                        <span className={tooltipClassName}>{trackStates.vocals.muted ? "เปิดเสียงร้องไกด์" : "ปิดเสียงร้องไกด์"}</span>
                     </button>
                     
                     {/* Quick Music Toggle */}
                     <button
                         onClick={toggleMusicMute}
-                        className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 ${isMusicMuted ? 'text-white/30 bg-white/5 border border-white/5' : 'text-blue-400 bg-blue-500/10 border border-blue-500/15'}`}
-                        title={isMusicMuted ? "เปิดเสียงดนตรี" : "ปิดเสียงดนตรี"}
+                        className={`group relative w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 ${isMusicMuted ? 'text-white/30 bg-white/5 border border-white/5' : 'text-blue-400 bg-blue-500/10 border border-blue-500/15'}`}
                     >
                         <Music size={20} className={isMusicMuted ? "opacity-30" : ""} />
+                        <span className={tooltipClassName}>{isMusicMuted ? "เปิดเสียงดนตรีหลัก" : "ปิดเสียงดนตรีหลัก"}</span>
                     </button>
                 </div>
             )}
@@ -346,10 +351,10 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                 <button
                     ref={mixerBtnRef}
                     onClick={() => setShowMixerPopover(!showMixerPopover)}
-                    className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto ${showMixerPopover ? 'bg-primary/25 text-primary border border-primary/20' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
-                    title="ตั้งค่าเสียง (MIXER)"
+                    className={`group relative w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto ${showMixerPopover ? 'bg-primary/25 text-primary border border-primary/20' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
                 >
                     <SlidersHorizontal size={20} />
+                    <span className={tooltipClassName}>แผงตั้งค่าเสียง (Mixer)</span>
                 </button>
             </div>
 
@@ -358,10 +363,10 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
             {/* 5. Play/Pause */}
             <button
                 onClick={handlePlayPause}
-                className={`w-12 h-12 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 ${isPlaying ? 'text-white/90 hover:text-white hover:bg-white/10 bg-white/5' : 'bg-primary text-white shadow-lg shadow-primary/30'}`}
-                title={isPlaying ? "Pause" : "Play"}
+                className={`group relative w-12 h-12 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 ${isPlaying ? 'text-white/90 hover:text-white hover:bg-white/10 bg-white/5' : 'bg-primary text-white shadow-lg shadow-primary/30'}`}
             >
                 {isPlaying ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" className="ml-0.5" />}
+                <span className={tooltipClassName}>{isPlaying ? "หยุดเพลง" : "เล่นเพลง"}</span>
             </button>
 
             <div className="w-[1px] h-6 bg-white/10 mx-0.5 shrink-0" />
@@ -369,19 +374,19 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
             {/* 6. Minimize Screen */}
             <button
                 onClick={toggleFullscreen}
-                className="w-11 h-11 flex items-center justify-center rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all active:scale-90 pointer-events-auto shrink-0"
-                title="ย่อหน้าจอ"
+                className="group relative w-11 h-11 flex items-center justify-center rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all active:scale-90 pointer-events-auto shrink-0"
             >
                 <Minimize2 size={20} />
+                <span className={tooltipClassName}>ย่อหน้าจอ</span>
             </button>
 
             {/* 7. Close Fullscreen (Return to Split Mode) */}
             <button
                 onClick={() => usePlayerStore.getState().setLayoutMode('split')}
-                className="w-11 h-11 mr-3.5 md:mr-5 flex items-center justify-center rounded-xl text-red-400/80 hover:text-white hover:bg-red-500/85 transition-all active:scale-90 pointer-events-auto shrink-0"
-                title="ออกจากหน้าจอเต็มจอ"
+                className="group relative w-11 h-11 mr-3.5 md:mr-5 flex items-center justify-center rounded-xl text-red-400/80 hover:text-white hover:bg-red-500/85 transition-all active:scale-90 pointer-events-auto shrink-0"
             >
                 <X size={20} strokeWidth={2.5} />
+                <span className={tooltipClassName}>ออกจากหน้าจอเต็มจอ</span>
             </button>
         </div>
     );
