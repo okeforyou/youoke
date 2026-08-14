@@ -1,7 +1,7 @@
-// 🛡️ v5.5.289: Lyrics - prevent scaled lyrics clipping
+// 🛡️ v5.5.290: Lyrics - layout font-sizing & max single-line width
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.289";
+export const SYSTEM_VERSION = "5.5.290";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.290",
+        date: "2026-08-14",
+        changes: [
+            "fix(lyrics): Swapped visual CSS transform scaling with layout-based active/inactive font clamps (max-w-4xl, w-[94%]) to allow lyrics to maximize single-line width without left/right overflow clipping."
+        ]
+    },
+
     {
         version: "5.5.289",
         date: "2026-08-14",

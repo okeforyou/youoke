@@ -201,18 +201,18 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                                     data-line-index={i}
                                     onClick={() => handleLineSeek(line.time)}
                                     className={clsx(
-                                        "transition-all duration-500 ease-out select-none px-4 py-1.5 origin-center text-center w-[90%] max-w-[62cqw] mx-auto",
+                                        "transition-all duration-500 ease-out select-none py-2 text-center w-[94%] max-w-4xl mx-auto break-words",
                                         isSynced ? "cursor-pointer" : "cursor-default",
                                         isActive 
-                                            ? "text-white font-black scale-[1.5] opacity-100 z-10" 
+                                            ? "text-white font-black opacity-100 z-10" 
                                             : isSynced 
-                                                ? "text-white/25 hover:text-white/75 font-bold scale-100" 
-                                                : "text-white/80 font-bold scale-100 opacity-100"
+                                                ? "text-white/25 hover:text-white/75 font-bold" 
+                                                : "text-white/80 font-bold opacity-100"
                                     )}
                                     style={{
-                                        fontSize: 'clamp(0.95rem, 4cqw, 1.9rem)',
+                                        fontSize: isActive ? 'clamp(1.35rem, 4.8cqw, 2.25rem)' : 'clamp(0.95rem, 3.2cqw, 1.5rem)',
                                         lineHeight: '1.4',
-                                        WebkitTextStroke: isActive ? '1.5px rgba(0,0,0,0.8)' : '1px rgba(0,0,0,0.5)',
+                                        WebkitTextStroke: isActive ? '1.5px rgba(0,0,0,0.85)' : '1px rgba(0,0,0,0.45)',
                                         paintOrder: 'stroke fill',
                                     }}
                                 >
