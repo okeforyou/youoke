@@ -15,6 +15,20 @@ from server_state import progress_store, rapidapi_quota, active_processes
 
 router = APIRouter()
 
+import threading
+import time
+
+router = APIRouter()
+
+# ------------------------------------------------------------------
+# QUEUE SYSTEM (Strict Concurrency = 1) & PAUSE/RESUME SUPPORT
+# ------------------------------------------------------------------
+job_queue = []
+queue_lock = threading.Lock()
+paused_vids = set()
+current_running_vid = None
+worker_thread = None
+
 def set_progress(vid: str, status: str, percent: int, message: str, mode: str = None, title: str = None):
     current = progress_store.get(vid, {})
     current_title = title or current.get("title", vid)
@@ -30,12 +44,104 @@ def set_progress(vid: str, status: str, percent: int, message: str, mode: str = 
         data["mode"] = current["mode"]
     progress_store[vid] = data
 
+def update_queue_positions():
+    with queue_lock:
+        for idx, req in enumerate(job_queue):
+            vid = req.video_id
+            if vid in paused_vids:
+                set_progress(vid, "paused", 0, "หยุดชั่วคราว", mode=req.mode, title=req.title)
+            else:
+                pos = idx + 1
+                set_progress(vid, "queued", 0, f"รอคิว... (ลำดับที่ {pos})", mode=req.mode, title=req.title)
+
+def worker_loop():
+    global current_running_vid
+    while True:
+        target_req = None
+        with queue_lock:
+            # Find first job in queue that is NOT paused
+            for idx, req in enumerate(job_queue):
+                if req.video_id not in paused_vids:
+                    target_req = job_queue.pop(idx)
+                    break
+            
+            if target_req:
+                current_running_vid = target_req.video_id
+
+        if not target_req:
+            current_running_vid = None
+            time.sleep(1)
+            continue
+
+        vid = target_req.video_id
+        # Double check if cancelled or paused while waiting
+        if vid in paused_vids or progress_store.get(vid, {}).get("status") == "cancelled":
+            current_running_vid = None
+            update_queue_positions()
+            continue
+
+        try:
+            update_queue_positions()
+            _execute_separation(target_req)
+        except Exception as e:
+            print(f"[Queue Worker] Error executing separation for {vid}: {e}")
+        finally:
+            current_running_vid = None
+            update_queue_positions()
+            time.sleep(0.5)
+
+def ensure_worker_running():
+    global worker_thread
+    if worker_thread is None or not worker_thread.is_alive():
+        worker_thread = threading.Thread(target=worker_loop, daemon=True)
+        worker_thread.start()
+
 @router.get("/jobs")
 def list_jobs():
     return [{"video_id": vid, **info} for vid, info in progress_store.items()]
 
+@router.post("/pause/{video_id}")
+def pause_job(video_id: str):
+    paused_vids.add(video_id)
+    # If it's currently running, kill process so worker can move on
+    if video_id in active_processes:
+        process = active_processes[video_id]
+        try:
+            process.kill()
+            print(f"[Pause] Suspended active process for {video_id}")
+        except Exception as e:
+            print(f"[Pause] Process kill failed: {e}")
+        active_processes.pop(video_id, None)
+
+    set_progress(video_id, "paused", 0, "หยุดชั่วคราว")
+    update_queue_positions()
+    return {"status": "success", "message": f"Paused separation for {video_id}"}
+
+@router.post("/resume/{video_id}")
+def resume_job(video_id: str):
+    paused_vids.discard(video_id)
+    # Check if job is still in progress_store or needs re-enqueuing
+    current = progress_store.get(video_id, {})
+    title = current.get("title", video_id)
+    mode = current.get("mode", "basic")
+
+    with queue_lock:
+        in_queue = any(req.video_id == video_id for req in job_queue)
+        if not in_queue and current_running_vid != video_id and current.get("status") != "ready":
+            req = SeparateRequest(video_id=video_id, title=title, mode=mode)
+            job_queue.append(req)
+
+    ensure_worker_running()
+    update_queue_positions()
+    return {"status": "success", "message": f"Resumed separation for {video_id}"}
+
 @router.post("/cancel/{video_id}")
 def cancel_job(video_id: str):
+    paused_vids.discard(video_id)
+    with queue_lock:
+        global job_queue
+        job_queue = [req for req in job_queue if req.video_id != video_id]
+
     if video_id in active_processes:
         process = active_processes[video_id]
         try:
@@ -43,14 +149,11 @@ def cancel_job(video_id: str):
             print(f"[Cancel] Terminated process for {video_id}")
         except Exception as e:
             print(f"[Cancel] Process kill failed: {e}")
-        
-        set_progress(video_id, "cancelled", 0, "ยกเลิกแล้ว")
-        return {"status": "success", "message": f"Cancelled separation for {video_id}"}
-    else:
-        if video_id in progress_store:
-            set_progress(video_id, "cancelled", 0, "ยกเลิกแล้ว")
-            return {"status": "success", "message": f"Cancelled task for {video_id}"}
-        return {"status": "error", "message": "Job not found or not running"}
+        active_processes.pop(video_id, None)
+    
+    set_progress(video_id, "cancelled", 0, "ยกเลิกแล้ว")
+    update_queue_positions()
+    return {"status": "success", "message": f"Cancelled separation for {video_id}"}
 
 @router.get("/progress/{video_id}")
 def get_progress(video_id: str):
@@ -63,10 +166,8 @@ async def upload_audio(video_id: str, file: UploadFile = File(...)):
     try:
         song_dir = os.path.join(CACHE_DIR, video_id)
         os.makedirs(song_dir, exist_ok=True)
-        # We save it as .manual.m4a so the normal cleanup loop won't delete it
         file_location = os.path.join(song_dir, f"{video_id}.manual.m4a")
         with open(file_location, "wb+") as file_object:
-            import shutil
             shutil.copyfileobj(file.file, file_object)
         return {"info": f"file '{file.filename}' saved at '{file_location}'"}
     except Exception as e:
@@ -78,28 +179,43 @@ def separate(req: SeparateRequest):
     mode = req.mode
     song_dir = os.path.join(CACHE_DIR, vid)
     
-    set_progress(vid, "starting", 0, "กำลังตรวจสอบข้อมูล...", title=req.title)
-    
-    # Check if already cached
+    # 1. Check if already cached
     vocal_m4a = os.path.join(song_dir, "vocals.m4a")
     no_vocal_m4a = os.path.join(song_dir, "no_vocals.m4a")
     drums_m4a = os.path.join(song_dir, "drums.m4a")
     bass_m4a = os.path.join(song_dir, "bass.m4a")
     other_m4a = os.path.join(song_dir, "other.m4a")
     
-    # Cache hit logic
     is_cached = False
     if os.path.exists(vocal_m4a) and os.path.exists(drums_m4a) and os.path.exists(bass_m4a) and os.path.exists(other_m4a):
-        # We already have Pro stems, so even if basic is requested, use Pro
         is_cached = True
         mode = "pro"
     elif mode == "basic" and os.path.exists(vocal_m4a) and os.path.exists(no_vocal_m4a):
         is_cached = True
         
     if is_cached:
-        set_progress(vid, "success", 100, "ดึงข้อมูลจากแคชสำเร็จ!", mode=mode)
+        set_progress(vid, "ready", 100, "พร้อมเล่น!", mode=mode, title=req.title)
         return {"status": "cached", "video_id": vid, "mode": mode}
+
+    # 2. Check if already running or in queue
+    with queue_lock:
+        if current_running_vid == vid:
+            return {"status": "processing", "video_id": vid, "message": "กำลังแยกเสียงอยู่ในขณะนี้..."}
         
+        in_queue = any(r.video_id == vid for r in job_queue)
+        if not in_queue:
+            job_queue.append(req)
+
+    ensure_worker_running()
+    update_queue_positions()
+    
+    return {"status": "queued", "video_id": vid, "mode": mode, "message": "เพิ่มลงในคิวการทำงานเรียบร้อยแล้ว"}
+
+def _execute_separation(req: SeparateRequest):
+    vid = req.video_id
+    mode = req.mode
+    song_dir = os.path.join(CACHE_DIR, vid)
+    set_progress(vid, "starting", 0, "กำลังเริ่มประมวลผล...", mode=mode, title=req.title)
     os.makedirs(song_dir, exist_ok=True)
     
     # Try downloading cover image

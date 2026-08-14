@@ -1,7 +1,7 @@
-// 🛡️ v5.5.297: Hide Creator Studio
+// 🛡️ v5.5.298: AI Vocal Concurrency Queue, Pause/Resume, Deletion Fix & Dashboard Theme
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.297";
+export const SYSTEM_VERSION = "5.5.298";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.298",
+        date: "2026-08-14",
+        changes: [
+            "feat(ai-vocal): Implemented strict concurrency=1 queue system in Python bridge to process vocal separation 1 song at a time to prevent CPU/RAM overload.",
+            "feat(ai-vocal): Added Pause and Resume support for AI vocal separation jobs (via /pause and /resume endpoints and plugin dashboard).",
+            "fix(ai-vocal): Fixed cache deletion issue where deleted/error songs persisted in Zustand store (localStorage) or bridge cache.",
+            "ui(dashboard): Added light/dark mode system theme adaptation and fixed Electron launch background flicker."
+        ]
+    },
     {
         version: "5.5.297",
         date: "2026-08-14",

@@ -112,6 +112,9 @@ interface AIVocalState {
     processAudio: (videoId: string, titleOrMode?: string, modeOverride?: 'basic' | 'pro', useManualUpload?: boolean) => Promise<void>;
     uploadAudioFile: (videoId: string, file: File) => Promise<boolean>;
     checkCachedStatus: (videoIds: string[]) => Promise<void>;
+    deleteJob: (videoId: string) => Promise<boolean>;
+    pauseJob: (videoId: string) => Promise<boolean>;
+    resumeJob: (videoId: string) => Promise<boolean>;
     reset: () => void;
     setCurrentVideoId: (id: string | null) => void;
     setDefaultMode: (mode: 'basic' | 'pro') => void;
@@ -372,6 +375,69 @@ export const useAIVocalStore = create<AIVocalState>()(
                 jobs: { ...state.jobs, ...updates }
             }));
         }
+    },
+
+    deleteJob: async (videoId: string) => {
+        // 1. Instantly remove from frontend Zustand store & localStorage
+        set((state) => {
+            const newJobs = { ...state.jobs };
+            delete newJobs[videoId];
+            return { jobs: newJobs };
+        });
+
+        // 2. Send DELETE request to local bridge server
+        try {
+            const port = await getActiveBridgePort();
+            if (port) {
+                const res = await fetch(`http://127.0.0.1:${port}/cache/${videoId}`, { method: 'DELETE' });
+                return res.ok;
+            }
+        } catch (e) {
+            console.error('[deleteJob] Error calling bridge DELETE:', e);
+        }
+        return true;
+    },
+
+    pauseJob: async (videoId: string) => {
+        try {
+            const port = await getActiveBridgePort();
+            if (port) {
+                const res = await fetch(`http://127.0.0.1:${port}/pause/${videoId}`, { method: 'POST' });
+                if (res.ok) {
+                    set(state => ({
+                        jobs: {
+                            ...state.jobs,
+                            [videoId]: { ...state.jobs[videoId], status: 'idle', message: 'หยุดชั่วคราว' }
+                        }
+                    }));
+                    return true;
+                }
+            }
+        } catch (e) {
+            console.error('[pauseJob] Error:', e);
+        }
+        return false;
+    },
+
+    resumeJob: async (videoId: string) => {
+        try {
+            const port = await getActiveBridgePort();
+            if (port) {
+                const res = await fetch(`http://127.0.0.1:${port}/resume/${videoId}`, { method: 'POST' });
+                if (res.ok) {
+                    set(state => ({
+                        jobs: {
+                            ...state.jobs,
+                            [videoId]: { ...state.jobs[videoId], status: 'processing', message: 'รอคิว...' }
+                        }
+                    }));
+                    return true;
+                }
+            }
+        } catch (e) {
+            console.error('[resumeJob] Error:', e);
+        }
+        return false;
     }
 }),
     {

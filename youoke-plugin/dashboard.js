@@ -74,8 +74,8 @@ async function fetchJobs() {
         if (!res.ok) throw new Error("Failed to load jobs");
         const jobs = await res.json();
         
-        // Filter jobs that are currently active
-        const activeJobs = jobs.filter(j => ['starting', 'downloading', 'converting', 'separating', 'compressing'].includes(j.status));
+        // Filter jobs that are currently active or queued/paused
+        const activeJobs = jobs.filter(j => ['queued', 'starting', 'downloading', 'converting', 'separating', 'compressing', 'paused'].includes(j.status));
         jobsCount.innerText = activeJobs.length;
         
         renderJobs(activeJobs);
@@ -97,6 +97,9 @@ function renderJobs(jobs) {
 
     jobsList.innerHTML = jobs.map(job => {
         const percent = job.percent || 0;
+        const isPaused = job.status === 'paused';
+        const isQueued = job.status === 'queued';
+        
         return `
             <div class="job-card" data-id="${job.video_id}">
                 <div class="card-header">
@@ -104,14 +107,20 @@ function renderJobs(jobs) {
                         <div class="card-title">${job.title || job.video_id}</div>
                         <div class="card-subtitle">ID: ${job.video_id}</div>
                     </div>
-                    <button class="btn btn-danger" onclick="cancelJob('${job.video_id}')">ยกเลิก</button>
+                    <div style="display: flex; gap: 6px; align-items: center;">
+                        ${isPaused 
+                            ? `<button class="btn btn-secondary" style="background-color: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3);" onclick="resumeJob('${job.video_id}')">ทํางานต่อ</button>`
+                            : `<button class="btn btn-secondary" style="background-color: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3);" onclick="pauseJob('${job.video_id}')">หยุดพัก</button>`
+                        }
+                        <button class="btn btn-danger" onclick="cancelJob('${job.video_id}')">ยกเลิก</button>
+                    </div>
                 </div>
                 <div class="progress-bar-container">
-                    <div class="progress-bar" style="width: ${percent}%"></div>
+                    <div class="progress-bar" style="width: ${isQueued ? 5 : percent}%"></div>
                 </div>
                 <div class="job-status-row">
                     <span>สถานะ: ${getStatusText(job.status)}</span>
-                    <span>${percent}%</span>
+                    <span>${isQueued ? 'ต่อคิว' : percent + '%'}</span>
                 </div>
                 <div style="font-size: 11px; color: #a5a6a7; margin-top: -2px;">
                     ${job.message || ''}
@@ -123,12 +132,40 @@ function renderJobs(jobs) {
 
 function getStatusText(status) {
     switch (status) {
+        case "queued": return "รอคิวประมวลผล...";
         case "starting": return "กำลังเตรียมการ...";
         case "downloading": return "กำลังดาวน์โหลด...";
         case "converting": return "กำลังแปลงไฟล์...";
         case "separating": return "กำลังแยกเสียงร้อง/ดนตรี...";
         case "compressing": return "กำลังบีบอัดไฟล์...";
+        case "paused": return "หยุดชั่วคราว";
         default: return status;
+    }
+}
+
+// Pause job
+async function pauseJob(videoId) {
+    try {
+        const res = await fetch(`${API_BASE}/pause/${videoId}`, { method: "POST" });
+        const data = await res.json();
+        if (data.status === "success") {
+            fetchJobs();
+        }
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+// Resume job
+async function resumeJob(videoId) {
+    try {
+        const res = await fetch(`${API_BASE}/resume/${videoId}`, { method: "POST" });
+        const data = await res.json();
+        if (data.status === "success") {
+            fetchJobs();
+        }
+    } catch (e) {
+        console.error(e);
     }
 }
 
@@ -276,6 +313,8 @@ function startPolling() {
 
 // Global functions for onclick attributes
 window.cancelJob = cancelJob;
+window.pauseJob = pauseJob;
+window.resumeJob = resumeJob;
 window.deleteCache = deleteCache;
 
 // Start app

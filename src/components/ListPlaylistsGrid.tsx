@@ -409,17 +409,11 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
   const deleteAiCache = async (videoId: string) => {
     if (!confirm("ลบไฟล์เพลงที่แยกเสียงไว้นี้ออกจากเครื่องใช่หรือไม่?")) return;
     try {
-      const baseUrl = await getActiveBridgeBaseUrl() || "http://127.0.0.1:5050";
-      const res = await fetch(`${baseUrl}/cache/${videoId}`, { method: 'DELETE' });
-      const data = await res.json();
-      if (data.status === "success") {
-        setAiCacheList(prev => prev.filter(item => item.video_id !== videoId));
-        alertRef.current?.open();
-      } else {
-        addToast(`Failed to delete: ${data.message}`);
-      }
+      await useAIVocalStore.getState().deleteJob(videoId);
+      setAiCacheList(prev => prev.filter(item => item.video_id !== videoId));
+      addToast("ลบไฟล์แยกเสียงเรียบร้อยแล้ว");
     } catch (e) {
-      addToast("Error deleting file.");
+      addToast("เกิดข้อผิดพลาดในการลบไฟล์");
     }
   };
 

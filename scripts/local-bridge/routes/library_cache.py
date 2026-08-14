@@ -158,6 +158,20 @@ def delete_cache(video_id: str):
         if not video_id or ".." in video_id or "/" in video_id:
             raise HTTPException(status_code=400, detail="Invalid video_id")
             
+        from server_state import progress_store, active_processes
+        
+        # 1. Kill active process if running
+        if video_id in active_processes:
+            try:
+                active_processes[video_id].kill()
+                print(f"[Cache Delete] Killed active process for {video_id}")
+            except Exception as e:
+                print(f"[Cache Delete] Failed to kill process for {video_id}: {e}")
+            active_processes.pop(video_id, None)
+
+        # 2. Clear progress store state
+        progress_store.pop(video_id, None)
+        
         deleted = False
         
         # Scan CACHE_DIR and custom active storage dir (avoiding duplicates)
@@ -175,37 +189,43 @@ def delete_cache(video_id: str):
                 if not os.path.isdir(sub_dir):
                     continue
                 
-                # 1. Match by youoke.json metadata videoId
-                json_path = os.path.join(sub_dir, "youoke.json")
-                if os.path.exists(json_path):
+                is_match = False
+
+                # Check 1: Match by exact folder name or prefix
+                if folder_name == video_id or folder_name.startswith(video_id):
+                    is_match = True
+
+                # Check 2: Match by youoke.json metadata videoId
+                if not is_match:
+                    json_path = os.path.join(sub_dir, "youoke.json")
+                    if os.path.exists(json_path):
+                        try:
+                            with open(json_path, "r", encoding="utf-8") as yf:
+                                ydata = json.load(yf)
+                                if ydata.get("videoId") == video_id:
+                                    is_match = True
+                        except Exception:
+                            pass
+
+                # Check 3: Match by files inside directory (e.g. video_id.m4a)
+                if not is_match:
                     try:
-                        with open(json_path, "r", encoding="utf-8") as yf:
-                            ydata = json.load(yf)
-                            if ydata.get("videoId") == video_id:
-                                shutil.rmtree(sub_dir)
-                                deleted = True
-                                print(f"[Cache Delete] Deleted custom storage folder by youoke.json: {sub_dir}")
-                                continue
-                    except Exception as e:
-                        print(f"[Cache Delete] Failed to delete custom folder {sub_dir}: {e}")
+                        for f in os.listdir(sub_dir):
+                            if f.startswith(video_id):
+                                is_match = True
+                                break
+                    except Exception:
+                        pass
                 
-                # 2. Match by exact folder name
-                if folder_name == video_id:
-                    shutil.rmtree(sub_dir)
-                    deleted = True
-                    print(f"[Cache Delete] Deleted folder by name: {sub_dir}")
-                    continue
-                    
-                # 3. Match by name prefixes (e.g. video_id_basic, video_id_pro)
-                if folder_name.startswith(video_id) and any(folder_name.endswith(s) for s in ["_basic", "_pro"]):
-                    shutil.rmtree(sub_dir)
-                    deleted = True
-                    print(f"[Cache Delete] Deleted folder by suffix pattern: {sub_dir}")
-                    continue
-        
-        if deleted:
-            return {"status": "success", "message": f"Deleted cache for {video_id}"}
-        else:
-            return {"status": "error", "message": "Cache not found"}
+                if is_match:
+                    try:
+                        shutil.rmtree(sub_dir, ignore_errors=True)
+                        deleted = True
+                        print(f"[Cache Delete] Deleted folder: {sub_dir}")
+                    except Exception as e:
+                        print(f"[Cache Delete] Failed to delete folder {sub_dir}: {e}")
+
+        # Always return success if we deleted or cleared state
+        return {"status": "success", "message": f"Deleted cache for {video_id}"}
     except Exception as e:
         return {"status": "error", "message": f"Failed to delete cache: {str(e)}"}

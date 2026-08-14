@@ -24,6 +24,7 @@ function createDashboardWindow() {
     minHeight: 500,
     resizable: true,
     maximizable: false,
+    backgroundColor: '#09090b',
     title: "YouOke AI Dashboard",
     icon: path.join(__dirname, 'assets', 'icon.png'),
     webPreferences: {
