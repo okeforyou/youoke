@@ -53,13 +53,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 .replace(/(\(|\[).*?(official|mv|lyrics|lyric|audio|video|live).*?(\)|\])/gi, '')
                 .trim();
             
-            // Try to split into Artist and Track for better LRCLIB matching
+            // Try to parse Artist and Track
             let artist = '';
             let track = cleanTitle;
-            if (cleanTitle.includes('-')) {
+            const parsed = getArtistTitle(cleanTitle);
+            
+            if (parsed) {
+                artist = parsed[0];
+                track = parsed[1];
+            } else if (cleanTitle.includes('-')) {
                 const parts = cleanTitle.split('-');
-                track = parts[0].trim();
-                artist = parts.slice(1).join('-').trim();
+                artist = parts[0].trim();
+                track = parts.slice(1).join('-').trim();
             }
 
             // Function to fetch and process LRCLIB search
@@ -117,17 +122,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             if (artist && track) {
                 const searchParams = new URLSearchParams({ track_name: track, artist_name: artist });
                 lrclibResult = await fetchLrcLib(`https://lrclib.net/api/search?${searchParams.toString()}`);
+                
+                // Strategy 1b: Try swapping track and artist (in case title is formatted "Track - Artist")
+                if (!lrclibResult) {
+                    const searchParamsSwapped = new URLSearchParams({ track_name: artist, artist_name: track });
+                    lrclibResult = await fetchLrcLib(`https://lrclib.net/api/search?${searchParamsSwapped.toString()}`);
+                }
             }
 
-            // Strategy 2: Fallback to generic search with just the track name
-            if (!lrclibResult && track) {
-                const searchParams = new URLSearchParams({ q: track });
+            // Strategy 2: Fallback to generic search with the whole clean title (robust for mixed formats)
+            if (!lrclibResult) {
+                const searchParams = new URLSearchParams({ q: cleanTitle });
                 lrclibResult = await fetchLrcLib(`https://lrclib.net/api/search?${searchParams.toString()}`);
             }
 
-            // Strategy 3: Fallback to generic search with the whole clean title
-            if (!lrclibResult) {
-                const searchParams = new URLSearchParams({ q: cleanTitle });
+            // Strategy 3: Fallback to generic search with just the track name
+            if (!lrclibResult && track) {
+                const searchParams = new URLSearchParams({ q: track });
                 lrclibResult = await fetchLrcLib(`https://lrclib.net/api/search?${searchParams.toString()}`);
             }
 

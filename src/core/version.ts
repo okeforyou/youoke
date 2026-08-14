@@ -1,7 +1,7 @@
-// 🛡️ v5.5.299: AI Transcribe Button in Fullscreen & Sidebar empty states
+// 🛡️ v5.5.300: Fix LRCLIB Search Title Parsing
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.299";
+export const SYSTEM_VERSION = "5.5.300";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,13 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.300",
+        date: "2026-08-14",
+        changes: [
+            "fix(lyrics): Fixed a bug where LRCLIB search was splitting Artist and Track name incorrectly for standard YouTube titles, causing lyrics to not be found and incorrectly falling back to Deepgram AI."
+        ]
+    },
     {
         version: "5.5.299",
         date: "2026-08-14",
