@@ -1,7 +1,7 @@
-// 🛡️ v5.5.292: Controls - Named Tooltip Groups Fix
+// 🛡️ v5.5.293: Lyrics - Adaptive Bottom Positioning & Simplified UX
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.292";
+export const SYSTEM_VERSION = "5.5.293";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.293",
+        date: "2026-08-14",
+        changes: [
+            "fix(lyrics): Made lyrics bottom offset layout-adaptive, restoring bottom-3 in split screen mode to prevent layout push bugs while maintaining bottom-[5.5rem] in fullscreen mode.",
+            "ux(controls): Renamed lyrics display settings buttons and AI Sync action to intuitive Thai labels ('เนื้อร้องเลื่อน', 'จัดจังหวะ AI') to simplify onboarding for beginners."
+        ]
+    },
+
     {
         version: "5.5.292",
         date: "2026-08-14",

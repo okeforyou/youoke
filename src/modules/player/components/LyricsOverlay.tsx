@@ -21,7 +21,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
     
     const containerRef = useRef<HTMLDivElement>(null);
     
-    const { isPlaying } = usePlayerStore();
+    const { isPlaying, layoutMode } = usePlayerStore();
     const activeVideoId = usePlayerStore(state => state.currentVideo?.videoId || state.currentVideo?.id);
     const videoTitle = usePlayerStore(state => state.currentVideo?.title);
     const videoDuration = usePlayerStore(state => state.currentVideo?.duration);
@@ -331,7 +331,12 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
 
             {/* Lyrics Container */}
             <div 
-                className="absolute bottom-[5.5rem] sm:bottom-[6.5rem] md:bottom-[7.5rem] left-1/2 -translate-x-1/2 w-[95%] max-w-5xl flex flex-col space-y-1 px-4 sm:px-6 group"
+                className={clsx(
+                    "absolute left-1/2 -translate-x-1/2 w-[95%] max-w-5xl flex flex-col space-y-1 px-4 sm:px-6 group",
+                    layoutMode === 'fullscreen' 
+                        ? "bottom-[5.5rem] sm:bottom-[6.5rem] md:bottom-[7.5rem]" 
+                        : "bottom-3 sm:bottom-6 md:bottom-10"
+                )}
                 style={{ containerType: 'inline-size' }}
             >
                 {renderLine(activeLine, activeIndex)}

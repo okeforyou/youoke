@@ -204,7 +204,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                     className={`group/tooltip relative z-10 w-[90px] h-full rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 ${activeLayoutTab === 0 ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
                 >
                     <MicOff size={12} />
-                    ปิดเนื้อ
+                    ปิดเนื้อร้อง
                     <span className={tooltipClassName}>ปิดเนื้อร้อง</span>
                 </button>
                 <button 
@@ -213,15 +213,15 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                 >
                     <Mic size={12} />
                     คาราโอเกะ
-                    <span className={tooltipClassName}>โหมดคาราโอเกะ</span>
+                    <span className={tooltipClassName}>โหมดคาราโอเกะปาดสี</span>
                 </button>
                 <button 
                     onClick={() => handleLayoutTabClick(2)}
                     className={`group/tooltip relative z-10 w-[90px] h-full rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 ${activeLayoutTab === 2 ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
                 >
                     <AlignLeft size={12} />
-                    แบบสไลด์
-                    <span className={tooltipClassName}>โหมดสไลด์แนวตั้ง</span>
+                    เนื้อร้องเลื่อน
+                    <span className={tooltipClassName}>โหมดเนื้อร้องเลื่อนแนวตั้ง</span>
                 </button>
             </div>
 
@@ -246,8 +246,8 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                     className={`group/tooltip relative h-11 px-4 flex items-center justify-center gap-1.5 rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 font-bold text-xs ${isAligning ? 'animate-pulse text-white/50 bg-white/5 border border-white/5' : (!isSynced ? 'bg-amber-500 hover:bg-amber-600 text-black shadow-lg shadow-amber-500/25 border border-amber-500/30' : 'text-white/60 hover:text-white bg-white/5 border border-white/10')}`}
                 >
                     <Sparkles size={14} className={isAligning ? 'animate-spin' : ''} />
-                    <span>{isAligning ? 'กำลังซิงก์...' : 'ซิงก์ AI'}</span>
-                    <span className={tooltipClassName}>ซิงก์จังหวะด้วย AI</span>
+                    <span>{isAligning ? 'กำลังจัดจังหวะ...' : (isSynced ? 'ซิงก์แล้ว' : 'จัดจังหวะ AI')}</span>
+                    <span className={tooltipClassName}>{isSynced ? 'จังหวะตรงเรียบร้อยแล้ว' : 'จัดจังหวะคำร้องด้วย AI'}</span>
                 </button>
             )}
 
