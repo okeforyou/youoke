@@ -360,6 +360,7 @@ export default function MainDashboard({ showTab = true, mode = 'default' }: { sh
               {!selectedCategoryId && (
                 <div className="animate-in fade-in duration-500">
                   {/* Creator Studio Banner */}
+                  {/* 
                   <div className="px-4 pt-6 pb-2">
                     <div 
                       onClick={() => router.push('/creator')}
@@ -374,6 +375,7 @@ export default function MainDashboard({ showTab = true, mode = 'default' }: { sh
                         </div>
                     </div>
                   </div>
+                  */}
 
                   <div className="px-4 pt-6 pb-2">
                     <h1 className="text-xl font-bold text-black dark:text-white">ศิลปินยอดฮิต</h1>

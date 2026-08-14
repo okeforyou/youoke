@@ -1,7 +1,7 @@
-// 🛡️ v5.5.296: Segmented Button Width adjustment & Lyrics Spacing tuning
+// 🛡️ v5.5.297: Hide Creator Studio
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.296";
+export const SYSTEM_VERSION = "5.5.297";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,13 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.297",
+        date: "2026-08-14",
+        changes: [
+            "ui(dashboard): Temporarily hidden Creator Studio menu and home banner since AI alignment is now highly accurate natively."
+        ]
+    },
     {
         version: "5.5.296",
         date: "2026-08-14",
