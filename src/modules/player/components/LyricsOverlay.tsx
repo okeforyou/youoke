@@ -166,15 +166,6 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
     if (currentLayout === 'scroll') {
         return (
             <div className="absolute inset-0 pointer-events-none z-40 flex items-center justify-center p-4">
-                {/* Fading Backdrop Blur background layer */}
-                <div 
-                    className="absolute inset-y-16 inset-x-4 md:inset-x-20 bg-black/10 backdrop-blur-xl rounded-[2.5rem] pointer-events-none"
-                    style={{
-                        WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, white 15%, white 85%, transparent 100%)',
-                        maskImage: 'linear-gradient(to bottom, transparent 0%, white 15%, white 85%, transparent 100%)',
-                    }}
-                />
-
                 {/* Source/Sync status badge in top-left corner */}
                 <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-md text-[10px] sm:text-xs text-white/60 font-medium px-2.5 py-1 rounded-lg shadow-md border border-white/5 flex items-center gap-1.5 pointer-events-none select-none">
                     <div className={clsx(
@@ -207,13 +198,13 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                                     data-line-index={i}
                                     onClick={() => handleLineSeek(line.time)}
                                     className={clsx(
-                                        "transition-all duration-500 ease-out select-none px-4 origin-center",
+                                        "transition-all duration-500 ease-out select-none px-6 py-2.5 rounded-2xl border origin-center text-center w-fit mx-auto",
                                         isSynced ? "cursor-pointer" : "cursor-default",
                                         isActive 
-                                            ? "text-white font-black text-base md:text-xl scale-[1.35] opacity-100 drop-shadow-[0_4px_12px_rgba(255,255,255,0.3)] z-10" 
+                                            ? "bg-black/35 backdrop-blur-xl border-white/10 shadow-xl text-white font-black text-base md:text-xl scale-[1.35] opacity-100 z-10" 
                                             : isSynced 
-                                                ? "text-white/25 hover:text-white/75 font-bold text-base md:text-xl scale-100" 
-                                                : "text-white/80 font-bold text-base md:text-xl scale-100 opacity-100"
+                                                ? "bg-transparent border-transparent text-white/25 hover:text-white/75 font-bold text-base md:text-xl scale-100" 
+                                                : "bg-transparent border-transparent text-white/80 font-bold text-base md:text-xl scale-100 opacity-100"
                                     )}
                                     style={{
                                         lineHeight: '1.4',
@@ -254,7 +245,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
         return (
             <div 
                 className={`flex w-full justify-center items-center px-4`}
-                style={{ minHeight: 'clamp(3rem, 10cqw, 7.5rem)' }}
+                style={{ minHeight: 'clamp(2rem, 9cqw, 6.5rem)' }}
             >
                 <div 
                     className={clsx(
@@ -262,9 +253,9 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                         "transition-colors duration-200 break-words whitespace-pre-wrap max-w-full text-center"
                     )}
                     style={{
-                        fontSize: 'clamp(2.2rem, 8cqw, 5.2rem)',
+                        fontSize: 'clamp(1.2rem, 7cqw, 4.5rem)',
                         lineHeight: '1.4',
-                        WebkitTextStroke: 'clamp(2px, 0.4cqw, 4px) black',
+                        WebkitTextStroke: 'clamp(1.5px, 0.35cqw, 3.5px) black',
                         paintOrder: 'stroke fill',
                     }}
                 >

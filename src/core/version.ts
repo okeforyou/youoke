@@ -1,7 +1,7 @@
-// 🛡️ v5.5.282: Lyrics - Karaoke Naming, Paintbrush Toggle, Close Margin & Fading Blur Overlay
+// 🛡️ v5.5.283: Lyrics - Fit split screen, Line-Specific Blur Highlight & Expanded Close Margin
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.282";
+export const SYSTEM_VERSION = "5.5.283";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.283",
+        date: "2026-08-14",
+        changes: [
+            "fix(lyrics): Shrunk bottom overlay karaoke font size and line height clamps to prevent overflow on mobile and split screens.",
+            "ui(lyrics): Implemented line-specific backdrop-blur highlighting for active scroll lyrics (blur follows the active line only).",
+            "ui(lyrics): Expanded close button X right margin in fullscreen controls to prevent clipping."
+        ]
+    },
+
     {
         version: "5.5.282",
         date: "2026-08-14",

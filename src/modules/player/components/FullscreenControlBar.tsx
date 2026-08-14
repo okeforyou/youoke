@@ -378,7 +378,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
             {/* 7. Close Fullscreen (Return to Split Mode) */}
             <button
                 onClick={() => usePlayerStore.getState().setLayoutMode('split')}
-                className="w-11 h-11 mr-1.5 md:mr-2 flex items-center justify-center rounded-xl text-red-400/80 hover:text-white hover:bg-red-500/85 transition-all active:scale-90 pointer-events-auto shrink-0"
+                className="w-11 h-11 mr-3.5 md:mr-5 flex items-center justify-center rounded-xl text-red-400/80 hover:text-white hover:bg-red-500/85 transition-all active:scale-90 pointer-events-auto shrink-0"
                 title="ออกจากหน้าจอเต็มจอ"
             >
                 <X size={20} strokeWidth={2.5} />
