@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Minimize2, X, Play, Pause, Wand2, Mic, MicOff, Music, Type, Drum, Guitar, Piano, Sparkles, SlidersHorizontal } from 'lucide-react';
+import { Minimize2, X, Play, Pause, Wand2, Mic, MicOff, Music, Type, Drum, Guitar, Piano, Sparkles, SlidersHorizontal, AlignLeft } from 'lucide-react';
 import { usePlayerStore } from '../stores/usePlayerStore';
 import { useCast } from '../../../plugins/cast/context/CastContext';
 import { useLyricsStore } from '../stores/useLyricsStore';
@@ -150,37 +150,31 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
         );
     };
 
-    // Lyrics Sliding Segment Indicator properties
-    const activeTabIndex = !showLyrics ? 0 : (hybridModeEnabled ? 2 : 1);
+    // Lyrics Layout tab index: 0 = Off, 1 = Karaoke, 2 = Scroll
+    const activeLayoutTab = !showLyrics ? 0 : (lyricsLayout === 'scroll' ? 2 : 1);
     
-    const handleLyricsTabClick = (index: number) => {
+    const handleLayoutTabClick = (index: number) => {
         if (index === 0) {
             setLyricsEnabled(false);
         } else if (index === 1) {
-            setLyricsEnabled(true);
-            setHybridModeEnabled(false);
-        } else if (index === 2) {
-            if (alignedLyrics.length === 0) {
-                if (activeVideoId) {
-                    addToast?.('AI Sync: กำลังฟังและเทียบจังหวะเนื้อเพลง...', 'info');
-                    alignHybridLyrics(activeVideoId, originalLyrics)
-                        .then(() => {
-                            addToast?.('AI Sync: เทียบจังหวะสำเร็จ! เนื้อเพลงตรง 100%', 'success');
-                        })
-                        .catch((err) => {
-                            addToast?.(`AI Sync ล้มเหลว: ${err.message || 'เกิดข้อผิดพลาด'}`, 'error');
-                        });
-                }
-            } else {
+            if (!isSynced) {
+                addToast?.('🪄 กรุณากด ซิงก์ AI ก่อนเพื่อร้องแบบปาดคาราโอเกะ!', 'warning');
+                // Stay on scroll layout
                 setLyricsEnabled(true);
-                setHybridModeEnabled(true);
+                setLyricsLayout('scroll');
+                return;
             }
+            setLyricsEnabled(true);
+            setLyricsLayout('karaoke');
+        } else if (index === 2) {
+            setLyricsEnabled(true);
+            setLyricsLayout('scroll');
         }
     };
 
     const getIndicatorColor = () => {
-        if (activeTabIndex === 0) return 'bg-white/10 border border-white/5';
-        if (activeTabIndex === 1) return 'bg-primary shadow-lg shadow-primary/25';
+        if (activeLayoutTab === 0) return 'bg-white/10 border border-white/5';
+        if (activeLayoutTab === 1) return 'bg-primary shadow-lg shadow-primary/25';
         return 'bg-amber-500 shadow-lg shadow-amber-500/25';
     };
 
@@ -193,59 +187,75 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
 
 
             {/* 1. Lyrics Selection Segmented Pill Control (Animate-sliding active tab indicator) */}
-            <div className="relative flex bg-white/5 border border-white/10 rounded-xl p-0.5 pointer-events-auto shrink-0 select-none w-[244px] h-[38px] items-center">
+            <div className="relative flex bg-white/5 border border-white/10 rounded-xl p-0.5 pointer-events-auto shrink-0 select-none w-[274px] h-[38px] items-center">
                 {/* Sliding background indicator */}
                 <div 
                     className={`absolute top-0.5 bottom-0.5 left-0.5 rounded-lg transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] ${getIndicatorColor()}`}
                     style={{
-                        transform: `translateX(${activeTabIndex * 80}px)`,
-                        width: '80px'
+                        transform: `translateX(${activeLayoutTab * 90}px)`,
+                        width: '90px'
                     }}
                 />
                 
                 <button 
-                    onClick={() => handleLyricsTabClick(0)}
-                    className={`relative z-10 w-[80px] h-full rounded-lg text-xs font-bold transition-colors ${activeTabIndex === 0 ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
+                    onClick={() => handleLayoutTabClick(0)}
+                    className={`relative z-10 w-[90px] h-full rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 ${activeLayoutTab === 0 ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
                 >
+                    <MicOff size={12} />
                     ปิดเนื้อ
                 </button>
                 <button 
-                    onClick={() => handleLyricsTabClick(1)}
-                    className={`relative z-10 w-[80px] h-full rounded-lg text-xs font-bold transition-colors ${activeTabIndex === 1 ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
+                    onClick={() => handleLayoutTabClick(1)}
+                    className={`relative z-10 w-[90px] h-full rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 ${activeLayoutTab === 1 ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
                 >
-                    เนื้อปกติ
+                    <Mic size={12} />
+                    ปาดล่าง
                 </button>
-                {originalLyrics && originalLyrics.length > 0 && (
-                    <button 
-                        onClick={() => handleLyricsTabClick(2)}
-                        disabled={isAligning}
-                        className={`relative z-10 w-[80px] h-full rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-0.5 ${activeTabIndex === 2 ? 'text-white' : 'text-white/40 hover:text-white/70'} ${isAligning ? 'animate-pulse' : ''}`}
-                    >
-                        <Sparkles size={11} className={activeTabIndex === 2 ? 'text-white' : 'text-white/40'} />
-                        {isAligning ? 'ซิงก์...' : 'ซิงก์ AI'}
-                    </button>
-                )}
+                <button 
+                    onClick={() => handleLayoutTabClick(2)}
+                    className={`relative z-10 w-[90px] h-full rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 ${activeLayoutTab === 2 ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
+                >
+                    <AlignLeft size={12} />
+                    แนวตั้ง
+                </button>
             </div>
 
-            {/* 2. Toggle Karaoke Sweeping Mode (Color Sweeping vs Plain Text) */}
-            <button
-                onClick={toggleKaraokeMode}
-                disabled={!showLyrics}
-                className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 ${!showLyrics ? 'opacity-30 cursor-not-allowed' : (isKaraokeMode ? 'bg-primary/20 text-primary border border-primary/20' : 'text-white/50 hover:text-white hover:bg-white/10')}`}
-                title={isKaraokeMode ? "ปิดการปาดสี (อ่านข้อความนิ่ง)" : "เปิดการปาดสี (แบบคาราโอเกะ)"}
-            >
-                <Wand2 size={20} />
-            </button>
+            {/* AI Sync Action Button */}
+            {originalLyrics && originalLyrics.length > 0 && (
+                <button
+                    onClick={async () => {
+                        if (isAligning) return;
+                        if (activeVideoId) {
+                            addToast?.('AI Sync: กำลังฟังและเทียบจังหวะเนื้อเพลง...', 'info');
+                            try {
+                                await alignHybridLyrics(activeVideoId, originalLyrics);
+                                addToast?.('AI Sync: เทียบจังหวะสำเร็จ! เนื้อเพลงตรง 100%', 'success');
+                                setLyricsEnabled(true);
+                                setLyricsLayout('karaoke');
+                            } catch (err: any) {
+                                addToast?.(`AI Sync ล้มเหลว: ${err.message || 'เกิดข้อผิดพลาด'}`, 'error');
+                            }
+                        }
+                    }}
+                    disabled={isAligning}
+                    className={`h-11 px-4 flex items-center justify-center gap-1.5 rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 font-bold text-xs ${isAligning ? 'animate-pulse text-white/50 bg-white/5 border border-white/5' : (!isSynced ? 'bg-amber-500 hover:bg-amber-600 text-black shadow-lg shadow-amber-500/25 border border-amber-500/30' : 'text-white/60 hover:text-white bg-white/5 border border-white/10')}`}
+                    title="ซิงก์จังหวะเนื้อเพลงด้วย AI (AI Sync)"
+                >
+                    <Sparkles size={14} className={isAligning ? 'animate-spin' : ''} />
+                    <span>{isAligning ? 'กำลังซิงก์...' : 'ซิงก์ AI'}</span>
+                </button>
+            )}
 
-            {/* Layout Toggle (Scroll list vs Bottom Sweep overlay) */}
-            <button
-                onClick={() => setLyricsLayout(lyricsLayout === 'scroll' ? 'karaoke' : 'scroll')}
-                disabled={!showLyrics || !isSynced}
-                className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 ${(!showLyrics || !isSynced) ? 'opacity-30 cursor-not-allowed' : (lyricsLayout === 'scroll' ? 'bg-amber-500/25 text-amber-500 border border-amber-500/20' : 'text-white/50 hover:text-white hover:bg-white/10')}`}
-                title={lyricsLayout === 'scroll' ? "เปลี่ยนเป็นแบบปาดคาราโอเกะ" : "เปลี่ยนเป็นแบบเลื่อนแนวตั้ง (YouTube Music)"}
-            >
-                <Type size={20} />
-            </button>
+            {/* 2. Toggle Karaoke Sweeping Mode (Color Sweeping vs Plain Text) */}
+            {showLyrics && lyricsLayout === 'karaoke' && (
+                <button
+                    onClick={toggleKaraokeMode}
+                    className={`w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 ${isKaraokeMode ? 'bg-primary/20 text-primary border border-primary/20' : 'text-white/50 hover:text-white hover:bg-white/10'}`}
+                    title={isKaraokeMode ? "ปิดการปาดสี (อ่านข้อความนิ่ง)" : "เปิดการปาดสี (แบบคาราโอเกะ)"}
+                >
+                    <Wand2 size={20} />
+                </button>
+            )}
 
             <div className="w-[1px] h-6 bg-white/10 mx-0.5 shrink-0" />
 

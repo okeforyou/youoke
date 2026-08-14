@@ -198,13 +198,13 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                                     data-line-index={i}
                                     onClick={() => handleLineSeek(line.time)}
                                     className={clsx(
-                                        "transition-all duration-500 ease-out select-none px-4",
+                                        "transition-all duration-500 ease-out select-none px-4 scale-100",
                                         isSynced ? "cursor-pointer" : "cursor-default",
                                         isActive 
-                                            ? "text-white font-black text-3xl sm:text-4xl md:text-[2.75rem] scale-[1.05] opacity-100 drop-shadow-[0_4px_12px_rgba(255,255,255,0.25)]" 
+                                            ? "text-yellow-300 font-black text-2xl sm:text-3xl md:text-[2.25rem] opacity-100 drop-shadow-[0_4px_12px_rgba(253,224,71,0.2)]" 
                                             : isSynced 
-                                                ? "text-white/30 hover:text-white/75 font-bold text-xl sm:text-2xl md:text-[1.85rem] scale-100 opacity-100" 
-                                                : "text-white/80 font-bold text-xl sm:text-2xl md:text-[1.85rem] opacity-100"
+                                                ? "text-white/35 hover:text-white/75 font-bold text-2xl sm:text-3xl md:text-[2.25rem]" 
+                                                : "text-white/80 font-bold text-2xl sm:text-3xl md:text-[2.25rem] opacity-100"
                                     )}
                                     style={{
                                         lineHeight: '1.4',
