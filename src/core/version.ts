@@ -1,7 +1,7 @@
-// 🛡️ v5.5.294: Lyrics & Premium Plugin Dashboard redesign
+// 🛡️ v5.5.295: Reverted LyricsOverlay & Fixed Segmented Button Widths
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.294";
+export const SYSTEM_VERSION = "5.5.295";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.295",
+        date: "2026-08-14",
+        changes: [
+            "revert(lyrics): Restored LyricsOverlay back to v5.5.293 layout.",
+            "fix(controls): Expanded segmented buttons for lyrics layouts in FullscreenControlBar from 90px to 110px to resolve Thai text clipping/overflow."
+        ]
+    },
     {
         version: "5.5.294",
         date: "2026-08-14",

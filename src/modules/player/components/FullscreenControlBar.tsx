@@ -189,19 +189,19 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
 
 
             {/* 1. Lyrics Selection Segmented Pill Control (Animate-sliding active tab indicator) */}
-            <div className="relative flex bg-white/5 border border-white/10 rounded-xl p-0.5 pointer-events-auto shrink-0 select-none w-[274px] h-[38px] items-center">
+            <div className="relative flex bg-white/5 border border-white/10 rounded-xl p-0.5 pointer-events-auto shrink-0 select-none w-[334px] h-[38px] items-center">
                 {/* Sliding background indicator */}
                 <div 
                     className={`absolute top-0.5 bottom-0.5 left-0.5 rounded-lg transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] ${getIndicatorColor()}`}
                     style={{
-                        transform: `translateX(${activeLayoutTab * 90}px)`,
-                        width: '90px'
+                        transform: `translateX(${activeLayoutTab * 110}px)`,
+                        width: '110px'
                     }}
                 />
                 
                 <button 
                     onClick={() => handleLayoutTabClick(0)}
-                    className={`group/tooltip relative z-10 w-[90px] h-full rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 ${activeLayoutTab === 0 ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
+                    className={`group/tooltip relative z-10 w-[110px] h-full rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 ${activeLayoutTab === 0 ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
                 >
                     <MicOff size={12} />
                     ปิดเนื้อร้อง
@@ -209,7 +209,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                 </button>
                 <button 
                     onClick={() => handleLayoutTabClick(1)}
-                    className={`group/tooltip relative z-10 w-[90px] h-full rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 ${activeLayoutTab === 1 ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
+                    className={`group/tooltip relative z-10 w-[110px] h-full rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 ${activeLayoutTab === 1 ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
                 >
                     <Mic size={12} />
                     คาราโอเกะ
@@ -217,7 +217,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                 </button>
                 <button 
                     onClick={() => handleLayoutTabClick(2)}
-                    className={`group/tooltip relative z-10 w-[90px] h-full rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 ${activeLayoutTab === 2 ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
+                    className={`group/tooltip relative z-10 w-[110px] h-full rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 ${activeLayoutTab === 2 ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
                 >
                     <AlignLeft size={12} />
                     เนื้อร้องเลื่อน

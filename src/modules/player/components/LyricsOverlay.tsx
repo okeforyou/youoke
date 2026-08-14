@@ -185,14 +185,14 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
 
                 <div 
                     ref={containerRef}
-                    className="w-full max-w-4xl h-[90%] max-h-[800px] overflow-y-auto no-scrollbar text-center flex flex-col gap-4 sm:gap-8 py-8 sm:py-20 pointer-events-auto transition-all"
+                    className="w-full max-w-3xl h-[80%] max-h-[600px] overflow-y-auto no-scrollbar text-center flex flex-col gap-8 py-20 pointer-events-auto transition-all"
                     style={{
-                        WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, white 5%, white 95%, transparent 100%)',
-                        maskImage: 'linear-gradient(to bottom, transparent 0%, white 5%, white 95%, transparent 100%)',
+                        WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, white 20%, white 80%, transparent 100%)',
+                        maskImage: 'linear-gradient(to bottom, transparent 0%, white 20%, white 80%, transparent 100%)',
                     }}
                 >
                     {/* Lyric Lines */}
-                    <div className="flex flex-col gap-4 sm:gap-8 py-2 sm:py-4">
+                    <div className="flex flex-col gap-8 py-4">
                         {lyrics.map((line: any, i: number) => {
                             const isActive = isSynced && i === currentLineIndex;
                             return (
@@ -201,7 +201,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                                     data-line-index={i}
                                     onClick={() => handleLineSeek(line.time)}
                                     className={clsx(
-                                        "transition-all duration-500 ease-out select-none py-2 text-center w-[98%] max-w-5xl mx-auto break-words",
+                                        "transition-all duration-500 ease-out select-none py-2 text-center w-[94%] max-w-4xl mx-auto break-words",
                                         isSynced ? "cursor-pointer" : "cursor-default",
                                         isActive 
                                             ? "text-white font-black opacity-100 z-10" 
@@ -248,7 +248,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
 
         return (
             <div 
-                className={`flex w-full justify-center items-center px-1 sm:px-2`}
+                className={`flex w-full justify-center items-center px-4`}
                 style={{ minHeight: 'clamp(2rem, 9cqw, 6.5rem)' }}
             >
                 <div 
@@ -257,7 +257,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                         "transition-colors duration-200 break-words whitespace-pre-wrap max-w-full text-center"
                     )}
                     style={{
-                        fontSize: 'clamp(1.2rem, 5.2cqw, 3.2rem)',
+                        fontSize: 'clamp(1.2rem, 7cqw, 4.5rem)',
                         lineHeight: '1.4',
                         WebkitTextStroke: 'clamp(1.5px, 0.35cqw, 3.5px) black',
                         paintOrder: 'stroke fill',
@@ -332,10 +332,10 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
             {/* Lyrics Container */}
             <div 
                 className={clsx(
-                    "absolute left-1/2 -translate-x-1/2 w-[98%] max-w-7xl flex flex-col space-y-1 px-1 sm:px-2 group",
+                    "absolute left-1/2 -translate-x-1/2 w-[95%] max-w-5xl flex flex-col space-y-1 px-4 sm:px-6 group",
                     layoutMode === 'fullscreen' 
-                        ? "bottom-[5.2rem] sm:bottom-[5.5rem]" 
-                        : "bottom-3 sm:bottom-4"
+                        ? "bottom-[5.5rem] sm:bottom-[6.5rem] md:bottom-[7.5rem]" 
+                        : "bottom-3 sm:bottom-6 md:bottom-10"
                 )}
                 style={{ containerType: 'inline-size' }}
             >
