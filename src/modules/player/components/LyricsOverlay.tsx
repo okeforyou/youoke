@@ -182,7 +182,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
 
                 <div 
                     ref={containerRef}
-                    className="w-full max-w-3xl h-[80%] max-h-[600px] overflow-y-auto scrollbar-hide text-center flex flex-col gap-8 py-20 pointer-events-auto transition-all"
+                    className="w-full max-w-3xl h-[80%] max-h-[600px] overflow-y-auto no-scrollbar text-center flex flex-col gap-8 py-20 pointer-events-auto transition-all"
                     style={{
                         WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, white 20%, white 80%, transparent 100%)',
                         maskImage: 'linear-gradient(to bottom, transparent 0%, white 20%, white 80%, transparent 100%)',
@@ -198,13 +198,13 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                                     data-line-index={i}
                                     onClick={() => handleLineSeek(line.time)}
                                     className={clsx(
-                                        "transition-all duration-500 ease-out select-none px-4 scale-100",
+                                        "transition-all duration-500 ease-out select-none px-4 origin-center",
                                         isSynced ? "cursor-pointer" : "cursor-default",
                                         isActive 
-                                            ? "text-yellow-300 font-black text-2xl sm:text-3xl md:text-[2.25rem] opacity-100 drop-shadow-[0_4px_12px_rgba(253,224,71,0.2)]" 
+                                            ? "text-[#2563eb] font-black text-lg md:text-2xl scale-[1.2] opacity-100 drop-shadow-[0_4px_12px_rgba(37,99,235,0.25)] z-10" 
                                             : isSynced 
-                                                ? "text-white/35 hover:text-white/75 font-bold text-2xl sm:text-3xl md:text-[2.25rem]" 
-                                                : "text-white/80 font-bold text-2xl sm:text-3xl md:text-[2.25rem] opacity-100"
+                                                ? "text-white/35 hover:text-white/75 font-bold text-lg md:text-2xl scale-100" 
+                                                : "text-white/80 font-bold text-lg md:text-2xl scale-100 opacity-100"
                                     )}
                                     style={{
                                         lineHeight: '1.4',

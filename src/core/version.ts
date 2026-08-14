@@ -1,7 +1,7 @@
-// 🛡️ v5.5.280: Lyrics - Unified Layout Selector, Yellow Highlights & Jitter-free Scroll
+// 🛡️ v5.5.281: Lyrics - Responsive Font Restore, Blue Active Highlights & no-scrollbar Fix
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.280";
+export const SYSTEM_VERSION = "5.5.281";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,17 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.281",
+        date: "2026-08-14",
+        changes: [
+            "fix(lyrics): Restored working responsive text-lg md:text-2xl font sizes for plain/scroll layouts to fix large mobile fonts.",
+            "feat(lyrics): Changed plain/scroll active highlight color to Blue 600 (#2563eb) to match the karaoke singing theme.",
+            "fix(lyrics): Resolved scrolling jitter by using visual-only transform scale-[1.2] transitions on the active line.",
+            "fix(lyrics): Replaced scrollbar-hide with no-scrollbar utility class to completely hide browser scrollbars during auto-scroll."
+        ]
+    },
+
     {
         version: "5.5.280",
         date: "2026-08-14",
