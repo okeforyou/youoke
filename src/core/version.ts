@@ -1,7 +1,7 @@
-// 🛡️ v5.5.285: Lyrics - cqw-Responsive Font Clamp & Centered Global Blur Band
+// 🛡️ v5.5.287: Lyrics - borderless Capsule Blur & Diffused Shadow Glow
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.285";
+export const SYSTEM_VERSION = "5.5.287";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,24 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.287",
+        date: "2026-08-14",
+        changes: [
+            "ui(lyrics): Replaced absolute active line background blur child with borderless backdrop-blur capsule and diffused shadow glow directly on active scroll line container (fits all screen sizes perfectly)."
+        ]
+    },
+
+    {
+        version: "5.5.286",
+        date: "2026-08-14",
+        changes: [
+            "fix(lyrics): Anchored bottom overlay karaoke container to absolute bottom positions to prevent top alignment on small viewports/split screen.",
+            "ui(lyrics): Replaced the wide centered blur band with a compact, text-width relative active line blur cloud masked with a soft radial-gradient.",
+            "ui(lyrics): Increased active scroll text visual scale to scale-[1.6] and updated container-query base clamp to 1.9rem."
+        ]
+    },
+
     {
         version: "5.5.285",
         date: "2026-08-14",

@@ -169,15 +169,6 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                 className="absolute inset-0 pointer-events-none z-40 flex items-center justify-center p-4"
                 style={{ containerType: 'inline-size' }}
             >
-                {/* Smooth Central Blur Panel */}
-                <div 
-                    className="absolute inset-x-4 md:inset-x-20 top-1/2 -translate-y-1/2 h-[160px] md:h-[220px] bg-black/10 backdrop-blur-2xl pointer-events-none rounded-[2rem]"
-                    style={{
-                        WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, white 25%, white 75%, transparent 100%)',
-                        maskImage: 'linear-gradient(to bottom, transparent 0%, white 25%, white 75%, transparent 100%)',
-                    }}
-                />
-
                 {/* Source/Sync status badge in top-left corner */}
                 <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-md text-[10px] sm:text-xs text-white/60 font-medium px-2.5 py-1 rounded-lg shadow-md border border-white/5 flex items-center gap-1.5 pointer-events-none select-none">
                     <div className={clsx(
@@ -210,16 +201,16 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                                     data-line-index={i}
                                     onClick={() => handleLineSeek(line.time)}
                                     className={clsx(
-                                        "transition-all duration-500 ease-out select-none px-6 py-2.5 rounded-2xl border border-transparent origin-center text-center w-fit mx-auto relative",
+                                        "transition-all duration-500 ease-out select-none px-6 py-2.5 rounded-full border border-transparent origin-center text-center w-fit mx-auto relative",
                                         isSynced ? "cursor-pointer" : "cursor-default",
                                         isActive 
-                                            ? "text-white font-black scale-[1.5] opacity-100 z-10" 
+                                            ? "bg-black/30 backdrop-blur-xl shadow-[0_0_25px_10px_rgba(0,0,0,0.35)] text-white font-black scale-[1.6] opacity-100 z-10" 
                                             : isSynced 
                                                 ? "text-white/25 hover:text-white/75 font-bold scale-100" 
                                                 : "text-white/80 font-bold scale-100 opacity-100"
                                     )}
                                     style={{
-                                        fontSize: 'clamp(0.95rem, 3.8cqw, 1.8rem)',
+                                        fontSize: 'clamp(0.95rem, 4cqw, 1.9rem)',
                                         lineHeight: '1.4',
                                         WebkitTextStroke: isActive ? '1.5px rgba(0,0,0,0.8)' : '1px rgba(0,0,0,0.5)',
                                         paintOrder: 'stroke fill',
@@ -330,12 +321,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
 
 
     return (
-        <div 
-            className="absolute inset-0 pointer-events-none z-40 flex items-end justify-center" 
-            style={{ 
-                paddingBottom: 'clamp(4rem, 15vh, 15rem)' // Use vh so it scales with player height
-            }}
-        >
+        <div className="absolute inset-0 pointer-events-none z-40">
             {/* Source indicator relocated to top-left corner of the player view */}
             {source && (
                 <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-md rounded-lg px-2.5 py-1 text-[10px] text-white/60 font-medium shadow-md border border-white/5 pointer-events-none select-none">
@@ -345,7 +331,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
 
             {/* Lyrics Container */}
             <div 
-                className="w-[95%] max-w-5xl flex flex-col space-y-1 px-4 sm:px-6 relative group"
+                className="absolute bottom-3 sm:bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 w-[95%] max-w-5xl flex flex-col space-y-1 px-4 sm:px-6 relative group"
                 style={{ containerType: 'inline-size' }}
             >
                 {renderLine(activeLine, activeIndex)}
