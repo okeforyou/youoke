@@ -198,13 +198,13 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                                     data-line-index={i}
                                     onClick={() => handleLineSeek(line.time)}
                                     className={clsx(
-                                        "transition-all duration-500 ease-out select-none px-6 py-2.5 rounded-2xl border origin-center text-center w-fit mx-auto",
+                                        "transition-all duration-500 ease-out select-none px-6 py-2.5 rounded-2xl border border-transparent origin-center text-center w-fit mx-auto relative",
                                         isSynced ? "cursor-pointer" : "cursor-default",
                                         isActive 
-                                            ? "bg-black/35 backdrop-blur-xl border-white/10 shadow-xl text-white font-black text-base md:text-xl scale-[1.35] opacity-100 z-10" 
+                                            ? "text-white font-black text-base md:text-xl scale-[1.5] opacity-100 z-10" 
                                             : isSynced 
-                                                ? "bg-transparent border-transparent text-white/25 hover:text-white/75 font-bold text-base md:text-xl scale-100" 
-                                                : "bg-transparent border-transparent text-white/80 font-bold text-base md:text-xl scale-100 opacity-100"
+                                                ? "text-white/25 hover:text-white/75 font-bold text-base md:text-xl scale-100" 
+                                                : "text-white/80 font-bold text-base md:text-xl scale-100 opacity-100"
                                     )}
                                     style={{
                                         lineHeight: '1.4',
@@ -212,6 +212,15 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                                         paintOrder: 'stroke fill',
                                     }}
                                 >
+                                    {isActive && (
+                                        <div 
+                                            className="absolute -inset-x-12 -inset-y-2.5 bg-black/45 backdrop-blur-xl rounded-full -z-10 pointer-events-none"
+                                            style={{
+                                                WebkitMaskImage: 'radial-gradient(ellipse at center, black 25%, transparent 75%)',
+                                                maskImage: 'radial-gradient(ellipse at center, black 25%, transparent 75%)',
+                                            }}
+                                        />
+                                    )}
                                     {line.text}
                                 </div>
                             );

@@ -1,7 +1,7 @@
-// 🛡️ v5.5.283: Lyrics - Fit split screen, Line-Specific Blur Highlight & Expanded Close Margin
+// 🛡️ v5.5.284: Lyrics - Radial Masked Feather-Blur & Enlarged Active Font Scale
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.283";
+export const SYSTEM_VERSION = "5.5.284";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.284",
+        date: "2026-08-14",
+        changes: [
+            "ui(lyrics): Replaced solid active line borders with radial-gradient masked feather-blur background shadow clouds.",
+            "ui(lyrics): Enlarged active scroll lyric line text visual transform scale to scale-[1.5]."
+        ]
+    },
+
     {
         version: "5.5.283",
         date: "2026-08-14",
