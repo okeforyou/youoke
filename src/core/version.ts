@@ -1,7 +1,7 @@
-// 🛡️ v5.5.288: Lyrics - bottom positioning fix & capsule blur removal
+// 🛡️ v5.5.289: Lyrics - prevent scaled lyrics clipping
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.288";
+export const SYSTEM_VERSION = "5.5.289";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.289",
+        date: "2026-08-14",
+        changes: [
+            "fix(lyrics): Constrained scroll lyric lines to max-w-[62cqw] to prevent visual scale-[1.5] overflow clipping on left and right text edges."
+        ]
+    },
+
     {
         version: "5.5.288",
         date: "2026-08-14",

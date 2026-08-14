@@ -201,7 +201,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                                     data-line-index={i}
                                     onClick={() => handleLineSeek(line.time)}
                                     className={clsx(
-                                        "transition-all duration-500 ease-out select-none px-4 py-1.5 origin-center text-center w-full max-w-2xl mx-auto",
+                                        "transition-all duration-500 ease-out select-none px-4 py-1.5 origin-center text-center w-[90%] max-w-[62cqw] mx-auto",
                                         isSynced ? "cursor-pointer" : "cursor-default",
                                         isActive 
                                             ? "text-white font-black scale-[1.5] opacity-100 z-10" 
