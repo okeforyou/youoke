@@ -165,7 +165,19 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
 
     if (currentLayout === 'scroll') {
         return (
-            <div className="absolute inset-0 pointer-events-none z-40 flex items-center justify-center p-4">
+            <div 
+                className="absolute inset-0 pointer-events-none z-40 flex items-center justify-center p-4"
+                style={{ containerType: 'inline-size' }}
+            >
+                {/* Smooth Central Blur Panel */}
+                <div 
+                    className="absolute inset-x-4 md:inset-x-20 top-1/2 -translate-y-1/2 h-[160px] md:h-[220px] bg-black/10 backdrop-blur-2xl pointer-events-none rounded-[2rem]"
+                    style={{
+                        WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, white 25%, white 75%, transparent 100%)',
+                        maskImage: 'linear-gradient(to bottom, transparent 0%, white 25%, white 75%, transparent 100%)',
+                    }}
+                />
+
                 {/* Source/Sync status badge in top-left corner */}
                 <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-md text-[10px] sm:text-xs text-white/60 font-medium px-2.5 py-1 rounded-lg shadow-md border border-white/5 flex items-center gap-1.5 pointer-events-none select-none">
                     <div className={clsx(
@@ -201,26 +213,18 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                                         "transition-all duration-500 ease-out select-none px-6 py-2.5 rounded-2xl border border-transparent origin-center text-center w-fit mx-auto relative",
                                         isSynced ? "cursor-pointer" : "cursor-default",
                                         isActive 
-                                            ? "text-white font-black text-base md:text-xl scale-[1.5] opacity-100 z-10" 
+                                            ? "text-white font-black scale-[1.5] opacity-100 z-10" 
                                             : isSynced 
-                                                ? "text-white/25 hover:text-white/75 font-bold text-base md:text-xl scale-100" 
-                                                : "text-white/80 font-bold text-base md:text-xl scale-100 opacity-100"
+                                                ? "text-white/25 hover:text-white/75 font-bold scale-100" 
+                                                : "text-white/80 font-bold scale-100 opacity-100"
                                     )}
                                     style={{
+                                        fontSize: 'clamp(0.95rem, 3.8cqw, 1.8rem)',
                                         lineHeight: '1.4',
                                         WebkitTextStroke: isActive ? '1.5px rgba(0,0,0,0.8)' : '1px rgba(0,0,0,0.5)',
                                         paintOrder: 'stroke fill',
                                     }}
                                 >
-                                    {isActive && (
-                                        <div 
-                                            className="absolute -inset-x-12 -inset-y-2.5 bg-black/45 backdrop-blur-xl rounded-full -z-10 pointer-events-none"
-                                            style={{
-                                                WebkitMaskImage: 'radial-gradient(ellipse at center, black 25%, transparent 75%)',
-                                                maskImage: 'radial-gradient(ellipse at center, black 25%, transparent 75%)',
-                                            }}
-                                        />
-                                    )}
                                     {line.text}
                                 </div>
                             );

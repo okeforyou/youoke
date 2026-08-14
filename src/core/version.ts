@@ -1,7 +1,7 @@
-// 🛡️ v5.5.284: Lyrics - Radial Masked Feather-Blur & Enlarged Active Font Scale
+// 🛡️ v5.5.285: Lyrics - cqw-Responsive Font Clamp & Centered Global Blur Band
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.284";
+export const SYSTEM_VERSION = "5.5.285";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.285",
+        date: "2026-08-14",
+        changes: [
+            "fix(lyrics): Converted scroll layout font sizes to inline cqw-based responsive clamps to automatically scale lyrics based on container width rather than viewport width (fixing overflow on split screen and mobile).",
+            "ui(lyrics): Created a vertically-centered global blur panel with linear-gradient fading mask to replace hard active line borders with soft, pure diffused blur spanning adjacent lines."
+        ]
+    },
+
     {
         version: "5.5.284",
         date: "2026-08-14",
