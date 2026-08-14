@@ -1,7 +1,7 @@
-// 🛡️ v5.5.287: Lyrics - borderless Capsule Blur & Diffused Shadow Glow
+// 🛡️ v5.5.288: Lyrics - bottom positioning fix & capsule blur removal
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.287";
+export const SYSTEM_VERSION = "5.5.288";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.288",
+        date: "2026-08-14",
+        changes: [
+            "fix(lyrics): Removed relative position override on the bottom overlay container to fix top offset rendering in fullscreen mode.",
+            "ui(lyrics): Completely removed capsule backdrop blur backgrounds and borders from scroll lyrics layout to resolve multiline rounded clipping and edge cutoff bugs, adopting Apple Music style text layout."
+        ]
+    },
+
     {
         version: "5.5.287",
         date: "2026-08-14",

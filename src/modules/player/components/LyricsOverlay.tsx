@@ -201,10 +201,10 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                                     data-line-index={i}
                                     onClick={() => handleLineSeek(line.time)}
                                     className={clsx(
-                                        "transition-all duration-500 ease-out select-none px-6 py-2.5 rounded-full border border-transparent origin-center text-center w-fit mx-auto relative",
+                                        "transition-all duration-500 ease-out select-none px-4 py-1.5 origin-center text-center w-full max-w-2xl mx-auto",
                                         isSynced ? "cursor-pointer" : "cursor-default",
                                         isActive 
-                                            ? "bg-black/30 backdrop-blur-xl shadow-[0_0_25px_10px_rgba(0,0,0,0.35)] text-white font-black scale-[1.6] opacity-100 z-10" 
+                                            ? "text-white font-black scale-[1.5] opacity-100 z-10" 
                                             : isSynced 
                                                 ? "text-white/25 hover:text-white/75 font-bold scale-100" 
                                                 : "text-white/80 font-bold scale-100 opacity-100"
@@ -331,7 +331,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
 
             {/* Lyrics Container */}
             <div 
-                className="absolute bottom-3 sm:bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 w-[95%] max-w-5xl flex flex-col space-y-1 px-4 sm:px-6 relative group"
+                className="absolute bottom-3 sm:bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 w-[95%] max-w-5xl flex flex-col space-y-1 px-4 sm:px-6 group"
                 style={{ containerType: 'inline-size' }}
             >
                 {renderLine(activeLine, activeIndex)}
