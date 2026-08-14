@@ -192,7 +192,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                     }}
                 >
                     {/* Lyric Lines */}
-                    <div className="flex flex-col gap-8 py-4">
+                    <div className="flex flex-col gap-3 py-2">
                         {lyrics.map((line: any, i: number) => {
                             const isActive = isSynced && i === currentLineIndex;
                             return (
@@ -201,7 +201,7 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
                                     data-line-index={i}
                                     onClick={() => handleLineSeek(line.time)}
                                     className={clsx(
-                                        "transition-all duration-500 ease-out select-none py-2 text-center w-[94%] max-w-4xl mx-auto break-words",
+                                        "transition-all duration-500 ease-out select-none py-1 text-center w-[94%] max-w-4xl mx-auto break-words",
                                         isSynced ? "cursor-pointer" : "cursor-default",
                                         isActive 
                                             ? "text-white font-black opacity-100 z-10" 

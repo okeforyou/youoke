@@ -1,7 +1,7 @@
-// 🛡️ v5.5.295: Reverted LyricsOverlay & Fixed Segmented Button Widths
+// 🛡️ v5.5.296: Segmented Button Width adjustment & Lyrics Spacing tuning
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.295";
+export const SYSTEM_VERSION = "5.5.296";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.296",
+        date: "2026-08-14",
+        changes: [
+            "fix(controls): Expanded segmented buttons for lyrics layouts in FullscreenControlBar from 110px to 130px to fully resolve Thai text clipping/overflow.",
+            "fix(lyrics): Reduced vertical line spacing of scroll lyrics layout (gap from 32px to 12px, padding from 8px to 4px) to make the text fit elegantly and avoid excessive spacing."
+        ]
+    },
     {
         version: "5.5.295",
         date: "2026-08-14",
