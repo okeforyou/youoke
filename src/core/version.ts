@@ -1,7 +1,7 @@
-// 🛡️ v5.5.300: Fix LRCLIB Search Title Parsing
+// 🛡️ v5.5.301: Lyrics Pre-roll Lead-in & Vertical Scroll Center-Lock
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.300";
+export const SYSTEM_VERSION = "5.5.301";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.301",
+        date: "2026-08-15",
+        changes: [
+            "feat(lyrics): Added 1.2s Pre-roll Lead-in buffer to pre-display upcoming lyric lines early so the singer can prepare, preventing short lines from sweeping too fast.",
+            "fix(lyrics): Locked vertical scroll lyrics layout to the center to prevent horizontal shifting animations from the left edge.",
+            "fix(lyrics): Enhanced deepgramAlignEngine to dynamically extend sweep duration for single-word and end-of-line words to match vocal decay."
+        ]
+    },
     {
         version: "5.5.300",
         date: "2026-08-14",

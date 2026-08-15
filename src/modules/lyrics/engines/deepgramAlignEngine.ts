@@ -285,6 +285,24 @@ function alignEnglishLine(
     lastValEnd = alignedWords[i].end;
   }
 
+  // Post-processing for duration refinement (prevent single word or short end-of-line words from sweeping too fast)
+  if (alignedWords.length === 1) {
+    const lineDuration = lineEndTime - lineStartTime;
+    const currentDuration = alignedWords[0].end - alignedWords[0].start;
+    const targetDuration = Math.min(2.5, Math.max(0.8, lineDuration * 0.7));
+    if (currentDuration < targetDuration) {
+      alignedWords[0].end = Math.min(lineEndTime, alignedWords[0].start + targetDuration);
+    }
+  } else if (alignedWords.length > 1) {
+    const lastIdx = alignedWords.length - 1;
+    const lastWord = alignedWords[lastIdx];
+    const currentLastDuration = lastWord.end - lastWord.start;
+    if (currentLastDuration < 0.5 && lastWord.end < lineEndTime) {
+      const maxExtension = Math.min(0.8, lineEndTime - lastWord.start);
+      lastWord.end = lastWord.start + maxExtension;
+    }
+  }
+
   return alignedWords;
 }
 
@@ -397,6 +415,24 @@ function alignSingleLine(
     });
 
     charIdx = wordEndIdx;
+  }
+
+  // Post-processing for duration refinement (prevent single word or short end-of-line words from sweeping too fast)
+  if (alignedWords.length === 1) {
+    const lineDuration = lineEndTime - lineStartTime;
+    const currentDuration = alignedWords[0].end - alignedWords[0].start;
+    const targetDuration = Math.min(2.5, Math.max(0.8, lineDuration * 0.7));
+    if (currentDuration < targetDuration) {
+      alignedWords[0].end = Math.min(lineEndTime, alignedWords[0].start + targetDuration);
+    }
+  } else if (alignedWords.length > 1) {
+    const lastIdx = alignedWords.length - 1;
+    const lastWord = alignedWords[lastIdx];
+    const currentLastDuration = lastWord.end - lastWord.start;
+    if (currentLastDuration < 0.5 && lastWord.end < lineEndTime) {
+      const maxExtension = Math.min(0.8, lineEndTime - lastWord.start);
+      lastWord.end = lastWord.start + maxExtension;
+    }
   }
 
   return alignedWords;

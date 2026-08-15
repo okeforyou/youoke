@@ -113,12 +113,40 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
         
         const adjustedTime = currentTime - syncOffset;
         
+        // Find the index of the line that should be active based on time
+        let activeIdx = -1;
         for (let i = lyrics.length - 1; i >= 0; i--) {
             if (adjustedTime >= lyrics[i].time) {
-                return i;
+                activeIdx = i;
+                break;
             }
         }
-        return -1;
+        
+        // Lead-in Buffer: If we are close to the next line (e.g., within 1.2s), 
+        // and either we haven't started any line yet (activeIdx === -1) 
+        // or the current line's words are already finished sweeping, 
+        // we can pre-display the next line so the user has time to prepare!
+        if (activeIdx + 1 < lyrics.length) {
+            const nextLine = lyrics[activeIdx + 1];
+            const timeToNext = nextLine.time - adjustedTime;
+            
+            if (timeToNext > 0 && timeToNext <= 1.2) {
+                if (activeIdx === -1) {
+                    return 0; // Pre-roll the first line
+                }
+                
+                const currentLine = lyrics[activeIdx];
+                const lastWordEnd = currentLine.words && currentLine.words.length > 0
+                    ? currentLine.words[currentLine.words.length - 1].end
+                    : currentLine.time + 2; // default 2s fallback
+                
+                if (adjustedTime >= lastWordEnd) {
+                    return activeIdx + 1; // Pre-roll the next line
+                }
+            }
+        }
+        
+        return activeIdx;
     }, [currentTime, lyrics, syncOffset]);
 
     const activeIndex = Math.max(0, currentLineIndex);
@@ -143,7 +171,8 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
             if (activeEl) {
                 activeEl.scrollIntoView({
                     behavior: 'smooth',
-                    block: 'center'
+                    block: 'center',
+                    inline: 'nearest' // Lock horizontal scroll to prevent left-side jumping
                 });
             }
         }
@@ -185,14 +214,14 @@ export const LyricsOverlay = ({ playerRef }: LyricsOverlayProps) => {
 
                 <div 
                     ref={containerRef}
-                    className="w-full max-w-3xl h-[80%] max-h-[600px] overflow-y-auto no-scrollbar text-center flex flex-col gap-8 py-20 pointer-events-auto transition-all"
+                    className="w-full max-w-3xl h-[80%] max-h-[600px] overflow-y-auto no-scrollbar text-center flex flex-col items-center gap-8 py-20 pointer-events-auto transition-opacity duration-300"
                     style={{
                         WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, white 20%, white 80%, transparent 100%)',
                         maskImage: 'linear-gradient(to bottom, transparent 0%, white 20%, white 80%, transparent 100%)',
                     }}
                 >
                     {/* Lyric Lines */}
-                    <div className="flex flex-col gap-3 py-2">
+                    <div className="flex flex-col items-center justify-center gap-3 py-2 w-full">
                         {lyrics.map((line: any, i: number) => {
                             const isActive = isSynced && i === currentLineIndex;
                             return (
