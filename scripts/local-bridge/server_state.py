@@ -1,4 +1,4 @@
-VERSION = "5.5.303"
+VERSION = "1.0.60"
 rapidapi_quota = {"remaining": "Checking quota...", "limit": "Checking quota..."}
 progress_store = {}
 active_processes = {}
