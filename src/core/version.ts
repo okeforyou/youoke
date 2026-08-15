@@ -1,7 +1,7 @@
-// 🛡️ v5.5.301: Lyrics Pre-roll Lead-in & Vertical Scroll Center-Lock
+// 🛡️ v5.5.302: AI Dashboard Error Tracking & Symmetric UI Polish
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.301";
+export const SYSTEM_VERSION = "5.5.302";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.302",
+        date: "2026-08-15",
+        changes: [
+            "fix(dashboard): Included 'error' jobs inside activeJobs list to prevent failed downloads from disappearing instantly, rendering failure messages in red.",
+            "feat(dashboard): Added 'Try Again' (ลองใหม่) retry button and 'Delete' (ลบออก) dismiss button for failed separation jobs.",
+            "ui(dashboard): Standardized list action button widths to 68px for perfect symmetry and forced all top navigation tabs to inherit premium Thai fonts."
+        ]
+    },
     {
         version: "5.5.301",
         date: "2026-08-15",

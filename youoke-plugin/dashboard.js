@@ -74,8 +74,8 @@ async function fetchJobs() {
         if (!res.ok) throw new Error("Failed to load jobs");
         const jobs = await res.json();
         
-        // Filter jobs that are currently active or queued/paused
-        const activeJobs = jobs.filter(j => ['queued', 'starting', 'downloading', 'converting', 'separating', 'compressing', 'paused'].includes(j.status));
+        // Filter jobs that are currently active or queued/paused/error
+        const activeJobs = jobs.filter(j => ['queued', 'starting', 'downloading', 'converting', 'separating', 'compressing', 'paused', 'error'].includes(j.status));
         jobsCount.innerText = activeJobs.length;
         
         renderJobs(activeJobs);
@@ -99,32 +99,44 @@ function renderJobs(jobs) {
         const percent = job.percent || 0;
         const isPaused = job.status === 'paused';
         const isQueued = job.status === 'queued';
+        const isError = job.status === 'error';
         
         return `
-            <div class="job-card" data-id="${job.video_id}">
+            <div class="job-card" data-id="${job.video_id}" style="${isError ? 'border-color: rgba(239, 68, 68, 0.4); background-color: rgba(239, 68, 68, 0.03);' : ''}">
                 <div class="card-header">
                     <div>
                         <div class="card-title">${job.title || job.video_id}</div>
                         <div class="card-subtitle">ID: ${job.video_id}</div>
                     </div>
                     <div style="display: flex; gap: 6px; align-items: center;">
-                        ${isPaused 
-                            ? `<button class="btn btn-secondary" style="background-color: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3);" onclick="resumeJob('${job.video_id}')">ทํางานต่อ</button>`
-                            : `<button class="btn btn-secondary" style="background-color: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3);" onclick="pauseJob('${job.video_id}')">หยุดพัก</button>`
+                        ${isError 
+                            ? `<button class="btn btn-secondary" style="background-color: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3);" onclick="resumeJob('${job.video_id}')">ลองใหม่</button>`
+                            : (isPaused 
+                                ? `<button class="btn btn-secondary" style="background-color: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3);" onclick="resumeJob('${job.video_id}')">ทํางานต่อ</button>`
+                                : `<button class="btn btn-secondary" style="background-color: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3);" onclick="pauseJob('${job.video_id}')">หยุดพัก</button>`)
                         }
-                        <button class="btn btn-danger" onclick="cancelJob('${job.video_id}')">ยกเลิก</button>
+                        <button class="btn btn-danger" onclick="cancelJob('${job.video_id}', ${isError})">${isError ? 'ลบออก' : 'ยกเลิก'}</button>
                     </div>
                 </div>
-                <div class="progress-bar-container">
-                    <div class="progress-bar" style="width: ${isQueued ? 5 : percent}%"></div>
-                </div>
-                <div class="job-status-row">
-                    <span>สถานะ: ${getStatusText(job.status)}</span>
-                    <span>${isQueued ? 'ต่อคิว' : percent + '%'}</span>
-                </div>
-                <div style="font-size: 11px; color: #a5a6a7; margin-top: -2px;">
-                    ${job.message || ''}
-                </div>
+                ${isError 
+                    ? `
+                        <div style="font-size: 11px; color: #ef4444; font-weight: 600; margin-top: 4px; display: flex; align-items: center; gap: 4px;">
+                            <span>⚠️ ${job.message || 'ดาวน์โหลดล้มเหลว'}</span>
+                        </div>
+                      `
+                    : `
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: ${isQueued ? 5 : percent}%"></div>
+                        </div>
+                        <div class="job-status-row">
+                            <span>สถานะ: ${getStatusText(job.status)}</span>
+                            <span>${isQueued ? 'ต่อคิว' : percent + '%'}</span>
+                        </div>
+                        <div style="font-size: 11px; color: #a5a6a7; margin-top: -2px;">
+                            ${job.message || ''}
+                        </div>
+                      `
+                }
             </div>
         `;
     }).join("");
@@ -139,6 +151,7 @@ function getStatusText(status) {
         case "separating": return "กำลังแยกเสียงร้อง/ดนตรี...";
         case "compressing": return "กำลังบีบอัดไฟล์...";
         case "paused": return "หยุดชั่วคราว";
+        case "error": return "ล้มเหลว";
         default: return status;
     }
 }
@@ -170,8 +183,11 @@ async function resumeJob(videoId) {
 }
 
 // Cancel job
-async function cancelJob(videoId) {
-    if (!confirm("คุณต้องการยกเลิกการแยกเสียงเพลงนี้ใช่หรือไม่?")) return;
+async function cancelJob(videoId, isError = false) {
+    const confirmMsg = isError 
+        ? "คุณต้องการลบรายการข้อผิดพลาดนี้ใช่หรือไม่?"
+        : "คุณต้องการยกเลิกการแยกเสียงเพลงนี้ใช่หรือไม่?";
+    if (!confirm(confirmMsg)) return;
     
     try {
         const res = await fetch(`${API_BASE}/cancel/${videoId}`, { method: "POST" });
