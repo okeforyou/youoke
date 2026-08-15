@@ -335,7 +335,7 @@ def _execute_separation(req: SeparateRequest):
                     }
                 )
                 
-                with urllib.request.urlopen(api_req, context=ctx, timeout=30) as response:
+                with urllib.request.urlopen(api_req, context=ctx, timeout=90) as response:
                     # Catch rate limit headers
                     
                     remaining = response.getheader('x-ratelimit-requests-remaining')
@@ -413,7 +413,6 @@ def _execute_separation(req: SeparateRequest):
                 "-o", out_template,
                 "--no-warnings",
                 "--extractor-args", extractor_args,
-                "--compat-options", "no-youtube-po-token-browser",
             ]
             if source:
                 cmd += ["--cookies-from-browser", source]
@@ -458,7 +457,7 @@ def _execute_separation(req: SeparateRequest):
                     "outtmpl": out_template,
                     "quiet": True,
                     "no_warnings": True,
-                    "compat_opts": ["no-youtube-po-token-browser"],
+                    "ffmpeg_location": get_ffmpeg_path(),
                     "extractor_args": {
                         "youtube": {"player_client": ["web_creator", "ios", "mweb", "web_safari"]},
                         "youtubepot-wpc": {"browser_path": ["none"]}

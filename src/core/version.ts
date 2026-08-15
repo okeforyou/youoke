@@ -1,7 +1,7 @@
-// 🛡️ v5.5.302: AI Dashboard Error Tracking & Symmetric UI Polish
+// 🛡️ v5.5.303: Local Bridge Downloader Resiliency & Age-Restriction Bypasses
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.302";
+export const SYSTEM_VERSION = "5.5.303";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.303",
+        date: "2026-08-15",
+        changes: [
+            "fix(backend): Increased RapidAPI read timeout to 90s to prevent premature read timeouts on age-restricted or heavy files.",
+            "fix(backend): Removed deprecated po-token command argument from bundled yt-dlp binary calls to prevent syntax crashes on older builds.",
+            "fix(backend): Registered local ffmpeg_location in yt-dlp module options to correctly transcode restricted files logged in via Chrome cookies."
+        ]
+    },
     {
         version: "5.5.302",
         date: "2026-08-15",
