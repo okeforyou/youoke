@@ -1,6 +1,6 @@
 {
   "name": "youoke-plugin",
-  "version": "1.0.59",
+  "version": "5.5.303",
   "description": "YouOke AI Vocal Separator Desktop Plugin",
   "main": "main.js",
   "scripts": {

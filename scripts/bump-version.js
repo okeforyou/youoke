@@ -19,13 +19,13 @@ if (fs.existsSync(packageJsonPath)) {
   fs.writeFileSync(packageJsonPath, JSON.stringify(pkg, null, 2) + '\n');
 }
 
-// 2. Update scripts/local-bridge/server.py
-const serverPyPath = path.join(rootDir, 'scripts', 'local-bridge', 'server.py');
+// 2. Update scripts/local-bridge/server_state.py
+const serverPyPath = path.join(rootDir, 'scripts', 'local-bridge', 'server_state.py');
 if (fs.existsSync(serverPyPath)) {
   let serverPy = fs.readFileSync(serverPyPath, 'utf8');
   const oldVersionMatch = serverPy.match(/VERSION\s*=\s*["']([^"']+)["']/);
   if (oldVersionMatch) {
-    console.log(`✅ อัปเดต API server.py: ${oldVersionMatch[1]} -> ${newVersion}`);
+    console.log(`✅ อัปเดต API server_state.py: ${oldVersionMatch[1]} -> ${newVersion}`);
     serverPy = serverPy.replace(/(VERSION\s*=\s*["'])([^"']+)["']/, `$1${newVersion}"`);
     fs.writeFileSync(serverPyPath, serverPy);
   }
