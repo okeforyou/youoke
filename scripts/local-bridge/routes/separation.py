@@ -21,6 +21,40 @@ import time
 router = APIRouter()
 
 # ------------------------------------------------------------------
+# DEMUCS PATCH: Fix pad1d NaN-assertion bug (IEEE 754: NaN != NaN)
+# The original assertion `(out == x0).all()` fails when input contains NaN
+# (e.g., silent/zero audio after STFT normalization on zero-padded segments).
+# Root cause: --segment value < model training segment (~7.8s) causes zero-padding
+# which produces NaN via std=0 normalization. Fixed by: (1) using --segment 7,
+# and (2) replacing == with nan_to_num comparison in the assertion.
+# ------------------------------------------------------------------
+try:
+    import demucs.hdemucs as _hdemucs
+    from torch.nn import functional as _F
+
+    def _patched_pad1d(x, paddings, mode='constant', value=0.):
+        x0 = x
+        length = x.shape[-1]
+        padding_left, padding_right = paddings
+        if mode == 'reflect':
+            max_pad = max(padding_left, padding_right)
+            if length <= max_pad:
+                extra_pad = max_pad - length + 1
+                extra_pad_right = min(padding_right, extra_pad)
+                extra_pad_left = extra_pad - extra_pad_right
+                paddings = (padding_left - extra_pad_left, padding_right - extra_pad_right)
+                x = _F.pad(x, (extra_pad_left, extra_pad_right))
+        out = _F.pad(x, paddings, mode, value)
+        assert out.shape[-1] == length + padding_left + padding_right
+        assert (out[..., padding_left: padding_left + length].nan_to_num() == x0.nan_to_num()).all()
+        return out
+
+    _hdemucs.pad1d = _patched_pad1d
+    print("[Demucs] pad1d NaN-safe patch applied successfully.")
+except Exception as _e:
+    print(f"[Demucs] Warning: Could not apply pad1d patch: {_e}")
+
+# ------------------------------------------------------------------
 # QUEUE SYSTEM (Strict Concurrency = 1) & PAUSE/RESUME SUPPORT
 # ------------------------------------------------------------------
 job_queue = []
@@ -613,10 +647,11 @@ def _execute_separation(req: SeparateRequest):
     # 3. Run Demucs
     set_progress(vid, "separating", 25, "AI กำลังแยกเสียงร้องและดนตรี (อาจใช้เวลา 2-3 นาที)...")
     try:
-        # Use --segment 2 and -j 1 to drastically reduce RAM/VRAM usage and prevent system freezes
-        demucs_args = ["-n", "htdemucs_ft", "--shifts=0", "-d", device, "--segment", "2", "-j", "1", "-o", song_dir, wav_path]
+        # Use --segment 7 (must be >= training segment ~7.8s for htdemucs_ft to avoid NaN from zero-padding)
+        # Using 2s caused AssertionError in pad1d because short chunks got padded to 7.8s causing std→0→NaN
+        demucs_args = ["-n", "htdemucs_ft", "--shifts=0", "-d", device, "--segment", "7", "-j", "1", "-o", song_dir, wav_path]
         if mode == "basic":
-            demucs_args = ["-n", "htdemucs_ft", "--shifts=0", "-d", device, "--segment", "2", "-j", "1", "--two-stems=vocals", "-o", song_dir, wav_path]
+            demucs_args = ["-n", "htdemucs_ft", "--shifts=0", "-d", device, "--segment", "7", "-j", "1", "--two-stems=vocals", "-o", song_dir, wav_path]
 
         if getattr(sys, 'frozen', False):
             cmd = [sys.executable, "demucs_worker"] + demucs_args

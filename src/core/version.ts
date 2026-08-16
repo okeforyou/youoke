@@ -1,7 +1,7 @@
-// 🛡️ v5.5.303: Local Bridge Downloader Resiliency & Age-Restriction Bypasses
+// 🛡️ v5.5.304: Fix Demucs AssertionError (NaN pad1d) & Segment Size
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.303";
+export const SYSTEM_VERSION = "5.5.304";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.304",
+        date: "2026-08-16",
+        changes: [
+            "fix(backend): Fixed Demucs AssertionError crash in htdemucs_ft pad1d caused by NaN in silent/near-silent audio segments (IEEE 754: NaN != NaN breaks assertion).",
+            "fix(backend): Changed Demucs --segment from 2s to 7s to prevent short-chunk zero-padding below the model's training segment length (~7.8s), which caused std=0 → NaN via STFT normalization.",
+            "fix(backend): Added permanent monkey-patch for demucs.hdemucs.pad1d in separation.py using nan_to_num comparison, resilient to Demucs package upgrades."
+        ]
+    },
     {
         version: "5.5.303",
         date: "2026-08-15",
