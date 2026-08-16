@@ -2,8 +2,12 @@ import sys
 import os
 import socket
 import urllib.request
+import urllib.error
 import time
 import ssl
+import threading
+import json
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -15,8 +19,98 @@ except AttributeError:
 else:
     ssl._create_default_https_context = _create_unverified_https_context
 
+# ------------------------------------------------------------------
+# AUTO-UPDATE: yt-dlp binary (runs in background on startup)
+# Keeps the bundled binary fresh so YouTube's weekly client changes
+# don't permanently break downloads.
+# ------------------------------------------------------------------
+def _get_ytdlp_path():
+    binary_name = 'yt-dlp.exe' if sys.platform == 'win32' else 'yt-dlp_macos'
+    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, binary_name)
+    return os.path.join(os.path.dirname(__file__), 'scripts', 'local-bridge', binary_name)
+
+def _update_ytdlp_binary():
+    """Download the latest yt-dlp release from GitHub if newer than local copy."""
+    try:
+        local_binary = os.path.join(os.path.dirname(__file__), 'yt-dlp_macos') \
+            if not (getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')) \
+            else os.path.join(sys._MEIPASS, 'yt-dlp_macos')
+
+        # Check current local version
+        local_version = None
+        if os.path.exists(local_binary):
+            try:
+                import subprocess
+                r = subprocess.run([local_binary, '--version'],
+                                   capture_output=True, text=True, timeout=5)
+                local_version = r.stdout.strip()
+            except Exception:
+                pass
+
+        # Get latest version from GitHub API
+        api_url = 'https://api.github.com/repos/yt-dlp/yt-dlp/releases/latest'
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        req = urllib.request.Request(api_url,
+            headers={'User-Agent': 'YouOke-Bridge/1.0', 'Accept': 'application/vnd.github+json'})
+        with urllib.request.urlopen(req, context=ctx, timeout=10) as resp:
+            data = json.loads(resp.read().decode())
+
+        latest_version = data.get('tag_name', '').lstrip('v')
+        if not latest_version:
+            print('[yt-dlp updater] Could not parse latest version from GitHub.')
+            return
+
+        if local_version and local_version == latest_version:
+            print(f'[yt-dlp updater] Already up-to-date: {local_version}')
+            return
+
+        print(f'[yt-dlp updater] Updating {local_version!r} → {latest_version!r}...')
+
+        # Find the macOS binary asset
+        assets = data.get('assets', [])
+        asset_url = None
+        for asset in assets:
+            name = asset.get('name', '')
+            if name == 'yt-dlp_macos':
+                asset_url = asset.get('browser_download_url')
+                break
+
+        if not asset_url:
+            print('[yt-dlp updater] Could not find yt-dlp_macos asset in GitHub release.')
+            return
+
+        tmp_path = local_binary + '.tmp'
+        dl_req = urllib.request.Request(asset_url,
+            headers={'User-Agent': 'YouOke-Bridge/1.0'})
+        with urllib.request.urlopen(dl_req, context=ctx, timeout=120) as resp, \
+             open(tmp_path, 'wb') as f:
+            f.write(resp.read())
+
+        os.chmod(tmp_path, 0o755)
+        os.replace(tmp_path, local_binary)  # atomic replace
+        print(f'[yt-dlp updater] ✅ Updated to {latest_version} at {local_binary}')
+
+    except Exception as e:
+        print(f'[yt-dlp updater] ⚠️ Update failed (non-fatal): {e}')
+
+
+# ------------------------------------------------------------------
+# LIFESPAN: runs startup tasks then yields for the app lifetime
+# ------------------------------------------------------------------
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Kick off yt-dlp update in background (non-blocking)
+    t = threading.Thread(target=_update_ytdlp_binary, daemon=True, name='ytdlp-updater')
+    t.start()
+    yield  # app runs here
+    # (shutdown cleanup can go here if needed)
+
+
 # Initialize FastAPI app
-app = FastAPI(title="YouOke Local AI Bridge")
+app = FastAPI(title="YouOke Local AI Bridge", lifespan=lifespan)
 
 # Import routes
 from routes.system import router as system_router

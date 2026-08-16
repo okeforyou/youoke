@@ -18,7 +18,57 @@ router = APIRouter()
 import threading
 import time
 
-router = APIRouter()
+# ------------------------------------------------------------------
+# COOKIES MANAGER: Export Chrome cookies → cookies.txt (Netscape fmt)
+# Cache lasts 24h. Used by ALL download strategies so YouTube sees
+# a real logged-in browser session, not a bot.
+# ------------------------------------------------------------------
+_COOKIES_TXT_PATH = os.path.join(os.path.dirname(__file__), '..', 'yt_cookies.txt')
+_COOKIES_TXT_PATH = os.path.normpath(_COOKIES_TXT_PATH)
+_COOKIES_LOCK = threading.Lock()
+_COOKIES_LAST_EXPORT = 0
+_COOKIES_TTL = 86400  # 24 hours
+
+def _refresh_cookies_if_needed():
+    """Export YouTube cookies from Chrome once per 24h. Thread-safe."""
+    global _COOKIES_LAST_EXPORT
+    with _COOKIES_LOCK:
+        now = time.time()
+        if now - _COOKIES_LAST_EXPORT < _COOKIES_TTL and os.path.exists(_COOKIES_TXT_PATH):
+            return _COOKIES_TXT_PATH  # still fresh
+        try:
+            import yt_dlp as yt_dlp_mod
+            ydl_opts = {
+                'quiet': True,
+                'no_warnings': True,
+                'cookiesfrombrowser': ('chrome',),
+                'cookiefile': _COOKIES_TXT_PATH,
+                # Dummy extract: just export cookies without downloading
+                'skip_download': True,
+                'extract_flat': True,
+            }
+            with yt_dlp_mod.YoutubeDL(ydl_opts) as ydl:
+                # Force cookie export by extracting a playlist page (cheap)
+                try:
+                    ydl.extract_info('https://www.youtube.com/feed/library', download=False)
+                except Exception:
+                    pass  # we only care about the cookie file being written
+            if os.path.exists(_COOKIES_TXT_PATH) and os.path.getsize(_COOKIES_TXT_PATH) > 100:
+                _COOKIES_LAST_EXPORT = now
+                print(f'[Cookies] ✅ Exported Chrome cookies → {_COOKIES_TXT_PATH}')
+                return _COOKIES_TXT_PATH
+            else:
+                print('[Cookies] ⚠️ Chrome cookie export produced empty file (Chrome may not be logged in to YouTube)')
+        except Exception as e:
+            print(f'[Cookies] ⚠️ Could not export Chrome cookies: {e}')
+        return None  # cookies unavailable
+
+def get_cookies_path():
+    """Return a valid cookies.txt path, or None if unavailable."""
+    # Use cached file if fresh enough (avoids Chrome lock on every request)
+    if os.path.exists(_COOKIES_TXT_PATH) and (time.time() - _COOKIES_LAST_EXPORT) < _COOKIES_TTL:
+        return _COOKIES_TXT_PATH
+    return _refresh_cookies_if_needed()
 
 # ------------------------------------------------------------------
 # DEMUCS PATCH: Fix pad1d NaN-assertion bug (IEEE 754: NaN != NaN)
@@ -417,73 +467,88 @@ def _execute_separation(req: SeparateRequest):
             attempts.append({"method": "rapidapi", "status": "failed", "error": str(e)})
             print(f"[Strategy 0] FAILED: {e}")
 
-    # ── Strategy 1: yt-dlp BINARY (bundled) with new 2026 player_clients ──────
-    try:
-        binary_name = 'yt-dlp.exe' if sys.platform == 'win32' else 'yt-dlp_macos'
-        if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-            yt_dlp_exe = os.path.join(sys._MEIPASS, binary_name)
-        else:
-            yt_dlp_exe = os.path.join(os.path.dirname(__file__), binary_name)
+    # ── Strategy 1: yt-dlp BINARY (bundled, auto-updated on startup) ───────────
+    # Uses cookies.txt exported once from Chrome (24h cache) so YouTube
+    # sees a real logged-in session. Falls back to no-cookies if unavailable.
+    if not download_success:
+        try:
+            binary_name = 'yt-dlp.exe' if sys.platform == 'win32' else 'yt-dlp_macos'
+            if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+                yt_dlp_exe = os.path.join(sys._MEIPASS, binary_name)
+            else:
+                yt_dlp_exe = os.path.join(os.path.dirname(__file__), binary_name)
 
-        if not os.path.exists(yt_dlp_exe):
-            yt_dlp_exe = "yt-dlp"
-        elif sys.platform != 'win32':
-            try:
-                os.chmod(yt_dlp_exe, 0o755)
-            except Exception:
-                pass
+            if not os.path.exists(yt_dlp_exe):
+                yt_dlp_exe = "yt-dlp"
+            elif sys.platform != 'win32':
+                try:
+                    os.chmod(yt_dlp_exe, 0o755)
+                except Exception:
+                    pass
 
-        out_template = os.path.join(song_dir, f"{vid}.%(ext)s")
-        # 2026-era client list: web_creator & ios bypass most SABR blocks
-        extractor_args = "youtube:player_client=web_creator,ios,mweb,web_safari;youtubepot-wpc:browser_path=none"
-        cookie_sources = [None, "chrome"]
+            out_template = os.path.join(song_dir, f"{vid}.%(ext)s")
+            extractor_args = "youtube:player_client=web_creator,ios,mweb,web_safari"
 
-        for source in cookie_sources:
-            if download_success:
-                break
-            cmd = [
-                yt_dlp_exe,
-                "-f", "140/bestaudio/best",
-                "-o", out_template,
-                "--no-warnings",
-                "--extractor-args", extractor_args,
-            ]
-            if source:
-                cmd += ["--cookies-from-browser", source]
-            cmd.append(yt_url)
+            # Build cookie variants: prefer cookies.txt file, then Chrome live, then no cookies
+            cookies_txt = get_cookies_path()
+            cookie_variants = []
+            if cookies_txt:
+                cookie_variants.append(("--cookies", cookies_txt, "cookies.txt"))
+            cookie_variants.append(("--cookies-from-browser", "chrome", "chrome-live"))
+            cookie_variants.append((None, None, "no-cookies"))
 
-            print(f"[Strategy 1] yt-dlp binary | client=web_creator,ios,mweb | cookies={source}")
-            try:
-                result = subprocess.run(cmd, capture_output=True, text=True, timeout=YTDLP_TIMEOUT)
-                if result.returncode == 0:
-                    found = _find_downloaded_file(song_dir, vid)
-                    if found:
-                        m4a_path = found
-                        download_success = True
-                        attempts.append({"method": f"yt-dlp-binary (cookies={source})", "status": "success"})
-                        print(f"[Strategy 1] SUCCESS with cookies={source}")
+            for (flag, value, label) in cookie_variants:
+                if download_success:
+                    break
+                cmd = [
+                    yt_dlp_exe,
+                    "-f", "140/bestaudio/best",
+                    "-o", out_template,
+                    "--no-warnings",
+                    "--extractor-args", extractor_args,
+                ]
+                if flag:
+                    cmd += [flag, value]
+                cmd.append(yt_url)
+
+                print(f"[Strategy 1] yt-dlp binary | cookies={label}")
+                try:
+                    result = subprocess.run(cmd, capture_output=True, text=True, timeout=YTDLP_TIMEOUT)
+                    if result.returncode == 0:
+                        found = _find_downloaded_file(song_dir, vid)
+                        if found:
+                            m4a_path = found
+                            download_success = True
+                            attempts.append({"method": f"yt-dlp-binary ({label})", "status": "success"})
+                            print(f"[Strategy 1] SUCCESS cookies={label}")
+                        else:
+                            attempts.append({"method": f"yt-dlp-binary ({label})", "status": "failed", "error": "No file found"})
                     else:
-                        attempts.append({"method": f"yt-dlp-binary (cookies={source})", "status": "failed", "error": "No file found"})
-                else:
-                    err = (result.stderr or "").strip()[:300]
-                    attempts.append({"method": f"yt-dlp-binary (cookies={source})", "status": "failed", "error": err})
-                    print(f"[Strategy 1] FAILED cookies={source}: {err}")
-            except subprocess.TimeoutExpired:
-                attempts.append({"method": f"yt-dlp-binary (cookies={source})", "status": "failed", "error": f"Timeout after {YTDLP_TIMEOUT}s"})
-                print(f"[Strategy 1] TIMEOUT cookies={source}")
-    except Exception as e:
-        attempts.append({"method": "yt-dlp-binary", "status": "error", "error": str(e)})
-        print(f"[Strategy 1] ERROR: {e}")
+                        err = (result.stderr or "").strip()[:300]
+                        attempts.append({"method": f"yt-dlp-binary ({label})", "status": "failed", "error": err})
+                        print(f"[Strategy 1] FAILED cookies={label}: {err}")
+                except subprocess.TimeoutExpired:
+                    attempts.append({"method": f"yt-dlp-binary ({label})", "status": "failed", "error": f"Timeout after {YTDLP_TIMEOUT}s"})
+                    print(f"[Strategy 1] TIMEOUT cookies={label}")
+        except Exception as e:
+            attempts.append({"method": "yt-dlp-binary", "status": "error", "error": str(e)})
+            print(f"[Strategy 1] ERROR: {e}")
 
-    # ── Strategy 2: yt-dlp PYTHON MODULE (may be newer than bundled binary) ────
+    # ── Strategy 2: yt-dlp PYTHON MODULE (same logic, maybe newer) ──────────────
     if not download_success:
         try:
             import yt_dlp as yt_dlp_mod
             import concurrent.futures
             out_template = os.path.join(song_dir, f"{vid}.%(ext)s")
-            cookie_sources = [None, "chrome"]
-            
-            for source in cookie_sources:
+
+            cookies_txt = get_cookies_path()
+            cookie_variants = []
+            if cookies_txt:
+                cookie_variants.append(("cookiefile", cookies_txt, "cookies.txt"))
+            cookie_variants.append(("cookiesfrombrowser", ("chrome",), "chrome-live"))
+            cookie_variants.append((None, None, "no-cookies"))
+
+            for (key, val, label) in cookie_variants:
                 if download_success:
                     break
                 ydl_opts = {
@@ -494,18 +559,17 @@ def _execute_separation(req: SeparateRequest):
                     "ffmpeg_location": get_ffmpeg_path(),
                     "extractor_args": {
                         "youtube": {"player_client": ["web_creator", "ios", "mweb", "web_safari"]},
-                        "youtubepot-wpc": {"browser_path": ["none"]}
                     },
                     "postprocessors": [{
                         "key": "FFmpegExtractAudio",
                         "preferredcodec": "m4a",
                     }],
                 }
-                if source:
-                    ydl_opts["cookiesfrombrowser"] = (source,)
-                
-                print(f"[Strategy 2] yt-dlp Python module v{yt_dlp_mod.version.__version__} | cookies={source}")
-                
+                if key:
+                    ydl_opts[key] = val
+
+                print(f"[Strategy 2] yt-dlp v{yt_dlp_mod.version.__version__} | cookies={label}")
+
                 def _ytdlp_mod_download(opts):
                     with yt_dlp_mod.YoutubeDL(opts) as ydl:
                         ydl.download([yt_url])
@@ -518,20 +582,20 @@ def _execute_separation(req: SeparateRequest):
                         if found:
                             m4a_path = found
                             download_success = True
-                            attempts.append({"method": f"yt-dlp-python-module (cookies={source})", "status": "success"})
-                            print(f"[Strategy 2] SUCCESS cookies={source}")
+                            attempts.append({"method": f"yt-dlp-python ({label})", "status": "success"})
+                            print(f"[Strategy 2] SUCCESS cookies={label}")
                         else:
-                            attempts.append({"method": f"yt-dlp-python-module (cookies={source})", "status": "failed", "error": "No file found"})
+                            attempts.append({"method": f"yt-dlp-python ({label})", "status": "failed", "error": "No file found"})
                     except concurrent.futures.TimeoutError:
                         future.cancel()
-                        attempts.append({"method": f"yt-dlp-python-module (cookies={source})", "status": "failed", "error": f"Timeout after {YTDLP_TIMEOUT}s"})
-                        print(f"[Strategy 2] TIMEOUT cookies={source}")
+                        attempts.append({"method": f"yt-dlp-python ({label})", "status": "failed", "error": f"Timeout after {YTDLP_TIMEOUT}s"})
+                        print(f"[Strategy 2] TIMEOUT cookies={label}")
                     except Exception as e:
                         err_str = str(e)[:300]
-                        attempts.append({"method": f"yt-dlp-python-module (cookies={source})", "status": "error", "error": err_str})
-                        print(f"[Strategy 2] ERROR cookies={source}: {e}")
+                        attempts.append({"method": f"yt-dlp-python ({label})", "status": "error", "error": err_str})
+                        print(f"[Strategy 2] ERROR cookies={label}: {e}")
         except Exception as e:
-            attempts.append({"method": "yt-dlp-python-module", "status": "error", "error": str(e)})
+            attempts.append({"method": "yt-dlp-python", "status": "error", "error": str(e)})
             print(f"[Strategy 2] ERROR: {e}")
 
     # ── Strategy 3: pytubefix (expanded client list) ──────────────────────────

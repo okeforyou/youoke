@@ -1,7 +1,7 @@
-// 🛡️ v5.5.304: Fix Demucs AssertionError (NaN pad1d) & Segment Size
+// 🛡️ v5.5.305: Permanent download fix — yt-dlp auto-update + Chrome cookies.txt cache
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.304";
+export const SYSTEM_VERSION = "5.5.305";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,17 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.305",
+        date: "2026-08-16",
+        changes: [
+            "fix(backend): Auto-update bundled yt-dlp binary from GitHub on every Bridge startup — prevents YouTube's weekly client-change breaks.",
+            "fix(backend): Added permanent Chrome cookies.txt cache system (24h TTL) — exports YouTube session once from Chrome, uses it across ALL download strategies so YouTube sees a real logged-in session.",
+            "fix(backend): Strategy 1 (yt-dlp binary) now prefers --cookies cookies.txt over --cookies-from-browser chrome — more reliable when Chrome is not running.",
+            "fix(backend): Strategy 2 (yt-dlp Python module) updated with same cookie priority: cookies.txt → chrome-live → no-cookies.",
+            "fix(backend): Removed duplicate router = APIRouter() declaration and deprecated youtubepot-wpc extractor_arg that caused syntax errors in newer yt-dlp versions."
+        ]
+    },
     {
         version: "5.5.304",
         date: "2026-08-16",
