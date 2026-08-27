@@ -32,12 +32,40 @@ function parseLRC(lrc: string) {
     return lyrics;
 }
 
+/**
+ * Enhanced Thai & Universal title cleaner
+ * Strips away MV tags, Thai lyric tags, bracketed suffixes, and promotional text
+ */
+function cleanThaiTitle(rawTitle: string): string {
+    if (!rawTitle) return '';
+    let title = rawTitle;
+
+    // 1. Remove bracketed metadata (parentheses, square brackets, curly braces)
+    title = title.replace(/\([^)]*?(official|mv|m\/v|lyrics?|audio|video|visualizer|live|clip|teaser|ost|cover|4k|hd|special|version|ver\.|session|เนื้อเพลง|เพลงเต็ม|เพลงใหม่|มิวสิควิดีโอ|แสดงสด)[^)]*?\)/gi, '');
+    title = title.replace(/\[[^\]]*?(official|mv|m\/v|lyrics?|audio|video|visualizer|live|clip|teaser|ost|cover|4k|hd|special|version|ver\.|session|เนื้อเพลง|เพลงเต็ม|เพลงใหม่|มิวสิควิดีโอ|แสดงสด)[^\]]*?\]/gi, '');
+    title = title.replace(/\{[^}]*?(official|mv|m\/v|lyrics?|audio|video|visualizer|live|clip|teaser|ost|cover|4k|hd|special|version|ver\.|session|เนื้อเพลง|เพลงเต็ม|เพลงใหม่|มิวสิควิดีโอ|แสดงสด)[^}]*?\}/gi, '');
+
+    // 2. Trailing pipe / slash metadata
+    title = title.replace(/\|.*$/g, '');
+    title = title.replace(/\/\/.*$/g, '');
+
+    // 3. Remove loose tags & cleanup empty brackets
+    title = title.replace(/\b(OFFICIAL\s*(MV|VIDEO|AUDIO|LYRIC|VISUALIZER))\b/gi, '');
+    title = title.replace(/\[\s*\]|\(\s*\)|\{\s*\}/g, '');
+    title = title.replace(/\s+/g, ' ').trim();
+
+    return title;
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const { videoId, title, forceSource, duration } = req.query;
 
     if (!videoId || typeof videoId !== 'string') {
         return res.status(400).json({ error: 'Missing videoId' });
     }
+
+    // Set HTTP Cache Headers (1 day shared edge cache, 12 hours stale-while-revalidate)
+    res.setHeader('Cache-Control', 'public, s-maxage=86400, stale-while-revalidate=43200');
 
     const targetDuration = duration && !isNaN(Number(duration)) ? Number(duration) : null;
 
@@ -48,10 +76,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // 1. Try LRCLIB first if title is provided and we aren't forcing youtube
     if (title && typeof title === 'string' && forceSource !== 'youtube') {
         try {
-            // Clean title (e.g. remove "Official MV", "Lyrics", etc.)
-            let cleanTitle = title
-                .replace(/(\(|\[).*?(official|mv|lyrics|lyric|audio|video|live).*?(\)|\])/gi, '')
-                .trim();
+            // Clean title with enhanced cleaner
+            const cleanTitle = cleanThaiTitle(title);
             
             // Try to parse Artist and Track
             let artist = '';
@@ -69,9 +95,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
             // Function to fetch and process LRCLIB search
             const fetchLrcLib = async (url: string) => {
-                const res = await fetch(url);
-                if (res.ok) {
-                    const data = await res.json();
+                const fetchRes = await fetch(url, {
+                    headers: { 'User-Agent': 'YouOke/1.0 (https://play.okeforyou.com)' }
+                });
+                if (fetchRes.ok) {
+                    const data = await fetchRes.json();
                     if (Array.isArray(data) && data.length > 0) {
                         const syncedItems = data.filter((d: any) => d.syncedLyrics);
                         if (syncedItems.length > 0) {
@@ -130,14 +158,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 }
             }
 
-            // Strategy 2: Fallback to generic search with the whole clean title (robust for mixed formats)
-            if (!lrclibResult) {
+            // Strategy 2: Fallback to generic search with the clean title
+            if (!lrclibResult && cleanTitle) {
                 const searchParams = new URLSearchParams({ q: cleanTitle });
                 lrclibResult = await fetchLrcLib(`https://lrclib.net/api/search?${searchParams.toString()}`);
             }
 
             // Strategy 3: Fallback to generic search with just the track name
-            if (!lrclibResult && track) {
+            if (!lrclibResult && track && track !== cleanTitle) {
                 const searchParams = new URLSearchParams({ q: track });
                 lrclibResult = await fetchLrcLib(`https://lrclib.net/api/search?${searchParams.toString()}`);
             }
@@ -169,10 +197,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     time: t.offset / 1000,
                     text: t.text.replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"')
                 }));
-                // Filter out empty lines or generic noises like [Music] if desired, 
-                // but usually fine to keep for timing.
                 source = 'youtube';
-                lyricsType = 'synced'; // YouTube is synced
+                lyricsType = 'synced';
             }
         } catch (error) {
             console.error('YouTube Transcript fetch error:', error);

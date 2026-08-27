@@ -37,6 +37,55 @@ interface LyricsState {
     clearLyrics: () => void;
 }
 
+interface CachedLyricsEntry {
+    lyrics: LyricLine[];
+    source: 'lrclib' | 'youtube' | 'deepgram';
+    lyricsType: 'synced' | 'plain';
+    timestamp: number;
+}
+
+const LYRICS_CACHE_KEY = 'youoke_lyrics_cache_v1';
+const MAX_CACHE_ENTRIES = 50;
+const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+const getCachedLyrics = (videoId: string): CachedLyricsEntry | null => {
+    if (typeof window === 'undefined') return null;
+    try {
+        const raw = localStorage.getItem(LYRICS_CACHE_KEY);
+        if (!raw) return null;
+        const cache: Record<string, CachedLyricsEntry> = JSON.parse(raw);
+        const entry = cache[videoId];
+        if (entry && (Date.now() - entry.timestamp) < CACHE_TTL_MS) {
+            return entry;
+        }
+    } catch {
+        // Ignore cache parse error
+    }
+    return null;
+};
+
+const setCachedLyrics = (videoId: string, entry: Omit<CachedLyricsEntry, 'timestamp'>) => {
+    if (typeof window === 'undefined') return;
+    try {
+        const raw = localStorage.getItem(LYRICS_CACHE_KEY);
+        let cache: Record<string, CachedLyricsEntry> = raw ? JSON.parse(raw) : {};
+        
+        const keys = Object.keys(cache);
+        if (keys.length >= MAX_CACHE_ENTRIES) {
+            const oldestKey = keys.sort((a, b) => cache[a].timestamp - cache[b].timestamp)[0];
+            if (oldestKey) delete cache[oldestKey];
+        }
+        
+        cache[videoId] = {
+            ...entry,
+            timestamp: Date.now()
+        };
+        localStorage.setItem(LYRICS_CACHE_KEY, JSON.stringify(cache));
+    } catch {
+        // Ignore cache storage error
+    }
+};
+
 const parseLRC = (lrc: string): LyricLine[] => {
     const lines = lrc.split('\n');
     const result: LyricLine[] = [];
@@ -68,10 +117,10 @@ const normalizeLyrics = (lyrics: LyricLine[], maxLength = 40): LyricLine[] => {
         if (text.length <= maxLen) return [text];
         
         // Try Intl.Segmenter for native Thai word breaking
-        if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+        if (typeof Intl !== 'undefined' && (Intl as any).Segmenter) {
             try {
-                const segmenter = new Intl.Segmenter('th', { granularity: 'word' });
-                const segments = Array.from(segmenter.segment(text));
+                const segmenter = new (Intl as any).Segmenter('th', { granularity: 'word' });
+                const segments = Array.from(segmenter.segment(text)) as any[];
                 const chunks: string[] = [];
                 let currentChunk = "";
                 for (const { segment } of segments) {
@@ -158,8 +207,8 @@ const normalizeLyrics = (lyrics: LyricLine[], maxLength = 40): LyricLine[] => {
 }
 
 export const useLyricsStore = create<LyricsState>((set, get) => ({
-    isEnabled: true,
-    isKaraokeMode: true,
+    isEnabled: false,
+    isKaraokeMode: false,
     isLoading: false,
     lyrics: [],
     source: null,
@@ -257,21 +306,37 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
                     if (parsedLyrics.length > 0) {
                         set({
                             lyrics: normalizeLyrics(parsedLyrics),
-                            source: 'lrclib', // UI still thinks it's lrclib style, but we apply our offset
+                            source: 'lrclib',
                             lyricsType: 'synced',
                             syncOffset: bestSync.globalOffset || 0,
                             isLoading: false
                         });
-                        return; // Exit early if we have a valid wiki sync!
+                        return;
                     }
                 }
             } catch (wikiErr) {
                 console.warn("Failed to fetch Wiki Lyrics", wikiErr);
             }
 
+            // 1. Check Fast In-Memory / LocalStorage Cache
+            if (pref === 'auto') {
+                const cachedLyrics = getCachedLyrics(videoId);
+                if (cachedLyrics) {
+                    const localOffset = useWikiLyricsStore.getState().getLocalOffset(videoId);
+                    set({
+                        lyrics: cachedLyrics.lyrics,
+                        source: cachedLyrics.source,
+                        lyricsType: cachedLyrics.lyricsType,
+                        syncOffset: localOffset,
+                        isLoading: false
+                    });
+                    return;
+                }
+            }
+
             let onlineData: any = null;
 
-            // 1. Fetch from our API route (handles LRCLIB + YouTube CC)
+            // 2. Fetch from our API route (handles LRCLIB + YouTube CC)
             if (pref !== 'youtube') {
                 try {
                     const res = await fetch(`/api/lyrics?videoId=${encodeURIComponent(videoId)}&title=${encodeURIComponent(title)}${duration ? '&duration=' + duration : ''}`);
@@ -292,16 +357,19 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
             // Get local offset fallback if any
             const localOffset = useWikiLyricsStore.getState().getLocalOffset(videoId);
 
-            // 2. Decision Tree (Online Synced > Online Plain > YouTube)
+            // 3. Decision Tree (Online Synced > Online Plain > YouTube)
             if (onlineData?.type === 'synced') {
+                const normalized = normalizeLyrics(onlineData.lyrics);
+                setCachedLyrics(videoId, { lyrics: normalized, source: onlineData.source, lyricsType: 'synced' });
                 set({ 
-                    lyrics: normalizeLyrics(onlineData.lyrics), 
+                    lyrics: normalized, 
                     source: onlineData.source, 
                     lyricsType: 'synced',
                     syncOffset: localOffset,
                     isLoading: false
                 });
             } else if (onlineData?.type === 'plain') {
+                setCachedLyrics(videoId, { lyrics: onlineData.lyrics, source: onlineData.source, lyricsType: 'plain' });
                 set({ 
                     lyrics: onlineData.lyrics,
                     source: onlineData.source, 
@@ -310,8 +378,10 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
                     isLoading: false
                 });
             } else if (onlineData?.source === 'youtube') {
+                const normalized = normalizeLyrics(onlineData.lyrics);
+                setCachedLyrics(videoId, { lyrics: normalized, source: 'youtube', lyricsType: 'synced' });
                 set({ 
-                    lyrics: normalizeLyrics(onlineData.lyrics), 
+                    lyrics: normalized, 
                     source: 'youtube', 
                     lyricsType: 'synced',
                     syncOffset: localOffset,
