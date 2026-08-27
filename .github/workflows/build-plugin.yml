@@ -1,6 +1,13 @@
 name: Build and Publish YouOke Plugin
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'scripts/local-bridge/**'
+      - 'youoke-plugin/**'
+      - '.github/workflows/build-plugin.yml'
   release:
     types: [published]
   workflow_dispatch:
