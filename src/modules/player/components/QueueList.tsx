@@ -104,7 +104,7 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                         {video.title}
                     </h4>
                 </div>
-                {video.aiVocalRequested && aiJob && aiJob.status === 'processing' ? (
+                {aiJob && aiJob.status === 'processing' ? (
                     <div className="flex items-center gap-2 w-full shrink-0">
                         <span className="shrink-0 text-[11px] text-blue-500 font-bold flex items-center gap-1.5">
                             <Loader2 className="w-3 h-3 animate-spin" />
@@ -115,7 +115,7 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                         </div>
                         <span className="text-[10px] font-black text-blue-500 w-7 text-right">{aiJob.progress.toFixed(0)}%</span>
                     </div>
-                ) : video.aiVocalRequested && aiJob && aiJob.status === 'error' ? (
+                ) : aiJob && aiJob.status === 'error' ? (
                     <div className="flex items-center gap-2 w-full shrink-0">
                         <span className="shrink-0 text-[11px] text-red-500 font-bold flex items-center gap-1.5">
                             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -123,7 +123,17 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                             </svg>
                             เกิดข้อผิดพลาด
                         </span>
-                        <span className="text-[10px] text-red-500 line-clamp-1" title={aiJob.message}>{aiJob.message}</span>
+                        <span className="text-[10px] text-red-500 line-clamp-1 flex-1" title={aiJob.message}>{aiJob.message}</span>
+                        <button 
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                const vidId = video.videoId || video.id;
+                                useUIStore.getState().showVocalModeModal(video.uuid, vidId);
+                            }}
+                            className="shrink-0 px-1.5 py-0.5 bg-red-100 hover:bg-red-200 dark:bg-red-950/40 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 text-[9px] font-black rounded uppercase transition-all active:scale-95 cursor-pointer"
+                        >
+                            ลองใหม่
+                        </button>
                     </div>
                 ) : (
                     <div className="flex items-center w-full">
@@ -232,18 +242,12 @@ function QueueItem({ video, actualIndex, isCurrent, aiJob, dragAttributes, dragL
                                             )}
                                         </div>
                                     </div>
-                                ) : aiJob?.status === 'error' ? (
-                                    <div className="px-2 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-500 rounded flex items-center gap-1 border border-red-100 dark:border-red-800/50">
-                                        <span className="text-[9px] font-black uppercase tracking-wide mt-0.5">ล้มเหลว</span>
-                                    </div>
-                                ) : !aiJob?.status ? (
+                                ) : (!aiJob?.status || aiJob?.status === 'idle') ? (
                                     <button 
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            if (!video.aiVocalRequested) {
-                                                const vidId = video.videoId || video.id;
-                                                useUIStore.getState().showVocalModeModal(video.uuid, vidId);
-                                            }
+                                            const vidId = video.videoId || video.id;
+                                            useUIStore.getState().showVocalModeModal(video.uuid, vidId);
                                         }}
                                         className="group px-2 py-0.5 bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 hover:bg-primary/10 hover:text-primary active:scale-95 rounded flex items-center gap-1 border border-transparent transition-all"
                                     >
