@@ -201,7 +201,7 @@ export default function MainDashboard({ showTab = true, mode = 'default' }: { sh
     }
   }, [genreText, refetch, mode]);
 
-  const { searchTerm, setSearchTerm, addToQueue, setActiveIndex } = usePlayerStore();
+  const { searchTerm, setSearchTerm, addToQueue, setActiveIndex, searchMode } = usePlayerStore();
 
   const { 
     data: stationData, 
@@ -631,7 +631,7 @@ export default function MainDashboard({ showTab = true, mode = 'default' }: { sh
                                         title: video.title,
                                         author: video.author,
                                         thumbnail: undefined,
-                                        aiVocalRequested: true,
+                                        aiVocalRequested: searchMode === 'ai_karaoke' ? true : undefined,
                                     } as any;
                                     
                                     // 🛡️ v4.9.74: Simple Login Check - If not logged in, block station access.

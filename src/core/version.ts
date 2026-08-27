@@ -1,7 +1,7 @@
-// 🛡️ v5.5.307: Fix disappearing AI vocal separation button
+// 🛡️ v5.5.308: Fix unconditional auto-trigger of AI vocal separation
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.307";
+export const SYSTEM_VERSION = "5.5.308";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.308",
+        date: "2026-08-27",
+        changes: [
+            "fix(core): Resolved an issue where AI vocal separation was auto-triggered unconditionally on all YouTube dashboard and Music Station song clicks, causing unnecessary server requests and UI stuck states.",
+            "fix(core): Bound the `aiVocalRequested` flag to only trigger automatically when the active search mode is 'ai_karaoke' (AI Studio Karaoke), keeping normal song/MV playback clean."
+        ]
+    },
     {
         version: "5.5.307",
         date: "2026-08-27",
