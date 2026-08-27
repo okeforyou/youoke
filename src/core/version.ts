@@ -1,7 +1,7 @@
-// 🛡️ v5.5.305: Permanent download fix — yt-dlp auto-update + Chrome cookies.txt cache
+// 🛡️ v5.5.306: Fix Demucs torchaudio/torchcodec loading crash
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.305";
+export const SYSTEM_VERSION = "5.5.306";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.306",
+        date: "2026-08-27",
+        changes: [
+            "fix(backend): Added robust torchaudio monkey-patch that intercepts torchaudio.load and torchaudio.save to fallback to soundfile (sf.read/sf.write) if torchcodec is missing or fails due to environment mismatches.",
+            "fix(backend): Routed dev-mode Demucs execution through the same server.py demucs_worker entrypoint as frozen mode, ensuring the monkey-patch applies across both dev and packaged builds."
+        ]
+    },
     {
         version: "5.5.305",
         date: "2026-08-16",

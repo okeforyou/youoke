@@ -154,6 +154,59 @@ if __name__ == "__main__":
     multiprocessing.freeze_support()
     
     if len(sys.argv) > 1 and sys.argv[1] == "demucs_worker":
+        # Monkey-patch torchaudio to fallback to soundfile if torchcodec is missing/fails
+        try:
+            import torchaudio
+            import torch
+            import soundfile as sf
+            
+            _orig_load = torchaudio.load
+            _orig_save = torchaudio.save
+            
+            def robust_load(uri, *args, **kwargs):
+                try:
+                    return _orig_load(uri, *args, **kwargs)
+                except (ImportError, ModuleNotFoundError, RuntimeError) as e:
+                    err_str = str(e).lower()
+                    if "torchcodec" in err_str or "codec" in err_str:
+                        print(f"[torchaudio patch] TorchCodec failed/missing ({e}). Falling back to soundfile.read...")
+                        channels_first = kwargs.get("channels_first", True)
+                        data, samplerate = sf.read(uri, dtype='float32')
+                        tensor = torch.from_numpy(data)
+                        
+                        if channels_first:
+                            if tensor.ndim == 2:
+                                tensor = tensor.t()
+                            elif tensor.ndim == 1:
+                                tensor = tensor.unsqueeze(0)
+                        else:
+                            if tensor.ndim == 1:
+                                tensor = tensor.unsqueeze(1)
+                        return tensor, samplerate
+                    raise
+            
+            def robust_save(uri, src, sample_rate, *args, **kwargs):
+                try:
+                    return _orig_save(uri, src, sample_rate, *args, **kwargs)
+                except (ImportError, ModuleNotFoundError, RuntimeError) as e:
+                    err_str = str(e).lower()
+                    if "torchcodec" in err_str or "codec" in err_str:
+                        print(f"[torchaudio patch] TorchCodec failed/missing ({e}). Falling back to soundfile.write...")
+                        channels_first = kwargs.get("channels_first", True)
+                        data = src.detach().cpu().numpy()
+                        if channels_first:
+                            if data.ndim == 2:
+                                data = data.T
+                        sf.write(uri, data, sample_rate)
+                        return
+                    raise
+            
+            torchaudio.load = robust_load
+            torchaudio.save = robust_save
+            print("[torchaudio patch] Successfully applied torchaudio load/save monkey-patch.")
+        except Exception as e:
+            print(f"[torchaudio patch] Warning: Failed to apply monkey-patch: {e}")
+
         import demucs.pretrained
         from demucs.separate import main
         sys.argv = ["demucs"] + sys.argv[2:]

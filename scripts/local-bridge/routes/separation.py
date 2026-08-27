@@ -720,7 +720,9 @@ def _execute_separation(req: SeparateRequest):
         if getattr(sys, 'frozen', False):
             cmd = [sys.executable, "demucs_worker"] + demucs_args
         else:
-            cmd = [sys.executable, "-m", "demucs.separate"] + demucs_args
+            # Run using our server.py demucs_worker entrypoint to ensure the torchaudio monkey-patch is applied in dev too
+            server_script = os.path.join(os.path.dirname(os.path.dirname(__file__)), "server.py")
+            cmd = [sys.executable, server_script, "demucs_worker"] + demucs_args
 
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True)
         active_processes[vid] = process
