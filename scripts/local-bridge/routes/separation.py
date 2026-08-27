@@ -827,6 +827,7 @@ def _execute_separation(req: SeparateRequest):
         set_progress(vid, "success", 100, "เสร็จสมบูรณ์!", mode=mode)
 
     except Exception as e:
+        print(f"[Separation Error] Failed for {vid}: {str(e)}")
         if progress_store.get(vid, {}).get("status") == "cancelled":
             pass
         else:

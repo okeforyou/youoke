@@ -1,7 +1,7 @@
-// 🛡️ v5.5.309: Fix cache bug where empty/corrupted files were treated as cached
+// 🛡️ v5.5.310: Add built-in wave fallback for PyInstaller packaged torchaudio patch
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.309";
+export const SYSTEM_VERSION = "5.5.310";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.310",
+        date: "2026-08-27",
+        changes: [
+            "fix(local-bridge): Added an ultra-robust built-in `wave` module fallback to the `torchaudio` monkey-patch. This ensures audio load/save operations during Demucs separation succeed even when the `soundfile` C library (`libsndfile`) is missing or fails to import in PyInstaller packages.",
+            "fix(local-bridge): Added `soundfile` to PyInstaller's hidden imports and logged full Demucs subprocess tracebacks to the main server logs for easier diagnostics."
+        ]
+    },
     {
         version: "5.5.309",
         date: "2026-08-27",
