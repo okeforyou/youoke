@@ -9,7 +9,7 @@ import subprocess
 from utils.config import CACHE_DIR, LIBRARY_DIR, load_config
 from utils.logger import log_download_attempt
 from utils.audio import convert_audio, is_valid_audio, get_ffmpeg_path
-from routes.library_cache import load_library
+from routes.library_cache import load_library, enforce_cache_limit
 from models import SeparateRequest
 from server_state import progress_store, rapidapi_quota, active_processes
 
@@ -298,6 +298,12 @@ def _execute_separation(req: SeparateRequest):
     song_dir = os.path.join(CACHE_DIR, vid)
     set_progress(vid, "starting", 0, "กำลังเริ่มประมวลผล...", mode=mode, title=req.title)
     os.makedirs(song_dir, exist_ok=True)
+
+    # Auto-evict old cache if disk limit exceeded (> 10GB)
+    try:
+        enforce_cache_limit(max_size_gb=10.0)
+    except Exception as _ce:
+        print(f"[Cache Warning] Failed to run LRU eviction: {_ce}")
     
     # Try downloading cover image
     try:

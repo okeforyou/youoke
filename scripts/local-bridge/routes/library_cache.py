@@ -22,6 +22,89 @@ def save_library(data):
     with open(LIBRARY_DB_PATH, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
+def get_dir_size(path: str) -> int:
+    """Calculate total byte size of a directory recursively."""
+    total = 0
+    try:
+        for root, _, files in os.walk(path):
+            for f in files:
+                fp = os.path.join(root, f)
+                if not os.path.islink(fp) and os.path.exists(fp):
+                    total += os.path.getsize(fp)
+    except Exception:
+        pass
+    return total
+
+def enforce_cache_limit(max_size_gb: float = 10.0) -> dict:
+    """
+    Enforces maximum cache folder size using Least Recently Used (LRU) policy.
+    If total cache exceeds max_size_gb, removes oldest accessed/modified song folders
+    until total size is below target limit.
+    """
+    try:
+        active_dir = get_active_storage_dir() or CACHE_DIR
+        if not os.path.exists(active_dir):
+            return {"status": "ok", "deleted_count": 0, "freed_mb": 0}
+
+        max_bytes = int(max_size_gb * 1024 * 1024 * 1024)
+        target_bytes = int(max_bytes * 0.85) # Evict down to 85% of limit when threshold reached
+        
+        current_total = get_dir_size(active_dir)
+        if current_total <= max_bytes:
+            return {
+                "status": "ok", 
+                "deleted_count": 0, 
+                "freed_mb": 0, 
+                "current_mb": round(current_total / (1024 * 1024), 2)
+            }
+
+        # List all song directories and their last access/modified time
+        folders = []
+        for name in os.listdir(active_dir):
+            folder_path = os.path.join(active_dir, name)
+            if os.path.isdir(folder_path):
+                try:
+                    mtime = os.path.getmtime(folder_path)
+                    try:
+                        atime = os.path.getatime(folder_path)
+                        last_active = max(mtime, atime)
+                    except Exception:
+                        last_active = mtime
+                    
+                    size = get_dir_size(folder_path)
+                    folders.append({
+                        "path": folder_path,
+                        "name": name,
+                        "last_active": last_active,
+                        "size": size
+                    })
+                except Exception:
+                    pass
+
+        # Sort by oldest accessed first
+        folders.sort(key=lambda x: x["last_active"])
+
+        deleted_count = 0
+        freed_bytes = 0
+        for item in folders:
+            if current_total - freed_bytes <= target_bytes:
+                break
+            try:
+                shutil.rmtree(item["path"], ignore_errors=True)
+                freed_bytes += item["size"]
+                deleted_count += 1
+                print(f"[LRU Cache] Evicted old song cache: {item['name']} ({round(item['size'] / (1024*1024), 2)} MB)")
+            except Exception as e:
+                print(f"[LRU Cache] Failed to evict {item['name']}: {e}")
+
+        freed_mb = round(freed_bytes / (1024 * 1024), 2)
+        remaining_mb = round((current_total - freed_bytes) / (1024 * 1024), 2)
+        print(f"[LRU Cache] Auto-cleanup complete. Deleted {deleted_count} items, freed {freed_mb} MB. Remaining: {remaining_mb} MB")
+        return {"status": "ok", "deleted_count": deleted_count, "freed_mb": freed_mb, "current_mb": remaining_mb}
+    except Exception as e:
+        print(f"[LRU Cache Error] {e}")
+        return {"status": "error", "message": str(e)}
+
 @router.post("/library/upload")
 async def upload_library(
     title: str = Form(...),
@@ -83,6 +166,10 @@ async def delete_library(song_id: str):
     save_library(library)
     
     return {"status": "success"}
+
+@router.post("/cache/clean")
+def clean_cache(max_size_gb: float = 10.0):
+    return enforce_cache_limit(max_size_gb=max_size_gb)
 
 @router.get("/cache/list")
 def list_cache():
