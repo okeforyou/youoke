@@ -247,6 +247,8 @@ def get_progress(video_id: str):
 
 @router.post("/upload/{video_id}")
 async def upload_audio(video_id: str, file: UploadFile = File(...)):
+    if not video_id or ".." in video_id or "/" in video_id or "\\" in video_id:
+        raise HTTPException(status_code=400, detail="Invalid video ID")
     try:
         song_dir = os.path.join(CACHE_DIR, video_id)
         os.makedirs(song_dir, exist_ok=True)
@@ -301,7 +303,9 @@ def _execute_separation(req: SeparateRequest):
 
     # Auto-evict old cache if disk limit exceeded (> 10GB)
     try:
-        enforce_cache_limit(max_size_gb=10.0)
+        # Prevent deleting the current song, queued songs, or actively processing songs
+        active_ids = [vid] + [r.video_id for r in job_queue] + list(active_processes.keys())
+        enforce_cache_limit(max_size_gb=10.0, exclude_vids=active_ids)
     except Exception as _ce:
         print(f"[Cache Warning] Failed to run LRU eviction: {_ce}")
     

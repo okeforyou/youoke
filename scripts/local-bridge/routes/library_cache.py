@@ -35,7 +35,7 @@ def get_dir_size(path: str) -> int:
         pass
     return total
 
-def enforce_cache_limit(max_size_gb: float = 10.0) -> dict:
+def enforce_cache_limit(max_size_gb: float = 10.0, exclude_vids: list = None) -> dict:
     """
     Enforces maximum cache folder size using Least Recently Used (LRU) policy.
     If total cache exceeds max_size_gb, removes oldest accessed/modified song folders
@@ -63,6 +63,8 @@ def enforce_cache_limit(max_size_gb: float = 10.0) -> dict:
         for name in os.listdir(active_dir):
             folder_path = os.path.join(active_dir, name)
             if os.path.isdir(folder_path):
+                if exclude_vids and name in exclude_vids:
+                    continue
                 try:
                     mtime = os.path.getmtime(folder_path)
                     try:
