@@ -182,9 +182,8 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
         } catch (e) {}
     }, [isMuted, isAiReady, volumes.instrumental, forceMute]);
 
-    // Handle Play/Pause and Event-Driven Sync
+    // Handle Play/Pause commands to YouTube
     useEffect(() => {
-        // Always sync YouTube play state regardless of AI
         if (ytPlayerRef.current && typeof ytPlayerRef.current.playVideo === 'function') {
             try {
                 if (isPlaying) ytPlayerRef.current.playVideo();
@@ -192,95 +191,79 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
             } catch (e) {}
         }
 
-        if (isAiReady) {
-            if (isPlaying) {
-                let ytTime: number | undefined;
-                try {
-                    if (ytPlayerRef.current && typeof ytPlayerRef.current.getIframe === 'function' && ytPlayerRef.current.getIframe()) {
-                        ytTime = ytPlayerRef.current.getCurrentTime();
-                    }
-                } catch (e) {}
-
-                const syncRefPlay = (ref: React.RefObject<HTMLAudioElement>) => {
-                    if (!ref.current) return;
-                    if (typeof ytTime === 'number' && ytTime > 0) {
-                        // Event-driven sync: align time exactly once on play/seek
-                        if (Math.abs(ref.current.currentTime - ytTime) > 0.1) {
-                            ref.current.currentTime = ytTime;
-                        }
-                    }
-                    if (ref.current.paused) {
-                        ref.current.play().catch(e => {
-                            console.warn("Manual audio play failed:", e);
-                        });
-                    }
-                };
-                
-                syncRefPlay(vocalRef);
-                if (aiMode === 'pro') {
-                    syncRefPlay(drumsRef);
-                    syncRefPlay(bassRef);
-                    syncRefPlay(otherRef);
-                } else {
-                    syncRefPlay(instrumentalRef);
-                }
-            } else {
-                vocalRef.current?.pause();
-                instrumentalRef.current?.pause();
-                drumsRef.current?.pause();
-                bassRef.current?.pause();
-                otherRef.current?.pause();
-            }
+        // Only handle pausing here. 
+        // Playback & time syncing is managed by the requestAnimationFrame loop (Continuous Sync Loop)
+        if (isAiReady && !isPlaying) {
+            vocalRef.current?.pause();
+            instrumentalRef.current?.pause();
+            drumsRef.current?.pause();
+            bassRef.current?.pause();
+            otherRef.current?.pause();
         }
-    }, [isPlaying, isAiReady, aiMode]);
+    }, [isPlaying, isAiReady]);
 
     // Continuous Sync Loop for AI Audio to prevent drift
     useEffect(() => {
-        let interval: NodeJS.Timeout;
-        if (isPlaying && isAiReady) {
-            interval = setInterval(() => {
+        let animationFrameId: number;
+        
+        const syncLoop = () => {
+            if (isPlaying && isAiReady) {
                 try {
                     const ytPlayer = ytPlayerRef.current;
-                    if (!ytPlayer || typeof ytPlayer.getPlayerState !== 'function') return;
-                    
-                    const state = ytPlayer.getPlayerState();
-                    // If YouTube is buffering or paused internally, ensure AI tracks pause!
-                    if (state !== 1) {
-                        vocalRef.current?.pause();
-                        instrumentalRef.current?.pause();
-                        drumsRef.current?.pause();
-                        bassRef.current?.pause();
-                        otherRef.current?.pause();
-                        return;
-                    }
-                    
-                    const ytTime = ytPlayer.getCurrentTime();
-                    if (typeof ytTime !== 'number' || ytTime === 0) return;
-                    
-                    const syncRef = (ref: React.RefObject<HTMLAudioElement>) => {
-                        if (!ref.current) return;
-                        // If drift is more than 0.3s, force sync
-                        if (Math.abs(ref.current.currentTime - ytTime) > 0.3) {
-                            console.log(`⏱️ Syncing Audio Drift: ${ref.current.currentTime} -> ${ytTime}`);
-                            ref.current.currentTime = ytTime;
-                        }
-                        if (ref.current.paused) {
-                            ref.current.play().catch(()=>{});
-                        }
-                    };
+                    if (ytPlayer && typeof ytPlayer.getPlayerState === 'function') {
+                        const state = ytPlayer.getPlayerState();
+                        // 1 = PLAYING. If YouTube is buffering (3) or paused (2), pause AI tracks to prevent desync
+                        if (state !== 1) {
+                            vocalRef.current?.pause();
+                            instrumentalRef.current?.pause();
+                            drumsRef.current?.pause();
+                            bassRef.current?.pause();
+                            otherRef.current?.pause();
+                        } else {
+                            const youtube_time = ytPlayer.getCurrentTime();
+                            if (typeof youtube_time === 'number' && youtube_time > 0) {
+                                const enforceSync = (ref: React.RefObject<HTMLAudioElement>) => {
+                                    if (!ref.current) return;
+                                    const audio_time = ref.current.currentTime;
+                                    const time_offset = Math.abs(youtube_time - audio_time);
+                                    
+                                    // หากเวลาต่างกันเกิน 0.3 วินาที (300ms) ให้บังคับ Seek
+                                    if (time_offset > 0.3) {
+                                        console.log(`⏱️ Auto-Sync triggered: YT=${youtube_time.toFixed(2)}s, Audio=${audio_time.toFixed(2)}s, Offset=${time_offset.toFixed(2)}s`);
+                                        ref.current.currentTime = youtube_time;
+                                    }
+                                    
+                                    if (ref.current.paused) {
+                                        ref.current.play().catch(()=>{});
+                                    }
+                                };
 
-                    syncRef(vocalRef);
-                    if (aiMode === 'pro') {
-                        syncRef(drumsRef);
-                        syncRef(bassRef);
-                        syncRef(otherRef);
-                    } else {
-                        syncRef(instrumentalRef);
+                                enforceSync(vocalRef);
+                                if (aiMode === 'pro') {
+                                    enforceSync(drumsRef);
+                                    enforceSync(bassRef);
+                                    enforceSync(otherRef);
+                                } else {
+                                    enforceSync(instrumentalRef);
+                                }
+                            }
+                        }
                     }
                 } catch (e) {}
-            }, 500); // Check twice a second
+                
+                animationFrameId = requestAnimationFrame(syncLoop);
+            }
+        };
+
+        if (isPlaying && isAiReady) {
+            animationFrameId = requestAnimationFrame(syncLoop);
         }
-        return () => clearInterval(interval);
+
+        return () => {
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
+        };
     }, [isPlaying, isAiReady, aiMode]);
 
     useEffect(() => {
@@ -421,33 +404,9 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
         }
 
         if (isReady && (event.data === 1 || event.data === 3 || event.data === 2)) {
+            // Only ensure YouTube is muted. 
+            // Audio play/pause and time sync is fully handled by the requestAnimationFrame loop.
             try { if (event.target.getIframe()) event.target.mute(); } catch (e) {}
-            
-            const ytTime = event.target.getCurrentTime();
-            const shouldPlay = event.data === 1;
-
-            const syncRefAction = (ref: React.RefObject<HTMLAudioElement>) => {
-                if (!ref.current) return;
-                if (typeof ytTime === 'number' && ytTime > 0) {
-                    if (Math.abs(ref.current.currentTime - ytTime) > 0.1) {
-                        ref.current.currentTime = ytTime;
-                    }
-                }
-                if (shouldPlay) {
-                    if (ref.current.paused) ref.current.play().catch(()=>{});
-                } else {
-                    if (!ref.current.paused) ref.current.pause();
-                }
-            };
-
-            syncRefAction(vocalRef);
-            if (aiMode === 'pro') {
-                syncRefAction(drumsRef);
-                syncRefAction(bassRef);
-                syncRefAction(otherRef);
-            } else {
-                syncRefAction(instrumentalRef);
-            }
         }
 
         // Handle state changes if needed
