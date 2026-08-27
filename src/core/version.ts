@@ -1,7 +1,7 @@
-// 🛡️ v5.5.308: Fix unconditional auto-trigger of AI vocal separation
+// 🛡️ v5.5.309: Fix cache bug where empty/corrupted files were treated as cached
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.308";
+export const SYSTEM_VERSION = "5.5.309";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.309",
+        date: "2026-08-27",
+        changes: [
+            "fix(core): Resolved a cache bug where files that crashed/failed mid-processing (having 0 bytes size) were treated as successfully cached by both server and client checks.",
+            "fix(core): Added file size verification (> 0 bytes) to server cache status, client cache checking (via Content-Length headers), and library cache listings, ensuring corrupted runs are correctly discarded and re-separated."
+        ]
+    },
     {
         version: "5.5.308",
         date: "2026-08-27",

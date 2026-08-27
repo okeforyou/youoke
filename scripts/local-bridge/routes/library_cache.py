@@ -98,7 +98,7 @@ def list_cache():
                 continue
                 
             vocal_m4a = os.path.join(song_dir, "vocals.m4a")
-            if not os.path.exists(vocal_m4a):
+            if not os.path.exists(vocal_m4a) or os.path.getsize(vocal_m4a) == 0:
                 continue
                 
             youoke_json_path = os.path.join(song_dir, "youoke.json")

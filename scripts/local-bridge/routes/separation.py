@@ -263,18 +263,15 @@ def separate(req: SeparateRequest):
     mode = req.mode
     song_dir = os.path.join(CACHE_DIR, vid)
     
-    # 1. Check if already cached
-    vocal_m4a = os.path.join(song_dir, "vocals.m4a")
-    no_vocal_m4a = os.path.join(song_dir, "no_vocals.m4a")
-    drums_m4a = os.path.join(song_dir, "drums.m4a")
-    bass_m4a = os.path.join(song_dir, "bass.m4a")
-    other_m4a = os.path.join(song_dir, "other.m4a")
-    
+    # Helper to check if file exists and is not empty
+    def is_valid_file(p):
+        return os.path.exists(p) and os.path.getsize(p) > 0
+        
     is_cached = False
-    if os.path.exists(vocal_m4a) and os.path.exists(drums_m4a) and os.path.exists(bass_m4a) and os.path.exists(other_m4a):
+    if is_valid_file(vocal_m4a) and is_valid_file(drums_m4a) and is_valid_file(bass_m4a) and is_valid_file(other_m4a):
         is_cached = True
         mode = "pro"
-    elif mode == "basic" and os.path.exists(vocal_m4a) and os.path.exists(no_vocal_m4a):
+    elif mode == "basic" and is_valid_file(vocal_m4a) and is_valid_file(no_vocal_m4a):
         is_cached = True
         
     if is_cached:

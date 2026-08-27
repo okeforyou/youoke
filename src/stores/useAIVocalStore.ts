@@ -353,13 +353,22 @@ export const useAIVocalStore = create<AIVocalState>()(
                     signal: AbortSignal.timeout(3000),
                 });
                 if (res.ok) {
+                    const contentLength = res.headers.get('content-length');
+                    if (contentLength && contentLength === '0') {
+                        continue; // Skip: empty/corrupt file
+                    }
                     let actualMode: 'basic' | 'pro' = 'basic';
                     try {
                         const drumsRes = await fetch(`http://127.0.0.1:${port}/files/${id}/drums.m4a`, {
                             method: 'HEAD',
                             signal: AbortSignal.timeout(2000),
                         });
-                        if (drumsRes.ok) actualMode = 'pro';
+                        if (drumsRes.ok) {
+                            const drumsLength = drumsRes.headers.get('content-length');
+                            if (!drumsLength || drumsLength !== '0') {
+                                actualMode = 'pro';
+                            }
+                        }
                     } catch {
                         // ignore
                     }
