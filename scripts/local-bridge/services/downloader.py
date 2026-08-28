@@ -147,8 +147,8 @@ def run_tier2_pytubefix(yt_url: str, m4a_path: str, timeout: int = 15) -> str:
     def _download():
         yt = pytubefix.YouTube(
             yt_url,
-            use_oauth=True,
-            allow_oauth_cache=True,
+            use_oauth=False,
+            allow_oauth_cache=False,
             on_progress_callback=on_progress
         )
         stream = yt.streams.filter(only_audio=True).order_by('abr').desc().first()
