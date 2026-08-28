@@ -1,11 +1,12 @@
 import os
-import time
 import ssl
 import json
 import shutil
 import urllib.request
 import urllib.parse
-from contextlib import contextmanager
+import subprocess
+import re
+from .binary_manager import ensure_yt_dlp
 
 class DownloaderError(Exception):
     pass
@@ -22,17 +23,8 @@ def is_valid_audio(filepath: str) -> bool:
         # Check signature for M4A/MP4/MP3
         with open(filepath, 'rb') as f:
             header = f.read(12)
-            # M4A/MP4 typically has ftyp at bytes 4-8
-            if b'ftyp' in header:
+            if b'ftyp' in header or header.startswith(b'ID3') or b'<!DOCTYPE html>' not in header:
                 return True
-            # ID3 (MP3)
-            if header.startswith(b'ID3'):
-                return True
-            # Simple check if it's text (HTML error page)
-            if b'<!DOCTYPE html>' in header or b'<html' in header or b'<?xml' in header:
-                return False
-        # If it's a valid size but unknown signature, assume it's OK for now 
-        # (FFmpeg will fail gracefully later if it's bad)
         return True
     except Exception:
         return False
@@ -45,36 +37,50 @@ def _find_downloaded_file(song_dir: str, vid: str) -> str:
             return p
     return None
 
-def run_tier1_ytdlp(yt_url: str, song_dir: str, vid: str, timeout: int = 45) -> str:
-    """Tier 1: Fast Native - yt-dlp Python Module (No browser cookies to avoid macOS keychain blocks)"""
-    import yt_dlp
-    import concurrent.futures
-
+def run_tier1_ytdlp_standalone(yt_url: str, song_dir: str, vid: str, timeout: int = 60) -> str:
+    """Tier 1: Standalone Auto-healing yt-dlp"""
+    yt_dlp_exe = ensure_yt_dlp()
     out_template = os.path.join(song_dir, f"{vid}.%(ext)s")
     
-    # Notice we DO NOT use cookiesfrombrowser to prevent permission popups
-    ydl_opts = {
-        'format': '140/bestaudio/best',
-        'outtmpl': out_template,
-        'quiet': True,
-        'no_warnings': True,
-        'extractor_args': {'youtube': {'player_client': ['web_creator', 'ios', 'mweb']}}
-    }
-
-    print("[Downloader] Strategy 1: yt-dlp python module (No Cookies)")
+    cmd = [
+        yt_dlp_exe,
+        '-f', '140/bestaudio/best',
+        '-o', out_template,
+        '--extractor-args', 'youtube:player_client=android,web',
+        '--no-warnings',
+        yt_url
+    ]
     
-    def _download():
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([yt_url])
+    print(f"[Downloader] Strategy 1: Standalone yt-dlp ({yt_dlp_exe})")
+    
+    def execute(command):
+        return subprocess.run(command, capture_output=True, text=True, timeout=timeout)
 
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        future = executor.submit(_download)
+    try:
+        res = execute(cmd)
+    except subprocess.TimeoutExpired:
+        raise DownloaderError(f"yt-dlp download timed out after {timeout}s")
+    except Exception as e:
+        raise DownloaderError(f"yt-dlp failed to execute: {str(e)}")
+
+    if res.returncode != 0:
+        err_out = res.stderr or res.stdout
+        print(f"[Downloader] yt-dlp error output: {err_out[-500:]}")
+        
+        # Auto-heal: If it fails, try updating yt-dlp and retry once
+        print("[Downloader] Auto-healing: Updating yt-dlp...")
         try:
-            future.result(timeout=timeout)
-        except concurrent.futures.TimeoutError:
-            raise DownloaderError(f"yt-dlp download timed out after {timeout}s")
-        except Exception as e:
-            raise DownloaderError(f"yt-dlp failed: {str(e)}")
+            update_res = subprocess.run([yt_dlp_exe, '-U'], capture_output=True, text=True, timeout=30)
+            if update_res.returncode == 0:
+                print("[Downloader] yt-dlp updated successfully. Retrying download...")
+                res = execute(cmd)
+            else:
+                print("[Downloader] yt-dlp update failed.")
+        except Exception as update_err:
+            print(f"[Downloader] Auto-heal update failed: {update_err}")
+
+    if res.returncode != 0:
+        raise DownloaderError(f"yt-dlp returned non-zero exit code: {res.returncode}")
 
     downloaded_file = _find_downloaded_file(song_dir, vid)
     if downloaded_file and is_valid_audio(downloaded_file):
@@ -84,7 +90,6 @@ def run_tier1_ytdlp(yt_url: str, song_dir: str, vid: str, timeout: int = 45) -> 
 def run_tier2_rapidapi(yt_url: str, m4a_path: str, rapidapi_key: str, timeout: int = 45) -> str:
     """Tier 2: RapidAPI (Fastest if key is available)"""
     print("[Downloader] Strategy 2a: RapidAPI")
-    
     parsed = urllib.parse.urlparse(yt_url)
     video_id = ""
     if "youtu.be" in parsed.netloc:
@@ -136,39 +141,6 @@ def run_tier2_rapidapi(yt_url: str, m4a_path: str, rapidapi_key: str, timeout: i
     except Exception as e:
         raise DownloaderError(f"RapidAPI failed: {str(e)}")
 
-def run_tier2_pytubefix(yt_url: str, m4a_path: str, timeout: int = 15) -> str:
-    """Tier 2: pytubefix Fallback"""
-    import concurrent.futures
-    import pytubefix
-    from pytubefix.cli import on_progress
-    
-    print(f"[Downloader] Strategy 2b: pytubefix (timeout={timeout}s)")
-    
-    def _download():
-        yt = pytubefix.YouTube(
-            yt_url,
-            use_oauth=False,
-            allow_oauth_cache=False,
-            on_progress_callback=on_progress
-        )
-        stream = yt.streams.filter(only_audio=True).order_by('abr').desc().first()
-        if not stream:
-            raise DownloaderError("No audio stream found")
-        stream.download(output_path=os.path.dirname(m4a_path), filename=os.path.basename(m4a_path))
-
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        future = executor.submit(_download)
-        try:
-            future.result(timeout=timeout)
-        except concurrent.futures.TimeoutError:
-            raise DownloaderError("pytubefix timed out")
-        except Exception as e:
-            raise DownloaderError(f"pytubefix failed: {str(e)}")
-
-    if is_valid_audio(m4a_path):
-        return m4a_path
-    raise DownloaderError("pytubefix produced invalid file")
-
 def download_audio(yt_url: str, song_dir: str, vid: str, rapidapi_key: str = None) -> str:
     """
     Unified downloading method.
@@ -178,9 +150,9 @@ def download_audio(yt_url: str, song_dir: str, vid: str, rapidapi_key: str = Non
     m4a_path = os.path.join(song_dir, f"{vid}.m4a")
     errors = []
 
-    # 1. Tier 1: Fast Native (yt-dlp without strict cookie constraints)
+    # 1. Tier 1: Standalone Auto-healing yt-dlp
     try:
-        return run_tier1_ytdlp(yt_url, song_dir, vid, timeout=45)
+        return run_tier1_ytdlp_standalone(yt_url, song_dir, vid, timeout=60)
     except DownloaderError as e:
         errors.append(str(e))
         print(e)
@@ -198,13 +170,4 @@ def download_audio(yt_url: str, song_dir: str, vid: str, rapidapi_key: str = Non
         except Exception as e:
             errors.append(f"RapidAPI unexpected error: {e}")
 
-    try:
-        return run_tier2_pytubefix(yt_url, m4a_path, timeout=15)
-    except DownloaderError as e:
-        errors.append(str(e))
-        print(e)
-    except Exception as e:
-        errors.append(f"pytubefix unexpected error: {e}")
-
     raise Exception("All download strategies failed:\n" + "\n".join(errors))
-
