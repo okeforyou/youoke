@@ -9,6 +9,7 @@ import subprocess
 from utils.config import CACHE_DIR, LIBRARY_DIR, load_config
 from utils.logger import log_download_attempt
 from utils.audio import convert_audio, is_valid_audio, get_ffmpeg_path
+from services.downloader import download_audio
 from routes.library_cache import load_library, enforce_cache_limit
 from models import SeparateRequest
 from server_state import progress_store, rapidapi_quota, active_processes
