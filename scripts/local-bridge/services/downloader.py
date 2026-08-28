@@ -54,7 +54,10 @@ def run_tier1_ytdlp_standalone(yt_url: str, song_dir: str, vid: str, timeout: in
     print(f"[Downloader] Strategy 1: Standalone yt-dlp ({yt_dlp_exe})")
     
     def execute(command):
-        return subprocess.run(command, capture_output=True, text=True, timeout=timeout)
+        kwargs = {}
+        if os.name == 'nt':
+            kwargs['creationflags'] = 0x08000000  # CREATE_NO_WINDOW
+        return subprocess.run(command, capture_output=True, text=True, timeout=timeout, **kwargs)
 
     try:
         res = execute(cmd)
@@ -170,4 +173,7 @@ def download_audio(yt_url: str, song_dir: str, vid: str, rapidapi_key: str = Non
         except Exception as e:
             errors.append(f"RapidAPI unexpected error: {e}")
 
-    raise Exception("All download strategies failed:\n" + "\n".join(errors))
+    err_msg = "\n".join(errors)
+    if "WinError 5" in err_msg or "Access is denied" in err_msg:
+        raise Exception("แอนตี้ไวรัสบล็อกไฟล์ yt-dlp.exe กรุณาตั้งค่า Allow ใน Windows Defender")
+    raise Exception(f"All download strategies failed:\n{err_msg}")

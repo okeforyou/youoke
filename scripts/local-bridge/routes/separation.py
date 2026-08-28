@@ -384,7 +384,7 @@ def _execute_separation(req: SeparateRequest):
             download_success = True
         except Exception as e:
             print(f"[Download Error] {e}")
-            set_progress(vid, "error", 0, "ดาวน์โหลดล้มเหลวจากทุกช่องทาง")
+            set_progress(vid, "error", 0, f"ดาวน์โหลดล้มเหลว: {str(e)[:100]}")
             return {"status": "error", "message": f"Download failed: {e}"}
             
     # 2. Convert to WAV for demucs
