@@ -109,6 +109,7 @@ interface AIVocalState {
     toggleSolo: (type: 'vocals' | 'instrumental' | 'drums' | 'bass' | 'other') => void;
     
     // API Actions
+    startPollingJob: (videoId: string) => Promise<void>;
     processAudio: (videoId: string, titleOrMode?: string, modeOverride?: 'basic' | 'pro', useManualUpload?: boolean) => Promise<void>;
     uploadAudioFile: (videoId: string, file: File) => Promise<boolean>;
     checkCachedStatus: (videoIds: string[]) => Promise<void>;
@@ -189,6 +190,59 @@ export const useAIVocalStore = create<AIVocalState>()(
         }
     }),
 
+    startPollingJob: async (videoId: string) => {
+        let isPolling = true;
+        const pollProgress = async () => {
+            while (isPolling) {
+                try {
+                    const res = await fetchWithFallback(`/progress/${videoId}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        
+                        let status: 'idle' | 'processing' | 'ready' | 'error' = 'processing';
+                        let progress = data.percent || 0;
+                        let message = data.message || '';
+                        
+                        if (data.status === 'success') {
+                            status = 'ready';
+                            progress = 100;
+                            message = 'พร้อมเล่น!';
+                            isPolling = false;
+                        } else if (data.status === 'error') {
+                            status = 'error';
+                            isPolling = false;
+                        } else if (data.status === 'cancelled') {
+                            status = 'error';
+                            message = 'ถูกยกเลิก';
+                            isPolling = false;
+                        } else if (data.status === 'paused' || data.status === 'idle') {
+                            status = 'idle';
+                            message = 'หยุดชั่วคราว';
+                            isPolling = false;
+                        }
+
+                        set((state) => ({
+                            jobs: {
+                                ...state.jobs,
+                                [videoId]: { 
+                                    ...state.jobs[videoId], 
+                                    status, 
+                                    message, 
+                                    progress, 
+                                    mode: data.mode || state.jobs[videoId]?.mode 
+                                }
+                            }
+                        }));
+                    }
+                } catch (e) {
+                    console.warn("Polling error:", e);
+                }
+                await new Promise(r => setTimeout(r, 1000));
+            }
+        };
+        pollProgress();
+    },
+
     processAudio: async (videoId: string, titleOrMode?: string, modeOverride?: 'basic' | 'pro', useManualUpload?: boolean) => {
         const { jobs, defaultMode, rapidapiKey } = get();
         
@@ -235,31 +289,6 @@ export const useAIVocalStore = create<AIVocalState>()(
                 [videoId]: { status: 'processing', progress: 0, message: 'กำลังเตรียมการ...', mode: targetMode }
             }
         }));
-        
-        let isPolling = true;
-
-        const pollProgress = async () => {
-            while (isPolling) {
-                try {
-                    const res = await fetchWithFallback(`/progress/${videoId}`);
-                    if (res.ok) {
-                        const data = await res.json();
-                        set((state) => ({
-                            jobs: {
-                                ...state.jobs,
-                                [videoId]: { ...state.jobs[videoId], message: data.message, progress: data.percent || 0, mode: data.mode || state.jobs[videoId]?.mode }
-                            }
-                        }));
-                    }
-                } catch (e) {
-                    console.warn("Polling error:", e);
-                }
-                await new Promise(r => setTimeout(r, 1000));
-            }
-        };
-
-        // Start polling in background
-        pollProgress();
 
         try {
             const res = await fetchWithFallback("/separate", {
@@ -268,18 +297,19 @@ export const useAIVocalStore = create<AIVocalState>()(
                 body: JSON.stringify({ video_id: videoId, title: title, mode: targetMode, rapidapi_key: rapidapiKey || "", use_manual_upload: useManualUpload })
             }, 4); // 4 retries = wait up to ~15s (1+2+4+8) for the bridge to start
             
-            isPolling = false;
             const data = await res.json();
             
-            if (res.ok && (data.status === "success" || data.status === "cached" || data.status === "already_exists")) {
+            if (res.ok && (data.status === "cached" || data.status === "already_exists")) {
                 set((state) => ({
                     jobs: {
                         ...state.jobs,
                         [videoId]: { ...state.jobs[videoId], status: 'ready', message: 'พร้อมเล่น!', progress: 100, mode: data.mode || targetMode }
                     }
                 }));
-            } else if (data.status === 'error') {
-                isPolling = false;
+            } else if (res.ok && (data.status === "queued" || data.status === "processing")) {
+                // Active polling for background job
+                get().startPollingJob(videoId);
+            } else if (data.status === 'error' || !res.ok) {
                 let errorMessage = data.detail || data.message || 'เกิดข้อผิดพลาดในการแยกเสียง';
                 
                 // Detect PyInstaller temp folder deletion issue
@@ -295,7 +325,6 @@ export const useAIVocalStore = create<AIVocalState>()(
                 }));
             }
         } catch (e) {
-            isPolling = false;
             set((state) => ({
                 jobs: {
                     ...state.jobs,
@@ -440,6 +469,7 @@ export const useAIVocalStore = create<AIVocalState>()(
                             [videoId]: { ...state.jobs[videoId], status: 'processing', message: 'รอคิว...' }
                         }
                     }));
+                    get().startPollingJob(videoId);
                     return true;
                 }
             }
