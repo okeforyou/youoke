@@ -83,7 +83,8 @@ def run_tier1_ytdlp_standalone(yt_url: str, song_dir: str, vid: str, timeout: in
             print(f"[Downloader] Auto-heal update failed: {update_err}")
 
     if res.returncode != 0:
-        raise DownloaderError(f"yt-dlp returned non-zero exit code: {res.returncode}")
+        final_err = res.stderr or res.stdout or ""
+        raise DownloaderError(f"yt-dlp failed (code {res.returncode}): {final_err.strip()[-200:]}")
 
     downloaded_file = _find_downloaded_file(song_dir, vid)
     if downloaded_file and is_valid_audio(downloaded_file):

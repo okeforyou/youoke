@@ -263,6 +263,9 @@ async def upload_audio(video_id: str, file: UploadFile = File(...)):
 @router.post("/separate")
 def separate(req: SeparateRequest):
     vid = req.video_id
+    if not vid or ".." in vid or "/" in vid or "\\" in vid:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail="Invalid video_id")
     mode = req.mode
     song_dir = os.path.join(CACHE_DIR, vid)
     vocal_m4a = os.path.join(song_dir, f"{vid}_vocals.m4a")
@@ -388,6 +391,10 @@ def _execute_separation(req: SeparateRequest):
             set_progress(vid, "error", 0, f"ดาวน์โหลดล้มเหลว: {str(e)[:100]}")
             return {"status": "error", "message": f"Download failed: {e}"}
             
+    if progress_store.get(vid, {}).get("status") == "cancelled":
+        print(f"[Separation] Job {vid} was cancelled during download. Aborting.")
+        return {"status": "cancelled"}
+
     # 2. Convert to WAV for demucs
     set_progress(vid, "converting", 20, "เตรียมไฟล์สำหรับ AI...")
     try:
@@ -398,6 +405,10 @@ def _execute_separation(req: SeparateRequest):
         return {"status": "error", "message": str(e)}
         
     device = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
+
+    if progress_store.get(vid, {}).get("status") == "cancelled":
+        print(f"[Separation] Job {vid} was cancelled during conversion. Aborting.")
+        return {"status": "cancelled"}
 
     # 3. Run Demucs
     set_progress(vid, "separating", 25, "AI กำลังแยกเสียงร้องและดนตรี (อาจใช้เวลา 2-3 นาที)...")
