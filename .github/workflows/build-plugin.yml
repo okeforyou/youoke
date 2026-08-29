@@ -18,13 +18,19 @@ jobs:
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v4
-      - name: Delete Existing Release and Tag
+      - name: Delete and Re-create Tag
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION=$(node -p "require('./youoke-plugin/package.json').version")
           gh release delete v$VERSION --yes || true
           git push origin --delete v$VERSION || true
+          
+          # Re-create the tag on the current commit and push it to GitHub
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git tag v$VERSION
+          git push origin v$VERSION
         continue-on-error: true
 
   build:
