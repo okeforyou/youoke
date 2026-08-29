@@ -268,11 +268,11 @@ def separate(req: SeparateRequest):
         raise HTTPException(status_code=400, detail="Invalid video_id")
     mode = req.mode
     song_dir = os.path.join(CACHE_DIR, vid)
-    vocal_m4a = os.path.join(song_dir, f"{vid}_vocals.m4a")
-    drums_m4a = os.path.join(song_dir, f"{vid}_drums.m4a")
-    bass_m4a = os.path.join(song_dir, f"{vid}_bass.m4a")
-    other_m4a = os.path.join(song_dir, f"{vid}_other.m4a")
-    no_vocal_m4a = os.path.join(song_dir, f"{vid}_no_vocals.m4a")
+    vocal_m4a = os.path.join(song_dir, "vocals.m4a")
+    drums_m4a = os.path.join(song_dir, "drums.m4a")
+    bass_m4a = os.path.join(song_dir, "bass.m4a")
+    other_m4a = os.path.join(song_dir, "other.m4a")
+    no_vocal_m4a = os.path.join(song_dir, "no_vocals.m4a")
     
     # Helper to check if file exists and is not empty
     def is_valid_file(p):
@@ -307,11 +307,11 @@ def _execute_separation(req: SeparateRequest):
     vid = req.video_id
     mode = req.mode
     song_dir = os.path.join(CACHE_DIR, vid)
-    vocal_m4a = os.path.join(song_dir, f"{vid}_vocals.m4a")
-    drums_m4a = os.path.join(song_dir, f"{vid}_drums.m4a")
-    bass_m4a = os.path.join(song_dir, f"{vid}_bass.m4a")
-    other_m4a = os.path.join(song_dir, f"{vid}_other.m4a")
-    no_vocal_m4a = os.path.join(song_dir, f"{vid}_no_vocals.m4a")
+    vocal_m4a = os.path.join(song_dir, "vocals.m4a")
+    drums_m4a = os.path.join(song_dir, "drums.m4a")
+    bass_m4a = os.path.join(song_dir, "bass.m4a")
+    other_m4a = os.path.join(song_dir, "other.m4a")
+    no_vocal_m4a = os.path.join(song_dir, "no_vocals.m4a")
     set_progress(vid, "starting", 0, "กำลังเริ่มประมวลผล...", mode=mode, title=req.title)
     os.makedirs(song_dir, exist_ok=True)
 
