@@ -4,6 +4,39 @@ const { spawn, exec } = require('child_process');
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
+const https = require('https');
+const http = require('http');
+
+function checkUrlStatus(url, callback) {
+  try {
+    const parsedUrl = new URL(url);
+    const client = parsedUrl.protocol === 'https:' ? https : http;
+    const options = {
+      method: 'HEAD',
+      hostname: parsedUrl.hostname,
+      port: parsedUrl.port || (parsedUrl.protocol === 'https:' ? 443 : 80),
+      path: parsedUrl.pathname + parsedUrl.search,
+      timeout: 3000
+    };
+
+    const req = client.request(options, (res) => {
+      callback(res.statusCode === 200);
+    });
+
+    req.on('error', () => {
+      callback(false);
+    });
+
+    req.on('timeout', () => {
+      req.destroy();
+      callback(false);
+    });
+
+    req.end();
+  } catch (e) {
+    callback(false);
+  }
+}
 
 let tray = null;
 let serverProcess = null;
@@ -33,13 +66,32 @@ function createDashboardWindow() {
     }
   });
 
-  const dashboardUrl = app.isPackaged 
+  const primaryUrl = app.isPackaged 
     ? 'https://play.okeforyou.com/plugin-dashboard'
     : 'http://localhost:3000/plugin-dashboard';
 
-  dashboardWindow.loadURL(dashboardUrl).catch((err) => {
-    console.error('Failed to load remote dashboard, falling back to offline.html', err);
-    dashboardWindow.loadFile(path.join(__dirname, 'offline.html'));
+  const backupUrl = 'https://youoke.vercel.app/plugin-dashboard';
+
+  checkUrlStatus(primaryUrl, (primaryOk) => {
+    if (primaryOk) {
+      console.log('Loading primary URL:', primaryUrl);
+      dashboardWindow.loadURL(primaryUrl).catch(() => {
+        dashboardWindow.loadFile(path.join(__dirname, 'offline.html'));
+      });
+    } else {
+      console.warn('Primary URL failed or returned non-200. Checking backup URL:', backupUrl);
+      checkUrlStatus(backupUrl, (backupOk) => {
+        if (backupOk) {
+          console.log('Loading backup URL:', backupUrl);
+          dashboardWindow.loadURL(backupUrl).catch(() => {
+            dashboardWindow.loadFile(path.join(__dirname, 'offline.html'));
+          });
+        } else {
+          console.error('Both primary and backup URLs are unavailable. Loading local offline dashboard.');
+          dashboardWindow.loadFile(path.join(__dirname, 'offline.html'));
+        }
+      });
+    }
   });
 
   dashboardWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
