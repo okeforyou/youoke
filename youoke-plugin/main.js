@@ -33,7 +33,11 @@ function createDashboardWindow() {
     }
   });
 
-  dashboardWindow.loadURL('https://play.okeforyou.com/plugin-dashboard').catch((err) => {
+  const dashboardUrl = app.isPackaged 
+    ? 'https://play.okeforyou.com/plugin-dashboard'
+    : 'http://localhost:3000/plugin-dashboard';
+
+  dashboardWindow.loadURL(dashboardUrl).catch((err) => {
     console.error('Failed to load remote dashboard, falling back to offline.html', err);
     dashboardWindow.loadFile(path.join(__dirname, 'offline.html'));
   });
