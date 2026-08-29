@@ -8,6 +8,14 @@ const https = require('https');
 const http = require('http');
 
 function checkUrlStatus(url, callback) {
+  let called = false;
+  const done = (val) => {
+    if (!called) {
+      called = true;
+      callback(val);
+    }
+  };
+
   try {
     const parsedUrl = new URL(url);
     const client = parsedUrl.protocol === 'https:' ? https : http;
@@ -20,21 +28,23 @@ function checkUrlStatus(url, callback) {
     };
 
     const req = client.request(options, (res) => {
-      callback(res.statusCode === 200);
+      res.resume(); // Consume response data to free socket
+      done(res.statusCode === 200);
+      req.destroy(); // Close connection immediately
     });
 
     req.on('error', () => {
-      callback(false);
+      done(false);
     });
 
     req.on('timeout', () => {
       req.destroy();
-      callback(false);
+      done(false);
     });
 
     req.end();
   } catch (e) {
-    callback(false);
+    done(false);
   }
 }
 
