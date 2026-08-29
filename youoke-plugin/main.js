@@ -33,7 +33,17 @@ function createDashboardWindow() {
     }
   });
 
-  dashboardWindow.loadFile(path.join(__dirname, 'dashboard.html'));
+  dashboardWindow.loadURL('https://play.okeforyou.com/plugin-dashboard').catch((err) => {
+    console.error('Failed to load remote dashboard, falling back to offline.html', err);
+    dashboardWindow.loadFile(path.join(__dirname, 'offline.html'));
+  });
+
+  dashboardWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
+    if (errorCode !== -3) { // Ignore ERR_ABORTED
+      console.error(`Navigation failed to ${validatedURL}: ${errorDescription} (${errorCode})`);
+      dashboardWindow.loadFile(path.join(__dirname, 'offline.html'));
+    }
+  });
 
   // Open external links in default browser
   dashboardWindow.webContents.setWindowOpenHandler(({ url }) => {
