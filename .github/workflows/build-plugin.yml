@@ -13,7 +13,22 @@ on:
   workflow_dispatch:
 
 jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+      - name: Delete Existing Release and Tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(node -p "require('./youoke-plugin/package.json').version")
+          gh release delete v$VERSION --yes || true
+          git push origin --delete v$VERSION || true
+        continue-on-error: true
+
   build:
+    needs: cleanup
     runs-on: ${{ matrix.os }}
     
     strategy:
