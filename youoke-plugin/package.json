@@ -44,7 +44,7 @@
         "provider": "github",
         "owner": "okeforyou",
         "repo": "youoke",
-        "releaseType": "release"
+        "releaseType": "draft"
       }
     ]
   },

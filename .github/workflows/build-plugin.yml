@@ -97,3 +97,16 @@ jobs:
             npm run dist:win -- -p always
           fi
         shell: bash
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+      - name: Publish Draft Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(node -p "require('./youoke-plugin/package.json').version")
+          gh release edit v$VERSION --draft=false || true
