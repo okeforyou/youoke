@@ -15,6 +15,8 @@
 - **Important Notes:** [Any critical context the AI should not forget across sessions, e.g., "We have 126 RAG files processed"]
 
 ## 📝 Recent Context (Last Session)
+- **System-Wide Audit & Auto-Healing (2026-08-29):** We completely overhauled the AI Vocal Downloader. Instead of bundling `yt-dlp` directly, we use a standalone binary that can auto-update (`yt-dlp -U`) if YouTube blocks it. 
+- **Security & Fixes (2026-08-29):** We patched a path traversal vulnerability in `/separate`, fixed a zombie task cancellation bug, and routed exact `yt-dlp` stderr messages to the Frontend UI. The system was released as v1.0.70 and passed a strict `flake8` audit.
 - **Localhost Runtime Mismatch (2026-07-29):** During diagnosis, the active bridge on `127.0.0.1:5050` responded with version `1.0.36`, while the checked-in `scripts/local-bridge/server.py` currently declares version `1.0.39`. Any debugging must distinguish between the already running plugin instance and the repo source file.
 - **Confirmed Minimal Fix Targets (2026-07-29):**
   1. `scripts/local-bridge/server.py` has a post-Demucs output/compression block placed after an early `return` inside the exception area, making the success-path conversion logic unreachable.

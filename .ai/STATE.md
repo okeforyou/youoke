@@ -1,27 +1,22 @@
 # 📍 Active State (RAM)
-*Last Updated: 2026-08-11 12:30*
+*Last Updated: 2026-08-29 11:48*
 
 ## 🚀 Current Objective
-- [x] Fix Sara I clipping issue where blue sweep sliver appears prematurely.
-- [x] Prevent lyrics wrapping and ensure they display on a single line (flex-nowrap).
-- [x] Limit interpolation sweep speed for unaligned words (max 220ms/char) to prevent slow drags.
-- [x] End-anchor the sweep window of unaligned words to the start of the next aligned word for better timing.
-- [x] Fix vertical clipping on tall Thai vowels and tone marks (e.g. ฟื้น) by expanding inset bounds to -100%.
-- [x] Implement responsive dynamic font sizing based on character length of the line.
-- [x] Move "เนื้อเพลงจาก..." source indicator to the top-left of the player view.
-- [x] Replace sync offset controls with inline vocal, backing, drums, bass, and other stem controls directly on the bar.
-- [x] Implement a 3-tab segmented lyrics toggle (`ปิดเนื้อ`, `LRCLIB`, `AI Sync`) directly on the bar.
-- [x] Restore single combined Mixer Popover layout above the control bar, and sync individual range values with mute states automatically.
-- [x] Fix volume slider bounce-back bug when dragging to 0% by delegating mute state handling directly to useMixerStore's native setVolume action.
+- [x] Refactor backend to use Standalone `yt-dlp` executable (Auto-healing architecture).
+- [x] Fix Mac/Windows SSL Certificate errors `[SSL: CERTIFICATE_VERIFY_FAILED]`.
+- [x] Hide Windows CMD popup window during subprocess execution.
+- [x] Add path traversal sanitization to `/separate` and `/upload` video IDs.
+- [x] Patch cancellation logic to prevent zombie demucs tasks from reviving.
+- [x] Route explicit `yt-dlp` stderr messages to the Frontend UI for better debugging.
+- [ ] Monitor crashlytics/user feedback for v1.0.70 stability.
 
 ## 📋 Action Plan
-- [x] `src/modules/player/components/LyricsOverlay.tsx`: Conditional render sweeping span only when `wordProgress > 0`, adjust container wrapping, reposition source badge to top-left, and increase clip-path margins to -100%.
-- [x] `src/modules/lyrics/engines/deepgramAlignEngine.ts`: Update missing timestamp interpolation capping logic and end-anchoring.
-- [x] `src/modules/player/components/FullscreenControlBar.tsx`: Move all stem tracks into a single unified click-to-open Mixer Popover positioned above the bar, and add lyrics 3-pill segment selector.
-- [ ] Investigate Local Whisper Separation Engine (Pathway B) in the future.
+- [x] `scripts/local-bridge/services/downloader.py`: Implemented `ensure_yt_dlp()` and auto-update fallback.
+- [x] `scripts/local-bridge/routes/library_cache.py`: Protected active/queued tracks from LRU cache eviction.
+- [x] `scripts/local-bridge/routes/separation.py`: Cancelled jobs correctly abort before WAV conversion.
 
 ## ⚠️ Blockers
-- None.
+- None at this time (System is Production-Ready v1.0.70).
 
 ## 📌 Next AI Action
 - [ ] Gather user feedback on the floating Click-to-Open stem sliders and segmented lyrics bar UX.

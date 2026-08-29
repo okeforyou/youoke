@@ -104,9 +104,12 @@ function renderJobs(jobs) {
         return `
             <div class="job-card" data-id="${job.video_id}" style="${isError ? 'border-color: rgba(239, 68, 68, 0.4); background-color: rgba(239, 68, 68, 0.03);' : ''}">
                 <div class="card-header">
-                    <div>
-                        <div class="card-title">${job.title || job.video_id}</div>
-                        <div class="card-subtitle">ID: ${job.video_id}</div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div class="card-title" title="${job.title || job.video_id}">${job.title || job.video_id}</div>
+                        <div class="card-subtitle">
+                            <span class="badge ${job.mode === 'pro' ? 'badge-pro' : 'badge-basic'}">${job.mode === 'pro' ? '4CH' : '2CH'}</span>
+                            | ID: ${job.video_id}
+                        </div>
                     </div>
                     <div style="display: flex; gap: 6px; align-items: center;">
                         ${isError 
@@ -251,7 +254,7 @@ function renderCache(items) {
                     <div style="flex: 1; min-width: 0;">
                         <div class="card-title" title="${item.title}">${item.title}</div>
                         <div class="card-subtitle">
-                            <span class="badge ${item.mode === 'pro' ? 'badge-pro' : 'badge-basic'}">${item.mode}</span>
+                            <span class="badge ${item.mode === 'pro' ? 'badge-pro' : 'badge-basic'}">${item.mode === 'pro' ? '4CH' : '2CH'}</span>
                             | ID: ${item.video_id} | ${formattedDate}
                         </div>
                     </div>

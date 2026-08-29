@@ -3,6 +3,25 @@
 
 ---
 
+## 2026-08-29 - System-Wide Audit & Standalone Downloader Architecture
+
+**Context**
+- The `yt-dlp` module bundled via PyInstaller was difficult to update without releasing a new plugin version.
+- Users encountered Windows SSL errors, silent crashes, and UI hanging due to generic try/except blocks masking real `yt-dlp` errors.
+- Cancellation logic was flawed, causing downloads to revive during the conversion phase.
+
+**Decision**
+- Removed `yt-dlp` from PyInstaller bundle.
+- Introduced `binary_manager.py` to dynamically fetch the official standalone `yt-dlp` binary on the fly.
+- Added Auto-Healing: if `subprocess.run` fails, it triggers `yt-dlp -U` automatically and retries.
+- Strictly sanitized `video_id` variables to block Path Traversal vulnerabilities.
+
+**Implications**
+- The local bridge can now survive YouTube layout changes autonomously.
+- Security is hardened.
+- The UI gets exact stderr outputs directly from `yt-dlp` making debugging much easier.
+
+
 ## 2026-07-29 - AI Vocal v2 adopts local-first multi-acquisition architecture
 
 **Context**

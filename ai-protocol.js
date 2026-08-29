@@ -11,7 +11,7 @@ const crypto = require('crypto');
 // If you are an AI Agent adding a new feature or fixing a bug in this file,
 // you MUST increment the PROTOCOL_VERSION below AND the version in package.json.
 // ============================================================================
-const PROTOCOL_VERSION = "1.1.15";
+const PROTOCOL_VERSION = "1.1.16";
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -498,7 +498,7 @@ function prune() {
 }
 
 function clean() {
-  log('cyan', '🧼 Cleaning STATE.md for a new session...');
+  log('cyan', '�� Cleaning STATE.md for a new session...');
   ensureDir(path.join(projectRoot, '.ai/docs/state_history'));
   
   const statePath = path.join(projectRoot, '.ai/STATE.md');
