@@ -43,7 +43,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
     // React to aiStatus becoming ready while playing
     const aiJobStatus = useAIVocalStore(state => activeVideoId ? state.jobs[activeVideoId]?.status : undefined);
     const aiMode = useAIVocalStore(state => activeVideoId ? state.jobs[activeVideoId]?.mode : 'basic') || 'basic';
-    const isAiReady = Boolean(activeVideoId && aiJobStatus === 'ready');
+    const isAiReady = Boolean(activeVideoId && aiJobStatus === 'ready' && currentVideo?.aiVocalRequested);
 
     // AI Audio Mixer Refs
     const vocalRef = useRef<HTMLAudioElement>(null);

@@ -199,7 +199,7 @@ export default function YouTubeDashboard() {
                 author: item.subtitle || 'YouTube',
                 sourceType: 'youtube',
                 thumbnail: item.thumbnail,
-                aiVocalRequested: searchMode === 'ai_karaoke' ? true : undefined
+                aiVocalRequested: undefined
             } as any);
         }
     };

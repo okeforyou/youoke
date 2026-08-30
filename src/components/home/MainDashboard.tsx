@@ -631,7 +631,7 @@ export default function MainDashboard({ showTab = true, mode = 'default' }: { sh
                                         title: video.title,
                                         author: video.author,
                                         thumbnail: undefined,
-                                        aiVocalRequested: searchMode === 'ai_karaoke' ? true : undefined,
+                                        aiVocalRequested: undefined,
                                     } as any;
                                     
                                     // 🛡️ v4.9.74: Simple Login Check - If not logged in, block station access.

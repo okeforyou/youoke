@@ -47,7 +47,7 @@ export const HomePageContent = memo(({ onAddToQueue }: { onAddToQueue?: (video: 
                 title: video.title,
                 author: video.author,
                 thumbnail: undefined,
-                aiVocalRequested: searchMode === 'ai_karaoke' ? true : undefined,
+                aiVocalRequested: undefined,
             } as any;
             
             if (onAddToQueue) {
