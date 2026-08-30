@@ -258,7 +258,11 @@ export const useAIVocalStore = create<AIVocalState>()(
             }
         }
 
-        if (!useManualUpload && (!rapidapiKey || rapidapiKey.trim() === "")) {
+        // Check if local bridge is online
+        const port = await getActiveBridgePort();
+        const hasLocalBridge = !!port;
+
+        if (!useManualUpload && !hasLocalBridge && (!rapidapiKey || rapidapiKey.trim() === "")) {
             if (typeof window !== "undefined") {
                 useUIStore.getState().showConfirm({
                     title: "จำเป็นต้องใช้ API Key",
