@@ -192,6 +192,7 @@ export default function PluginDashboard() {
                     </div>
                     
                     <nav className="nav-menu">
+                        <div className="nav-section-label">คิวงาน</div>
                         <button 
                             className={`nav-item ${activeTab === 'jobs' ? 'active' : ''}`}
                             onClick={() => setActiveTab('jobs')}
@@ -210,6 +211,8 @@ export default function PluginDashboard() {
                             <span className="count-badge">{jobs.length}</span>
                         </button>
                         
+                        <div className="nav-divider" />
+                        <div className="nav-section-label">คลังเพลง</div>
                         <button 
                             className={`nav-item ${activeTab === 'cache' ? 'active' : ''}`}
                             onClick={() => setActiveTab('cache')}
@@ -218,7 +221,7 @@ export default function PluginDashboard() {
                                 <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                                 </svg>
-                                <span>คลังเพลงในเครื่อง</span>
+                                <span>แยกเสียงแล้ว</span>
                             </span>
                             <span className="count-badge">{cache.length}</span>
                         </button>
@@ -384,12 +387,23 @@ export default function PluginDashboard() {
                                         });
                                         return (
                                             <div key={item.video_id} className="table-row">
-                                                <div className="row-music-icon icon-cached">
-                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                        <path d="M9 18V5l12-2v13"></path>
-                                                        <circle cx="6" cy="18" r="3"></circle>
-                                                        <circle cx="18" cy="16" r="3"></circle>
-                                                    </svg>
+                                                <div className="row-thumbnail">
+                                                    <img
+                                                        src={`https://img.youtube.com/vi/${item.video_id}/mqdefault.jpg`}
+                                                        alt={item.title}
+                                                        className="thumbnail-img"
+                                                        onError={(e) => {
+                                                            (e.target as HTMLImageElement).style.display = 'none';
+                                                            (e.target as HTMLImageElement).nextElementSibling?.classList.remove('thumbnail-fallback-hidden');
+                                                        }}
+                                                    />
+                                                    <div className="thumbnail-fallback thumbnail-fallback-hidden">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                            <path d="M9 18V5l12-2v13"></path>
+                                                            <circle cx="6" cy="18" r="3"></circle>
+                                                            <circle cx="18" cy="16" r="3"></circle>
+                                                        </svg>
+                                                    </div>
                                                 </div>
                                                 <div className="col-info">
                                                     <div className="song-title" title={item.title}>{item.title}</div>
@@ -461,6 +475,7 @@ export default function PluginDashboard() {
                     color: var(--text-primary);
                     font-family: var(--font-family);
                     height: 100vh;
+                    min-width: 820px;
                     display: flex;
                     flex-direction: row;
                     overflow: hidden;
@@ -492,7 +507,7 @@ export default function PluginDashboard() {
                 .sidebar {
                     width: 240px;
                     background-color: var(--sidebar-bg);
-                    border-right: 1px solid var(--border-color);
+                    border-right: 2px solid var(--border-color);
                     display: flex;
                     flex-direction: column;
                     padding: 16px 12px;
@@ -530,15 +545,30 @@ export default function PluginDashboard() {
                 .nav-menu {
                     display: flex;
                     flex-direction: column;
-                    gap: 4px;
+                    gap: 2px;
                     flex: 1;
+                }
+
+                .nav-section-label {
+                    font-size: 9px;
+                    font-weight: 700;
+                    letter-spacing: 0.08em;
+                    text-transform: uppercase;
+                    color: var(--text-muted);
+                    padding: 8px 8px 4px;
+                }
+
+                .nav-divider {
+                    height: 1px;
+                    background-color: var(--border-color);
+                    margin: 6px 4px;
                 }
 
                 .nav-item {
                     display: flex;
                     align-items: center;
                     justify-content: space-between;
-                    padding: 10px 12px 10px 9px;
+                    padding: 9px 12px 9px 9px;
                     background: none;
                     border: none;
                     border-left: 3px solid transparent;
@@ -592,10 +622,12 @@ export default function PluginDashboard() {
                 .count-badge {
                     font-size: 10px;
                     font-weight: 700;
-                    padding: 2px 6px;
+                    padding: 2px 7px;
                     border-radius: 99px;
                     background-color: #e2e8f0;
                     color: var(--text-secondary);
+                    min-width: 20px;
+                    text-align: center;
                 }
 
                 .nav-item.active .count-badge {
@@ -788,8 +820,8 @@ export default function PluginDashboard() {
                 }
 
                 .row-music-icon {
-                    width: 32px;
-                    height: 32px;
+                    width: 44px;
+                    height: 44px;
                     background-color: #f1f5f9;
                     border-radius: 6px;
                     display: flex;
@@ -807,6 +839,45 @@ export default function PluginDashboard() {
                 .row-music-icon.icon-cached {
                     background-color: var(--primary-light);
                     color: var(--primary);
+                }
+
+                .row-thumbnail {
+                    width: 58px;
+                    height: 44px;
+                    border-radius: 6px;
+                    overflow: hidden;
+                    flex-shrink: 0;
+                    background-color: #f1f5f9;
+                    position: relative;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+
+                .thumbnail-img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    display: block;
+                }
+
+                .thumbnail-fallback {
+                    position: absolute;
+                    inset: 0;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background-color: var(--primary-light);
+                    color: var(--primary);
+                }
+
+                .thumbnail-fallback svg {
+                    width: 18px;
+                    height: 18px;
+                }
+
+                .thumbnail-fallback-hidden {
+                    display: none;
                 }
 
                 .col-info {
