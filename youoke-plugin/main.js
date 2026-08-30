@@ -61,8 +61,8 @@ function createDashboardWindow() {
   if (app.dock) app.dock.show();
 
   dashboardWindow = new BrowserWindow({
-    width: 420,
-    height: 580,
+    width: 820,
+    height: 600,
     minWidth: 380,
     minHeight: 500,
     resizable: true,

@@ -306,7 +306,14 @@ export default function PluginDashboard() {
                                                 
                                                 <div className="col-progress">
                                                     {isError ? (
-                                                        <span className="error-message">⚠️ {job.message || 'ดาวน์โหลดล้มเหลว'}</span>
+                                                        <span className="error-message">
+                                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: '13px', height: '13px', display: 'inline-block', marginRight: '4px', verticalAlign: '-2px' }}>
+                                                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                                                <line x1="12" y1="9" x2="12" y2="13"></line>
+                                                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                                            </svg>
+                                                            {job.message || 'ดาวน์โหลดล้มเหลว'}
+                                                        </span>
                                                     ) : (
                                                         <div className="progress-wrapper">
                                                             <div className="progress-text-row">
@@ -357,7 +364,12 @@ export default function PluginDashboard() {
                                 </div>
                             ) : (
                                 <div className="empty-state">
-                                    <div className="empty-icon">⏳</div>
+                                    <div className="empty-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: '32px', height: '32px' }}>
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <polyline points="12 6 12 12 16 14"></polyline>
+                                        </svg>
+                                    </div>
                                     <p>{searchQuery ? 'ไม่พบเพลงที่ค้นหาในคิวนี้' : 'ไม่มีเพลงที่กำลังแยกเสียงในขณะนี้'}</p>
                                 </div>
                             )
@@ -409,7 +421,13 @@ export default function PluginDashboard() {
                                 </div>
                             ) : (
                                 <div className="empty-state">
-                                    <div className="empty-icon">📁</div>
+                                    <div className="empty-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: '32px', height: '32px' }}>
+                                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                                            <line x1="12" y1="11" x2="12" y2="17"></line>
+                                            <line x1="9" y1="14" x2="15" y2="14"></line>
+                                        </svg>
+                                    </div>
                                     <p>{searchQuery ? 'ไม่พบเพลงที่ตรงกับคำค้นหาในคลัง' : 'ไม่มีไฟล์แคชเพลงในเครื่องของคุณ'}</p>
                                 </div>
                             )
@@ -520,10 +538,14 @@ export default function PluginDashboard() {
                     display: flex;
                     align-items: center;
                     justify-content: space-between;
-                    padding: 10px 12px;
+                    padding: 10px 12px 10px 9px;
                     background: none;
                     border: none;
-                    border-radius: 8px;
+                    border-left: 3px solid transparent;
+                    border-top-right-radius: 8px;
+                    border-bottom-right-radius: 8px;
+                    border-top-left-radius: 0;
+                    border-bottom-left-radius: 0;
                     color: var(--text-secondary);
                     font-weight: 600;
                     cursor: pointer;
@@ -557,12 +579,13 @@ export default function PluginDashboard() {
                 }
 
                 .nav-item.active {
-                    background-color: var(--primary-light);
-                    color: var(--primary);
+                    background-color: #ffe4e6;
+                    color: #e11d48;
+                    border-left: 3px solid var(--primary);
                 }
 
                 .nav-item.active .nav-icon {
-                    color: var(--primary);
+                    color: #e11d48;
                     opacity: 1;
                 }
 
@@ -782,8 +805,8 @@ export default function PluginDashboard() {
                 }
 
                 .row-music-icon.icon-cached {
-                    background-color: #ecfdf5;
-                    color: var(--success);
+                    background-color: var(--primary-light);
+                    color: var(--primary);
                 }
 
                 .col-info {
@@ -987,9 +1010,15 @@ export default function PluginDashboard() {
                 }
 
                 .empty-icon {
-                    font-size: 28px;
+                    width: 48px;
+                    height: 48px;
+                    color: var(--text-muted);
                     opacity: 0.5;
                     animation: float-icon 3s ease-in-out infinite;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-bottom: 4px;
                 }
 
                 @keyframes float-icon {
@@ -1009,15 +1038,15 @@ export default function PluginDashboard() {
                 }
 
                 .badge-pro {
-                    background-color: var(--warning-light);
-                    color: var(--warning);
-                    border: 1px solid rgba(245, 158, 11, 0.15);
+                    background-color: #ffedd5;
+                    color: #ea580c;
+                    border: 1px solid #fed7aa;
                 }
 
                 .badge-basic {
-                    background-color: #f1f5f9;
-                    color: var(--text-secondary);
-                    border: 1px solid #e2e8f0;
+                    background-color: #e0f2fe;
+                    color: #0369a1;
+                    border: 1px solid #bae6fd;
                 }
             `}</style>
         </>
