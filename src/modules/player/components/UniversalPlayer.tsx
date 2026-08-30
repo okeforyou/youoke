@@ -53,7 +53,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
     const otherRef = useRef<HTMLAudioElement>(null);
     const ytPlayerRef = useRef<any>(null);
     const handleAudioError = (e: React.SyntheticEvent<HTMLAudioElement, Event>) => {
-        if (!isAIVocalMode) return;
+        if (!isAiReady) return;
         console.error("Audio error:", e.currentTarget.src, e.currentTarget.error);
         
         // Fallback to YouTube Audio
