@@ -31,6 +31,9 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git tag v$VERSION
           git push origin v$VERSION
+
+          # Create a fresh draft release immediately so concurrent builds upload to the same release
+          gh release create v$VERSION --draft --title "$VERSION" --notes "Release v$VERSION"
         continue-on-error: true
 
   build:

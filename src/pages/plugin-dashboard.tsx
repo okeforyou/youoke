@@ -8,6 +8,7 @@ export default function PluginDashboard() {
     const [serverOnline, setServerOnline] = useState(false);
     const [jobs, setJobs] = useState([]);
     const [cache, setCache] = useState([]);
+    const [searchQuery, setSearchQuery] = useState("");
 
     const checkServerStatus = async () => {
         try {
@@ -155,6 +156,20 @@ export default function PluginDashboard() {
 
     const totalCacheSize = cache.reduce((sum, item: any) => sum + (item.size_mb || 0), 0).toFixed(2);
 
+    const filteredJobs = jobs.filter((job: any) => {
+        const title = (job.title || "").toLowerCase();
+        const id = (job.video_id || "").toLowerCase();
+        const query = searchQuery.toLowerCase();
+        return title.includes(query) || id.includes(query);
+    });
+
+    const filteredCache = cache.filter((item: any) => {
+        const title = (item.title || "").toLowerCase();
+        const id = (item.video_id || "").toLowerCase();
+        const query = searchQuery.toLowerCase();
+        return title.includes(query) || id.includes(query);
+    });
+
     return (
         <>
             <Head>
@@ -165,86 +180,177 @@ export default function PluginDashboard() {
                 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
             </Head>
             <div className="dashboard-root">
-                <header>
+                {/* Left Sidebar */}
+                <aside className="sidebar">
                     <div className="logo-area">
-                        <h1>YouOke AI <span>Dashboard</span></h1>
+                        <svg className="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M9 18V5l12-2v13"></path>
+                            <circle cx="6" cy="18" r="3"></circle>
+                            <circle cx="18" cy="16" r="3"></circle>
+                        </svg>
+                        <h1>YouOke <span>AI</span></h1>
                     </div>
-                    <div className={`status-badge ${serverOnline ? 'online' : ''}`}>
-                        <span className="status-dot"></span>
-                        <span>{serverOnline ? 'ONLINE' : 'OFFLINE'}</span>
+                    
+                    <nav className="nav-menu">
+                        <button 
+                            className={`nav-item ${activeTab === 'jobs' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('jobs')}
+                        >
+                            <span className="nav-item-left">
+                                <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                                </svg>
+                                <span>กำลังแยกเสียง</span>
+                            </span>
+                            <span className="count-badge">{jobs.length}</span>
+                        </button>
+                        
+                        <button 
+                            className={`nav-item ${activeTab === 'cache' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('cache')}
+                        >
+                            <span className="nav-item-left">
+                                <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                <span>คลังเพลงในเครื่อง</span>
+                            </span>
+                            <span className="count-badge">{cache.length}</span>
+                        </button>
+                    </nav>
+
+                    <div className="sidebar-footer">
+                        <div className="stats-box">
+                            <div className="stat-row">
+                                <span className="stat-label">สถานะระบบ:</span>
+                                <div className={`status-badge ${serverOnline ? 'online' : 'offline'}`}>
+                                    <span className="status-dot"></span>
+                                    <span>{serverOnline ? 'ONLINE' : 'OFFLINE'}</span>
+                                </div>
+                            </div>
+                            <div className="stat-row">
+                                <span className="stat-label">ขนาดคลังแคช:</span>
+                                <span className="stat-val">{totalCacheSize} MB</span>
+                            </div>
+                        </div>
                     </div>
-                </header>
+                </aside>
 
-                <nav>
-                    <button 
-                        className={`tab-btn ${activeTab === 'jobs' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('jobs')}
-                    >
-                        กำลังแยกเสียง ({jobs.length})
-                    </button>
-                    <button 
-                        className={`tab-btn ${activeTab === 'cache' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('cache')}
-                    >
-                        แคชข้อมูล ({cache.length})
-                    </button>
-                </nav>
+                {/* Right Content Area */}
+                <main className="main-content">
+                    <header className="content-header">
+                        <h2>{activeTab === 'jobs' ? 'คิวการประมวลผลเสียงร้อง AI' : 'คลังไฟล์เพลงสำรองในเครื่อง'}</h2>
+                        
+                        <div className="header-actions">
+                            <div className="search-box">
+                                <svg className="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                                <input 
+                                    type="text" 
+                                    placeholder="ค้นหาชื่อเพลง..." 
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                                {searchQuery && (
+                                    <button className="clear-search" onClick={() => setSearchQuery("")}>&times;</button>
+                                )}
+                            </div>
+                            
+                            {activeTab === 'cache' && cache.length > 0 && (
+                                <button className="btn btn-danger-outline" onClick={handleClearAllCache}>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '12px', height: '12px' }}>
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    </svg>
+                                    ล้างแคชทั้งหมด
+                                </button>
+                            )}
+                        </div>
+                    </header>
 
-                <main>
-                    {activeTab === 'jobs' && (
-                        <div className="tab-content active">
-                            {jobs.length > 0 ? (
-                                <div className="list-container">
-                                    {jobs.map((job: any) => {
+                    <div className="scroll-content">
+                        {activeTab === 'jobs' && (
+                            filteredJobs.length > 0 ? (
+                                <div className="table-list">
+                                    {filteredJobs.map((job: any) => {
                                         const percent = job.percent || 0;
                                         const isPaused = job.status === 'paused';
                                         const isQueued = job.status === 'queued';
                                         const isError = job.status === 'error';
                                         return (
-                                            <div key={job.video_id} className="job-card" style={isError ? { borderColor: 'rgba(239, 68, 68, 0.4)', backgroundColor: 'rgba(239, 68, 68, 0.03)' } : {}}>
-                                                <div className="card-header">
-                                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                                        <div className="card-title" title={job.title || job.video_id}>{job.title || job.video_id}</div>
-                                                        <div className="card-subtitle">
-                                                            <span className={`badge ${job.mode === 'pro' ? 'badge-pro' : 'badge-basic'}`}>
-                                                                {job.mode === 'pro' ? '4CH' : '2CH'}
-                                                            </span>
-                                                            &nbsp;|&nbsp;ID: {job.video_id}
-                                                        </div>
-                                                    </div>
-                                                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                                                        {isError ? (
-                                                            <button className="btn btn-secondary" style={{ backgroundColor: 'rgba(16,185,129,0.15)', color: '#10b981', border: '1px solid rgba(16,185,129,0.3)' }} onClick={() => handleResume(job.video_id)}>ลองใหม่</button>
-                                                        ) : (
-                                                            isPaused ? (
-                                                                <button className="btn btn-secondary" style={{ backgroundColor: 'rgba(16,185,129,0.15)', color: '#10b981', border: '1px solid rgba(16,185,129,0.3)' }} onClick={() => handleResume(job.video_id)}>ทํางานต่อ</button>
-                                                            ) : (
-                                                                <button className="btn btn-secondary" style={{ backgroundColor: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.3)' }} onClick={() => handlePause(job.video_id)}>หยุดพัก</button>
-                                                            )
-                                                        )}
-                                                        <button className="btn btn-danger" onClick={() => handleCancel(job.video_id, isError)}>
-                                                            {isError ? 'ลบออก' : 'ยกเลิก'}
-                                                        </button>
+                                            <div key={job.video_id} className={`table-row ${isError ? 'row-error' : ''}`}>
+                                                <div className="row-music-icon">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M9 18V5l12-2v13"></path>
+                                                        <circle cx="6" cy="18" r="3"></circle>
+                                                        <circle cx="18" cy="16" r="3"></circle>
+                                                    </svg>
+                                                </div>
+                                                <div className="col-info">
+                                                    <div className="song-title" title={job.title || job.video_id}>{job.title || job.video_id}</div>
+                                                    <div className="song-meta">
+                                                        <span className={`badge ${job.mode === 'pro' ? 'badge-pro' : 'badge-basic'}`}>
+                                                            {job.mode === 'pro' ? '4CH' : '2CH'}
+                                                        </span>
+                                                        <span className="meta-separator">•</span>
+                                                        <span className="video-id">ID: {job.video_id}</span>
                                                     </div>
                                                 </div>
-                                                {isError ? (
-                                                    <div style={{ fontSize: '11px', color: '#ef4444', fontWeight: 600, marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                        <span>⚠️ {job.message || 'ดาวน์โหลดล้มเหลว'}</span>
-                                                    </div>
-                                                ) : (
-                                                    <>
-                                                        <div className="progress-bar-container">
-                                                            <div className="progress-bar" style={{ width: `${isQueued ? 5 : percent}%` }}></div>
+                                                
+                                                <div className="col-progress">
+                                                    {isError ? (
+                                                        <span className="error-message">⚠️ {job.message || 'ดาวน์โหลดล้มเหลว'}</span>
+                                                    ) : (
+                                                        <div className="progress-wrapper">
+                                                            <div className="progress-text-row">
+                                                                <span className="status-label">{getStatusText(job.status)}</span>
+                                                                <span className="percent-label">{isQueued ? 'รอคิว' : `${percent}%`}</span>
+                                                            </div>
+                                                            <div className="mini-progress-bar">
+                                                                <div className="fill" style={{ width: `${isQueued ? 5 : percent}%` }}></div>
+                                                            </div>
+                                                            {job.message && <div className="progress-subtext">{job.message}</div>}
                                                         </div>
-                                                        <div className="job-status-row">
-                                                            <span>สถานะ: {getStatusText(job.status)}</span>
-                                                            <span>{isQueued ? 'ต่อคิว' : `${percent}%`}</span>
-                                                        </div>
-                                                        <div style={{ fontSize: '11px', color: '#a5a6a7', marginTop: '-2px' }}>
-                                                            {job.message || ''}
-                                                        </div>
-                                                    </>
-                                                )}
+                                                    )}
+                                                </div>
+
+                                                <div className="col-actions">
+                                                    {isError ? (
+                                                        <button className="btn btn-action btn-success-light" title="ลองใหม่" onClick={() => handleResume(job.video_id)}>
+                                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                                                            </svg>
+                                                        </button>
+                                                    ) : (
+                                                        isPaused ? (
+                                                            <button className="btn btn-action btn-success-light" title="ทำงานต่อ" onClick={() => handleResume(job.video_id)}>
+                                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                                                </svg>
+                                                            </button>
+                                                        ) : (
+                                                            <button className="btn btn-action btn-warning-light" title="หยุดชั่วคราว" onClick={() => handlePause(job.video_id)}>
+                                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                                    <rect x="14" y="4" width="4" height="16" rx="1"></rect>
+                                                                    <rect x="6" y="4" width="4" height="16" rx="1"></rect>
+                                                                </svg>
+                                                            </button>
+                                                        )
+                                                    )}
+                                                    <button className="btn btn-action btn-danger-light" title={isError ? "ลบรายการ" : "ยกเลิกการทำงาน"} onClick={() => handleCancel(job.video_id, isError)}>
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                                                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                                                        </svg>
+                                                    </button>
+                                                </div>
                                             </div>
                                         );
                                     })}
@@ -252,36 +358,50 @@ export default function PluginDashboard() {
                             ) : (
                                 <div className="empty-state">
                                     <div className="empty-icon">⏳</div>
-                                    <p>ไม่มีเพลงที่กำลังแยกเสียงในขณะนี้</p>
+                                    <p>{searchQuery ? 'ไม่พบเพลงที่ค้นหาในคิวนี้' : 'ไม่มีเพลงที่กำลังแยกเสียงในขณะนี้'}</p>
                                 </div>
-                            )}
-                        </div>
-                    )}
+                            )
+                        )}
 
-                    {activeTab === 'cache' && (
-                        <div className="tab-content active">
-                            {cache.length > 0 ? (
-                                <div className="list-container">
-                                    {cache.map((item: any) => {
+                        {activeTab === 'cache' && (
+                            filteredCache.length > 0 ? (
+                                <div className="table-list">
+                                    {filteredCache.map((item: any) => {
                                         const formattedDate = new Date(item.created_at * 1000).toLocaleDateString("th-TH", {
                                             year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit"
                                         });
                                         return (
-                                            <div key={item.video_id} className="cache-card">
-                                                <div className="card-header">
-                                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                                        <div className="card-title" title={item.title}>{item.title}</div>
-                                                        <div className="card-subtitle">
-                                                            <span className={`badge ${item.mode === 'pro' ? 'badge-pro' : 'badge-basic'}`}>
-                                                                {item.mode === 'pro' ? '4CH' : '2CH'}
-                                                            </span>
-                                                            &nbsp;|&nbsp;ID: {item.video_id}&nbsp;|&nbsp;{formattedDate}
-                                                        </div>
+                                            <div key={item.video_id} className="table-row">
+                                                <div className="row-music-icon icon-cached">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M9 18V5l12-2v13"></path>
+                                                        <circle cx="6" cy="18" r="3"></circle>
+                                                        <circle cx="18" cy="16" r="3"></circle>
+                                                    </svg>
+                                                </div>
+                                                <div className="col-info">
+                                                    <div className="song-title" title={item.title}>{item.title}</div>
+                                                    <div className="song-meta">
+                                                        <span className={`badge ${item.mode === 'pro' ? 'badge-pro' : 'badge-basic'}`}>
+                                                            {item.mode === 'pro' ? '4CH' : '2CH'}
+                                                        </span>
+                                                        <span className="meta-separator">•</span>
+                                                        <span className="video-id">ID: {item.video_id}</span>
                                                     </div>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
-                                                        <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-white)' }}>{item.size_mb} MB</span>
-                                                        <button className="btn btn-danger" onClick={() => handleDeleteCache(item.video_id)}>ลบ</button>
-                                                    </div>
+                                                </div>
+                                                
+                                                <div className="col-size">
+                                                    <span className="size-text">{item.size_mb} MB</span>
+                                                    <span className="date-text">{formattedDate}</span>
+                                                </div>
+
+                                                <div className="col-actions">
+                                                    <button className="btn btn-action btn-danger-light" title="ลบไฟล์เพลงจากเครื่อง" onClick={() => handleDeleteCache(item.video_id)}>
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                        </svg>
+                                                    </button>
                                                 </div>
                                             </div>
                                         );
@@ -290,55 +410,41 @@ export default function PluginDashboard() {
                             ) : (
                                 <div className="empty-state">
                                     <div className="empty-icon">📁</div>
-                                    <p>ไม่มีไฟล์แคชเพลงในเครื่องของคุณ</p>
+                                    <p>{searchQuery ? 'ไม่พบเพลงที่ตรงกับคำค้นหาในคลัง' : 'ไม่มีไฟล์แคชเพลงในเครื่องของคุณ'}</p>
                                 </div>
-                            )}
-                            <div className="footer-actions">
-                                <div className="cache-info">ขนาดแคชทั้งหมด: <span>{totalCacheSize}</span> MB</div>
-                                <button className="btn btn-danger" onClick={handleClearAllCache}>ล้างแคชทั้งหมด</button>
-                            </div>
-                        </div>
-                    )}
+                            )
+                        )}
+                    </div>
                 </main>
             </div>
             <style jsx>{`
                 :root {
-                    --bg-color: #09090b;
-                    --panel-bg: #18181b;
-                    --panel-hover-bg: #27272a;
-                    --primary: #ef4444;
-                    --primary-hover: #dc2626;
-                    --text-color: #a1a1aa;
-                    --text-white: #f4f4f5;
-                    --text-muted: #71717a;
-                    --border-color: #27272a;
+                    --bg-color: #f8fafc;
+                    --sidebar-bg: #ffffff;
+                    --border-color: #e2e8f0;
+                    --primary: #f43f5e;
+                    --primary-hover: #e11d48;
+                    --primary-light: #fff1f2;
+                    --text-primary: #0f172a;
+                    --text-secondary: #475569;
+                    --text-muted: #94a3b8;
+                    --success: #10b981;
+                    --success-light: #ecfdf5;
+                    --warning: #f59e0b;
+                    --warning-light: #fef3c7;
                     --danger: #ef4444;
                     --danger-hover: #dc2626;
-                    --success: #10b981;
+                    --danger-light: #fff5f5;
                     --font-family: 'IBM Plex Sans Thai', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
                 }
 
-                @media (prefers-color-scheme: light) {
-                    :root {
-                        --bg-color: #f4f4f5;
-                        --panel-bg: #ffffff;
-                        --panel-hover-bg: #fafafa;
-                        --primary: #ef4444;
-                        --primary-hover: #dc2626;
-                        --text-color: #52525b;
-                        --text-white: #09090b;
-                        --text-muted: #a1a1aa;
-                        --border-color: #e4e4e7;
-                    }
-                }
-
                 .dashboard-root {
-                    background-color: var(--bg-color, #09090b);
-                    color: var(--text-color, #a1a1aa);
-                    font-family: 'IBM Plex Sans Thai', 'Inter', sans-serif;
+                    background-color: var(--bg-color);
+                    color: var(--text-primary);
+                    font-family: var(--font-family);
                     height: 100vh;
                     display: flex;
-                    flex-direction: column;
+                    flex-direction: row;
                     overflow: hidden;
                     font-size: 13px;
                     letter-spacing: -0.01em;
@@ -358,107 +464,561 @@ export default function PluginDashboard() {
                     background: transparent;
                 }
                 .dashboard-root :global(::-webkit-scrollbar-thumb) {
-                    background: rgba(255, 255, 255, 0.1);
+                    background: rgba(0, 0, 0, 0.08);
                     border-radius: 99px;
                 }
                 .dashboard-root :global(::-webkit-scrollbar-thumb:hover) {
-                    background: rgba(255, 255, 255, 0.2);
+                    background: rgba(0, 0, 0, 0.16);
                 }
 
-                header {
-                    padding: 16px 20px;
-                    border-bottom: 1px solid var(--border-color, #27272a);
-                    background: linear-gradient(180deg, rgba(239, 68, 68, 0.04) 0%, rgba(9, 9, 11, 0) 100%), var(--bg-color, #09090b);
+                .sidebar {
+                    width: 240px;
+                    background-color: var(--sidebar-bg);
+                    border-right: 1px solid var(--border-color);
                     display: flex;
-                    justify-content: space-between;
-                    align-items: center;
+                    flex-direction: column;
+                    padding: 16px 12px;
                     flex-shrink: 0;
                 }
 
-                .logo-area { display: flex; align-items: center; gap: 10px; }
-                .logo-area h1 { font-size: 15px; font-weight: 800; color: var(--text-white, #f4f4f5); letter-spacing: -0.02em; text-transform: uppercase; }
-                .logo-area span { color: var(--primary, #ef4444); font-weight: 400; text-transform: none; margin-left: 2px; opacity: 0.95; }
+                .logo-area {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    padding: 4px 8px 16px 8px;
+                    border-bottom: 1px solid var(--border-color);
+                    margin-bottom: 16px;
+                }
+
+                .logo-icon {
+                    width: 22px;
+                    height: 22px;
+                    color: var(--primary);
+                }
+
+                .logo-area h1 {
+                    font-size: 16px;
+                    font-weight: 800;
+                    color: var(--text-primary);
+                    letter-spacing: -0.02em;
+                    text-transform: uppercase;
+                }
+
+                .logo-area span {
+                    color: var(--primary);
+                    font-weight: 500;
+                }
+
+                .nav-menu {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 4px;
+                    flex: 1;
+                }
+
+                .nav-item {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 10px 12px;
+                    background: none;
+                    border: none;
+                    border-radius: 8px;
+                    color: var(--text-secondary);
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.15s ease;
+                    text-align: left;
+                    font-size: 13px;
+                    font-family: inherit;
+                    width: 100%;
+                }
+
+                .nav-item-left {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+
+                .nav-icon {
+                    width: 16px;
+                    height: 16px;
+                    opacity: 0.7;
+                    transition: opacity 0.15s ease;
+                }
+
+                .nav-item:hover {
+                    background-color: #f1f5f9;
+                    color: var(--text-primary);
+                }
+
+                .nav-item:hover .nav-icon {
+                    opacity: 1;
+                }
+
+                .nav-item.active {
+                    background-color: var(--primary-light);
+                    color: var(--primary);
+                }
+
+                .nav-item.active .nav-icon {
+                    color: var(--primary);
+                    opacity: 1;
+                }
+
+                .count-badge {
+                    font-size: 10px;
+                    font-weight: 700;
+                    padding: 2px 6px;
+                    border-radius: 99px;
+                    background-color: #e2e8f0;
+                    color: var(--text-secondary);
+                }
+
+                .nav-item.active .count-badge {
+                    background-color: var(--primary);
+                    color: #ffffff;
+                }
+
+                .sidebar-footer {
+                    padding-top: 12px;
+                    border-top: 1px solid var(--border-color);
+                }
+
+                .stats-box {
+                    background-color: #f8fafc;
+                    border: 1px solid var(--border-color);
+                    border-radius: 8px;
+                    padding: 10px 12px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                }
+
+                .stat-row {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    font-size: 11px;
+                    font-weight: 500;
+                    color: var(--text-secondary);
+                }
+
+                .stat-val {
+                    font-weight: 700;
+                    color: var(--text-primary);
+                }
 
                 .status-badge {
-                    font-size: 10px; padding: 4px 10px; border-radius: 9999px; font-weight: 700;
-                    display: flex; align-items: center; gap: 6px;
-                    background-color: rgba(82, 82, 91, 0.1); color: #71717a; border: 1px solid rgba(82, 82, 91, 0.15);
-                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); letter-spacing: 0.05em;
+                    font-size: 9px;
+                    padding: 2px 6px;
+                    border-radius: 99px;
+                    font-weight: 700;
+                    display: flex;
+                    align-items: center;
+                    gap: 4px;
+                    background-color: #e2e8f0;
+                    color: var(--text-secondary);
+                    border: 1px solid rgba(0, 0, 0, 0.05);
+                    letter-spacing: 0.05em;
                 }
-                .status-badge.online { background-color: rgba(16, 185, 129, 0.1); color: var(--success, #10b981); border: 1px solid rgba(16, 185, 129, 0.2); }
-                .status-dot { width: 6px; height: 6px; border-radius: 50%; background-color: currentColor; display: inline-block; }
-                .status-badge.online .status-dot { animation: pulse-dot 2s infinite; }
+
+                .status-badge.online {
+                    background-color: var(--success-light);
+                    color: var(--success);
+                }
+
+                .status-dot {
+                    width: 5px;
+                    height: 5px;
+                    border-radius: 50%;
+                    background-color: currentColor;
+                }
+
+                .status-badge.online .status-dot {
+                    animation: pulse-dot 2s infinite;
+                }
 
                 @keyframes pulse-dot {
                     0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-                    70% { transform: scale(1); box-shadow: 0 0 0 5px rgba(16, 185, 129, 0); }
+                    70% { transform: scale(1); box-shadow: 0 0 0 4px rgba(16, 185, 129, 0); }
                     100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
                 }
 
-                nav { display: flex; border-bottom: 1px solid var(--border-color, #27272a); background-color: var(--bg-color, #09090b); flex-shrink: 0; padding: 0 10px; }
-                .tab-btn {
-                    flex: 1; padding: 14px 10px; background: none; border: none; color: var(--text-color, #a1a1aa);
-                    font-weight: 600; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-                    text-align: center; font-size: 13px; position: relative; opacity: 0.7; font-family: inherit;
-                }
-                .tab-btn::after {
-                    content: ''; position: absolute; bottom: -1px; left: 50%; transform: translateX(-50%);
-                    width: 0; height: 2px; background-color: var(--primary, #ef4444); transition: width 0.2s ease;
-                }
-                .tab-btn:hover, .tab-btn.active { color: var(--text-white, #f4f4f5); opacity: 1; }
-                .tab-btn.active::after { width: 40px; }
-
-                main { flex: 1; position: relative; overflow: hidden; }
-                .tab-content {
-                    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-                    display: none; flex-direction: column; padding: 16px; overflow-y: auto;
-                }
-                .tab-content.active { display: flex; }
-
-                .list-container { display: flex; flex-direction: column; gap: 12px; }
-                .job-card, .cache-card {
-                    background-color: var(--panel-bg, #18181b); border: 1px solid var(--border-color, #27272a);
-                    border-radius: 12px; padding: 10px 14px; display: flex; flex-direction: column; gap: 6px;
-                    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-                }
-                .job-card:hover, .cache-card:hover {
-                    border-color: rgba(239, 68, 68, 0.25); background-color: var(--panel-hover-bg, #27272a);
-                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+                .main-content {
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                    overflow: hidden;
+                    background-color: var(--bg-color);
                 }
 
-                .card-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-                .card-title {
-                    font-weight: 600; color: var(--text-white, #f4f4f5); font-size: 13px; line-height: 1.4;
-                    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+                .content-header {
+                    height: 56px;
+                    border-bottom: 1px solid var(--border-color);
+                    background-color: #ffffff;
+                    padding: 0 20px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    flex-shrink: 0;
                 }
-                .card-subtitle { font-size: 11px; color: var(--text-color, #a1a1aa); opacity: 0.65; margin-top: 4px; display: flex; align-items: center; gap: 6px; }
+
+                .content-header h2 {
+                    font-size: 14px;
+                    font-weight: 700;
+                    color: var(--text-primary);
+                }
+
+                .header-actions {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }
+
+                .search-box {
+                    position: relative;
+                    display: flex;
+                    align-items: center;
+                }
+
+                .search-icon {
+                    position: absolute;
+                    left: 10px;
+                    width: 14px;
+                    height: 14px;
+                    color: var(--text-muted);
+                    pointer-events: none;
+                }
+
+                .search-box input {
+                    width: 200px;
+                    padding: 6px 30px;
+                    border: 1px solid var(--border-color);
+                    border-radius: 6px;
+                    font-size: 12px;
+                    background-color: #f8fafc;
+                    color: var(--text-primary);
+                    font-family: inherit;
+                    transition: all 0.15s ease;
+                }
+
+                .search-box input:focus {
+                    outline: none;
+                    border-color: var(--primary);
+                    background-color: #ffffff;
+                    box-shadow: 0 0 0 2px rgba(244, 63, 94, 0.1);
+                }
+
+                .clear-search {
+                    position: absolute;
+                    right: 8px;
+                    background: none;
+                    border: none;
+                    font-size: 14px;
+                    color: var(--text-muted);
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+
+                .clear-search:hover {
+                    color: var(--text-primary);
+                }
+
+                .scroll-content {
+                    flex: 1;
+                    overflow-y: auto;
+                    padding: 16px;
+                }
+
+                .table-list {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                }
+
+                .table-row {
+                    background-color: #ffffff;
+                    border: 1px solid var(--border-color);
+                    border-radius: 8px;
+                    padding: 8px 12px;
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    transition: all 0.15s ease;
+                }
+
+                .table-row:hover {
+                    border-color: #cbd5e1;
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+                }
+
+                .row-error {
+                    border-color: #fca5a5;
+                    background-color: #fffafb;
+                }
+
+                .row-error:hover {
+                    border-color: #ef4444;
+                }
+
+                .row-music-icon {
+                    width: 32px;
+                    height: 32px;
+                    background-color: #f1f5f9;
+                    border-radius: 6px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: var(--text-secondary);
+                    flex-shrink: 0;
+                }
+
+                .row-music-icon svg {
+                    width: 16px;
+                    height: 16px;
+                }
+
+                .row-music-icon.icon-cached {
+                    background-color: #ecfdf5;
+                    color: var(--success);
+                }
+
+                .col-info {
+                    flex: 1;
+                    min-width: 0;
+                }
+
+                .song-title {
+                    font-weight: 600;
+                    color: var(--text-primary);
+                    font-size: 13px;
+                    line-height: 1.3;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+
+                .song-meta {
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    margin-top: 2px;
+                }
+
+                .meta-separator {
+                    color: var(--text-muted);
+                    font-size: 10px;
+                }
+
+                .video-id {
+                    font-size: 11px;
+                    color: var(--text-muted);
+                }
+
+                .col-size {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: flex-end;
+                    justify-content: center;
+                    width: 140px;
+                    flex-shrink: 0;
+                }
+
+                .size-text {
+                    font-size: 12px;
+                    font-weight: 700;
+                    color: var(--text-secondary);
+                }
+
+                .date-text {
+                    font-size: 10px;
+                    color: var(--text-muted);
+                    margin-top: 1px;
+                }
+
+                .col-progress {
+                    width: 180px;
+                    flex-shrink: 0;
+                    margin-right: 8px;
+                }
+
+                .progress-wrapper {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 3px;
+                }
+
+                .progress-text-row {
+                    display: flex;
+                    justify-content: space-between;
+                    font-size: 11px;
+                    font-weight: 500;
+                    color: var(--text-secondary);
+                }
+
+                .percent-label {
+                    font-weight: 700;
+                    color: var(--primary);
+                }
+
+                .mini-progress-bar {
+                    width: 100%;
+                    height: 4px;
+                    background-color: #f1f5f9;
+                    border-radius: 99px;
+                    overflow: hidden;
+                }
+
+                .mini-progress-bar .fill {
+                    height: 100%;
+                    background: linear-gradient(90deg, var(--primary) 0%, #fb7185 100%);
+                    border-radius: 99px;
+                    transition: width 0.3s ease;
+                }
+
+                .progress-subtext {
+                    font-size: 10px;
+                    color: var(--text-muted);
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+
+                .error-message {
+                    font-size: 11px;
+                    color: var(--danger);
+                    font-weight: 600;
+                }
+
+                .col-actions {
+                    display: flex;
+                    gap: 4px;
+                    flex-shrink: 0;
+                }
 
                 .btn {
-                    background: none; border: none; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 600;
-                    cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; gap: 4px;
-                    border: 1px solid transparent; font-family: inherit; min-width: 68px; justify-content: center;
+                    background: none;
+                    border: none;
+                    padding: 5px 10px;
+                    border-radius: 6px;
+                    font-size: 11px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.1s ease;
+                    display: flex;
+                    align-items: center;
+                    gap: 4px;
+                    font-family: inherit;
                 }
-                .btn-danger { background-color: rgba(239, 68, 68, 0.1); color: var(--danger, #ef4444); border: 1px solid rgba(239, 68, 68, 0.15); }
-                .btn-danger:hover { background-color: var(--danger, #ef4444); color: #ffffff; border-color: var(--danger, #ef4444); transform: translateY(-1px); }
-                .btn-danger:active { transform: translateY(0); }
-                .btn-secondary:hover { transform: translateY(-1px); }
 
-                .progress-bar-container { width: 100%; height: 4px; background-color: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; margin-top: 4px; }
-                .progress-bar { height: 100%; background: linear-gradient(90deg, var(--primary, #ef4444) 0%, #f43f5e 100%); transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 99px; }
+                .btn-danger-outline {
+                    border: 1px solid var(--border-color);
+                    color: var(--danger);
+                    background-color: #ffffff;
+                    padding: 6px 12px;
+                    font-size: 12px;
+                }
 
-                .job-status-row { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-color, #a1a1aa); opacity: 0.8; font-weight: 500; }
+                .btn-danger-outline:hover {
+                    background-color: var(--danger-light);
+                    border-color: #fca5a5;
+                }
 
-                .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; flex: 1; color: var(--text-muted, #71717a); text-align: center; padding: 60px 20px; }
-                .empty-icon { font-size: 36px; margin-bottom: 2px; opacity: 0.35; animation: float-icon 3s ease-in-out infinite; }
-                @keyframes float-icon { 0% { transform: translateY(0); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0); } }
+                .btn-action {
+                    width: 28px;
+                    height: 28px;
+                    padding: 0;
+                    justify-content: center;
+                    border-radius: 6px;
+                    color: var(--text-secondary);
+                    border: 1px solid var(--border-color);
+                    background-color: #ffffff;
+                }
 
-                .footer-actions { margin-top: 15px; padding: 14px 4px 4px 4px; border-top: 1px solid var(--border-color, #27272a); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
-                .cache-info { font-size: 11px; color: var(--text-color, #a1a1aa); opacity: 0.7; font-weight: 500; }
-                .cache-info span { color: var(--text-white, #f4f4f5); font-weight: 700; }
+                .btn-action svg {
+                    width: 14px;
+                    height: 14px;
+                }
 
-                .badge { font-size: 9px; padding: 2px 6px; border-radius: 6px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; display: inline-flex; align-items: center; }
-                .badge-pro { background-color: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.15); }
-                .badge-basic { background-color: rgba(113, 113, 122, 0.1); color: #a1a1aa; border: 1px solid rgba(113, 113, 122, 0.15); }
+                .btn-action:hover {
+                    color: var(--text-primary);
+                    background-color: #f1f5f9;
+                }
+
+                .btn-success-light {
+                    color: var(--success);
+                }
+                .btn-success-light:hover {
+                    background-color: var(--success-light);
+                    border-color: #a7f3d0;
+                    color: var(--success);
+                }
+
+                .btn-warning-light {
+                    color: var(--warning);
+                }
+                .btn-warning-light:hover {
+                    background-color: var(--warning-light);
+                    border-color: #fde68a;
+                    color: var(--warning);
+                }
+
+                .btn-danger-light {
+                    color: var(--danger);
+                }
+                .btn-danger-light:hover {
+                    background-color: var(--danger-light);
+                    border-color: #fca5a5;
+                    color: var(--danger);
+                }
+
+                .empty-state {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                    padding: 80px 20px;
+                    color: var(--text-muted);
+                    text-align: center;
+                }
+
+                .empty-icon {
+                    font-size: 28px;
+                    opacity: 0.5;
+                    animation: float-icon 3s ease-in-out infinite;
+                }
+
+                @keyframes float-icon {
+                    0% { transform: translateY(0); }
+                    50% { transform: translateY(-4px); }
+                    100% { transform: translateY(0); }
+                }
+
+                .badge {
+                    font-size: 9px;
+                    padding: 1px 5px;
+                    border-radius: 4px;
+                    font-weight: 700;
+                    letter-spacing: 0.02em;
+                    display: inline-flex;
+                    align-items: center;
+                }
+
+                .badge-pro {
+                    background-color: var(--warning-light);
+                    color: var(--warning);
+                    border: 1px solid rgba(245, 158, 11, 0.15);
+                }
+
+                .badge-basic {
+                    background-color: #f1f5f9;
+                    color: var(--text-secondary);
+                    border: 1px solid #e2e8f0;
+                }
             `}</style>
         </>
     );

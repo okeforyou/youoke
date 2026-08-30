@@ -3,40 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouOke AI Dashboard - Offline Mode</title>
+    <title>YouOke AI Dashboard - Offline Fallback</title>
     <!-- Import Premium Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #09090b; /* zinc-950 */
-            --panel-bg: #18181b; /* zinc-900 */
-            --panel-hover-bg: #27272a;
-            --primary: #ef4444; /* YouOke Red */
-            --primary-hover: #dc2626;
-            --text-color: #a1a1aa; /* zinc-400 */
-            --text-white: #f4f4f5; /* zinc-100 */
-            --text-muted: #71717a; /* zinc-500 */
-            --border-color: #27272a; /* zinc-800 */
+            --bg-color: #f8fafc;
+            --sidebar-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --primary: #f43f5e;
+            --primary-hover: #e11d48;
+            --primary-light: #fff1f2;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --success-light: #ecfdf5;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
             --danger: #ef4444;
             --danger-hover: #dc2626;
-            --success: #10b981; /* emerald-500 */
+            --danger-light: #fff5f5;
             --font-family: 'IBM Plex Sans Thai', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
-
-        @media (prefers-color-scheme: light) {
-            :root {
-                --bg-color: #f4f4f5; /* zinc-100 */
-                --panel-bg: #ffffff;
-                --panel-hover-bg: #fafafa;
-                --primary: #ef4444;
-                --primary-hover: #dc2626;
-                --text-color: #52525b; /* zinc-600 */
-                --text-white: #09090b; /* zinc-950 */
-                --text-muted: #a1a1aa;
-                --border-color: #e4e4e7; /* zinc-200 */
-            }
         }
 
         * {
@@ -49,18 +39,13 @@
             font-family: var(--font-family);
         }
 
-        .card-header .btn {
-            min-width: 68px;
-            justify-content: center;
-        }
-
         body {
             background-color: var(--bg-color);
-            color: var(--text-color);
+            color: var(--text-primary);
             font-family: var(--font-family);
             height: 100vh;
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             overflow: hidden;
             font-size: 13px;
             letter-spacing: -0.01em;
@@ -75,73 +60,176 @@
             background: transparent;
         }
         ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.08);
             border-radius: 99px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.16);
         }
 
-        /* Header styling */
-        header {
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border-color);
-            background: linear-gradient(180deg, rgba(239, 68, 68, 0.04) 0%, rgba(9, 9, 11, 0) 100%), var(--bg-color);
+        /* Sidebar Layout */
+        .sidebar {
+            width: 240px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            padding: 16px 12px;
             flex-shrink: 0;
         }
 
         .logo-area {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
+            padding: 4px 8px 16px 8px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 16px;
+        }
+
+        .logo-icon {
+            width: 22px;
+            height: 22px;
+            color: var(--primary);
         }
 
         .logo-area h1 {
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 800;
-            color: var(--text-white);
+            color: var(--text-primary);
             letter-spacing: -0.02em;
             text-transform: uppercase;
         }
 
         .logo-area span {
             color: var(--primary);
-            font-weight: 400;
-            text-transform: none;
-            margin-left: 2px;
-            opacity: 0.95;
+            font-weight: 500;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            background: none;
+            border: none;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-align: left;
+            font-size: 13px;
+            font-family: inherit;
+            width: 100%;
+        }
+
+        .nav-item-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-icon {
+            width: 16px;
+            height: 16px;
+            opacity: 0.7;
+            transition: opacity 0.15s ease;
+        }
+
+        .nav-item:hover {
+            background-color: #f1f5f9;
+            color: var(--text-primary);
+        }
+
+        .nav-item:hover .nav-icon {
+            opacity: 1;
+        }
+
+        .nav-item.active {
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .nav-item.active .nav-icon {
+            color: var(--primary);
+            opacity: 1;
+        }
+
+        .count-badge {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 99px;
+            background-color: #e2e8f0;
+            color: var(--text-secondary);
+        }
+
+        .nav-item.active .count-badge {
+            background-color: var(--primary);
+            color: #ffffff;
+        }
+
+        .sidebar-footer {
+            padding-top: 12px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .stats-box {
+            background-color: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .stat-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .stat-val {
+            font-weight: 700;
+            color: var(--text-primary);
         }
 
         .status-badge {
-            font-size: 10px;
-            padding: 4px 10px;
-            border-radius: 9999px;
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 99px;
             font-weight: 700;
             display: flex;
             align-items: center;
-            gap: 6px;
-            background-color: rgba(82, 82, 91, 0.1);
-            color: #71717a;
-            border: 1px solid rgba(82, 82, 91, 0.15);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            gap: 4px;
+            background-color: #e2e8f0;
+            color: var(--text-secondary);
+            border: 1px solid rgba(0, 0, 0, 0.05);
             letter-spacing: 0.05em;
         }
 
         .status-badge.online {
-            background-color: rgba(16, 185, 129, 0.1);
+            background-color: var(--success-light);
             color: var(--success);
-            border: 1px solid rgba(16, 185, 129, 0.2);
         }
 
         .status-dot {
-            width: 6px;
-            height: 6px;
+            width: 5px;
+            height: 5px;
             border-radius: 50%;
             background-color: currentColor;
-            display: inline-block;
         }
 
         .status-badge.online .status-dot {
@@ -150,354 +238,539 @@
 
         @keyframes pulse-dot {
             0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 5px rgba(16, 185, 129, 0); }
+            70% { transform: scale(1); box-shadow: 0 0 0 4px rgba(16, 185, 129, 0); }
             100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
         }
 
-        /* Navigation Tabs */
-        nav {
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
             display: flex;
-            border-bottom: 1px solid var(--border-color);
+            flex-direction: column;
+            overflow: hidden;
             background-color: var(--bg-color);
-            flex-shrink: 0;
-            padding: 0 10px;
         }
 
-        .tab-btn {
-            flex: 1;
-            padding: 14px 10px;
+        /* Offline Banner */
+        .offline-banner {
+            background-color: var(--warning-light);
+            color: var(--warning);
+            border-bottom: 1px solid var(--border-color);
+            padding: 8px 16px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 600;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+        
+        .offline-banner button {
+            background-color: #ffffff;
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.1s ease;
+        }
+        .offline-banner button:hover {
+            background-color: var(--warning-light);
+            border-color: var(--warning);
+        }
+
+        .content-header {
+            height: 56px;
+            border-bottom: 1px solid var(--border-color);
+            background-color: #ffffff;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .content-header h2 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 10px;
+            width: 14px;
+            height: 14px;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .search-box input {
+            width: 200px;
+            padding: 6px 30px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 12px;
+            background-color: #f8fafc;
+            color: var(--text-primary);
+            font-family: inherit;
+            transition: all 0.15s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background-color: #ffffff;
+            box-shadow: 0 0 0 2px rgba(244, 63, 94, 0.1);
+        }
+
+        .clear-search {
+            position: absolute;
+            right: 8px;
             background: none;
             border: none;
-            color: var(--text-color);
-            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-muted);
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            text-align: center;
-            font-size: 13px;
-            position: relative;
-            opacity: 0.7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .tab-btn::after {
-            content: '';
-            position: absolute;
-            bottom: -1px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 2px;
-            background-color: var(--primary);
-            transition: width 0.2s ease;
+        .clear-search:hover {
+            color: var(--text-primary);
         }
 
-        .tab-btn:hover {
-            color: var(--text-white);
-            opacity: 1;
-        }
-
-        .tab-btn.active {
-            color: var(--text-white);
-            opacity: 1;
-        }
-
-        .tab-btn.active::after {
-            width: 40px;
-        }
-
-        /* Content containers */
-        main {
+        .scroll-content {
             flex: 1;
-            position: relative;
-            overflow: hidden;
+            overflow-y: auto;
+            padding: 16px;
         }
 
         .tab-content {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
             display: none;
             flex-direction: column;
-            padding: 16px;
-            overflow-y: auto;
         }
 
         .tab-content.active {
             display: flex;
         }
 
-        /* List elements */
-        .list-container {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .job-card, .cache-card {
-            background-color: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 10px 14px;
+        .table-list {
             display: flex;
             flex-direction: column;
             gap: 6px;
-            position: relative;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .job-card:hover, .cache-card:hover {
-            border-color: rgba(239, 68, 68, 0.25);
-            background-color: var(--panel-hover-bg);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        .card-header {
+        .table-row {
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 12px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
             gap: 12px;
+            transition: all 0.15s ease;
         }
 
-        .card-title {
+        .table-row:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .row-error {
+            border-color: #fca5a5;
+            background-color: #fffafb;
+        }
+
+        .row-error:hover {
+            border-color: #ef4444;
+        }
+
+        .row-music-icon {
+            width: 32px;
+            height: 32px;
+            background-color: #f1f5f9;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+        }
+
+        .row-music-icon svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .row-music-icon.icon-cached {
+            background-color: #ecfdf5;
+            color: var(--success);
+        }
+
+        .col-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .song-title {
             font-weight: 600;
-            color: var(--text-white);
+            color: var(--text-primary);
             font-size: 13px;
-            line-height: 1.4;
+            line-height: 1.3;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        .card-subtitle {
-            font-size: 11px;
-            color: var(--text-color);
-            opacity: 0.65;
-            margin-top: 4px;
+        .song-meta {
             display: flex;
             align-items: center;
             gap: 6px;
+            margin-top: 2px;
         }
 
-        /* Buttons and controls */
-        .btn {
-            background: none;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 8px;
+        .meta-separator {
+            color: var(--text-muted);
+            font-size: 10px;
+        }
+
+        .video-id {
             font-size: 11px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            color: var(--text-muted);
+        }
+
+        .col-size {
             display: flex;
-            align-items: center;
-            gap: 4px;
-            border: 1px solid transparent;
-            font-family: var(--font-family);
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: center;
+            width: 140px;
+            flex-shrink: 0;
         }
 
-        .btn-danger {
-            background-color: rgba(239, 68, 68, 0.1);
-            color: var(--danger);
-            border: 1px solid rgba(239, 68, 68, 0.15);
+        .size-text {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-secondary);
         }
 
-        .btn-danger:hover {
-            background-color: var(--danger);
-            color: #ffffff;
-            border-color: var(--danger);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+        .date-text {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 1px;
         }
 
-        .btn-danger:active {
-            transform: translateY(0);
+        .col-progress {
+            width: 180px;
+            flex-shrink: 0;
+            margin-right: 8px;
         }
 
-        .btn-secondary {
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-        }
-        .btn-secondary:hover {
-            background-color: var(--panel-hover-bg);
-            color: var(--text-white);
+        .progress-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
         }
 
-        /* Progress bar */
-        .progress-bar-container {
-            width: 100%;
-            height: 4px;
-            background-color: rgba(255,255,255,0.06);
-            border-radius: 99px;
-            overflow: hidden;
-            margin-top: 4px;
-        }
-
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary) 0%, #f43f5e 100%);
-            width: 0%;
-            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 99px;
-        }
-
-        .job-status-row {
+        .progress-text-row {
             display: flex;
             justify-content: space-between;
             font-size: 11px;
-            color: var(--text-color);
-            opacity: 0.8;
             font-weight: 500;
+            color: var(--text-secondary);
         }
 
-        /* Empty states */
+        .percent-label {
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .mini-progress-bar {
+            width: 100%;
+            height: 4px;
+            background-color: #f1f5f9;
+            border-radius: 99px;
+            overflow: hidden;
+        }
+
+        .mini-progress-bar .fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary) 0%, #fb7185 100%);
+            border-radius: 99px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-subtext {
+            font-size: 10px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .error-message {
+            font-size: 11px;
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        .col-actions {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .btn {
+            background: none;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-family: inherit;
+        }
+
+        .btn-danger-outline {
+            border: 1px solid var(--border-color);
+            color: var(--danger);
+            background-color: #ffffff;
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .btn-danger-outline:hover {
+            background-color: var(--danger-light);
+            border-color: #fca5a5;
+        }
+
+        .btn-action {
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            justify-content: center;
+            border-radius: 6px;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            background-color: #ffffff;
+        }
+
+        .btn-action svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .btn-action:hover {
+            color: var(--text-primary);
+            background-color: #f1f5f9;
+        }
+
+        .btn-success-light {
+            color: var(--success);
+        }
+        .btn-success-light:hover {
+            background-color: var(--success-light);
+            border-color: #a7f3d0;
+            color: var(--success);
+        }
+
+        .btn-warning-light {
+            color: var(--warning);
+        }
+        .btn-warning-light:hover {
+            background-color: var(--warning-light);
+            border-color: #fde68a;
+            color: var(--warning);
+        }
+
+        .btn-danger-light {
+            color: var(--danger);
+        }
+        .btn-danger-light:hover {
+            background-color: var(--danger-light);
+            border-color: #fca5a5;
+            color: var(--danger);
+        }
+
         .empty-state {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            flex: 1;
+            gap: 8px;
+            padding: 80px 20px;
             color: var(--text-muted);
             text-align: center;
-            padding: 60px 20px;
+            width: 100%;
         }
 
         .empty-icon {
-            font-size: 36px;
-            margin-bottom: 2px;
-            opacity: 0.35;
+            font-size: 28px;
+            opacity: 0.5;
             animation: float-icon 3s ease-in-out infinite;
         }
 
         @keyframes float-icon {
             0% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
+            50% { transform: translateY(-4px); }
             100% { transform: translateY(0); }
         }
 
-        /* Cache bottom actions */
-        .footer-actions {
-            margin-top: 15px;
-            padding: 14px 4px 4px 4px;
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-shrink: 0;
-        }
-
-        .cache-info {
-            font-size: 11px;
-            color: var(--text-color);
-            opacity: 0.7;
-            font-weight: 500;
-        }
-
-        .cache-info span {
-            color: var(--text-white);
-            font-weight: 700;
-        }
-
-        /* Badge mode styling */
         .badge {
             font-size: 9px;
-            padding: 2px 6px;
-            border-radius: 6px;
+            padding: 1px 5px;
+            border-radius: 4px;
             font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.02em;
             display: inline-flex;
             align-items: center;
         }
 
         .badge-pro {
-            background-color: rgba(245, 158, 11, 0.1);
-            color: #f59e0b;
+            background-color: var(--warning-light);
+            color: var(--warning);
             border: 1px solid rgba(245, 158, 11, 0.15);
         }
 
         .badge-basic {
-            background-color: rgba(113, 113, 122, 0.1);
-            color: #a1a1aa;
-            border: 1px solid rgba(113, 113, 122, 0.15);
-        }
-
-        /* Offline Banner */
-        .offline-banner {
-            background-color: rgba(245, 158, 11, 0.15);
-            color: #f59e0b;
-            border-bottom: 1px solid rgba(245, 158, 11, 0.25);
-            padding: 6px 16px;
-            text-align: center;
-            font-size: 11px;
-            font-weight: 600;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .offline-banner button {
-            background: rgba(245, 158, 11, 0.2);
-            color: #f59e0b;
-            border: 1px solid rgba(245, 158, 11, 0.3);
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 10px;
-            cursor: pointer;
-        }
-        .offline-banner button:hover {
-            background: #f59e0b;
-            color: #000;
+            background-color: #f1f5f9;
+            color: var(--text-secondary);
+            border: 1px solid #e2e8f0;
         }
     </style>
 </head>
 <body>
-    <div class="offline-banner">
-        <span>⚠️ โหมดออฟไลน์: กำลังดึงข้อมูลจากตัวเครื่องของคุณโดยตรง</span>
-        <button onclick="window.location.reload()">เชื่อมต่อใหม่</button>
+    <div class="sidebar">
+        <div class="logo-area">
+            <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 18V5l12-2v13"></path>
+                <circle cx="6" cy="18" r="3"></circle>
+                <circle cx="18" cy="16" r="3"></circle>
+            </svg>
+            <h1>YouOke <span>AI</span></h1>
+        </div>
+        
+        <nav class="nav-menu">
+            <button id="tab-jobs" class="nav-item active">
+                <span class="nav-item-left">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                    <span>กำลังแยกเสียง</span>
+                </span>
+                <span id="jobs-count" class="count-badge">0</span>
+            </button>
+            
+            <button id="tab-cache" class="nav-item">
+                <span class="nav-item-left">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span>คลังเพลงในเครื่อง</span>
+                </span>
+                <span id="cache-count" class="count-badge">0</span>
+            </button>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="stats-box">
+                <div class="stat-row">
+                    <span class="stat-label">สถานะระบบ:</span>
+                    <div id="connection-status" class="status-badge">
+                        <span class="status-dot"></span>
+                        <span id="status-text">OFFLINE</span>
+                    </div>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">ขนาดคลังแคช:</span>
+                    <span class="stat-val"><span id="total-cache-size">0.00</span> MB</span>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <header>
-        <div class="logo-area">
-            <h1>YouOke AI <span>Dashboard</span></h1>
-        </div>
-        <div id="connection-status" class="status-badge">
-            <span class="status-dot"></span>
-            <span id="status-text">OFFLINE</span>
-        </div>
-    </header>
-
-    <nav>
-        <button id="tab-jobs" class="tab-btn active">กำลังแยกเสียง (<span id="jobs-count">0</span>)</button>
-        <button id="tab-cache" class="tab-btn">แคชข้อมูล (<span id="cache-count">0</span>)</button>
-    </nav>
-
-    <main>
-        <!-- ACTIVE JOBS TAB -->
-        <div id="content-jobs" class="tab-content active">
-            <div id="jobs-list" class="list-container">
-                <!-- Dynamic Content -->
-            </div>
-            <div id="jobs-empty" class="empty-state">
-                <div class="empty-icon">⏳</div>
-                <p>ไม่มีเพลงที่กำลังแยกเสียงในขณะนี้</p>
-            </div>
+    <main class="main-content">
+        <div class="offline-banner">
+            <span>⚠️ โหมดออฟไลน์: กำลังดึงข้อมูลจากตัวเครื่องของคุณโดยตรง</span>
+            <button onclick="window.location.reload()">เชื่อมต่อใหม่</button>
         </div>
 
-        <!-- CACHE MANAGER TAB -->
-        <div id="content-cache" class="tab-content">
-            <div id="cache-list" class="list-container">
-                <!-- Dynamic Content -->
+        <header class="content-header">
+            <h2 id="content-title">คิวการประมวลผลเสียงร้อง AI</h2>
+            
+            <div class="header-actions">
+                <div class="search-box">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input 
+                        id="search-input"
+                        type="text" 
+                        placeholder="ค้นหาชื่อเพลง..." 
+                    />
+                    <button id="clear-search-btn" class="clear-search" style="display: none;">&times;</button>
+                </div>
+                
+                <button id="clear-all-cache-btn" class="btn btn-danger-outline" style="display: none;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 12px; height: 12px;">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                    ล้างแคชทั้งหมด
+                </button>
             </div>
-            <div id="cache-empty" class="empty-state" style="display: none;">
-                <div class="empty-icon">📁</div>
-                <p>ไม่มีไฟล์แคชเพลงในเครื่องของคุณ</p>
+        </header>
+
+        <div class="scroll-content">
+            <!-- ACTIVE JOBS TAB -->
+            <div id="content-jobs" class="tab-content active">
+                <div id="jobs-list" class="table-list">
+                    <!-- Dynamic Content -->
+                </div>
+                <div id="jobs-empty" class="empty-state">
+                    <div class="empty-icon">⏳</div>
+                    <p id="jobs-empty-text">ไม่มีเพลงที่กำลังแยกเสียงในขณะนี้</p>
+                </div>
             </div>
-            <div id="cache-footer" class="footer-actions">
-                <div class="cache-info">ขนาดแคชทั้งหมด: <span id="total-cache-size">0.00</span> MB</div>
-                <button id="clear-all-cache-btn" class="btn btn-danger">ล้างแคชทั้งหมด</button>
+
+            <!-- CACHE MANAGER TAB -->
+            <div id="content-cache" class="tab-content">
+                <div id="cache-list" class="table-list">
+                    <!-- Dynamic Content -->
+                </div>
+                <div id="cache-empty" class="empty-state" style="display: none;">
+                    <div class="empty-icon">📁</div>
+                    <p id="cache-empty-text">ไม่มีไฟล์แคชเพลงในเครื่องของคุณ</p>
+                </div>
             </div>
         </div>
     </main>
@@ -507,6 +780,9 @@
         let activeTab = "jobs"; // "jobs" or "cache"
         let serverOnline = false;
         let updateInterval = null;
+        let searchQuery = "";
+        let jobsData = [];
+        let cacheData = [];
 
         // DOM Elements
         const connectionStatus = document.getElementById("connection-status");
@@ -523,26 +799,91 @@
         const cacheCount = document.getElementById("cache-count");
         const totalCacheSize = document.getElementById("total-cache-size");
         const clearAllCacheBtn = document.getElementById("clear-all-cache-btn");
+        const contentTitle = document.getElementById("content-title");
+        const searchInput = document.getElementById("search-input");
+        const clearSearchBtn = document.getElementById("clear-search-btn");
 
         // Init listeners
         tabJobs.addEventListener("click", () => switchTab("jobs"));
         tabCache.addEventListener("click", () => switchTab("cache"));
         clearAllCacheBtn.addEventListener("click", clearAllCache);
 
+        // Search Handlers
+        searchInput.addEventListener("input", (e) => {
+            searchQuery = e.target.value;
+            if (searchQuery) {
+                clearSearchBtn.style.display = "flex";
+            } else {
+                clearSearchBtn.style.display = "none";
+            }
+            filterAndRender();
+        });
+
+        clearSearchBtn.addEventListener("click", () => {
+            searchInput.value = "";
+            searchQuery = "";
+            clearSearchBtn.style.display = "none";
+            filterAndRender();
+        });
+
         function switchTab(tab) {
             activeTab = tab;
+            searchQuery = "";
+            searchInput.value = "";
+            clearSearchBtn.style.display = "none";
+
             if (tab === "jobs") {
                 tabJobs.classList.add("active");
                 tabCache.classList.remove("active");
                 contentJobs.classList.add("active");
                 contentCache.classList.remove("active");
+                contentTitle.innerText = "คิวการประมวลผลเสียงร้อง AI";
+                clearAllCacheBtn.style.display = "none";
                 fetchJobs();
             } else {
                 tabCache.classList.add("active");
                 tabJobs.classList.remove("active");
                 contentCache.classList.add("active");
                 contentJobs.classList.remove("active");
+                contentTitle.innerText = "คลังไฟล์เพลงสำรองในเครื่อง";
+                if (cacheData.length > 0) {
+                    clearAllCacheBtn.style.display = "flex";
+                }
                 fetchCache();
+            }
+        }
+
+        function filterAndRender() {
+            if (activeTab === "jobs") {
+                const query = searchQuery.toLowerCase();
+                const filtered = jobsData.filter(job => {
+                    const title = (job.title || "").toLowerCase();
+                    const id = (job.video_id || "").toLowerCase();
+                    return title.includes(query) || id.includes(query);
+                });
+                
+                const jobsEmptyText = document.getElementById("jobs-empty-text");
+                if (searchQuery) {
+                    jobsEmptyText.innerText = "ไม่พบเพลงที่ค้นหาในคิวนี้";
+                } else {
+                    jobsEmptyText.innerText = "ไม่มีเพลงที่กำลังแยกเสียงในขณะนี้";
+                }
+                renderJobs(filtered);
+            } else {
+                const query = searchQuery.toLowerCase();
+                const filtered = cacheData.filter(item => {
+                    const title = (item.title || "").toLowerCase();
+                    const id = (item.video_id || "").toLowerCase();
+                    return title.includes(query) || id.includes(query);
+                });
+                
+                const cacheEmptyText = document.getElementById("cache-empty-text");
+                if (searchQuery) {
+                    cacheEmptyText.innerText = "ไม่พบเพลงที่ตรงกับคำค้นหาในคลัง";
+                } else {
+                    cacheEmptyText.innerText = "ไม่มีไฟล์แคชเพลงในเครื่องของคุณ";
+                }
+                renderCache(filtered);
             }
         }
 
@@ -580,10 +921,10 @@
                 if (!res.ok) throw new Error("Failed to load jobs");
                 const jobs = await res.json();
                 
-                const activeJobs = jobs.filter(j => ['queued', 'starting', 'downloading', 'converting', 'separating', 'compressing', 'paused', 'error'].includes(j.status));
-                jobsCount.innerText = activeJobs.length;
+                jobsData = jobs.filter(j => ['queued', 'starting', 'downloading', 'converting', 'separating', 'compressing', 'paused', 'error'].includes(j.status));
+                jobsCount.innerText = jobsData.length;
                 
-                renderJobs(activeJobs);
+                filterAndRender();
             } catch (e) {
                 console.error(e);
             }
@@ -607,44 +948,68 @@
                 const isError = job.status === 'error';
                 
                 return `
-                    <div class="job-card" data-id="${job.video_id}" style="${isError ? 'border-color: rgba(239, 68, 68, 0.4); background-color: rgba(239, 68, 68, 0.03);' : ''}">
-                        <div class="card-header">
-                            <div style="flex: 1; min-width: 0;">
-                                <div class="card-title" title="${job.title || job.video_id}">${job.title || job.video_id}</div>
-                                <div class="card-subtitle">
-                                    <span class="badge ${job.mode === 'pro' ? 'badge-pro' : 'badge-basic'}">${job.mode === 'pro' ? '4CH' : '2CH'}</span>
-                                    | ID: ${job.video_id}
-                                </div>
-                            </div>
-                            <div style="display: flex; gap: 6px; align-items: center;">
-                                ${isError 
-                                    ? `<button class="btn btn-secondary" style="background-color: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3);" onclick="resumeJob('${job.video_id}')">ลองใหม่</button>`
-                                    : (isPaused 
-                                        ? `<button class="btn btn-secondary" style="background-color: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3);" onclick="resumeJob('${job.video_id}')">ทํางานต่อ</button>`
-                                        : `<button class="btn btn-secondary" style="background-color: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3);" onclick="pauseJob('${job.video_id}')">หยุดพัก</button>`)
-                                }
-                                <button class="btn btn-danger" onclick="cancelJob('${job.video_id}', ${isError})">${isError ? 'ลบออก' : 'ยกเลิก'}</button>
+                    <div class="table-row ${isError ? 'row-error' : ''}">
+                        <div class="row-music-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 18V5l12-2v13"></path>
+                                <circle cx="6" cy="18" r="3"></circle>
+                                <circle cx="18" cy="16" r="3"></circle>
+                            </svg>
+                        </div>
+                        <div class="col-info">
+                            <div class="song-title" title="${job.title || job.video_id}">${job.title || job.video_id}</div>
+                            <div class="song-meta">
+                                <span class="badge ${job.mode === 'pro' ? 'badge-pro' : 'badge-basic'}">${job.mode === 'pro' ? '4CH' : '2CH'}</span>
+                                <span class="meta-separator">•</span>
+                                <span class="video-id">ID: ${job.video_id}</span>
                             </div>
                         </div>
-                        ${isError 
-                            ? `
-                                <div style="font-size: 11px; color: #ef4444; font-weight: 600; margin-top: 4px; display: flex; align-items: center; gap: 4px;">
-                                    <span>⚠️ ${job.message || 'ดาวน์โหลดล้มเหลว'}</span>
-                                </div>
-                              `
-                            : `
-                                <div class="progress-bar-container">
-                                    <div class="progress-bar" style="width: ${isQueued ? 5 : percent}%"></div>
-                                </div>
-                                <div class="job-status-row">
-                                    <span>สถานะ: ${getStatusText(job.status)}</span>
-                                    <span>${isQueued ? 'ต่อคิว' : percent + '%'}</span>
-                                </div>
-                                <div style="font-size: 11px; color: #a5a6a7; margin-top: -2px;">
-                                    ${job.message || ''}
-                                </div>
-                              `
-                        }
+                        
+                        <div class="col-progress">
+                            ${isError 
+                                ? `<span class="error-message">⚠️ ${job.message || 'ดาวน์โหลดล้มเหลว'}</span>`
+                                : `
+                                    <div class="progress-wrapper">
+                                        <div class="progress-text-row">
+                                            <span class="status-label">${getStatusText(job.status)}</span>
+                                            <span class="percent-label">${isQueued ? 'รอคิว' : percent + '%'}</span>
+                                        </div>
+                                        <div class="mini-progress-bar">
+                                            <div class="fill" style="width: ${isQueued ? 5 : percent}%"></div>
+                                        </div>
+                                        ${job.message ? `<div class="progress-subtext">${job.message}</div>` : ''}
+                                    </div>
+                                  `
+                            }
+                        </div>
+
+                        <div class="col-actions">
+                            ${isError 
+                                ? `<button class="btn btn-action btn-success-light" title="ลองใหม่" onclick="resumeJob('${job.video_id}')">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                                    </svg>
+                                   </button>`
+                                : (isPaused 
+                                    ? `<button class="btn btn-action btn-success-light" title="ทำงานต่อ" onclick="resumeJob('${job.video_id}')">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                        </svg>
+                                       </button>`
+                                    : `<button class="btn btn-action btn-warning-light" title="หยุดชั่วคราว" onclick="pauseJob('${job.video_id}')">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="14" y="4" width="4" height="16" rx="1"></rect>
+                                            <rect x="6" y="4" width="4" height="16" rx="1"></rect>
+                                        </svg>
+                                       </button>`)
+                            }
+                            <button class="btn btn-action btn-danger-light" title="${isError ? 'ลบรายการ' : 'ยกเลิกการทำงาน'}" onclick="cancelJob('${job.video_id}', ${isError})">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 `;
             }).join("");
@@ -715,14 +1080,21 @@
                 if (!res.ok) throw new Error("Failed to load cache");
                 const data = await res.json();
                 if (data.status === "success") {
-                    const results = data.results || [];
-                    cacheCount.innerText = results.length;
+                    cacheData = data.results || [];
+                    cacheCount.innerText = cacheData.length;
                     
                     let totalSize = 0;
-                    results.forEach(item => totalSize += item.size_mb || 0);
+                    cacheData.forEach(item => totalSize += item.size_mb || 0);
                     totalCacheSize.innerText = totalSize.toFixed(2);
                     
-                    renderCache(results);
+                    if (activeTab === "cache") {
+                        if (cacheData.length > 0) {
+                            clearAllCacheBtn.style.display = "flex";
+                        } else {
+                            clearAllCacheBtn.style.display = "none";
+                        }
+                    }
+                    filterAndRender();
                 }
             } catch (e) {
                 console.error(e);
@@ -750,19 +1122,35 @@
                 });
                 
                 return `
-                    <div class="cache-card">
-                        <div class="card-header">
-                            <div style="flex: 1; min-width: 0;">
-                                <div class="card-title" title="${item.title}">${item.title}</div>
-                                <div class="card-subtitle">
-                                    <span class="badge ${item.mode === 'pro' ? 'badge-pro' : 'badge-basic'}">${item.mode === 'pro' ? '4CH' : '2CH'}</span>
-                                    | ID: ${item.video_id} | ${formattedDate}
-                                </div>
+                    <div class="table-row">
+                        <div class="row-music-icon icon-cached">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 18V5l12-2v13"></path>
+                                <circle cx="6" cy="18" r="3"></circle>
+                                <circle cx="18" cy="16" r="3"></circle>
+                            </svg>
+                        </div>
+                        <div class="col-info">
+                            <div class="song-title" title="${item.title}">${item.title}</div>
+                            <div class="song-meta">
+                                <span class="badge ${item.mode === 'pro' ? 'badge-pro' : 'badge-basic'}">${item.mode === 'pro' ? '4CH' : '2CH'}</span>
+                                <span class="meta-separator">•</span>
+                                <span class="video-id">ID: ${item.video_id}</span>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
-                                <span style="font-size: 12px; font-weight: bold; color: var(--text-white);">${item.size_mb} MB</span>
-                                <button class="btn btn-danger" onclick="deleteCache('${item.video_id}')">ลบ</button>
-                            </div>
+                        </div>
+                        
+                        <div class="col-size">
+                            <span class="size-text">${item.size_mb} MB</span>
+                            <span class="date-text">${formattedDate}</span>
+                        </div>
+
+                        <div class="col-actions">
+                            <button class="btn btn-action btn-danger-light" title="ลบไฟล์เพลงจากเครื่อง" onclick="deleteCache('${item.video_id}')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 `;
@@ -817,9 +1205,7 @@
         function startPolling() {
             checkServerStatus().then(() => {
                 fetchJobs();
-                if (activeTab === "cache") {
-                    fetchCache();
-                }
+                fetchCache();
             });
 
             updateInterval = setInterval(() => {
