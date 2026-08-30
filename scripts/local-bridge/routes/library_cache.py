@@ -173,73 +173,7 @@ async def delete_library(song_id: str):
 def clean_cache(max_size_gb: float = 10.0):
     return enforce_cache_limit(max_size_gb=max_size_gb)
 
-@router.get("/cache/list")
-def list_cache():
-    try:
-        active_dir = get_active_storage_dir()
-        if not os.path.exists(active_dir):
-            return {"status": "success", "results": []}
-        
-        results = []
-        for folder_name in os.listdir(active_dir):
-            song_dir = os.path.join(active_dir, folder_name)
-            if not os.path.isdir(song_dir):
-                continue
-                
-            vocal_m4a = os.path.join(song_dir, "vocals.m4a")
-            if not os.path.exists(vocal_m4a) or os.path.getsize(vocal_m4a) == 0:
-                continue
-                
-            youoke_json_path = os.path.join(song_dir, "youoke.json")
-            vid = folder_name
-            title = f"{folder_name}"
-            
-            if os.path.exists(youoke_json_path):
-                try:
-                    with open(youoke_json_path, "r", encoding="utf-8") as yf:
-                        ydata = json.load(yf)
-                        vid = ydata.get("videoId", folder_name)
-                        title = ydata.get("title", folder_name)
-                except:
-                    pass
-            else:
-                title_path = os.path.join(song_dir, "title.txt")
-                if os.path.exists(title_path):
-                    with open(title_path, "r", encoding="utf-8") as f:
-                        title = f.read().strip()
-                
-                # Fallback: scan for original youtube m4a file (11 characters) to recover the video ID
-                try:
-                    for f in os.listdir(song_dir):
-                        if f.endswith(".m4a") and f not in ["vocals.m4a", "no_vocals.m4a", "bass.m4a", "drums.m4a", "other.m4a"]:
-                            possible_vid = f.replace(".m4a", "")
-                            if len(possible_vid) == 11 and all(c.isalnum() or c in "-_" for c in possible_vid):
-                                vid = possible_vid
-                                break
-                except Exception:
-                    pass
 
-            total_size = sum(os.path.getsize(os.path.join(song_dir, f)) for f in os.listdir(song_dir) if os.path.isfile(os.path.join(song_dir, f)))
-            size_mb = total_size / (1024 * 1024)
-            
-            mode = "basic"
-            if os.path.exists(os.path.join(song_dir, "drums.m4a")):
-                mode = "pro"
-                
-            created_at = os.path.getctime(vocal_m4a)
-            
-            results.append({
-                "video_id": vid,
-                "title": title,
-                "mode": mode,
-                "size_mb": round(size_mb, 2),
-                "created_at": created_at
-            })
-            
-        results.sort(key=lambda x: x["created_at"], reverse=True)
-        return {"status": "success", "results": results}
-    except Exception as e:
-        return {"status": "error", "message": f"Failed to list cache: {str(e)}"}
 
 @router.delete("/cache/{video_id}")
 def delete_cache(video_id: str):

@@ -491,18 +491,18 @@ def _execute_separation(req: SeparateRequest):
                 os.makedirs(target_folder, exist_ok=True)
                 for m4a_file in [f for f in os.listdir(song_dir) if f.endswith('.m4a')]:
                     try:
-                        shutil.copy(os.path.join(song_dir, m4a_file), os.path.join(target_folder, m4a_file))
+                        shutil.copyfile(os.path.join(song_dir, m4a_file), os.path.join(target_folder, m4a_file))
                     except Exception as e:
                         print(f"[Storage Error] Failed to copy {m4a_file}: {str(e)}")
                 
                 try:
                     # Copy mode.txt and cover.jpg
-                    shutil.copy(os.path.join(song_dir, "mode.txt"), os.path.join(target_folder, "mode.txt"))
+                    shutil.copyfile(os.path.join(song_dir, "mode.txt"), os.path.join(target_folder, "mode.txt"))
                 except Exception as e:
                     print(f"[Storage Error] Failed to copy mode.txt: {str(e)}")
                     
                 try:
-                    shutil.copy(os.path.join(song_dir, "cover.jpg"), os.path.join(target_folder, "cover.jpg"))
+                    shutil.copyfile(os.path.join(song_dir, "cover.jpg"), os.path.join(target_folder, "cover.jpg"))
                 except Exception:
                     pass
                     
