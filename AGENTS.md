@@ -15,6 +15,8 @@ This configuration file defines the persistent operating standards, cognitive wo
 - **Action Over Chitchat**: Avoid long preambles, marketing hype, repetitive conversational filler, or self-praise.
 - **Surgical Code Edits**: Edit only the necessary lines/functions. Avoid rewriting entire massive files when modifying single functions.
 - **Compact Scannable Summaries**: End each turn with a high-density, bulleted summary focusing on functional outcomes and visual/architectural decisions without listing redundant file paths unless asked.
+- **Model Tier & Level Selection (ต้องเสนอระดับโมเดลก่อนเริ่ม)**: Before proposing or executing any plan or code changes, **always explicitly state which Model Tier and Level (e.g. Gemini 3.5 Flash - Low/Medium/Pro)** you recommend to use for the task. This ensures the user is aware of and can manage token usage and reasoning depth before approving.
+
 
 ---
 
