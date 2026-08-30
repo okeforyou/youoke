@@ -56,16 +56,9 @@ async def list_cached_songs():
                                     break
                     except:
                         pass
-                        
-                    import time
-                    data = {
-                        "videoId": vid,
-                        "title": title,
-                        "createdAt": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(os.path.getctime(os.path.join(song_dir, "vocals.m4a")))),
-                        "version": "1.0"
-                    }
                 
                 try:
+                    import time
                     has_no_vocals = os.path.exists(os.path.join(song_dir, "no_vocals.m4a"))
                     has_drums = os.path.exists(os.path.join(song_dir, "drums.m4a"))
                     has_bass = os.path.exists(os.path.join(song_dir, "bass.m4a"))
@@ -77,17 +70,34 @@ async def list_cached_songs():
                             mode = mf.read().strip()
                     elif has_drums:
                         mode = "pro"
-                            
-                    data["local_status"] = {
-                        "has_vocals": has_vocals,
-                        "has_no_vocals": has_no_vocals,
-                        "has_drums": has_drums,
-                        "has_bass": has_bass,
-                        "has_other": has_other,
-                        "mode": mode
-                    }
-                    
-                    results.append(data)
+
+                    # Compute size_mb
+                    total_size = sum(
+                        os.path.getsize(os.path.join(song_dir, f))
+                        for f in os.listdir(song_dir)
+                        if os.path.isfile(os.path.join(song_dir, f))
+                    )
+                    size_mb = round(total_size / (1024 * 1024), 2)
+
+                    # created_at as unix timestamp (for JS: new Date(created_at * 1000))
+                    vocals_path = os.path.join(song_dir, "vocals.m4a")
+                    created_at = os.path.getctime(vocals_path)
+
+                    results.append({
+                        "video_id": vid,
+                        "title": title,
+                        "mode": mode,
+                        "size_mb": size_mb,
+                        "created_at": created_at,
+                        "local_status": {
+                            "has_vocals": has_vocals,
+                            "has_no_vocals": has_no_vocals,
+                            "has_drums": has_drums,
+                            "has_bass": has_bass,
+                            "has_other": has_other,
+                            "mode": mode
+                        }
+                    })
                 except:
                     pass
                         
@@ -95,7 +105,8 @@ async def list_cached_songs():
     
     if active_dir != CACHE_DIR:
         process_dir(CACHE_DIR)
-        
+
+    results.sort(key=lambda x: x.get("created_at", 0), reverse=True)
     return {"status": "success", "results": results}
 
 @router.get("/files/{video_id}/{filename}")

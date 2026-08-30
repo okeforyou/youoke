@@ -452,7 +452,7 @@ export default function PluginDashboard() {
             <style jsx>{`
                 :root {
                     --bg-color: #f8fafc;
-                    --sidebar-bg: #ffffff;
+                    --sidebar-bg: #f1f5f9;
                     --border-color: #e2e8f0;
                     --primary: #f43f5e;
                     --primary-hover: #e11d48;
