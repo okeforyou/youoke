@@ -62,3 +62,19 @@ This configuration file defines the persistent operating standards, cognitive wo
   1. TypeScript type checking (`lint_applet`)
   2. Production compilation build (`compile_applet`)
 - In case of build or lint errors, diagnose the root cause and self-correct systematically.
+
+---
+
+## 8. Standard Release & Version Bump Protocol (มาตรฐานการปล่อย Release & Auto-Update)
+เพื่อให้การทำงานระหว่าง Web App, Desktop Plugin (Electron), และ GitHub Actions เป็นไปอย่างราบรื่นและง่ายที่สุด ให้ปฏิบัติตามลำดับขั้นตอนนี้เสมอ:
+1. **ตรวจสอบความเปลี่ยนแปลงใน Plugin/Local Bridge**:
+   - หากมีการแก้ไขโค้ดใน `scripts/local-bridge/` หรือ `youoke-plugin/` จะต้อง **Bump เวอร์ชันใหม่ (Semantic Versioning)** เสมอ เพื่อให้ระบบ Auto-Update ของสมาชิกรู้ว่ามีเวอร์ชันใหม่
+2. **ซิงค์เลขเวอร์ชันให้ตรงกันทั้ง 2 จุด**:
+   - `youoke-plugin/package.json` -> `"version": "X.Y.Z"`
+   - `scripts/local-bridge/server_state.py` -> `VERSION = "X.Y.Z"`
+3. **Commit & Push ผ่าน Git Command**:
+   - ใช้ Git Remote ที่ผูก Personal Access Token เข้าสู่ `okeforyou/youoke` (Branch `main`)
+   - GitHub Actions (`Build and Publish YouOke Plugin`) จะ Build ตัวติดตั้ง Windows/Mac และ Publish Release อัตโนมัติ
+4. **Vercel Deployment**:
+   - Vercel จะตรวจจับ Commit ล่าสุดและ Build หน้าเว็บใหม่อัตโนมัติ ทำให้ทั้งหน้าเว็บและ Plugin สมาชิกทำงานสอดคล้องกันทันที
+
