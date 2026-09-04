@@ -418,21 +418,25 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
             {/* AI Audio Elements */}
             {isAiReady && activeVideoId && (
                 <div className="hidden" key={`${activeVideoId}-${aiMode}`}>
-                    <audio onError={handleAudioError} 
+                    <audio 
+                        onError={handleAudioError} 
                         ref={vocalRef} 
+                        crossOrigin="anonymous"
                         src={`${bridgeBaseUrl}/files/${activeVideoId}/vocals.m4a`} 
                         preload="auto" 
                         onLoadedData={(e) => { e.currentTarget.volume = (volumes?.vocals ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} 
                     />
                     {aiMode === 'pro' ? (
                         <>
-                            <audio onError={handleAudioError} ref={drumsRef} src={`${bridgeBaseUrl}/files/${activeVideoId}/drums.m4a`} preload="auto" onLoadedData={(e) => { e.currentTarget.volume = (volumes?.drums ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} />
-                            <audio onError={handleAudioError} ref={bassRef} src={`${bridgeBaseUrl}/files/${activeVideoId}/bass.m4a`} preload="auto" onLoadedData={(e) => { e.currentTarget.volume = (volumes?.bass ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} />
-                            <audio onError={handleAudioError} ref={otherRef} src={`${bridgeBaseUrl}/files/${activeVideoId}/other.m4a`} preload="auto" onLoadedData={(e) => { e.currentTarget.volume = (volumes?.other ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} />
+                            <audio onError={handleAudioError} ref={drumsRef} crossOrigin="anonymous" src={`${bridgeBaseUrl}/files/${activeVideoId}/drums.m4a`} preload="auto" onLoadedData={(e) => { e.currentTarget.volume = (volumes?.drums ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} />
+                            <audio onError={handleAudioError} ref={bassRef} crossOrigin="anonymous" src={`${bridgeBaseUrl}/files/${activeVideoId}/bass.m4a`} preload="auto" onLoadedData={(e) => { e.currentTarget.volume = (volumes?.bass ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} />
+                            <audio onError={handleAudioError} ref={otherRef} crossOrigin="anonymous" src={`${bridgeBaseUrl}/files/${activeVideoId}/other.m4a`} preload="auto" onLoadedData={(e) => { e.currentTarget.volume = (volumes?.other ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} />
                         </>
                     ) : (
-                        <audio onError={handleAudioError} 
+                        <audio 
+                            onError={handleAudioError} 
                             ref={instrumentalRef} 
+                            crossOrigin="anonymous"
                             src={`${bridgeBaseUrl}/files/${activeVideoId}/no_vocals.m4a`} 
                             preload="auto" 
                             onLoadedData={(e) => { e.currentTarget.volume = (volumes?.instrumental ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} 

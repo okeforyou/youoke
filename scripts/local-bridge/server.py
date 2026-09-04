@@ -121,24 +121,24 @@ from routes.creator import router as creator_router
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "https://play.okeforyou.com"],
-    allow_origin_regex=r"https://.*\.vercel\.app",
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 @app.middleware("http")
 async def add_pna_headers(request, call_next):
-    if request.method == "OPTIONS" and request.headers.get("access-control-request-private-network") == "true":
+    if request.method == "OPTIONS":
         response = Response(status_code=204)
-        response.headers["Access-Control-Allow-Origin"] = request.headers.get("Origin", "*")
+        response.headers["Access-Control-Allow-Origin"] = "*"
         response.headers["Access-Control-Allow-Methods"] = "*"
         response.headers["Access-Control-Allow-Headers"] = "*"
         response.headers["Access-Control-Allow-Private-Network"] = "true"
         response.headers["Access-Control-Max-Age"] = "86400"
         return response
     response = await call_next(request)
+    response.headers["Access-Control-Allow-Origin"] = "*"
     response.headers["Access-Control-Allow-Private-Network"] = "true"
     return response
 

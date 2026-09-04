@@ -109,6 +109,33 @@ async def list_cached_songs():
     results.sort(key=lambda x: x.get("created_at", 0), reverse=True)
     return {"status": "success", "results": results}
 
+def _make_file_response(filepath: str) -> FileResponse:
+    ext = os.path.splitext(filepath)[1].lower()
+    media_type = "audio/mp4"
+    if ext == ".mp3":
+        media_type = "audio/mpeg"
+    elif ext == ".wav":
+        media_type = "audio/wav"
+    elif ext == ".webm":
+        media_type = "audio/webm"
+    elif ext == ".ogg":
+        media_type = "audio/ogg"
+    elif ext in [".jpg", ".jpeg"]:
+        media_type = "image/jpeg"
+    elif ext == ".png":
+        media_type = "image/png"
+    elif ext == ".json":
+        media_type = "application/json"
+    elif ext == ".txt":
+        media_type = "text/plain"
+
+    headers = {
+        "Accept-Ranges": "bytes",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Private-Network": "true"
+    }
+    return FileResponse(filepath, media_type=media_type, headers=headers)
+
 @router.get("/files/{video_id}/{filename}")
 async def serve_audio_file(video_id: str, filename: str):
     active_dir = get_active_storage_dir()
@@ -118,21 +145,21 @@ async def serve_audio_file(video_id: str, filename: str):
         if filename == "original.audio":
             orig_explicit = os.path.join(legacy_path, f"{video_id}.m4a")
             if os.path.exists(orig_explicit):
-                return FileResponse(orig_explicit, headers={"Accept-Ranges": "bytes"})
+                return _make_file_response(orig_explicit)
             for f in os.listdir(legacy_path):
                 if f not in ["vocals.m4a", "no_vocals.m4a", "bass.m4a", "drums.m4a", "other.m4a", "lyrics_timeline.json", "youoke.json", "mode.txt", "title.txt"] and not f.endswith(".yok"):
                     if f.endswith(('.m4a', '.mp3', '.webm', '.wav', '.ogg')):
-                        return FileResponse(os.path.join(legacy_path, f), headers={"Accept-Ranges": "bytes"})
+                        return _make_file_response(os.path.join(legacy_path, f))
             if os.path.exists(os.path.join(legacy_path, "vocals.m4a")):
-                return FileResponse(os.path.join(legacy_path, "vocals.m4a"), headers={"Accept-Ranges": "bytes"})
+                return _make_file_response(os.path.join(legacy_path, "vocals.m4a"))
                 
         if filename == "no_vocals.m4a" and not os.path.exists(os.path.join(legacy_path, "no_vocals.m4a")):
             if os.path.exists(os.path.join(legacy_path, "other.m4a")):
-                return FileResponse(os.path.join(legacy_path, "other.m4a"), headers={"Accept-Ranges": "bytes"})
+                return _make_file_response(os.path.join(legacy_path, "other.m4a"))
                 
         filepath = os.path.join(legacy_path, filename)
         if os.path.exists(filepath):
-            return FileResponse(filepath, headers={"Accept-Ranges": "bytes"})
+            return _make_file_response(filepath)
             
     if os.path.exists(active_dir):
         for folder_name in os.listdir(active_dir):
@@ -149,30 +176,30 @@ async def serve_audio_file(video_id: str, filename: str):
                             if filename == "original.audio":
                                 orig_explicit = os.path.join(song_dir, f"{video_id}.m4a")
                                 if os.path.exists(orig_explicit):
-                                    return FileResponse(orig_explicit, headers={"Accept-Ranges": "bytes"})
+                                    return _make_file_response(orig_explicit)
                                 orig_explicit2 = os.path.join(song_dir, "original.m4a")
                                 if os.path.exists(orig_explicit2):
-                                    return FileResponse(orig_explicit2, headers={"Accept-Ranges": "bytes"})
+                                    return _make_file_response(orig_explicit2)
                                     
                                 for f in os.listdir(song_dir):
                                     if f not in ["vocals.m4a", "no_vocals.m4a", "bass.m4a", "drums.m4a", "other.m4a", "lyrics_timeline.json", "youoke.json", "mode.txt", "title.txt"] and not f.endswith(".yok"):
                                         if f.endswith(('.m4a', '.mp3', '.webm', '.wav', '.ogg')):
-                                            return FileResponse(os.path.join(song_dir, f), headers={"Accept-Ranges": "bytes"})
+                                            return _make_file_response(os.path.join(song_dir, f))
                                 if os.path.exists(os.path.join(song_dir, "vocals.m4a")):
-                                    return FileResponse(os.path.join(song_dir, "vocals.m4a"), headers={"Accept-Ranges": "bytes"})
+                                    return _make_file_response(os.path.join(song_dir, "vocals.m4a"))
                             
                             if filename == "no_vocals.m4a" and not os.path.exists(os.path.join(song_dir, "no_vocals.m4a")):
                                 if os.path.exists(os.path.join(song_dir, "other.m4a")):
-                                    return FileResponse(os.path.join(song_dir, "other.m4a"), headers={"Accept-Ranges": "bytes"})
+                                    return _make_file_response(os.path.join(song_dir, "other.m4a"))
                             
                             filepath = os.path.join(song_dir, filename)
                             if os.path.exists(filepath):
-                                return FileResponse(filepath, headers={"Accept-Ranges": "bytes"})
+                                return _make_file_response(filepath)
                 except:
                     pass
                     
     fallback_path = os.path.join(CACHE_DIR, video_id, filename)
     if os.path.exists(fallback_path):
-        return FileResponse(fallback_path, headers={"Accept-Ranges": "bytes"})
+        return _make_file_response(fallback_path)
         
     raise HTTPException(status_code=404, detail="File not found")
