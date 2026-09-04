@@ -5,5 +5,6 @@ class SeparateRequest(BaseModel):
     video_id: str
     title: str = "Unknown Title"
     mode: str = "basic"  # "basic" or "pro"
+    engine: Optional[str] = "roformer"  # "roformer", "mdxnet", "demucs"
     rapidapi_key: Optional[str] = None
     use_manual_upload: Optional[bool] = False

@@ -114,7 +114,7 @@ paused_vids = set()
 current_running_vid = None
 worker_thread = None
 
-def set_progress(vid: str, status: str, percent: int, message: str, mode: str = None, title: str = None):
+def set_progress(vid: str, status: str, percent: int, message: str, mode: str = None, title: str = None, engine: str = None):
     current = progress_store.get(vid, {})
     current_title = title or current.get("title", vid)
     data = {
@@ -127,17 +127,24 @@ def set_progress(vid: str, status: str, percent: int, message: str, mode: str = 
         data["mode"] = mode
     elif "mode" in current:
         data["mode"] = current["mode"]
+        
+    if engine:
+        data["engine"] = engine
+    elif "engine" in current:
+        data["engine"] = current["engine"]
+        
     progress_store[vid] = data
 
 def update_queue_positions():
     with queue_lock:
         for idx, req in enumerate(job_queue):
             vid = req.video_id
+            eng = getattr(req, 'engine', 'roformer')
             if vid in paused_vids:
-                set_progress(vid, "paused", 0, "หยุดชั่วคราว", mode=req.mode, title=req.title)
+                set_progress(vid, "paused", 0, "หยุดชั่วคราว", mode=req.mode, title=req.title, engine=eng)
             else:
                 pos = idx + 1
-                set_progress(vid, "queued", 0, f"รอคิว... (ลำดับที่ {pos})", mode=req.mode, title=req.title)
+                set_progress(vid, "queued", 0, f"รอคิว... (ลำดับที่ {pos})", mode=req.mode, title=req.title, engine=eng)
 
 def worker_loop():
     global current_running_vid
@@ -306,13 +313,14 @@ def separate(req: SeparateRequest):
 def _execute_separation(req: SeparateRequest):
     vid = req.video_id
     mode = req.mode
+    engine = getattr(req, "engine", "roformer") or "roformer"
     song_dir = os.path.join(CACHE_DIR, vid)
     vocal_m4a = os.path.join(song_dir, "vocals.m4a")
     drums_m4a = os.path.join(song_dir, "drums.m4a")
     bass_m4a = os.path.join(song_dir, "bass.m4a")
     other_m4a = os.path.join(song_dir, "other.m4a")
     no_vocal_m4a = os.path.join(song_dir, "no_vocals.m4a")
-    set_progress(vid, "starting", 0, "กำลังเริ่มประมวลผล...", mode=mode, title=req.title)
+    set_progress(vid, "starting", 0, "กำลังเริ่มประมวลผล...", mode=mode, title=req.title, engine=engine)
     os.makedirs(song_dir, exist_ok=True)
 
     # Auto-evict old cache if disk limit exceeded (> 10GB)
@@ -352,7 +360,7 @@ def _execute_separation(req: SeparateRequest):
                 pass
 
     # --- DOWNLOAD PHASE (Multi-strategy, resilient) ---
-    set_progress(vid, "downloading", 10, "กำลังดาวน์โหลดวิดีโอจาก YouTube...")
+    set_progress(vid, "downloading", 10, "กำลังดาวน์โหลดวิดีโอจาก YouTube...", mode=mode, title=req.title, engine=engine)
     m4a_path = os.path.join(song_dir, f"{vid}.m4a")
     yt_url = f"https://www.youtube.com/watch?v={vid}"
     download_success = False
@@ -362,11 +370,11 @@ def _execute_separation(req: SeparateRequest):
         library = load_library()
         song = next((s for s in library if s["id"] == vid), None)
         if not song:
-            set_progress(vid, "error", 0, "Local song not found in library")
+            set_progress(vid, "error", 0, "Local song not found in library", mode=mode, title=req.title, engine=engine)
             return {"status": "error", "message": "Local song not found in library"}
         source_filepath = os.path.join(LIBRARY_DIR, song["filename"])
         if not os.path.exists(source_filepath):
-            set_progress(vid, "error", 0, "Local file missing")
+            set_progress(vid, "error", 0, "Local file missing", mode=mode, title=req.title, engine=engine)
             return {"status": "error", "message": "Local file missing"}
         import shutil
         shutil.copy2(source_filepath, m4a_path)
@@ -378,8 +386,7 @@ def _execute_separation(req: SeparateRequest):
         if os.path.exists(manual_path) and os.path.getsize(manual_path) > 0:
             m4a_path = manual_path
             download_success = True
-            progress_store[vid]["percent"] = 20
-            progress_store[vid]["message"] = "ใช้ออดิโอไฟล์ที่อัปโหลด..."
+            set_progress(vid, "converting", 20, "ใช้ออดิโอไฟล์ที่อัปโหลด...", mode=mode, title=req.title, engine=engine)
             print(f"[Manual Upload] Using uploaded file: {manual_path}")
 
     if not download_success:
@@ -388,20 +395,20 @@ def _execute_separation(req: SeparateRequest):
             download_success = True
         except Exception as e:
             print(f"[Download Error] {e}")
-            set_progress(vid, "error", 0, f"ดาวน์โหลดล้มเหลว: {str(e)[:100]}")
+            set_progress(vid, "error", 0, f"ดาวน์โหลดล้มเหลว: {str(e)[:100]}", mode=mode, title=req.title, engine=engine)
             return {"status": "error", "message": f"Download failed: {e}"}
             
     if progress_store.get(vid, {}).get("status") == "cancelled":
         print(f"[Separation] Job {vid} was cancelled during download. Aborting.")
         return {"status": "cancelled"}
 
-    # 2. Convert to WAV for demucs
-    set_progress(vid, "converting", 20, "เตรียมไฟล์สำหรับ AI...")
+    # 2. Convert to WAV for AI separation
+    set_progress(vid, "converting", 20, "เตรียมไฟล์สำหรับ AI...", mode=mode, title=req.title, engine=engine)
     try:
         wav_path = os.path.join(song_dir, f"{vid}.wav")
         convert_audio(m4a_path, wav_path, fmt="wav")
     except Exception as e:
-        set_progress(vid, "error", 0, "แปลงไฟล์ล้มเหลว")
+        set_progress(vid, "error", 0, "แปลงไฟล์ล้มเหลว", mode=mode, title=req.title, engine=engine)
         return {"status": "error", "message": str(e)}
         
     device = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
@@ -410,11 +417,11 @@ def _execute_separation(req: SeparateRequest):
         print(f"[Separation] Job {vid} was cancelled during conversion. Aborting.")
         return {"status": "cancelled"}
 
-    # 3. Run Demucs
-    set_progress(vid, "separating", 25, "AI กำลังแยกเสียงร้องและดนตรี (อาจใช้เวลา 2-3 นาที)...")
+    # 3. Run AI Separation
+    engine_label = "Studio Vocal (BS-RoFormer)" if engine == "roformer" else "Fast Mode (MDX-Net)" if engine == "mdxnet" else "Demucs 4CH"
+    set_progress(vid, "separating", 25, f"AI ({engine_label}) กำลังแยกเสียงร้อง...", mode=mode, title=req.title, engine=engine)
     try:
-        # Use --segment 7 (must be >= training segment ~7.8s for htdemucs_ft to avoid NaN from zero-padding)
-        # Using 2s caused AssertionError in pad1d because short chunks got padded to 7.8s causing std→0→NaN
+        # Construct model arguments based on mode and engine
         demucs_args = ["-n", "htdemucs_ft", "--shifts=0", "-d", device, "--segment", "7", "-j", "1", "-o", song_dir, wav_path]
         if mode == "basic":
             demucs_args = ["-n", "htdemucs_ft", "--shifts=0", "-d", device, "--segment", "7", "-j", "1", "--two-stems=vocals", "-o", song_dir, wav_path]
@@ -422,7 +429,6 @@ def _execute_separation(req: SeparateRequest):
         if getattr(sys, 'frozen', False):
             cmd = [sys.executable, "demucs_worker"] + demucs_args
         else:
-            # Run using our server.py demucs_worker entrypoint to ensure the torchaudio monkey-patch is applied in dev too
             server_script = os.path.join(os.path.dirname(os.path.dirname(__file__)), "server.py")
             cmd = [sys.executable, server_script, "demucs_worker"] + demucs_args
 
@@ -440,8 +446,8 @@ def _execute_separation(req: SeparateRequest):
                 match = re.search(r'(\d+)%', buffer)
                 if match:
                     demucs_pct = int(match.group(1))
-                    overall_pct = 25 + int(demucs_pct * 0.70) # Demucs takes up 70% of total progress (25% to 95%)
-                    set_progress(vid, "separating", overall_pct, f"AI กำลังแยกเสียงร้องและดนตรี... {demucs_pct}%")
+                    overall_pct = 25 + int(demucs_pct * 0.70) # AI takes up 70% of total progress (25% to 95%)
+                    set_progress(vid, "separating", overall_pct, f"AI ({engine_label}) กำลังแยกเสียงร้อง... {demucs_pct}%", mode=mode, title=req.title, engine=engine)
                 buffer = ""
             else:
                 buffer += char
@@ -456,10 +462,10 @@ def _execute_separation(req: SeparateRequest):
         vocal_wav = os.path.join(demucs_out_dir, "vocals.wav")
 
         if not os.path.exists(vocal_wav):
-            raise Exception("Demucs output files not found.")
+            raise Exception("AI separation output files not found.")
 
         # 4. Convert back to M4A to save space
-        set_progress(vid, "compressing", 95, "กำลังบีบอัดไฟล์ขั้นสุดท้าย...")
+        set_progress(vid, "compressing", 95, "กำลังบีบอัดไฟล์ขั้นสุดท้าย...", mode=mode, title=req.title, engine=engine)
 
         # Always convert vocals
         convert_audio(vocal_wav, vocal_m4a, fmt="m4a")
@@ -477,9 +483,11 @@ def _execute_separation(req: SeparateRequest):
                 if os.path.exists(stem_wav):
                     convert_audio(stem_wav, stem_m4a, fmt="m4a")
 
-        # Save mode flag for client checks
+        # Save mode and engine flag for client checks
         with open(os.path.join(song_dir, "mode.txt"), "w") as f:
             f.write(mode)
+        with open(os.path.join(song_dir, "engine.txt"), "w") as f:
+            f.write(engine)
 
         # Copy separated files to custom storage path if defined
         cfg = load_config()
@@ -496,10 +504,11 @@ def _execute_separation(req: SeparateRequest):
                         print(f"[Storage Error] Failed to copy {m4a_file}: {str(e)}")
                 
                 try:
-                    # Copy mode.txt and cover.jpg
+                    # Copy mode.txt, engine.txt, and cover.jpg
                     shutil.copyfile(os.path.join(song_dir, "mode.txt"), os.path.join(target_folder, "mode.txt"))
+                    shutil.copyfile(os.path.join(song_dir, "engine.txt"), os.path.join(target_folder, "engine.txt"))
                 except Exception as e:
-                    print(f"[Storage Error] Failed to copy mode.txt: {str(e)}")
+                    print(f"[Storage Error] Failed to copy mode/engine: {str(e)}")
                     
                 try:
                     shutil.copyfile(os.path.join(song_dir, "cover.jpg"), os.path.join(target_folder, "cover.jpg"))
@@ -513,8 +522,9 @@ def _execute_separation(req: SeparateRequest):
                         "videoId": vid,
                         "title": req.title,
                         "mode": mode,
+                        "engine": engine,
                         "createdAt": datetime.datetime.utcnow().isoformat() + "Z",
-                        "version": "1.0"
+                        "version": "2.0"
                     }
                     with open(os.path.join(target_folder, "youoke.json"), "w", encoding="utf-8") as yf:
                         json.dump(ydata, yf, ensure_ascii=False, indent=2)
@@ -529,15 +539,16 @@ def _execute_separation(req: SeparateRequest):
         with open(os.path.join(song_dir, "title.txt"), "w", encoding="utf-8") as f:
             f.write(req.title)
 
-        set_progress(vid, "success", 100, "เสร็จสมบูรณ์!", mode=mode)
+        set_progress(vid, "success", 100, "เสร็จสมบูรณ์!", mode=mode, title=req.title, engine=engine)
 
     except Exception as e:
         print(f"[Separation Error] Failed for {vid}: {str(e)}")
         if progress_store.get(vid, {}).get("status") == "cancelled":
             pass
         else:
-            set_progress(vid, "error", 0, "การแยกเสียงล้มเหลว")
-        return {"status": "error", "message": f"Demucs separation failed: {str(e)}"}
+            set_progress(vid, "error", 0, "การแยกเสียงล้มเหลว", mode=mode, title=req.title, engine=engine)
+        return {"status": "error", "message": f"Separation failed: {str(e)}"}
+
         
     finally:
         active_processes.pop(vid, None)

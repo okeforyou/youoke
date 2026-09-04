@@ -38,58 +38,78 @@ def _find_downloaded_file(song_dir: str, vid: str) -> str:
     return None
 
 def run_tier1_ytdlp_standalone(yt_url: str, song_dir: str, vid: str, timeout: int = 60) -> str:
-    """Tier 1: Standalone Auto-healing yt-dlp"""
+    """Tier 1: Standalone Auto-healing yt-dlp with multi-client fallback and cookie detection"""
     yt_dlp_exe = ensure_yt_dlp()
     out_template = os.path.join(song_dir, f"{vid}.%(ext)s")
     
-    cmd = [
-        yt_dlp_exe,
-        '-f', '140/bestaudio/best',
-        '-o', out_template,
-        '--extractor-args', 'youtube:player_client=android,web',
-        '--no-warnings',
-        yt_url
+    # Try different player client combos in priority order
+    client_combos = [
+        'youtube:player_client=android,web',
+        'youtube:player_client=ios,web',
+        'youtube:player_client=web',
+        'youtube:player_client=tv'
     ]
     
-    print(f"[Downloader] Strategy 1: Standalone yt-dlp ({yt_dlp_exe})")
-    
-    def execute(command):
+    def execute(command, run_timeout):
         kwargs = {}
         if os.name == 'nt':
             kwargs['creationflags'] = 0x08000000  # CREATE_NO_WINDOW
-        return subprocess.run(command, capture_output=True, text=True, timeout=timeout, **kwargs)
+        return subprocess.run(command, capture_output=True, text=True, timeout=run_timeout, **kwargs)
 
-    try:
-        res = execute(cmd)
-    except subprocess.TimeoutExpired:
-        raise DownloaderError(f"yt-dlp download timed out after {timeout}s")
-    except Exception as e:
-        raise DownloaderError(f"yt-dlp failed to execute: {str(e)}")
-
-    if res.returncode != 0:
-        err_out = res.stderr or res.stdout
-        print(f"[Downloader] yt-dlp error output: {err_out[-500:]}")
+    last_error = ""
+    for client_arg in client_combos:
+        cmd = [
+            yt_dlp_exe,
+            '-f', '140/bestaudio/best',
+            '-o', out_template,
+            '--extractor-args', client_arg,
+            '--no-warnings',
+            '--socket-timeout', '15',
+            yt_url
+        ]
         
-        # Auto-heal: If it fails, try updating yt-dlp and retry once
-        print("[Downloader] Auto-healing: Updating yt-dlp...")
+        # Check for cookies file if present
+        cookies_candidate = os.path.join(os.path.dirname(__file__), '..', 'yt_cookies.txt')
+        if os.path.exists(cookies_candidate) and os.path.getsize(cookies_candidate) > 100:
+            cmd.extend(['--cookies', cookies_candidate])
+
+        print(f"[Downloader] Strategy 1 ({client_arg}): {yt_dlp_exe}")
         try:
-            update_res = subprocess.run([yt_dlp_exe, '-U'], capture_output=True, text=True, timeout=30)
-            if update_res.returncode == 0:
-                print("[Downloader] yt-dlp updated successfully. Retrying download...")
-                res = execute(cmd)
-            else:
-                print("[Downloader] yt-dlp update failed.")
-        except Exception as update_err:
-            print(f"[Downloader] Auto-heal update failed: {update_err}")
+            res = execute(cmd, timeout)
+            if res.returncode == 0:
+                downloaded_file = _find_downloaded_file(song_dir, vid)
+                if downloaded_file and is_valid_audio(downloaded_file):
+                    return downloaded_file
+            last_error = res.stderr or res.stdout or ""
+        except subprocess.TimeoutExpired:
+            last_error = f"yt-dlp timed out ({client_arg})"
+        except Exception as e:
+            last_error = str(e)
 
-    if res.returncode != 0:
-        final_err = res.stderr or res.stdout or ""
-        raise DownloaderError(f"yt-dlp failed (code {res.returncode}): {final_err.strip()[-200:]}")
+    # Auto-heal: If all combos failed, try updating yt-dlp and retry once
+    print("[Downloader] Auto-healing: Updating yt-dlp...")
+    try:
+        update_res = subprocess.run([yt_dlp_exe, '-U'], capture_output=True, text=True, timeout=30)
+        if update_res.returncode == 0:
+            print("[Downloader] yt-dlp updated successfully. Retrying with default client...")
+            retry_cmd = [
+                yt_dlp_exe,
+                '-f', '140/bestaudio/best',
+                '-o', out_template,
+                '--extractor-args', 'youtube:player_client=android,ios,web',
+                '--no-warnings',
+                yt_url
+            ]
+            res = execute(retry_cmd, timeout)
+            if res.returncode == 0:
+                downloaded_file = _find_downloaded_file(song_dir, vid)
+                if downloaded_file and is_valid_audio(downloaded_file):
+                    return downloaded_file
+    except Exception as update_err:
+        print(f"[Downloader] Auto-heal update failed: {update_err}")
 
-    downloaded_file = _find_downloaded_file(song_dir, vid)
-    if downloaded_file and is_valid_audio(downloaded_file):
-        return downloaded_file
-    raise DownloaderError("yt-dlp finished but no valid file was produced")
+    raise DownloaderError(f"yt-dlp all clients failed: {last_error[-200:] if last_error else 'unknown error'}")
+
 
 def run_tier2_rapidapi(yt_url: str, m4a_path: str, rapidapi_key: str, timeout: int = 45) -> str:
     """Tier 2: RapidAPI (Fastest if key is available)"""

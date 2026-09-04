@@ -1,0 +1,88 @@
+name: Build & Release YouOke Plugin
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: youoke-plugin/package-lock.json
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r scripts/local-bridge/requirements.txt
+          pip install pyinstaller
+
+      - name: Build Python standalone server executable
+        shell: bash
+        run: |
+          mkdir -p youoke-plugin/bin
+          cd scripts/local-bridge
+          pyinstaller youoke-server.spec
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            cp dist/youoke-server.exe ../../youoke-plugin/bin/youoke-server.exe
+          else
+            cp -r dist/youoke-server ../../youoke-plugin/bin/youoke-server || cp -r dist/youoke-server.app/Contents/MacOS/youoke-server ../../youoke-plugin/bin/youoke-server
+            chmod +x ../../youoke-plugin/bin/youoke-server
+          fi
+          cd ../..
+
+      - name: Install Plugin dependencies
+        run: |
+          cd youoke-plugin
+          npm install
+
+      - name: Build Electron App
+        run: |
+          cd youoke-plugin
+          npm run dist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: youoke-plugin-${{ runner.os }}
+          path: |
+            youoke-plugin/dist/*.exe
+            youoke-plugin/dist/*.dmg
+            youoke-plugin/dist/*.zip
+            youoke-plugin/dist/latest*.yml
+
+      - name: Release to GitHub
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            youoke-plugin/dist/*.exe
+            youoke-plugin/dist/*.dmg
+            youoke-plugin/dist/*.zip
+            youoke-plugin/dist/latest*.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
