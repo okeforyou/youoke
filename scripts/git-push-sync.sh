@@ -87,10 +87,4 @@ CURRENT_SHA="$(git log -1 --format='%h')"
 echo "🚀 Pushing commit $CURRENT_SHA to main..."
 git push origin main
 
-echo "🚀 Syncing to develop branch for Vercel auto-deploy..."
-git checkout develop 2>/dev/null || git checkout -b develop
-git reset --hard main
-git push --force origin develop
-git checkout main
-
-echo "🎉 Successfully pushed to both main and develop under author: $OWNER_NAME!"
+echo "🎉 Successfully pushed to main under author: $OWNER_NAME!"

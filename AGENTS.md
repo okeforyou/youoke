@@ -124,7 +124,7 @@ This configuration file defines the persistent operating standards, cognitive wo
 
 1. **ฝั่งส่งโค้ดขึ้น (Push จากที่ใดก็ตาม)**:
    - รันคำสั่ง `./scripts/git-push-sync.sh "<COMMIT_MESSAGE>"`
-   - สคริปต์จะตรวจสอบ Author (`okeforyou`), Auto-bump เวอร์ชันตาม Rule 8 หากมีการแตะ Plugin, และ Push ขึ้นทั้ง `main` และ `develop` อัตโนมัติ
+   - สคริปต์จะตรวจสอบ Author (`okeforyou`), Auto-bump เวอร์ชันตาม Rule 8 หากมีการแตะ Plugin, และ Push ขึ้นเฉพาะ `main` สาขาเดียวอย่างรวดเร็วและปลอดภัย
 2. **ฝั่งดึงโค้ดลงมาทำต่อ (Pull สู่ AI Studio หรือ Antigravity)**:
    - เมื่อผู้ใช้พิมพ์บอกในแชท เช่น `"ช่วย pull โค้ดล่าสุดจาก git มาเลย"`
    - เอเจนต์จะรันคำสั่ง `./scripts/git-pull-sync.sh` ทันที
