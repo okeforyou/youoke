@@ -20,16 +20,18 @@ function checkUrlStatus(url, callback) {
     const parsedUrl = new URL(url);
     const client = parsedUrl.protocol === 'https:' ? https : http;
     const options = {
-      method: 'HEAD',
+      method: 'GET',
       hostname: parsedUrl.hostname,
       port: parsedUrl.port || (parsedUrl.protocol === 'https:' ? 443 : 80),
       path: parsedUrl.pathname + parsedUrl.search,
-      timeout: 3000
+      headers: { 'User-Agent': 'YouOke-Plugin/1.0' },
+      timeout: 4000
     };
 
     const req = client.request(options, (res) => {
       res.resume(); // Consume response data to free socket
-      done(res.statusCode === 200);
+      const isOk = res.statusCode >= 200 && res.statusCode < 400;
+      done(isOk);
       req.destroy(); // Close connection immediately
     });
 
@@ -66,6 +68,10 @@ if (!gotTheLock) {
 
 function createDashboardWindow() {
   if (dashboardWindow) {
+    if (dashboardWindow.isMinimized()) {
+      dashboardWindow.restore();
+    }
+    dashboardWindow.show();
     dashboardWindow.focus();
     return;
   }
@@ -155,12 +161,12 @@ function killExistingServer(callback) {
   const isWin = process.platform === 'win32';
   
   // 1. Kill by process name
-  const killByName = isWin ? 'taskkill /F /IM youoke-server.exe /T' : 'pkill -9 -f youoke-server';
+  const killByName = isWin ? 'taskkill /F /IM youoke-server.exe /T 2>nul' : 'pkill -9 -f youoke-server 2>/dev/null || true';
   
   // 2. Kill whatever is holding port 5050
   const killByPort = isWin 
-    ? 'for /f "tokens=5" %a in (\'netstat -aon ^| find ":5050" ^| find "LISTENING"\') do taskkill /F /PID %a'
-    : 'lsof -t -i:5050 | xargs kill -9';
+    ? 'for /f "tokens=5" %a in (\'netstat -aon ^| find ":5050" ^| find "LISTENING"\') do taskkill /F /PID %a /T 2>nul'
+    : 'lsof -ti:5050 | xargs kill -9 2>/dev/null || true';
 
   // Run them sequentially and ignore errors
   exec(killByName, () => {
@@ -226,12 +232,19 @@ function startServer() {
   });
 }
 
-function stopServer() {
+function stopServer(callback) {
   if (serverProcess) {
-    serverProcess.kill('SIGKILL');
+    try {
+      if (process.platform === 'win32') {
+        exec(`taskkill /pid ${serverProcess.pid} /T /F 2>nul`);
+      } else {
+        serverProcess.kill('SIGKILL');
+      }
+    } catch (e) {}
     serverProcess = null;
     console.log("Server stopped.");
   }
+  killExistingServer(callback);
 }
 
 app.whenReady().then(() => {
@@ -277,14 +290,13 @@ app.whenReady().then(() => {
     { type: 'separator' },
     { label: 'เปิดแดชบอร์ดจัดการ (Dashboard)...', click: () => { createDashboardWindow(); } },
     { type: 'separator' },
-    { label: 'รีสตาร์ทระบบ AI', click: () => { stopServer(); setTimeout(startServer, 1000); } },
+    { label: 'รีสตาร์ทระบบ AI', click: () => { stopServer(() => { setTimeout(startServer, 1000); }); } },
     { label: 'ตรวจสอบอัปเดต', click: () => { autoUpdater.checkForUpdatesAndNotify(); } },
     { type: 'separator' },
     { 
       label: 'ปิดโปรแกรม', 
       click: () => { 
-        stopServer(); 
-        killExistingServer(() => {
+        stopServer(() => {
           app.exit(0);
         });
       } 
@@ -319,8 +331,7 @@ app.whenReady().then(() => {
           : 'https://youoke.vercel.app/api/download-plugin?os=win';
         shell.openExternal(downloadUrl);
         // Force-kill server and exit process immediately so files are released
-        stopServer();
-        killExistingServer(() => {
+        stopServer(() => {
           setTimeout(() => {
             app.exit(0);
           }, 300);

@@ -1,7 +1,7 @@
-// 🛡️ v5.5.322: Desktop Plugin Auto-Update Force-Exit & Single Instance Lock
+// 🛡️ v5.5.323: Desktop Plugin GET Check, Focus Restore & Robust Server Lifecycle
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.322";
+export const SYSTEM_VERSION = "5.5.323";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.323",
+        date: "2026-09-05",
+        changes: [
+            "fix(plugin): Upgraded checkUrlStatus to HTTP GET with 2xx-3xx redirect support, preventing false offline fallbacks.",
+            "fix(plugin): Added auto-unminimize (restore and show) when focusing dashboard in single instance handler.",
+            "fix(plugin): Enhanced killExistingServer and stopServer to gracefully wipe process trees and port 5050 locks on macOS and Windows.",
+            "chore(plugin): Bumped Local Bridge & Desktop Plugin version to v1.0.87."
+        ]
+    },
     {
         version: "5.5.322",
         date: "2026-09-05",
