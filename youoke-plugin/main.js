@@ -52,6 +52,18 @@ let tray = null;
 let serverProcess = null;
 let dashboardWindow = null;
 
+// Enforce single instance lock
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  console.log("Another instance of YouOke Plugin is already running. Quitting this instance.");
+  app.exit(0);
+} else {
+  app.on('second-instance', () => {
+    // If user tries to run a second instance, focus or open the dashboard
+    createDashboardWindow();
+  });
+}
+
 function createDashboardWindow() {
   if (dashboardWindow) {
     dashboardWindow.focus();
@@ -153,7 +165,9 @@ function killExistingServer(callback) {
   // Run them sequentially and ignore errors
   exec(killByName, () => {
     exec(killByPort, () => {
-      callback();
+      if (typeof callback === 'function') {
+        callback();
+      }
     });
   });
 }
@@ -266,7 +280,15 @@ app.whenReady().then(() => {
     { label: 'รีสตาร์ทระบบ AI', click: () => { stopServer(); setTimeout(startServer, 1000); } },
     { label: 'ตรวจสอบอัปเดต', click: () => { autoUpdater.checkForUpdatesAndNotify(); } },
     { type: 'separator' },
-    { label: 'ปิดโปรแกรม', click: () => { stopServer(); app.quit(); } }
+    { 
+      label: 'ปิดโปรแกรม', 
+      click: () => { 
+        stopServer(); 
+        killExistingServer(() => {
+          app.exit(0);
+        });
+      } 
+    }
   ]);
   
   tray.setContextMenu(contextMenu);
@@ -287,18 +309,22 @@ app.whenReady().then(() => {
   autoUpdater.on('update-available', (info) => {
     dialog.showMessageBox({
       type: 'info',
-      title: 'มีอัปเดตใหม่!',
-      message: `พบ YouOke Plugin เวอร์ชันใหม่ (${info.version}) แนะนำให้อัปเดตเพื่อการทำงานที่สมบูรณ์ที่สุด\nกรุณากดปุ่ม "ดาวน์โหลด" เพื่อไปรับไฟล์เวอร์ชันล่าสุดครับ`,
-      buttons: ['ไปหน้าดาวน์โหลด', 'ไว้ทีหลัง']
+      title: 'มีอัปเดตใหม่ YouOke Plugin!',
+      message: `พบเวอร์ชันใหม่ (${info.version})\n\nเพื่อป้องกันปัญหาไฟล์ค้างในเครื่องและลงทับไม่ผ่าน:\nระบบจะเปิดหน้าดาวน์โหลด และปิด YouOke Plugin อัตโนมัติทันที เพื่อให้คุณติดตั้งไฟล์ใหม่ทับได้ทันทีโดยไม่ติดขัดครับ`,
+      buttons: ['ดาวน์โหลดและปิดโปรแกรมเดิม', 'ไว้ทีหลัง']
     }).then((result) => {
       if (result.response === 0) {
         const downloadUrl = process.platform === 'darwin' 
           ? 'https://youoke.vercel.app/api/download-plugin?os=mac'
           : 'https://youoke.vercel.app/api/download-plugin?os=win';
         shell.openExternal(downloadUrl);
-        // Auto-close the app so the user can overwrite the file without "File in use" error
+        // Force-kill server and exit process immediately so files are released
         stopServer();
-        setTimeout(() => app.quit(), 1000);
+        killExistingServer(() => {
+          setTimeout(() => {
+            app.exit(0);
+          }, 300);
+        });
       }
     });
   });

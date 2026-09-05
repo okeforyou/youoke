@@ -1,7 +1,7 @@
-// 🛡️ v5.5.321: Universal Audio Sync, Backing Track Auto-Mix & YouTube Audio Fallback
+// 🛡️ v5.5.322: Desktop Plugin Auto-Update Force-Exit & Single Instance Lock
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.321";
+export const SYSTEM_VERSION = "5.5.322";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,17 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.322",
+        date: "2026-09-05",
+        changes: [
+            "fix(plugin): Implemented Single Instance Lock in desktop plugin (v1.0.86) to prevent multiple duplicate background processes.",
+            "fix(plugin): Upgraded auto-updater and quit shutdown sequence to use forceful exit (app.exit(0)), completely releasing locked files before update and eliminating macOS Finder password prompts and version rollback loops.",
+            "fix(plugin): Synchronized youoke-plugin/package-lock.json with package.json to ensure build artifacts match declared versions.",
+            "chore(plugin): Bumped Local Bridge & Desktop Plugin version to v1.0.86.",
+            "ux(web): Updated Mac Gatekeeper Terminal command in ListPlaylistsGrid to automatically terminate any running instances before launching."
+        ]
+    },
     {
         version: "5.5.321",
         date: "2026-09-05",

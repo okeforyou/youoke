@@ -789,8 +789,8 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
                 <ol className="list-decimal pl-4 space-y-2">
                   <li>โหลดไฟล์ <strong>.dmg</strong> แล้วลากแอป <strong>YouOke Plugin</strong> ลงโฟลเดอร์ <strong>Applications</strong></li>
                   <li>คลิกที่กล่องโค้ดด้านล่างเพื่อคัดลอก:
-                    <code className="block bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 text-green-600 dark:text-green-400 p-2.5 rounded-lg text-[11px] font-mono mt-1 mb-1 select-all cursor-pointer shadow-inner" onClick={(e) => {navigator.clipboard.writeText('xattr -cr /Applications/YouOke\\ Plugin.app && open /Applications/YouOke\\ Plugin.app'); const el = e.currentTarget; el.style.outline='2px solid #22c55e'; setTimeout(()=>el.style.outline='',1000);}}>
-                      xattr -cr /Applications/YouOke\ Plugin.app && open /Applications/YouOke\ Plugin.app
+                    <code className="block bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 text-green-600 dark:text-green-400 p-2.5 rounded-lg text-[11px] font-mono mt-1 mb-1 select-all cursor-pointer shadow-inner" onClick={(e) => {navigator.clipboard.writeText('pkill -9 -f "YouOke Plugin" 2>/dev/null; xattr -cr /Applications/YouOke\\ Plugin.app && open /Applications/YouOke\\ Plugin.app'); const el = e.currentTarget; el.style.outline='2px solid #22c55e'; setTimeout(()=>el.style.outline='',1000);}}>
+                      pkill -9 -f "YouOke Plugin" 2&gt;/dev/null; xattr -cr /Applications/YouOke\ Plugin.app &amp;&amp; open /Applications/YouOke\ Plugin.app
                     </code>
                   </li>
                   <li>เปิดแอป <strong>Terminal</strong> ใน Mac วางโค้ดลงไปแล้วกด Enter</li>
@@ -832,9 +832,9 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
               <p className="font-bold mb-1">คำแนะนำการอัปเดต:</p>
               <ul className="list-disc pl-4 space-y-1">
                 <li><span className="font-semibold">Windows:</span> กดติดตั้งทับเวอร์ชันเดิมได้เลย</li>
-                <li><span className="font-semibold">Mac:</span> ลากแอปลงโฟลเดอร์ Applications เพื่อลงทับ</li>
+                <li><span className="font-semibold">Mac:</span> ปิดแอปเดิมที่เมนูบาร์ด้านบนก่อน แล้วลากแอปลง Applications เพื่อลงทับ</li>
               </ul>
-              <p className="mt-2 text-[10px] text-gray-400">* กรุณาปิดแอปเก่าที่ค้างอยู่ (คลิกขวา Quit ที่เมนูบาร์) ก่อนติดตั้งใหม่</p>
+              <p className="mt-2 text-[10px] text-amber-600 dark:text-amber-400 font-medium">* หากระบบถามรหัสผ่าน ให้ปิดแอปเดิม (คลิกที่ไอคอนบนเมนูบาร์ -&gt; ปิดโปรแกรม) ก่อนติดตั้ง</p>
             </div>
           </div>
         ) : (
