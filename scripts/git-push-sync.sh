@@ -55,14 +55,28 @@ trap cleanup EXIT
 
 COMMIT_MSG="${1:-chore: update code and sync}"
 
-# 5. Check if there are uncommitted changes
+# 5. Rule 8 Automation: Detect changes in plugin/bridge and auto-bump if not bumped
+CHANGED_PLUGIN_FILES=$(git status --porcelain | grep -E "scripts/local-bridge|youoke-plugin" || true)
+if [ -n "$CHANGED_PLUGIN_FILES" ]; then
+    VERSION_DIFF=$(git diff | grep -E '^\+[ ]*"version":' || true)
+    if [ -z "$VERSION_DIFF" ]; then
+        CURRENT_VER=$(node -e "console.log(require('./youoke-plugin/package.json').version)")
+        NEXT_VER=$(node -e "const p = require('./youoke-plugin/package.json').version.split('.'); p[2] = parseInt(p[2])+1; console.log(p.join('.'))")
+        echo "⚡ Rule 8 Automation: Detected changes in plugin/local-bridge without version bump."
+        echo "⚡ Automatically bumping plugin version: $CURRENT_VER -> $NEXT_VER"
+        node scripts/bump-version.js "$NEXT_VER"
+        COMMIT_MSG="release(plugin): bump to v${NEXT_VER} — ${COMMIT_MSG}"
+    fi
+fi
+
+# 6. Check if there are uncommitted changes
 if [ -n "$(git status --porcelain)" ]; then
     echo "📦 Staging changes and committing..."
     git add -A
     git commit -m "$COMMIT_MSG"
 fi
 
-# 6. Ensure latest commit has correct author
+# 7. Ensure latest commit has correct author (Rule 9)
 LAST_AUTHOR_EMAIL="$(git log -1 --format='%ae')"
 if [ "$LAST_AUTHOR_EMAIL" != "$OWNER_EMAIL" ]; then
     echo "⚠️ Correcting last commit author to $OWNER_EMAIL..."
