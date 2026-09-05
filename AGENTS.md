@@ -78,3 +78,26 @@ This configuration file defines the persistent operating standards, cognitive wo
 4. **Vercel Deployment**:
    - Vercel จะตรวจจับ Commit ล่าสุดและ Build หน้าเว็บใหม่อัตโนมัติ ทำให้ทั้งหน้าเว็บและ Plugin สมาชิกทำงานสอดคล้องกันทันที
 
+
+## 9. Persistent Git Multi-Account Push Protocol (การ Push ข้ามบัญชีและจัดการ Token)
+โปรเจกต์นี้และโปรเจกต์อื่นที่เกี่ยวข้องใช้บัญชีแยกกันระหว่าง **Google Account (ล็อกอินพัฒนา AI Studio)** คือ `boonyanone@gmail.com` และ **GitHub/Vercel Owner** คือ `youoke.okeforyou@gmail.com` (หรือบัญชีอื่นตามโปรเจกต์) ทำให้ไม่สามารถใช้ปุ่ม "Export to GitHub" มาตรฐานของ AI Studio ได้ ดังนั้น เอเจนต์จะต้องทำหน้าที่ Commit และ Push ตรงผ่าน Git Terminal เสมอ โดยปฏิบัติตามมาตรฐานนี้:
+
+1. **การกำหนดสิทธิ์ผู้เขียน (Author Config)**:
+   - ก่อนจะสร้าง Commit ทุกครั้ง ต้องรันคำสั่งกำหนดผู้เขียนให้ถูกต้องตามบัญชีเจ้าของคลังโค้ดเพื่อไม่ให้ Vercel บล็อกดีพลอย:
+     `git config user.name "okeforyou" && git config user.email "youoke.okeforyou@gmail.com"`
+
+2. **การรักษาความปลอดภัยของ Token ในระบบโลคัล (`.git_token`)**:
+   - ตรวจสอบไฟล์ `.git_token` ที่โฟลเดอร์ Root ของโปรเจกต์เสมอเพื่อดึงรหัส GitHub Personal Access Token (PAT)
+   - หากยังไม่มีไฟล์ดังกล่าว ให้แจ้งให้ผู้ใช้ส่งรหัสผ่าน Token มาให้ในแชท และบันทึกรหัสลงในไฟล์ `.git_token`
+   - **ห้ามส่งไฟล์นี้ขึ้น GitHub เด็ดขาด**: ตรวจสอบให้แน่ใจว่าได้ระบุ `.git_token` ลงในไฟล์ `.gitignore` เสมอ
+
+3. **กระบวนการ Push อย่างปลอดภัย (Secure Push Flow)**:
+   - เมื่อต้องการพุชโค้ด ให้ดึง Token จากไฟล์ `.git_token` แล้วรันสเต็ปพุชแบบซ่อนรหัสผ่านดังนี้:
+     1. กำหนด Remote URL ชั่วคราวที่มีการแทรก Token:
+        `git remote set-url origin https://<TOKEN_FROM_FILE>@github.com/okeforyou/youoke.git`
+     2. ทำการพุชข้อมูลขึ้นสาขาหลัก:
+        `git push origin main`
+     3. **สำคัญมาก**: คืนค่า Remote URL กลับเป็นแบบปกติทันทีเพื่อความปลอดภัยสูงสุดและไม่ให้ติดประวัติ Token ในตัวแปรคอนฟิก:
+        `git remote set-url origin https://@github.com/okeforyou/youoke.git`
+
+
