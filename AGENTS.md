@@ -80,24 +80,25 @@ This configuration file defines the persistent operating standards, cognitive wo
 
 
 ## 9. Persistent Git Multi-Account Push Protocol (การ Push ข้ามบัญชีและจัดการ Token)
-โปรเจกต์นี้และโปรเจกต์อื่นที่เกี่ยวข้องใช้บัญชีแยกกันระหว่าง **Google Account (ล็อกอินพัฒนา AI Studio)** คือ `boonyanone@gmail.com` และ **GitHub/Vercel Owner** คือ `youoke.okeforyou@gmail.com` (หรือบัญชีอื่นตามโปรเจกต์) ทำให้ไม่สามารถใช้ปุ่ม "Export to GitHub" มาตรฐานของ AI Studio ได้ ดังนั้น เอเจนต์จะต้องทำหน้าที่ Commit และ Push ตรงผ่าน Git Terminal เสมอ โดยปฏิบัติตามมาตรฐานนี้:
+เมื่อโปรเจกต์นี้ใช้บัญชีแยกกันระหว่าง **Google Account (ล็อกอินพัฒนา AI Studio)** และ **GitHub/Vercel Owner** ทำให้ไม่สามารถใช้ปุ่ม "Export to GitHub" หรือตัวเชื่อมต่อมาตรฐานของเบราว์เซอร์ได้ ดังนั้น เอเจนต์จะต้องทำหน้าที่ตั้งค่าข้อมูลผู้เขียน (Author) และรันคำสั่ง Push ตรงผ่าน Git Terminal เสมอ โดยปฏิบัติตามมาตรฐานสากลนี้:
 
-1. **การกำหนดสิทธิ์ผู้เขียน (Author Config)**:
-   - ก่อนจะสร้าง Commit ทุกครั้ง ต้องรันคำสั่งกำหนดผู้เขียนให้ถูกต้องตามบัญชีเจ้าของคลังโค้ดเพื่อไม่ให้ Vercel บล็อกดีพลอย:
-     `git config user.name "okeforyou" && git config user.email "youoke.okeforyou@gmail.com"`
+1. **การกำหนดสิทธิ์ผู้เขียนให้สอดคล้อง (Author Config)**:
+   - ก่อนการรันคำสั่งสร้าง Commit ใดๆ เอเจนต์ต้องค้นหาอีเมลและชื่อของผู้เขียน (Owner) ที่ถูกต้องของคลัง Repository นั้นๆ (ตรวจจับจากประวัติ Git Log ก่อนหน้า หรือการตรวจจับอีเมลเชื่อมโยงในคลังโค้ด)
+   - จากนั้นให้รันคำสั่งตั้งค่าข้อมูล Author ในเครื่องทุกครั้งก่อน Commit เพื่อป้องกันไม่ให้ระบบคลาวด์ดีพลอย (เช่น Vercel, Netlify) บล็อกการ Deploy:
+     `git config user.name "<OWNER_USERNAME>" && git config user.email "<OWNER_EMAIL>"`
 
-2. **การรักษาความปลอดภัยของ Token ในระบบโลคัล (`.git_token`)**:
-   - ตรวจสอบไฟล์ `.git_token` ที่โฟลเดอร์ Root ของโปรเจกต์เสมอเพื่อดึงรหัส GitHub Personal Access Token (PAT)
-   - หากยังไม่มีไฟล์ดังกล่าว ให้แจ้งให้ผู้ใช้ส่งรหัสผ่าน Token มาให้ในแชท และบันทึกรหัสลงในไฟล์ `.git_token`
-   - **ห้ามส่งไฟล์นี้ขึ้น GitHub เด็ดขาด**: ตรวจสอบให้แน่ใจว่าได้ระบุ `.git_token` ลงในไฟล์ `.gitignore` เสมอ
+2. **การรักษาความปลอดภัยและการอ่าน Token ท้องถิ่น (`.git_token`)**:
+   - มองหาและเปิดอ่านรหัสผ่านหรือ GitHub Personal Access Token (PAT) จากไฟล์ `.git_token` ที่อยู่บริเวณ Root โฟลเดอร์ของโปรเจกต์เสมอ
+   - หากยังไม่มีไฟล์ดังกล่าว ให้เอเจนต์ทำการแจ้งขอรหัส Token จากผู้ใช้งานทางแชท เมื่อได้รับแล้วให้บันทึกลงในไฟล์ `.git_token` ในระบบเครื่องแบบ Local-Only
+   - **มาตรการป้องกันข้อมูลรั่วไหล**: ต้องตรวจสอบเสมอว่าไฟล์ `.git_token` ถูกลงทะเบียนไว้ในไฟล์ `.gitignore` ของโปรเจกต์แล้วเพื่อความปลอดภัย 100% ว่ารหัสลับจะไม่ถูก Push สู่ภายนอก
 
 3. **กระบวนการ Push อย่างปลอดภัย (Secure Push Flow)**:
-   - เมื่อต้องการพุชโค้ด ให้ดึง Token จากไฟล์ `.git_token` แล้วรันสเต็ปพุชแบบซ่อนรหัสผ่านดังนี้:
-     1. กำหนด Remote URL ชั่วคราวที่มีการแทรก Token:
-        `git remote set-url origin https://<TOKEN_FROM_FILE>@github.com/okeforyou/youoke.git`
-     2. ทำการพุชข้อมูลขึ้นสาขาหลัก:
-        `git push origin main`
-     3. **สำคัญมาก**: คืนค่า Remote URL กลับเป็นแบบปกติทันทีเพื่อความปลอดภัยสูงสุดและไม่ให้ติดประวัติ Token ในตัวแปรคอนฟิก:
-        `git remote set-url origin https://@github.com/okeforyou/youoke.git`
+   - เมื่อถึงเวลาพุชโค้ด ให้เอเจนต์นำรหัส Token ที่อ่านได้จากไฟล์ `.git_token` มารันกระบวนการพุชแบบปลอดภัยไร้ร่องรอยดังนี้:
+     1. ตั้งค่า Remote URL ชั่วคราวโดยการฝัง Token ลับ:
+        `git remote set-url origin https://<TOKEN_FROM_FILE>@github.com/<OWNER_USERNAME>/<REPO_NAME>.git`
+     2. รันคำสั่งส่งข้อมูลขึ้นคลังหลัก:
+        `git push origin main` (หรือสาขาหลักที่ใช้งานอยู่)
+     3. **ข้อห้ามสำคัญเพื่อความปลอดภัยสูงสุด**: ทันทีที่การ Push เสร็จสิ้น (ไม่ว่าจะสำเร็จหรือล้มเหลว) เอเจนต์จะต้องรันคำสั่งเคลียร์และคืนค่า Remote URL กลับเป็นปกติทันทีเพื่อป้องกันไม่ให้ค้างประวัติ Token ไว้ในระบบ Git Config:
+        `git remote set-url origin https://@github.com/<OWNER_USERNAME>/<REPO_NAME>.git`
 
 
