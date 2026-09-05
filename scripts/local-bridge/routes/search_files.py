@@ -3,6 +3,26 @@ from fastapi.responses import FileResponse, JSONResponse
 import os
 import json
 from utils.config import CACHE_DIR, get_active_storage_dir
+from utils.audio import mix_audio
+
+def _ensure_no_vocals(dir_path: str):
+    no_vocal_path = os.path.join(dir_path, "no_vocals.m4a")
+    if os.path.exists(no_vocal_path):
+        return no_vocal_path
+    stems = [os.path.join(dir_path, f"{s}.m4a") for s in ["drums", "bass", "other"]]
+    existing_stems = [s for s in stems if os.path.exists(s) and os.path.getsize(s) > 0]
+    if existing_stems:
+        if len(existing_stems) > 1:
+            try:
+                if mix_audio(existing_stems, no_vocal_path, fmt="m4a"):
+                    return no_vocal_path
+            except Exception as e:
+                print(f"[_ensure_no_vocals] mix failed: {e}")
+        other_path = os.path.join(dir_path, "other.m4a")
+        if os.path.exists(other_path):
+            return other_path
+        return existing_stems[0]
+    return None
 
 router = APIRouter()
 
@@ -153,9 +173,10 @@ async def serve_audio_file(video_id: str, filename: str):
             if os.path.exists(os.path.join(legacy_path, "vocals.m4a")):
                 return _make_file_response(os.path.join(legacy_path, "vocals.m4a"))
                 
-        if filename == "no_vocals.m4a" and not os.path.exists(os.path.join(legacy_path, "no_vocals.m4a")):
-            if os.path.exists(os.path.join(legacy_path, "other.m4a")):
-                return _make_file_response(os.path.join(legacy_path, "other.m4a"))
+        if filename == "no_vocals.m4a":
+            resolved_nv = _ensure_no_vocals(legacy_path)
+            if resolved_nv and os.path.exists(resolved_nv):
+                return _make_file_response(resolved_nv)
                 
         filepath = os.path.join(legacy_path, filename)
         if os.path.exists(filepath):
@@ -188,9 +209,10 @@ async def serve_audio_file(video_id: str, filename: str):
                                 if os.path.exists(os.path.join(song_dir, "vocals.m4a")):
                                     return _make_file_response(os.path.join(song_dir, "vocals.m4a"))
                             
-                            if filename == "no_vocals.m4a" and not os.path.exists(os.path.join(song_dir, "no_vocals.m4a")):
-                                if os.path.exists(os.path.join(song_dir, "other.m4a")):
-                                    return _make_file_response(os.path.join(song_dir, "other.m4a"))
+                            if filename == "no_vocals.m4a":
+                                resolved_nv = _ensure_no_vocals(song_dir)
+                                if resolved_nv and os.path.exists(resolved_nv):
+                                    return _make_file_response(resolved_nv)
                             
                             filepath = os.path.join(song_dir, filename)
                             if os.path.exists(filepath):
@@ -198,6 +220,12 @@ async def serve_audio_file(video_id: str, filename: str):
                 except:
                     pass
                     
+    fallback_dir = os.path.join(CACHE_DIR, video_id)
+    if filename == "no_vocals.m4a" and os.path.exists(fallback_dir):
+        resolved_nv = _ensure_no_vocals(fallback_dir)
+        if resolved_nv and os.path.exists(resolved_nv):
+            return _make_file_response(resolved_nv)
+
     fallback_path = os.path.join(CACHE_DIR, video_id, filename)
     if os.path.exists(fallback_path):
         return _make_file_response(fallback_path)

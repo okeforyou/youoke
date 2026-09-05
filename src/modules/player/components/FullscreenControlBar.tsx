@@ -292,7 +292,15 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                 <div className="flex items-center gap-1.5">
                     {/* Quick Vocals Toggle */}
                     <button
-                        onClick={() => toggleMute('vocals')}
+                        onClick={() => {
+                            if (currentVideo && !currentVideo.aiVocalRequested) {
+                                const uuid = currentVideo.uuid || currentVideo.id;
+                                if (uuid) {
+                                    usePlayerStore.getState().updateQueueItem(uuid, { aiVocalRequested: true });
+                                }
+                            }
+                            toggleMute('vocals');
+                        }}
                         className={`group/tooltip relative w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 ${trackStates.vocals.muted ? 'text-white/30 bg-white/5 border border-white/5' : 'text-green-400 bg-green-500/10 border border-green-500/15'}`}
                     >
                         {trackStates.vocals.muted ? <MicOff size={20} /> : <Mic size={20} />}

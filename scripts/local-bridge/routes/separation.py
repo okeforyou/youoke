@@ -8,7 +8,7 @@ import json
 import subprocess
 from utils.config import CACHE_DIR, LIBRARY_DIR, load_config
 from utils.logger import log_download_attempt
-from utils.audio import convert_audio, is_valid_audio, get_ffmpeg_path
+from utils.audio import convert_audio, is_valid_audio, get_ffmpeg_path, mix_audio
 from services.downloader import download_audio
 from routes.library_cache import load_library, enforce_cache_limit
 from models import SeparateRequest
@@ -477,11 +477,20 @@ def _execute_separation(req: SeparateRequest):
         else:
             # Pro mode (4 stems)
             stems = ["drums", "bass", "other"]
+            stem_wav_paths = []
             for stem in stems:
                 stem_wav = os.path.join(demucs_out_dir, f"{stem}.wav")
                 stem_m4a = os.path.join(song_dir, f"{stem}.m4a")
                 if os.path.exists(stem_wav):
                     convert_audio(stem_wav, stem_m4a, fmt="m4a")
+                    stem_wav_paths.append(stem_wav)
+            
+            # Synthesize backing track (no_vocals.m4a) from instrumental stems for universal playback
+            try:
+                if stem_wav_paths:
+                    mix_audio(stem_wav_paths, no_vocal_m4a, fmt="m4a")
+            except Exception as mix_err:
+                print(f"[Separation] Failed to pre-mix no_vocals.m4a: {mix_err}")
 
         # Save mode and engine flag for client checks
         with open(os.path.join(song_dir, "mode.txt"), "w") as f:

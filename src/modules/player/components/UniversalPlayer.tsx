@@ -43,7 +43,21 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
     // React to aiStatus becoming ready while playing
     const aiJobStatus = useAIVocalStore(state => activeVideoId ? state.jobs[activeVideoId]?.status : undefined);
     const aiMode = useAIVocalStore(state => activeVideoId ? state.jobs[activeVideoId]?.mode : 'basic') || 'basic';
-    const isAiReady = Boolean(activeVideoId && aiJobStatus === 'ready' && currentVideo?.aiVocalRequested);
+    const [audioLoadFailed, setAudioLoadFailed] = useState(false);
+    const [bridgeBaseUrl, setBridgeBaseUrl] = useState('http://127.0.0.1:5050');
+    const [stemUrls, setStemUrls] = useState<{ [stem: string]: string }>({});
+
+    // Reset error when song changes
+    useEffect(() => {
+        setAudioLoadFailed(false);
+    }, [activeVideoId]);
+
+    const isAiReady = Boolean(
+        activeVideoId &&
+        aiJobStatus === 'ready' &&
+        currentVideo?.aiVocalRequested !== false &&
+        !audioLoadFailed
+    );
 
     // AI Audio Mixer Refs
     const vocalRef = useRef<HTMLAudioElement>(null);
@@ -52,21 +66,23 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
     const bassRef = useRef<HTMLAudioElement>(null);
     const otherRef = useRef<HTMLAudioElement>(null);
     const ytPlayerRef = useRef<any>(null);
+
     const handleAudioError = (e: React.SyntheticEvent<HTMLAudioElement, Event>) => {
-        if (!isAiReady) return;
-        console.error("Audio error:", e.currentTarget.src, e.currentTarget.error);
+        console.error("[UniversalPlayer] Audio error on stem:", e.currentTarget.src, e.currentTarget.error);
+        setAudioLoadFailed(true);
         
-        // Fallback to YouTube Audio
+        // Immediate fallback to YouTube Audio
         if (ytPlayerRef.current && typeof ytPlayerRef.current.unMute === 'function') {
-            const { isMuted } = useMixerStore.getState();
-            if (!isMuted) {
-                ytPlayerRef.current.unMute();
-                ytPlayerRef.current.setVolume(100);
+            const { isMuted } = usePlayerStore.getState();
+            const { volumes } = useMixerStore.getState();
+            if (!isMuted && !forceMute) {
+                try {
+                    ytPlayerRef.current.unMute();
+                    ytPlayerRef.current.setVolume(volumes?.instrumental ?? 100);
+                } catch (err) {}
             }
         }
     };
-
-    const [bridgeBaseUrl, setBridgeBaseUrl] = useState('http://127.0.0.1:5050');
 
     const { trackStates, volumes } = useMixerStore(
         useShallow(state => ({
@@ -202,7 +218,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
         }
     }, [isPlaying, isAiReady]);
 
-    // Continuous Master-Slave Sync Loop for AI Audio to guarantee zero phasing/drift
+    // Continuous Sync Loop for AI Audio to guarantee zero phasing/drift
     useEffect(() => {
         let animationFrameId: number;
         
@@ -212,47 +228,28 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                     const ytPlayer = ytPlayerRef.current;
                     if (ytPlayer && typeof ytPlayer.getPlayerState === 'function') {
                         const state = ytPlayer.getPlayerState();
+                        
+                        const activeRefs = aiMode === 'pro' 
+                            ? [vocalRef, drumsRef, bassRef, otherRef] 
+                            : [vocalRef, instrumentalRef];
+                        const activeAudios = activeRefs.map(r => r.current).filter(Boolean) as HTMLAudioElement[];
+
                         // 1 = PLAYING. If YouTube is buffering (3) or paused (2), pause AI tracks to prevent desync
                         if (state !== 1) {
-                            vocalRef.current?.pause();
-                            instrumentalRef.current?.pause();
-                            drumsRef.current?.pause();
-                            bassRef.current?.pause();
-                            otherRef.current?.pause();
+                            for (const audio of activeAudios) {
+                                if (!audio.paused) {
+                                    audio.pause();
+                                }
+                            }
                         } else {
                             const youtubeTime = ytPlayer.getCurrentTime();
                             if (typeof youtubeTime === 'number' && youtubeTime >= 0) {
-                                // Designate Master Audio track (vocalsRef preferred, fallback to instrumentalRef)
-                                const masterAudio = vocalRef.current || instrumentalRef.current;
-                                if (masterAudio) {
-                                    // 1. Synchronize Master Audio with YouTube Video clock (100ms threshold)
-                                    const masterTime = masterAudio.currentTime;
-                                    const ytOffset = Math.abs(youtubeTime - masterTime);
-                                    if (ytOffset > 0.10) {
-                                        masterAudio.currentTime = youtubeTime;
+                                for (const audio of activeAudios) {
+                                    if (Math.abs(audio.currentTime - youtubeTime) > 0.10) {
+                                        audio.currentTime = youtubeTime;
                                     }
-                                    if (masterAudio.paused) {
-                                        masterAudio.play().catch(() => {});
-                                    }
-
-                                    const currentMasterTime = masterAudio.currentTime;
-
-                                    // 2. Strict Phase-Lock (Slave Stems lock to Master within 25ms)
-                                    const slaveRefs = aiMode === 'pro' 
-                                        ? [drumsRef, bassRef, otherRef] 
-                                        : [instrumentalRef];
-
-                                    for (const sRef of slaveRefs) {
-                                        const slave = sRef.current;
-                                        if (!slave) continue;
-                                        
-                                        const slaveOffset = Math.abs(slave.currentTime - currentMasterTime);
-                                        if (slaveOffset > 0.025) {
-                                            slave.currentTime = currentMasterTime;
-                                        }
-                                        if (slave.paused && !masterAudio.paused) {
-                                            slave.play().catch(() => {});
-                                        }
+                                    if (audio.paused) {
+                                        audio.play().catch(() => {});
                                     }
                                 }
                             }
@@ -285,34 +282,81 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
         }
     }, [isPlaying, currentVideo?.sourceType]);
 
+    // Resilient YouTube audio mute/unmute control
     useEffect(() => {
-        if (isAiReady && ytPlayerRef.current) {
+        if (ytPlayerRef.current && typeof ytPlayerRef.current.getIframe === 'function' && ytPlayerRef.current.getIframe()) {
             try {
-                if (typeof ytPlayerRef.current.getIframe === 'function' && ytPlayerRef.current.getIframe()) {
+                if (isAiReady) {
                     ytPlayerRef.current.mute();
+                } else if (!isMuted && !forceMute) {
+                    ytPlayerRef.current.unMute();
+                    ytPlayerRef.current.setVolume(volumes?.instrumental ?? 100);
                 }
             } catch (e) {}
         }
-    }, [isAiReady]);
+    }, [isAiReady, isMuted, forceMute, volumes?.instrumental]);
 
+    // Fetch and create Blob URLs to bypass Chrome HTTPS mixed-content restrictions on Vercel
     useEffect(() => {
         let isMounted = true;
+        let createdBlobUrls: string[] = [];
 
-        const syncBridgeUrl = async () => {
-            const activeBaseUrl = await getActiveBridgeBaseUrl();
-            if (isMounted && activeBaseUrl) {
-                setBridgeBaseUrl(activeBaseUrl);
+        const loadStems = async () => {
+            if (!isAiReady || !activeVideoId) {
+                if (isMounted) setStemUrls({});
+                return;
+            }
+
+            const baseUrl = await getActiveBridgeBaseUrl();
+            if (!baseUrl) {
+                console.warn("[UniversalPlayer] AI Bridge not reachable, falling back to YouTube audio");
+                if (isMounted) setAudioLoadFailed(true);
+                return;
+            }
+            if (isMounted) setBridgeBaseUrl(baseUrl);
+
+            const stems = aiMode === 'pro'
+                ? ['vocals', 'drums', 'bass', 'other']
+                : ['vocals', 'no_vocals'];
+
+            const newStemUrls: { [stem: string]: string } = {};
+
+            try {
+                await Promise.all(stems.map(async (stem) => {
+                    const directUrl = `${baseUrl}/files/${activeVideoId}/${stem}.m4a`;
+                    try {
+                        const res = await fetch(directUrl);
+                        if (res.ok) {
+                            const blob = await res.blob();
+                            const blobUrl = URL.createObjectURL(blob);
+                            createdBlobUrls.push(blobUrl);
+                            newStemUrls[stem] = blobUrl;
+                        } else {
+                            newStemUrls[stem] = directUrl;
+                        }
+                    } catch (err) {
+                        newStemUrls[stem] = directUrl;
+                    }
+                }));
+
+                if (isMounted) {
+                    setStemUrls(newStemUrls);
+                }
+            } catch (err) {
+                console.error("[UniversalPlayer] Stem loading failed:", err);
+                if (isMounted) setAudioLoadFailed(true);
             }
         };
 
-        if (isAiReady) {
-            syncBridgeUrl();
-        }
+        loadStems();
 
         return () => {
             isMounted = false;
+            createdBlobUrls.forEach(url => {
+                try { URL.revokeObjectURL(url); } catch (e) {}
+            });
         };
-    }, [isAiReady, activeVideoId]);
+    }, [isAiReady, activeVideoId, aiMode]);
 
     // --- RENDERERS ---
 
@@ -379,10 +423,15 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
             console.warn("Could not unload captions module:", e);
         }
 
-        const aiVocal = useAIVocalStore.getState();
-        const jobId = currentVideo?.videoId || currentVideo?.id;
-        if (jobId && aiVocal.jobs[jobId]?.status === 'ready') {
+        if (isAiReady) {
             try { if (event.target.getIframe()) event.target.mute(); } catch (e) {}
+        } else {
+            try {
+                if (event.target.getIframe() && !isMuted && !forceMute) {
+                    event.target.unMute();
+                    event.target.setVolume(volumes?.instrumental ?? 100);
+                }
+            } catch (e) {}
         }
 
         // Register adapter if needed
@@ -394,10 +443,6 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
     };
 
     const handleYouTubeStateChange = (event: any) => {
-        const aiVocal = useAIVocalStore.getState();
-        const jobId = currentVideo?.videoId || currentVideo?.id;
-        const isReady = jobId && aiVocal.jobs[jobId]?.status === 'ready';
-
         // Force disable native CC when video plays
         if (event.data === 1) { // PLAYING
             try {
@@ -412,10 +457,16 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
             } catch (e) {}
         }
 
-        if (isReady && (event.data === 1 || event.data === 3 || event.data === 2)) {
-            // Only ensure YouTube is muted. 
-            // Audio play/pause and time sync is fully handled by the requestAnimationFrame loop.
+        if (isAiReady && (event.data === 1 || event.data === 3 || event.data === 2)) {
+            // Only ensure YouTube is muted when AI is actively ready.
             try { if (event.target.getIframe()) event.target.mute(); } catch (e) {}
+        } else if (!isAiReady && event.data === 1) {
+            try {
+                if (event.target.getIframe() && !isMuted && !forceMute) {
+                    event.target.unMute();
+                    event.target.setVolume(volumes?.instrumental ?? 100);
+                }
+            } catch (e) {}
         }
 
         // Handle state changes if needed
@@ -431,7 +482,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                         onError={handleAudioError} 
                         ref={vocalRef} 
                         crossOrigin="anonymous"
-                        src={`${bridgeBaseUrl}/files/${activeVideoId}/vocals.m4a`} 
+                        src={stemUrls.vocals || `${bridgeBaseUrl}/files/${activeVideoId}/vocals.m4a`} 
                         preload="auto" 
                         onLoadedData={(e) => { 
                             e.currentTarget.volume = (volumes?.vocals ?? 100) / 100;
@@ -447,33 +498,42 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                                 onError={handleAudioError} 
                                 ref={drumsRef} 
                                 crossOrigin="anonymous" 
-                                src={`${bridgeBaseUrl}/files/${activeVideoId}/drums.m4a`} 
+                                src={stemUrls.drums || `${bridgeBaseUrl}/files/${activeVideoId}/drums.m4a`} 
                                 preload="auto" 
                                 onLoadedData={(e) => { 
                                     e.currentTarget.volume = (volumes?.drums ?? 100) / 100;
-                                    if (vocalRef.current) e.currentTarget.currentTime = vocalRef.current.currentTime;
+                                    const ytTime = ytPlayerRef.current?.getCurrentTime?.();
+                                    if (typeof ytTime === 'number' && ytTime > 0) {
+                                        e.currentTarget.currentTime = ytTime;
+                                    }
                                 }} 
                             />
                             <audio 
                                 onError={handleAudioError} 
                                 ref={bassRef} 
                                 crossOrigin="anonymous" 
-                                src={`${bridgeBaseUrl}/files/${activeVideoId}/bass.m4a`} 
+                                src={stemUrls.bass || `${bridgeBaseUrl}/files/${activeVideoId}/bass.m4a`} 
                                 preload="auto" 
                                 onLoadedData={(e) => { 
                                     e.currentTarget.volume = (volumes?.bass ?? 100) / 100;
-                                    if (vocalRef.current) e.currentTarget.currentTime = vocalRef.current.currentTime;
+                                    const ytTime = ytPlayerRef.current?.getCurrentTime?.();
+                                    if (typeof ytTime === 'number' && ytTime > 0) {
+                                        e.currentTarget.currentTime = ytTime;
+                                    }
                                 }} 
                             />
                             <audio 
                                 onError={handleAudioError} 
                                 ref={otherRef} 
                                 crossOrigin="anonymous" 
-                                src={`${bridgeBaseUrl}/files/${activeVideoId}/other.m4a`} 
+                                src={stemUrls.other || `${bridgeBaseUrl}/files/${activeVideoId}/other.m4a`} 
                                 preload="auto" 
                                 onLoadedData={(e) => { 
                                     e.currentTarget.volume = (volumes?.other ?? 100) / 100;
-                                    if (vocalRef.current) e.currentTarget.currentTime = vocalRef.current.currentTime;
+                                    const ytTime = ytPlayerRef.current?.getCurrentTime?.();
+                                    if (typeof ytTime === 'number' && ytTime > 0) {
+                                        e.currentTarget.currentTime = ytTime;
+                                    }
                                 }} 
                             />
                         </>
@@ -482,11 +542,14 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                             onError={handleAudioError} 
                             ref={instrumentalRef} 
                             crossOrigin="anonymous"
-                            src={`${bridgeBaseUrl}/files/${activeVideoId}/no_vocals.m4a`} 
+                            src={stemUrls.no_vocals || `${bridgeBaseUrl}/files/${activeVideoId}/no_vocals.m4a`} 
                             preload="auto" 
                             onLoadedData={(e) => { 
                                 e.currentTarget.volume = (volumes?.instrumental ?? 100) / 100;
-                                if (vocalRef.current) e.currentTarget.currentTime = vocalRef.current.currentTime;
+                                const ytTime = ytPlayerRef.current?.getCurrentTime?.();
+                                if (typeof ytTime === 'number' && ytTime > 0) {
+                                    e.currentTarget.currentTime = ytTime;
+                                }
                             }} 
                         />
                     )}

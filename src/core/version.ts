@@ -1,7 +1,7 @@
-// 🛡️ v5.5.312: Global torchaudio Monkey-Patch Migration
+// 🛡️ v5.5.321: Universal Audio Sync, Backing Track Auto-Mix & YouTube Audio Fallback
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.312";
+export const SYSTEM_VERSION = "5.5.321";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.321",
+        date: "2026-09-05",
+        changes: [
+            "fix(player): Resolved audio desync and phase-cancellation in UniversalPlayer by synchronizing audio stems with YouTube video clock and creating local Blob URLs to bypass mixed-content block.",
+            "fix(player): Implemented automatic YouTube audio un-mute fallback if stem loading fails or bridge is unreachable, guaranteeing uninterrupted audio playback.",
+            "feat(bridge): Added automatic instrumental pre-mixing (mix_audio via ffmpeg amix) to synthesize no_vocals.m4a from drums/bass/other stems, preventing 404 missing backing track errors.",
+            "fix(ui): Auto-set aiVocalRequested to true when playing cached AI Karaoke tracks or toggling vocal mute in sidebar and fullscreen controls."
+        ]
+    },
     {
         version: "5.5.312",
         date: "2026-09-05",

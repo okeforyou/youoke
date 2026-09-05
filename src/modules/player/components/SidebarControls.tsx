@@ -211,6 +211,12 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             label: "ร้อง",
             onClick: () => {
                 if (isAiReady) {
+                    if (currentVideo && !currentVideo.aiVocalRequested) {
+                        const uuid = currentVideo.uuid || currentVideo.id;
+                        if (uuid) {
+                            usePlayerStore.getState().updateQueueItem(uuid, { aiVocalRequested: true });
+                        }
+                    }
                     toggleMute('vocals');
                 } else if (currentVideo) {
                     const uuid = currentVideo.uuid || currentVideo.id;

@@ -882,7 +882,8 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
                           title: item.title,
                           author: item.author || 'Unknown',
                           thumbnail: item.thumbnail,
-                          sourceType: 'youtube'
+                          sourceType: 'youtube',
+                          aiVocalRequested: true
                         });
                       }}
                       onDelete={() => deleteAiCache(item.video_id)}
