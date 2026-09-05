@@ -17,6 +17,7 @@ export const CHANGELOGS = [
             "fix(player): Resolved audio desync and phase-cancellation in UniversalPlayer by synchronizing audio stems with YouTube video clock and creating local Blob URLs to bypass mixed-content block.",
             "fix(player): Implemented automatic YouTube audio un-mute fallback if stem loading fails or bridge is unreachable, guaranteeing uninterrupted audio playback.",
             "feat(bridge): Added automatic instrumental pre-mixing (mix_audio via ffmpeg amix) to synthesize no_vocals.m4a from drums/bass/other stems, preventing 404 missing backing track errors.",
+            "chore(plugin): Bumped Local Bridge & Desktop Plugin version to v1.0.85.",
             "fix(ui): Auto-set aiVocalRequested to true when playing cached AI Karaoke tracks or toggling vocal mute in sidebar and fullscreen controls."
         ]
     },
