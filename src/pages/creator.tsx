@@ -238,7 +238,7 @@ export default function CreatorStudioPage() {
                     setCurrentTime(time);
                     if (backingAudioRef.current) {
                         const drift = Math.abs(backingAudioRef.current.currentTime - time);
-                        if (drift > 0.08) {
+                        if (drift > 0.025) {
                             backingAudioRef.current.currentTime = time;
                         }
                     }
@@ -584,10 +584,16 @@ export default function CreatorStudioPage() {
             const baseUrl = await getActiveBridgeBaseUrl();
             if (!baseUrl) throw new Error("Local Bridge offline");
 
-            // 1. Fetch audio from bridge
-            const audioRes = await fetch(`${baseUrl}/files/${selectedSong.video_id}/vocals.m4a`);
+            // 1. Fetch audio from bridge (vocals preferred, then original/cached audio)
+            let audioRes = await fetch(`${baseUrl}/files/${selectedSong.video_id}/vocals.m4a`);
             if (!audioRes.ok) {
-                throw new Error("ไม่พบไฟล์เสียงร้อง (vocals.m4a) กรุณาแยกเสียงเพลงนี้ก่อน");
+                audioRes = await fetch(`${baseUrl}/files/${selectedSong.video_id}/original.audio`);
+            }
+            if (!audioRes.ok) {
+                audioRes = await fetch(`${baseUrl}/files/${selectedSong.video_id}/no_vocals.m4a`);
+            }
+            if (!audioRes.ok) {
+                throw new Error("ไม่พบไฟล์เสียงร้อง (vocals.m4a) หรือไฟล์เสียงต้นฉบับ กรุณาลองกดแยกเสียงเพลงนี้ก่อน");
             }
             const audioBlob = await audioRes.blob();
 
@@ -1413,7 +1419,7 @@ export default function CreatorStudioPage() {
                             {songs.length === 0 ? (
                                 <div className="text-center p-8 text-zinc-500">
                                     ไม่มีเพลงที่แยกเสียงไว้ในระบบ<br/>
-                                    <span className="text-sm">ไปที่หน้าค้นหาและเปิดใช้งานปุ่ม "แยกเสียงร้อง" ก่อน</span>
+                                    <span className="text-sm">ไปที่หน้าค้นหาและเปิดใช้งานปุ่ม &quot;แยกเสียงร้อง&quot; ก่อน</span>
                                 </div>
                             ) : (
                                 songs.map(song => (

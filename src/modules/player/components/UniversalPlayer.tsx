@@ -202,7 +202,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
         }
     }, [isPlaying, isAiReady]);
 
-    // Continuous Sync Loop for AI Audio to prevent drift
+    // Continuous Master-Slave Sync Loop for AI Audio to guarantee zero phasing/drift
     useEffect(() => {
         let animationFrameId: number;
         
@@ -220,31 +220,40 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                             bassRef.current?.pause();
                             otherRef.current?.pause();
                         } else {
-                            const youtube_time = ytPlayer.getCurrentTime();
-                            if (typeof youtube_time === 'number' && youtube_time > 0) {
-                                const enforceSync = (ref: React.RefObject<HTMLAudioElement>) => {
-                                    if (!ref.current) return;
-                                    const audio_time = ref.current.currentTime;
-                                    const time_offset = Math.abs(youtube_time - audio_time);
-                                    
-                                    // หากเวลาต่างกันเกิน 0.3 วินาที (300ms) ให้บังคับ Seek
-                                    if (time_offset > 0.3) {
-                                        console.log(`⏱️ Auto-Sync triggered: YT=${youtube_time.toFixed(2)}s, Audio=${audio_time.toFixed(2)}s, Offset=${time_offset.toFixed(2)}s`);
-                                        ref.current.currentTime = youtube_time;
+                            const youtubeTime = ytPlayer.getCurrentTime();
+                            if (typeof youtubeTime === 'number' && youtubeTime >= 0) {
+                                // Designate Master Audio track (vocalsRef preferred, fallback to instrumentalRef)
+                                const masterAudio = vocalRef.current || instrumentalRef.current;
+                                if (masterAudio) {
+                                    // 1. Synchronize Master Audio with YouTube Video clock (100ms threshold)
+                                    const masterTime = masterAudio.currentTime;
+                                    const ytOffset = Math.abs(youtubeTime - masterTime);
+                                    if (ytOffset > 0.10) {
+                                        masterAudio.currentTime = youtubeTime;
                                     }
-                                    
-                                    if (ref.current.paused) {
-                                        ref.current.play().catch(()=>{});
+                                    if (masterAudio.paused) {
+                                        masterAudio.play().catch(() => {});
                                     }
-                                };
 
-                                enforceSync(vocalRef);
-                                if (aiMode === 'pro') {
-                                    enforceSync(drumsRef);
-                                    enforceSync(bassRef);
-                                    enforceSync(otherRef);
-                                } else {
-                                    enforceSync(instrumentalRef);
+                                    const currentMasterTime = masterAudio.currentTime;
+
+                                    // 2. Strict Phase-Lock (Slave Stems lock to Master within 25ms)
+                                    const slaveRefs = aiMode === 'pro' 
+                                        ? [drumsRef, bassRef, otherRef] 
+                                        : [instrumentalRef];
+
+                                    for (const sRef of slaveRefs) {
+                                        const slave = sRef.current;
+                                        if (!slave) continue;
+                                        
+                                        const slaveOffset = Math.abs(slave.currentTime - currentMasterTime);
+                                        if (slaveOffset > 0.025) {
+                                            slave.currentTime = currentMasterTime;
+                                        }
+                                        if (slave.paused && !masterAudio.paused) {
+                                            slave.play().catch(() => {});
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -424,13 +433,49 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                         crossOrigin="anonymous"
                         src={`${bridgeBaseUrl}/files/${activeVideoId}/vocals.m4a`} 
                         preload="auto" 
-                        onLoadedData={(e) => { e.currentTarget.volume = (volumes?.vocals ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} 
+                        onLoadedData={(e) => { 
+                            e.currentTarget.volume = (volumes?.vocals ?? 100) / 100;
+                            const ytTime = ytPlayerRef.current?.getCurrentTime?.();
+                            if (typeof ytTime === 'number' && ytTime > 0) {
+                                e.currentTarget.currentTime = ytTime;
+                            }
+                        }} 
                     />
                     {aiMode === 'pro' ? (
                         <>
-                            <audio onError={handleAudioError} ref={drumsRef} crossOrigin="anonymous" src={`${bridgeBaseUrl}/files/${activeVideoId}/drums.m4a`} preload="auto" onLoadedData={(e) => { e.currentTarget.volume = (volumes?.drums ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} />
-                            <audio onError={handleAudioError} ref={bassRef} crossOrigin="anonymous" src={`${bridgeBaseUrl}/files/${activeVideoId}/bass.m4a`} preload="auto" onLoadedData={(e) => { e.currentTarget.volume = (volumes?.bass ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} />
-                            <audio onError={handleAudioError} ref={otherRef} crossOrigin="anonymous" src={`${bridgeBaseUrl}/files/${activeVideoId}/other.m4a`} preload="auto" onLoadedData={(e) => { e.currentTarget.volume = (volumes?.other ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} />
+                            <audio 
+                                onError={handleAudioError} 
+                                ref={drumsRef} 
+                                crossOrigin="anonymous" 
+                                src={`${bridgeBaseUrl}/files/${activeVideoId}/drums.m4a`} 
+                                preload="auto" 
+                                onLoadedData={(e) => { 
+                                    e.currentTarget.volume = (volumes?.drums ?? 100) / 100;
+                                    if (vocalRef.current) e.currentTarget.currentTime = vocalRef.current.currentTime;
+                                }} 
+                            />
+                            <audio 
+                                onError={handleAudioError} 
+                                ref={bassRef} 
+                                crossOrigin="anonymous" 
+                                src={`${bridgeBaseUrl}/files/${activeVideoId}/bass.m4a`} 
+                                preload="auto" 
+                                onLoadedData={(e) => { 
+                                    e.currentTarget.volume = (volumes?.bass ?? 100) / 100;
+                                    if (vocalRef.current) e.currentTarget.currentTime = vocalRef.current.currentTime;
+                                }} 
+                            />
+                            <audio 
+                                onError={handleAudioError} 
+                                ref={otherRef} 
+                                crossOrigin="anonymous" 
+                                src={`${bridgeBaseUrl}/files/${activeVideoId}/other.m4a`} 
+                                preload="auto" 
+                                onLoadedData={(e) => { 
+                                    e.currentTarget.volume = (volumes?.other ?? 100) / 100;
+                                    if (vocalRef.current) e.currentTarget.currentTime = vocalRef.current.currentTime;
+                                }} 
+                            />
                         </>
                     ) : (
                         <audio 
@@ -439,7 +484,10 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                             crossOrigin="anonymous"
                             src={`${bridgeBaseUrl}/files/${activeVideoId}/no_vocals.m4a`} 
                             preload="auto" 
-                            onLoadedData={(e) => { e.currentTarget.volume = (volumes?.instrumental ?? 100) / 100; if (isPlaying) e.currentTarget.play().catch(()=>{}); }} 
+                            onLoadedData={(e) => { 
+                                e.currentTarget.volume = (volumes?.instrumental ?? 100) / 100;
+                                if (vocalRef.current) e.currentTarget.currentTime = vocalRef.current.currentTime;
+                            }} 
                         />
                     )}
                 </div>

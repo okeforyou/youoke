@@ -101,4 +101,21 @@ This configuration file defines the persistent operating standards, cognitive wo
      3. **ข้อห้ามสำคัญเพื่อความปลอดภัยสูงสุด**: ทันทีที่การ Push เสร็จสิ้น (ไม่ว่าจะสำเร็จหรือล้มเหลว) เอเจนต์จะต้องรันคำสั่งเคลียร์และคืนค่า Remote URL กลับเป็นปกติทันทีเพื่อป้องกันไม่ให้ค้างประวัติ Token ไว้ในระบบ Git Config:
         `git remote set-url origin https://@github.com/<OWNER_USERNAME>/<REPO_NAME>.git`
 
+---
+
+## 10. Multi-Track AI Stem Synchronization & Audio Timing Standards (มาตรฐานการซิงค์เสียงหลายแทร็กและแกะเนื้อเพลง)
+เพื่อให้การเล่นเสียงแยกแทร็ก (Vocals, Instrumental, Drums, Bass, Other) และการเทียบจังหวะเนื้อเพลง (AI Lyrics Alignment) มีความแม่นยำสูงสุดระดับมืออาชีพ ไร้เสียงเหลื่อม/เสียงก้องสะท้อน (Phasing/Comb-Filtering) ให้ปฏิบัติตามมาตรฐานนี้เสมอ:
+
+1. **Master-Slave Audio Clock Synchronization**:
+   - กำหนดให้แทร็กเสียงหลัก (Primary Vocal Stem หรือ Instrumental Stem) ทำหน้าที่เป็น **Master Audio Clock**
+   - ในลูป `requestAnimationFrame` ทุกแทร็กย่อย (Slave Stems: drums, bass, instrumental, other) จะต้องถูกล็อกเวลาเข้ากับ Master Clock โดยตรงด้วยค่าความคลาดเคลื่อนสูงสุดไม่เกิน **25ms (`0.025s`)** หากหลุดจากนี้ให้ Snap เวลาทันที
+   - การซิงค์ภาพวิดีโอกับเสียง (YouTube Clock vs Master Audio): ใช้เกณฑ์ตรวจจับที่ **100ms (`0.10s`)** เพื่อให้การ Seek หรือกระตุกของเครือข่ายปรับคืนจังหวะได้อย่างรวดเร็ว
+
+2. **Resilient AI Vocal & Transcription Pipeline (ระบบแกะเนื้อเพลงอัตโนมัติแบบ Multi-tiered Fallback)**:
+   - สำหรับคำขอ AI Transcription (`/transcribe`):
+     1. **Priority 1**: ตรวจหาไฟล์เสียงร้องที่แยกแล้ว (`vocals.m4a`, `vocals.wav`, `vocals.mp3`) เพื่อความแม่นยำสูงสุด
+     2. **Priority 2**: หากยังไม่ได้แยกเสียงร้อง ให้ค้นหาไฟล์เสียงต้นฉบับ (`original.m4a`, `original.audio`, `${video_id}.m4a`, `no_vocals.m4a`)
+     3. **Priority 3**: หากไม่มีไฟล์เสียงในเครื่องเลย ให้ระบบ Local Bridge ดึงสตรีมเสียงผ่าน `yt-dlp` อัตโนมัติในพื้นหลัง เพื่อให้ผู้ใช้สามารถกด AI Sync ได้ทันทีโดยไม่เกิด Error 404 "ไม่พบไฟล์เสียงร้อง"
+
+
 

@@ -16,13 +16,37 @@ async def transcribe_audio(
     try:
         active_dir = get_active_storage_dir()
         
-        # 1. Locate the vocals.m4a
-        # Legacy search
-        legacy_path = os.path.join(active_dir, video_id, "vocals.m4a")
-        song_dir = os.path.join(active_dir, video_id)
+        # 1. Locate the best audio file (vocals preferred, then original/cached audio)
+        audio_target_path = None
         
-        if not os.path.exists(legacy_path):
-            found = False
+        # Check active directory for direct folder or metadata match
+        legacy_path = os.path.join(active_dir, video_id)
+        song_dir = legacy_path
+        
+        def find_audio_in_dir(target_dir):
+            if not os.path.exists(target_dir) or not os.path.isdir(target_dir):
+                return None
+            # Priority 1: Separated Vocals
+            for v_name in ["vocals.m4a", "vocals.mp3", "vocals.wav", "vocals.webm", "vocals.ogg"]:
+                p = os.path.join(target_dir, v_name)
+                if os.path.exists(p) and os.path.getsize(p) > 10000:
+                    return p
+            # Priority 2: Original Audio
+            for o_name in [f"{video_id}.m4a", f"{video_id}.mp3", f"{video_id}.webm", "original.m4a", "original.audio", "no_vocals.m4a", "other.m4a"]:
+                p = os.path.join(target_dir, o_name)
+                if os.path.exists(p) and os.path.getsize(p) > 10000:
+                    return p
+            # Priority 3: Any valid audio file
+            for f in os.listdir(target_dir):
+                if f.endswith(('.m4a', '.mp3', '.webm', '.wav', '.ogg')) and not f.endswith('.yok'):
+                    p = os.path.join(target_dir, f)
+                    if os.path.getsize(p) > 10000:
+                        return p
+            return None
+
+        audio_target_path = find_audio_in_dir(song_dir)
+        
+        if not audio_target_path and os.path.exists(active_dir):
             for folder_name in os.listdir(active_dir):
                 temp_dir = os.path.join(active_dir, folder_name)
                 if not os.path.isdir(temp_dir): continue
@@ -34,18 +58,36 @@ async def transcribe_audio(
                             data = json.load(f)
                             if data.get("videoId") == video_id:
                                 song_dir = temp_dir
-                                legacy_path = os.path.join(temp_dir, "vocals.m4a")
-                                found = True
-                                break
+                                audio_target_path = find_audio_in_dir(temp_dir)
+                                if audio_target_path:
+                                    break
                     except: pass
-            if not found:
-                # Fallback to cache dir
-                from utils.config import CACHE_DIR
-                legacy_path = os.path.join(CACHE_DIR, video_id, "vocals.m4a")
-                song_dir = os.path.join(CACHE_DIR, video_id)
-        
-        if not os.path.exists(legacy_path):
-            raise HTTPException(status_code=404, detail="ไม่พบไฟล์เสียงร้อง กรุณารอให้ระบบแยกเสียงร้องเสร็จสมบูรณ์ก่อนแกะเนื้อเพลง")
+
+        if not audio_target_path:
+            # Fallback to cache dir
+            from utils.config import CACHE_DIR
+            cache_song_dir = os.path.join(CACHE_DIR, video_id)
+            audio_target_path = find_audio_in_dir(cache_song_dir)
+            if audio_target_path:
+                song_dir = cache_song_dir
+            else:
+                song_dir = cache_song_dir
+                os.makedirs(song_dir, exist_ok=True)
+                # Auto-download audio stream via yt-dlp fallback
+                try:
+                    from services.downloader import download_audio
+                    yt_url = f"https://www.youtube.com/watch?v={video_id}"
+                    downloaded_file = download_audio(yt_url, song_dir, video_id)
+                    if downloaded_file and os.path.exists(downloaded_file):
+                        audio_target_path = downloaded_file
+                except Exception as dl_err:
+                    print(f"[Transcribe Downloader Error] {dl_err}")
+
+        if not audio_target_path or not os.path.exists(audio_target_path):
+            raise HTTPException(
+                status_code=404, 
+                detail="ไม่พบไฟล์เสียงร้อง และไม่สามารถดาวน์โหลดเพลงนี้ได้ กรุณาลองกดแยกเสียงเพลงนี้ในโหมด AI ก่อน"
+            )
             
         # Check if already transcribed
         timeline_path = os.path.join(song_dir, "lyrics_timeline.json")
@@ -53,20 +95,32 @@ async def transcribe_audio(
             try:
                 with open(timeline_path, "r", encoding="utf-8") as f:
                     data = json.load(f)
-                    if "words" in data:
+                    if "words" in data and len(data["words"]) > 0:
                         return {"status": "success", "words": data["words"], "cached": True}
             except:
                 pass # If corrupted, fetch again
                 
         # 2. Call the AI API
         if provider.lower() == "deepgram":
-            with open(legacy_path, 'rb') as audio:
+            with open(audio_target_path, 'rb') as audio:
                 audio_data = audio.read()
                 
+            # Determine content-type from extension
+            ext = os.path.splitext(audio_target_path)[1].lower()
+            content_type = "audio/m4a"
+            if ext == ".mp3":
+                content_type = "audio/mpeg"
+            elif ext == ".wav":
+                content_type = "audio/wav"
+            elif ext == ".webm":
+                content_type = "audio/webm"
+            elif ext == ".ogg":
+                content_type = "audio/ogg"
+
             url = "https://api.deepgram.com/v1/listen?model=nova-3&language=th&punctuate=true&smart_format=true&utterances=true"
             req = urllib.request.Request(url, data=audio_data, method="POST")
             req.add_header("Authorization", f"Token {api_key}")
-            req.add_header("Content-Type", "audio/m4a")
+            req.add_header("Content-Type", content_type)
             
             try:
                 # Use a larger timeout (600s = 10 minutes) for slow upload connections

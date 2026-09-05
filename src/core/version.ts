@@ -1,7 +1,7 @@
-// 🛡️ v5.5.310: Add built-in wave fallback for PyInstaller packaged torchaudio patch
+// 🛡️ v5.5.311: Master-Slave Stem Audio Sync & Resilient AI Lyric Transcription Pipeline
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.310";
+export const SYSTEM_VERSION = "5.5.311";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.311",
+        date: "2026-09-05",
+        changes: [
+            "fix(player): Implemented tight Master-Slave audio stem synchronization (< 25ms lock) in UniversalPlayer and Creator studio, eliminating comb filtering, audio overlap, and vocal-instrumental timing drift.",
+            "fix(ai-sync): Enhanced local bridge /transcribe endpoint to automatically fallback to original audio and auto-download via yt-dlp if vocal separation has not been performed yet, preventing 'ไม่พบไฟล์เสียงร้อง' errors during AI lyric synchronization.",
+            "chore(plugin): Bumped YouOke Local Bridge & Desktop Plugin version to v1.0.83."
+        ]
+    },
     {
         version: "5.5.310",
         date: "2026-08-27",
