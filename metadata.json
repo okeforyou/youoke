@@ -1,0 +1,6 @@
+{
+  "name": "YouOke Karaoke Online",
+  "description": "ระบบคาราโอเกะออนไลน์ ค้นหาเพลง ร้องเพลง ค้นหาเนื้อร้อง MIDI ซิงค์เนื้อเพลง และควบคุมผ่านมือถือแบบเรียลไทม์",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
