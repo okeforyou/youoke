@@ -117,5 +117,21 @@ This configuration file defines the persistent operating standards, cognitive wo
      2. **Priority 2**: หากยังไม่ได้แยกเสียงร้อง ให้ค้นหาไฟล์เสียงต้นฉบับ (`original.m4a`, `original.audio`, `${video_id}.m4a`, `no_vocals.m4a`)
      3. **Priority 3**: หากไม่มีไฟล์เสียงในเครื่องเลย ให้ระบบ Local Bridge ดึงสตรีมเสียงผ่าน `yt-dlp` อัตโนมัติในพื้นหลัง เพื่อให้ผู้ใช้สามารถกด AI Sync ได้ทันทีโดยไม่เกิด Error 404 "ไม่พบไฟล์เสียงร้อง"
 
+---
+
+## 11. Dual-Environment Synchronization Protocol (Antigravity ↔ AI Studio)
+เพื่อให้การพัฒนาระบบสลับไปมาระหว่าง **Antigravity (Local IDE)** และ **Google AI Studio (Web Cloud Sandbox)** ราบรื่น ไร้รอยต่อ และโค้ดตรงกัน 100%:
+
+1. **ฝั่งส่งโค้ดขึ้น (Push จากที่ใดก็ตาม)**:
+   - รันคำสั่ง `./scripts/git-push-sync.sh "<COMMIT_MESSAGE>"`
+   - สคริปต์จะตรวจสอบ Author (`okeforyou`), Auto-bump เวอร์ชันตาม Rule 8 หากมีการแตะ Plugin, และ Push ขึ้นทั้ง `main` และ `develop` อัตโนมัติ
+2. **ฝั่งดึงโค้ดลงมาทำต่อ (Pull สู่ AI Studio หรือ Antigravity)**:
+   - เมื่อผู้ใช้พิมพ์บอกในแชท เช่น `"ช่วย pull โค้ดล่าสุดจาก git มาเลย"`
+   - เอเจนต์จะรันคำสั่ง `./scripts/git-pull-sync.sh` ทันที
+   - สคริปต์จะดึงโค้ดล่าสุดจาก `origin/main` มาผสาน พร้อมเก็บงานที่ยังไม่ได้ Commit ชั่วคราว (Stash) คืนกลับให้อัตโนมัติ ป้องกันโค้ดชนหรือสูญหาย
+3. **Context Retention ผ่าน Living Files**:
+   - ทุกครั้งที่ดึงโค้ด ระบบจะอ่าน `AGENTS.md` และ `src/core/version.ts` อัตโนมัติ ทำให้ทั้งสองฝั่งทราบสถานะปัจจุบันและทำงานต่อได้ทันทีโดยไม่ต้องอธิบายใหม่
+
+
 
 
