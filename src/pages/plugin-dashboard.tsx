@@ -182,15 +182,22 @@ export default function PluginDashboard() {
             <div className="dashboard-root">
                 {/* Left Sidebar */}
                 <aside className="sidebar">
+                    {/* Sidebar Header */}
                     <div className="logo-area">
-                        <svg className="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M9 18V5l12-2v13"></path>
-                            <circle cx="6" cy="18" r="3"></circle>
-                            <circle cx="18" cy="16" r="3"></circle>
-                        </svg>
-                        <h1>YouOke <span>AI</span></h1>
+                        <div className="logo-icon-wrapper">
+                            <svg className="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M9 18V5l12-2v13"></path>
+                                <circle cx="6" cy="18" r="3"></circle>
+                                <circle cx="18" cy="16" r="3"></circle>
+                            </svg>
+                        </div>
+                        <div className="logo-text">
+                            <h1>YouOke <span className="badge-ai">AI</span></h1>
+                            <span className="subtitle">Vocal Studio</span>
+                        </div>
                     </div>
                     
+                    {/* Navigation Menu */}
                     <nav className="nav-menu">
                         <div className="nav-section-label">คิวงาน</div>
                         <button 
@@ -208,7 +215,9 @@ export default function PluginDashboard() {
                                 </svg>
                                 <span>กำลังแยกเสียง</span>
                             </span>
-                            <span className="count-badge">{jobs.length}</span>
+                            <span className={`count-badge ${jobs.length > 0 ? 'count-badge-active' : 'count-badge-muted'}`}>
+                                {jobs.length}
+                            </span>
                         </button>
                         
                         <div className="nav-divider" />
@@ -223,22 +232,34 @@ export default function PluginDashboard() {
                                 </svg>
                                 <span>แยกเสียงแล้ว</span>
                             </span>
-                            <span className="count-badge">{cache.length}</span>
+                            <span className="count-badge count-badge-library">
+                                {cache.length}
+                            </span>
                         </button>
                     </nav>
 
+                    {/* Sidebar Footer: shadcn Card Style */}
                     <div className="sidebar-footer">
-                        <div className="stats-box">
-                            <div className="stat-row">
-                                <span className="stat-label">สถานะระบบ:</span>
+                        <div className="stats-card">
+                            <div className="stats-card-header">
+                                <span className="stat-label">สถานะระบบ</span>
                                 <div className={`status-badge ${serverOnline ? 'online' : 'offline'}`}>
                                     <span className="status-dot"></span>
                                     <span>{serverOnline ? 'ONLINE' : 'OFFLINE'}</span>
                                 </div>
                             </div>
-                            <div className="stat-row">
-                                <span className="stat-label">ขนาดคลังแคช:</span>
-                                <span className="stat-val">{totalCacheSize} MB</span>
+                            <div className="stats-divider"></div>
+                            <div className="stats-card-body">
+                                <div className="stat-icon-group">
+                                    <svg className="storage-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                                        <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                                        <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                                        <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                                    </svg>
+                                    <span className="stat-body-label">คลังแคชในเครื่อง</span>
+                                </div>
+                                <span className="stat-val-highlight">{totalCacheSize} <small>MB</small></span>
                             </div>
                         </div>
                     </div>
@@ -451,8 +472,8 @@ export default function PluginDashboard() {
             </div>
             <style jsx>{`
                 :root {
-                    --bg-color: #f8fafc;
-                    --sidebar-bg: #f1f5f9;
+                    --bg-color: #ffffff;
+                    --sidebar-bg: #f8fafc;
                     --border-color: #e2e8f0;
                     --primary: #f43f5e;
                     --primary-hover: #e11d48;
@@ -505,81 +526,106 @@ export default function PluginDashboard() {
                 }
 
                 .sidebar {
-                    width: 240px;
+                    width: 250px;
                     background-color: var(--sidebar-bg);
-                    border-right: 2px solid var(--border-color);
+                    border-right: 1px solid var(--border-color);
                     display: flex;
                     flex-direction: column;
-                    padding: 16px 12px;
+                    padding: 16px 12px 14px 12px;
                     flex-shrink: 0;
+                    user-select: none;
                 }
 
                 .logo-area {
                     display: flex;
                     align-items: center;
-                    gap: 8px;
-                    padding: 4px 8px 16px 8px;
+                    gap: 10px;
+                    padding: 4px 6px 16px 6px;
                     border-bottom: 1px solid var(--border-color);
-                    margin-bottom: 16px;
+                    margin-bottom: 14px;
+                }
+
+                .logo-icon-wrapper {
+                    width: 34px;
+                    height: 34px;
+                    border-radius: 10px;
+                    background: #ffe4e6;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                    box-shadow: 0 1px 2px rgba(225, 29, 72, 0.1);
                 }
 
                 .logo-icon {
-                    width: 22px;
-                    height: 22px;
+                    width: 18px;
+                    height: 18px;
                     color: var(--primary);
                 }
 
-                .logo-area h1 {
-                    font-size: 16px;
+                .logo-text h1 {
+                    font-size: 15px;
                     font-weight: 800;
                     color: var(--text-primary);
                     letter-spacing: -0.02em;
-                    text-transform: uppercase;
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                    line-height: 1.2;
                 }
 
-                .logo-area span {
-                    color: var(--primary);
+                .badge-ai {
+                    background: linear-gradient(135deg, #f43f5e, #e11d48);
+                    color: #ffffff;
+                    font-size: 10px;
+                    font-weight: 700;
+                    padding: 1px 5px;
+                    border-radius: 5px;
+                    letter-spacing: 0.04em;
+                }
+
+                .logo-text .subtitle {
+                    font-size: 11px;
                     font-weight: 500;
+                    color: var(--text-muted);
+                    letter-spacing: 0.01em;
                 }
 
                 .nav-menu {
                     display: flex;
                     flex-direction: column;
-                    gap: 2px;
+                    gap: 3px;
                     flex: 1;
                 }
 
                 .nav-section-label {
-                    font-size: 9px;
+                    font-size: 10px;
                     font-weight: 700;
                     letter-spacing: 0.08em;
                     text-transform: uppercase;
                     color: var(--text-muted);
-                    padding: 8px 8px 4px;
+                    padding: 10px 8px 4px;
                 }
 
                 .nav-divider {
                     height: 1px;
                     background-color: var(--border-color);
-                    margin: 6px 4px;
+                    margin: 8px 4px;
+                    opacity: 0.6;
                 }
 
                 .nav-item {
                     display: flex;
                     align-items: center;
                     justify-content: space-between;
-                    padding: 9px 12px 9px 9px;
-                    background: none;
-                    border: none;
-                    border-left: 3px solid transparent;
-                    border-top-right-radius: 8px;
-                    border-bottom-right-radius: 8px;
-                    border-top-left-radius: 0;
-                    border-bottom-left-radius: 0;
+                    padding: 8px 12px;
+                    background: transparent;
+                    border: 1px solid transparent;
+                    border-radius: 10px;
                     color: var(--text-secondary);
-                    font-weight: 600;
+                    font-weight: 500;
                     cursor: pointer;
-                    transition: all 0.15s ease;
+                    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
                     text-align: left;
                     font-size: 13px;
                     font-family: inherit;
@@ -589,14 +635,14 @@ export default function PluginDashboard() {
                 .nav-item-left {
                     display: flex;
                     align-items: center;
-                    gap: 8px;
+                    gap: 9px;
                 }
 
                 .nav-icon {
                     width: 16px;
                     height: 16px;
-                    opacity: 0.7;
-                    transition: opacity 0.15s ease;
+                    opacity: 0.65;
+                    transition: all 0.15s ease;
                 }
 
                 .nav-item:hover {
@@ -605,93 +651,168 @@ export default function PluginDashboard() {
                 }
 
                 .nav-item:hover .nav-icon {
-                    opacity: 1;
+                    opacity: 0.9;
                 }
 
                 .nav-item.active {
-                    background-color: #ffe4e6;
-                    color: #e11d48;
-                    border-left: 3px solid var(--primary);
+                    background-color: #ffffff;
+                    color: var(--text-primary);
+                    font-weight: 600;
+                    border-color: #e2e8f0;
+                    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.02);
                 }
 
                 .nav-item.active .nav-icon {
-                    color: #e11d48;
+                    color: var(--primary);
                     opacity: 1;
                 }
 
                 .count-badge {
-                    font-size: 10px;
+                    font-size: 11px;
                     font-weight: 700;
-                    padding: 2px 7px;
+                    padding: 1px 8px;
                     border-radius: 99px;
-                    background-color: #e2e8f0;
-                    color: var(--text-secondary);
-                    min-width: 20px;
+                    min-width: 22px;
                     text-align: center;
+                    line-height: 1.4;
+                    transition: all 0.2s ease;
                 }
 
-                .nav-item.active .count-badge {
+                .count-badge-active {
                     background-color: var(--primary);
+                    color: #ffffff;
+                    box-shadow: 0 2px 6px rgba(225, 29, 72, 0.25);
+                    animation: badge-pulse 2s infinite ease-in-out;
+                }
+
+                .count-badge-muted {
+                    background-color: #e2e8f0;
+                    color: #64748b;
+                }
+
+                .count-badge-library {
+                    background-color: #e2e8f0;
+                    color: #0f172a;
+                    border: 1px solid rgba(0, 0, 0, 0.04);
+                }
+
+                .nav-item.active .count-badge-library {
+                    background-color: #0f172a;
                     color: #ffffff;
                 }
 
-                .sidebar-footer {
-                    padding-top: 12px;
-                    border-top: 1px solid var(--border-color);
+                @keyframes badge-pulse {
+                    0%, 100% { transform: scale(1); }
+                    50% { transform: scale(1.06); }
                 }
 
-                .stats-box {
-                    background-color: #f8fafc;
+                .sidebar-footer {
+                    margin-top: auto;
+                    padding-top: 12px;
+                }
+
+                .stats-card {
+                    background-color: #ffffff;
                     border: 1px solid var(--border-color);
-                    border-radius: 8px;
-                    padding: 10px 12px;
+                    border-radius: 12px;
+                    padding: 12px 14px;
                     display: flex;
                     flex-direction: column;
                     gap: 8px;
+                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
                 }
 
-                .stat-row {
+                .stats-card-header {
                     display: flex;
                     align-items: center;
                     justify-content: space-between;
-                    font-size: 11px;
-                    font-weight: 500;
-                    color: var(--text-secondary);
                 }
 
-                .stat-val {
+                .stat-label {
+                    font-size: 10px;
                     font-weight: 700;
-                    color: var(--text-primary);
+                    text-transform: uppercase;
+                    letter-spacing: 0.06em;
+                    color: var(--text-muted);
                 }
 
                 .status-badge {
                     font-size: 9px;
-                    padding: 2px 6px;
+                    padding: 2px 7px;
                     border-radius: 99px;
                     font-weight: 700;
-                    display: flex;
+                    display: inline-flex;
                     align-items: center;
-                    gap: 4px;
-                    background-color: #e2e8f0;
-                    color: var(--text-secondary);
-                    border: 1px solid rgba(0, 0, 0, 0.05);
-                    letter-spacing: 0.05em;
+                    gap: 5px;
+                    letter-spacing: 0.06em;
+                    line-height: 1.3;
                 }
 
                 .status-badge.online {
                     background-color: var(--success-light);
-                    color: var(--success);
+                    color: #059669;
+                    border: 1px solid #a7f3d0;
+                }
+
+                .status-badge.offline {
+                    background-color: var(--danger-light);
+                    color: #dc2626;
+                    border: 1px solid #fecaca;
                 }
 
                 .status-dot {
-                    width: 5px;
-                    height: 5px;
+                    width: 6px;
+                    height: 6px;
                     border-radius: 50%;
                     background-color: currentColor;
                 }
 
                 .status-badge.online .status-dot {
                     animation: pulse-dot 2s infinite;
+                }
+
+                .stats-divider {
+                    height: 1px;
+                    background-color: #f1f5f9;
+                    margin: 0;
+                }
+
+                .stats-card-body {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                }
+
+                .stat-icon-group {
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                }
+
+                .storage-icon {
+                    width: 14px;
+                    height: 14px;
+                    color: var(--text-muted);
+                }
+
+                .stat-body-label {
+                    font-size: 11px;
+                    font-weight: 500;
+                    color: var(--text-secondary);
+                }
+
+                .stat-val-highlight {
+                    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: var(--text-primary);
+                }
+
+                .stat-val-highlight small {
+                    font-size: 10px;
+                    font-weight: 600;
+                    color: var(--text-muted);
+                    margin-left: 2px;
                 }
 
                 @keyframes pulse-dot {
