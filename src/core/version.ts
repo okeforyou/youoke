@@ -1,7 +1,7 @@
-// 🛡️ v5.5.324: Master-Slave Audio Clock & Instant Local Cache Check
+// 🛡️ v5.5.325: Blob URL Guard & 60fps Audio Seek Elimination
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.324";
+export const SYSTEM_VERSION = "5.5.325";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.325",
+        date: "2026-09-05",
+        changes: [
+            "fix(player): Guarded <audio> elements in UniversalPlayer to only mount when local Blob URLs are 100% ready, eliminating Mixed Content (HTTP-in-HTTPS) errors that previously caused separated songs to fail on first play and fall back to YouTube audio.",
+            "fix(player): Eliminated 60fps requestAnimationFrame seek loop by preventing premature currentTime assignment during audio playback startup, completely fixing audio stutter.",
+            "fix(player): Optimized YouTube resync threshold to >1.0s and slave stem drift tolerance to 150ms to absorb browser event loop jitter without buffer flushing."
+        ]
+    },
     {
         version: "5.5.324",
         date: "2026-09-05",
