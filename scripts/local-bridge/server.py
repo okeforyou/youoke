@@ -11,6 +11,109 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 
+# ------------------------------------------------------------------
+# MONKEY-PATCH: torchaudio load/save to handle missing torchcodec/ffmpeg backends
+# Must be applied globally at the very top before any routers import demucs or torchaudio
+# ------------------------------------------------------------------
+try:
+    import torchaudio
+    import torch
+    
+    _orig_load = torchaudio.load
+    _orig_save = torchaudio.save
+    
+    def robust_load(uri, *args, **kwargs):
+        try:
+            return _orig_load(uri, *args, **kwargs)
+        except (ImportError, ModuleNotFoundError, RuntimeError, Exception) as e:
+            err_str = str(e).lower()
+            if "torchcodec" in err_str or "codec" in err_str or "import" in err_str or "failed" in err_str:
+                print(f"[torchaudio patch] TorchCodec failed/missing ({e}). Trying soundfile fallback...")
+                try:
+                    import soundfile as sf
+                    channels_first = kwargs.get("channels_first", True)
+                    data, samplerate = sf.read(uri, dtype='float32')
+                    tensor = torch.from_numpy(data)
+                    if channels_first:
+                        if tensor.ndim == 2:
+                            tensor = tensor.t()
+                        elif tensor.ndim == 1:
+                            tensor = tensor.unsqueeze(0)
+                    else:
+                        if tensor.ndim == 1:
+                            tensor = tensor.unsqueeze(1)
+                    return tensor, samplerate
+                except Exception as sf_err:
+                    print(f"[torchaudio patch] soundfile fallback failed ({sf_err}). Using built-in wave fallback...")
+                    import wave
+                    import numpy as np
+                    with wave.open(uri, 'rb') as w:
+                        params = w.getparams()
+                        nchannels, sampwidth, framerate, nframes = params[:4]
+                        content = w.readframes(nframes)
+                        if sampwidth == 2:
+                            data = np.frombuffer(content, dtype=np.int16).astype(np.float32) / 32768.0
+                        elif sampwidth == 4:
+                            data = np.frombuffer(content, dtype=np.int32).astype(np.float32) / 2147483648.0
+                        elif sampwidth == 1:
+                            data = (np.frombuffer(content, dtype=np.uint8).astype(np.float32) - 128.0) / 128.0
+                        else:
+                            raise ValueError(f"Unsupported sample width: {sampwidth}")
+                        channels_first = kwargs.get("channels_first", True)
+                        data = data.reshape(-1, nchannels)
+                        tensor = torch.from_numpy(data)
+                        if channels_first:
+                            if tensor.ndim == 2:
+                                tensor = tensor.t()
+                            elif tensor.ndim == 1:
+                                tensor = tensor.unsqueeze(0)
+                        else:
+                            if tensor.ndim == 1:
+                                tensor = tensor.unsqueeze(1)
+                        return tensor, framerate
+            raise
+
+    def robust_save(uri, src, sample_rate, *args, **kwargs):
+        try:
+            return _orig_save(uri, src, sample_rate, *args, **kwargs)
+        except (ImportError, ModuleNotFoundError, RuntimeError, Exception) as e:
+            err_str = str(e).lower()
+            if "torchcodec" in err_str or "codec" in err_str or "import" in err_str or "failed" in err_str:
+                print(f"[torchaudio patch] TorchCodec failed/missing ({e}). Trying soundfile fallback...")
+                try:
+                    import soundfile as sf
+                    channels_first = kwargs.get("channels_first", True)
+                    data = src.detach().cpu().numpy()
+                    if channels_first:
+                        if data.ndim == 2:
+                            data = data.T
+                    sf.write(uri, data, sample_rate)
+                    return
+                except Exception as sf_err:
+                    print(f"[torchaudio patch] soundfile fallback failed ({sf_err}). Using built-in wave fallback...")
+                    import wave
+                    import numpy as np
+                    data = src.detach().cpu().numpy()
+                    channels_first = kwargs.get("channels_first", True)
+                    if channels_first:
+                        if data.ndim == 2:
+                            data = data.T
+                    nchannels = data.shape[1] if data.ndim > 1 else 1
+                    with wave.open(uri, 'wb') as w:
+                        w.setnchannels(nchannels)
+                        w.setsampwidth(2) # 16-bit PCM
+                        w.setframerate(sample_rate)
+                        scaled = np.clip(data * 32768.0, -32768.0, 32767.0).astype(np.int16)
+                        w.writeframes(scaled.tobytes())
+                    return
+            raise
+
+    torchaudio.load = robust_load
+    torchaudio.save = robust_save
+    print("[torchaudio patch] Successfully applied torchaudio load/save monkey-patch (with robust wave/soundfile fallbacks) globally.")
+except Exception as e:
+    print(f"[torchaudio patch] Critical Error: Failed to apply global monkey-patch: {e}")
+
 # Fix SSL: CERTIFICATE_VERIFY_FAILED on macOS
 try:
     _create_unverified_https_context = ssl._create_unverified_context
@@ -154,107 +257,6 @@ if __name__ == "__main__":
     multiprocessing.freeze_support()
     
     if len(sys.argv) > 1 and sys.argv[1] == "demucs_worker":
-        # Monkey-patch torchaudio to fallback to soundfile if torchcodec is missing/fails
-        try:
-            import torchaudio
-            import torch
-            
-            _orig_load = torchaudio.load
-            _orig_save = torchaudio.save
-            
-            def robust_load(uri, *args, **kwargs):
-                try:
-                    return _orig_load(uri, *args, **kwargs)
-                except (ImportError, ModuleNotFoundError, RuntimeError, Exception) as e:
-                    err_str = str(e).lower()
-                    # Catch torchcodec failures, library errors, or direct import errors
-                    if "torchcodec" in err_str or "codec" in err_str or "import" in err_str or "failed" in err_str:
-                        print(f"[torchaudio patch] TorchCodec failed/missing ({e}). Trying soundfile fallback...")
-                        try:
-                            import soundfile as sf
-                            channels_first = kwargs.get("channels_first", True)
-                            data, samplerate = sf.read(uri, dtype='float32')
-                            tensor = torch.from_numpy(data)
-                            if channels_first:
-                                if tensor.ndim == 2:
-                                    tensor = tensor.t()
-                                elif tensor.ndim == 1:
-                                    tensor = tensor.unsqueeze(0)
-                            else:
-                                if tensor.ndim == 1:
-                                    tensor = tensor.unsqueeze(1)
-                            return tensor, samplerate
-                        except Exception as sf_err:
-                            print(f"[torchaudio patch] soundfile fallback failed ({sf_err}). Using built-in wave fallback...")
-                            import wave
-                            import numpy as np
-                            with wave.open(uri, 'rb') as w:
-                                params = w.getparams()
-                                nchannels, sampwidth, framerate, nframes = params[:4]
-                                content = w.readframes(nframes)
-                                if sampwidth == 2:
-                                    data = np.frombuffer(content, dtype=np.int16).astype(np.float32) / 32768.0
-                                elif sampwidth == 4:
-                                    data = np.frombuffer(content, dtype=np.int32).astype(np.float32) / 2147483648.0
-                                elif sampwidth == 1:
-                                    data = (np.frombuffer(content, dtype=np.uint8).astype(np.float32) - 128.0) / 128.0
-                                else:
-                                    raise ValueError(f"Unsupported sample width: {sampwidth}")
-                                channels_first = kwargs.get("channels_first", True)
-                                data = data.reshape(-1, nchannels)
-                                tensor = torch.from_numpy(data)
-                                if channels_first:
-                                    if tensor.ndim == 2:
-                                        tensor = tensor.t()
-                                    elif tensor.ndim == 1:
-                                        tensor = tensor.unsqueeze(0)
-                                else:
-                                    if tensor.ndim == 1:
-                                        tensor = tensor.unsqueeze(1)
-                                return tensor, framerate
-                    raise
-            
-            def robust_save(uri, src, sample_rate, *args, **kwargs):
-                try:
-                    return _orig_save(uri, src, sample_rate, *args, **kwargs)
-                except (ImportError, ModuleNotFoundError, RuntimeError, Exception) as e:
-                    err_str = str(e).lower()
-                    if "torchcodec" in err_str or "codec" in err_str or "import" in err_str or "failed" in err_str:
-                        print(f"[torchaudio patch] TorchCodec failed/missing ({e}). Trying soundfile fallback...")
-                        try:
-                            import soundfile as sf
-                            channels_first = kwargs.get("channels_first", True)
-                            data = src.detach().cpu().numpy()
-                            if channels_first:
-                                if data.ndim == 2:
-                                    data = data.T
-                            sf.write(uri, data, sample_rate)
-                            return
-                        except Exception as sf_err:
-                            print(f"[torchaudio patch] soundfile fallback failed ({sf_err}). Using built-in wave fallback...")
-                            import wave
-                            import numpy as np
-                            data = src.detach().cpu().numpy()
-                            channels_first = kwargs.get("channels_first", True)
-                            if channels_first:
-                                if data.ndim == 2:
-                                    data = data.T
-                            nchannels = data.shape[1] if data.ndim > 1 else 1
-                            with wave.open(uri, 'wb') as w:
-                                w.setnchannels(nchannels)
-                                w.setsampwidth(2) # 16-bit PCM
-                                w.setframerate(sample_rate)
-                                scaled = np.clip(data * 32768.0, -32768.0, 32767.0).astype(np.int16)
-                                w.writeframes(scaled.tobytes())
-                            return
-                    raise
-            
-            torchaudio.load = robust_load
-            torchaudio.save = robust_save
-            print("[torchaudio patch] Successfully applied torchaudio load/save monkey-patch (with robust wave/soundfile fallbacks).")
-        except Exception as e:
-            print(f"[torchaudio patch] Critical Error: Failed to apply monkey-patch: {e}")
-
         import demucs.pretrained
         from demucs.separate import main
         sys.argv = ["demucs"] + sys.argv[2:]

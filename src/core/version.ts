@@ -1,7 +1,7 @@
-// 🛡️ v5.5.311: Master-Slave Stem Audio Sync & Resilient AI Lyric Transcription Pipeline
+// 🛡️ v5.5.312: Global torchaudio Monkey-Patch Migration
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.311";
+export const SYSTEM_VERSION = "5.5.312";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.312",
+        date: "2026-09-05",
+        changes: [
+            "fix(local-bridge): Moved the `torchaudio` monkey-patch to the absolute top of the server entrypoint, ensuring it is applied globally before any routes, Demucs, or other sub-modules are imported, fully resolving the 'ModuleNotFoundError: No module named torchcodec' or 'ImportError: TorchCodec is required' in packaged Electron apps.",
+            "chore(plugin): Bumped Local Bridge & Desktop Plugin version to v1.0.84."
+        ]
+    },
     {
         version: "5.5.311",
         date: "2026-09-05",
