@@ -81,3 +81,6 @@ scripts/local-bridge/dist/
 venv_test/
 *.mp4
 yt-dlp_macos
+
+# Persistent GitHub token
+.git_token
