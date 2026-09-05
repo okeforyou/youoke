@@ -1,7 +1,7 @@
-// 🛡️ v5.5.323: Desktop Plugin GET Check, Focus Restore & Robust Server Lifecycle
+// 🛡️ v5.5.324: Master-Slave Audio Clock & Instant Local Cache Check
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.323";
+export const SYSTEM_VERSION = "5.5.324";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.324",
+        date: "2026-09-05",
+        changes: [
+            "fix(player): Implemented Master-Slave Audio Clock sync in UniversalPlayer — primary stem serves as hardware clock, eliminating choppy playback and constant audio buffer flushing from YouTube postMessage timer jitter.",
+            "fix(player): Added proactive local cache detection on active song change, allowing previously separated songs to load stems and mute vocals immediately on first play without page refresh.",
+            "fix(store): Bypassed cache check throttle for single-song requests in useAIVocalStore for zero-latency cache discovery."
+        ]
+    },
     {
         version: "5.5.323",
         date: "2026-09-05",

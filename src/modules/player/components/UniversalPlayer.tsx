@@ -52,6 +52,66 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
         setAudioLoadFailed(false);
     }, [activeVideoId]);
 
+    // Proactively check if the active song is already cached on the Local Bridge as soon as activeVideoId changes
+    useEffect(() => {
+        if (!activeVideoId) return;
+
+        let isMounted = true;
+        const checkLocalCache = async () => {
+            const store = useAIVocalStore.getState();
+            if (store.jobs[activeVideoId]?.status === 'ready') return;
+
+            try {
+                const baseUrl = await getActiveBridgeBaseUrl();
+                if (!baseUrl) return;
+
+                const res = await fetch(`${baseUrl}/files/${activeVideoId}/vocals.m4a`, {
+                    method: 'HEAD',
+                    signal: AbortSignal.timeout(2500),
+                });
+
+                if (res.ok && isMounted) {
+                    const contentLength = res.headers.get('content-length');
+                    if (contentLength && contentLength === '0') return;
+
+                    let actualMode: 'basic' | 'pro' = 'basic';
+                    try {
+                        const drumsRes = await fetch(`${baseUrl}/files/${activeVideoId}/drums.m4a`, {
+                            method: 'HEAD',
+                            signal: AbortSignal.timeout(1500),
+                        });
+                        if (drumsRes.ok) {
+                            const drumsLen = drumsRes.headers.get('content-length');
+                            if (!drumsLen || drumsLen !== '0') actualMode = 'pro';
+                        }
+                    } catch {}
+
+                    if (isMounted) {
+                        useAIVocalStore.setState((state) => ({
+                            jobs: {
+                                ...state.jobs,
+                                [activeVideoId]: {
+                                    status: 'ready',
+                                    message: 'พร้อมเล่น!',
+                                    progress: 100,
+                                    mode: actualMode
+                                }
+                            }
+                        }));
+                    }
+                }
+            } catch (err) {
+                // Bridge offline or file not separated
+            }
+        };
+
+        checkLocalCache();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [activeVideoId]);
+
     const isAiReady = Boolean(
         activeVideoId &&
         aiJobStatus === 'ready' &&
@@ -218,7 +278,10 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
         }
     }, [isPlaying, isAiReady]);
 
-    // Continuous Sync Loop for AI Audio to guarantee zero phasing/drift
+    // Continuous Master-Slave Audio Sync Loop (Rule 10)
+    // Primary audio stem is the Master Audio Clock (hardware clock).
+    // All slave audio stems lock to Master Clock (< 35ms).
+    // YouTube video acts as background reference and only snaps audio on user seek/major drift (> 0.75s).
     useEffect(() => {
         let animationFrameId: number;
         
@@ -234,22 +297,48 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                             : [vocalRef, instrumentalRef];
                         const activeAudios = activeRefs.map(r => r.current).filter(Boolean) as HTMLAudioElement[];
 
-                        // 1 = PLAYING. If YouTube is buffering (3) or paused (2), pause AI tracks to prevent desync
+                        // If YouTube is buffering (3), paused (2), cued (5), or ended (0), pause all AI tracks
                         if (state !== 1) {
                             for (const audio of activeAudios) {
                                 if (!audio.paused) {
                                     audio.pause();
                                 }
                             }
-                        } else {
+                        } else if (activeAudios.length > 0) {
+                            const masterAudio = activeAudios[0];
                             const youtubeTime = ytPlayer.getCurrentTime();
-                            if (typeof youtubeTime === 'number' && youtubeTime >= 0) {
-                                for (const audio of activeAudios) {
-                                    if (Math.abs(audio.currentTime - youtubeTime) > 0.10) {
-                                        audio.currentTime = youtubeTime;
-                                    }
-                                    if (audio.paused) {
-                                        audio.play().catch(() => {});
+
+                            // 1. If master audio is paused while YouTube is playing, resume it
+                            if (masterAudio.paused) {
+                                if (typeof youtubeTime === 'number' && youtubeTime >= 0) {
+                                    masterAudio.currentTime = youtubeTime;
+                                }
+                                masterAudio.play().catch(() => {});
+                            } else if (typeof youtubeTime === 'number' && youtubeTime >= 0) {
+                                // 2. Resync to YouTube ONLY on substantial seek/drift (> 0.75s)
+                                // Crucial: Never seek audio on minor postMessage jitter, which causes continuous stutter
+                                const ytDrift = Math.abs(masterAudio.currentTime - youtubeTime);
+                                if (ytDrift > 0.75) {
+                                    masterAudio.currentTime = youtubeTime;
+                                }
+                            }
+
+                            const masterTime = masterAudio.currentTime;
+
+                            // 3. Master-Slave Stems Lock (< 35ms tolerance to prevent comb filtering)
+                            for (let i = 1; i < activeAudios.length; i++) {
+                                const slave = activeAudios[i];
+                                if (masterAudio.paused) {
+                                    if (!slave.paused) slave.pause();
+                                } else {
+                                    if (slave.paused) {
+                                        slave.currentTime = masterTime;
+                                        slave.play().catch(() => {});
+                                    } else {
+                                        const stemDrift = Math.abs(slave.currentTime - masterTime);
+                                        if (stemDrift > 0.035) {
+                                            slave.currentTime = masterTime;
+                                        }
                                     }
                                 }
                             }

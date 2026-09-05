@@ -366,11 +366,13 @@ export const useAIVocalStore = create<AIVocalState>()(
         });
         if (unknownIds.length === 0) return;
 
-        // Throttle: use sorted IDs as key to avoid duplicate batches
-        const batchKey = unknownIds.slice().sort().join(',');
-        const lastCheck = _cacheCheckThrottle.get(batchKey) ?? 0;
-        if (Date.now() - lastCheck < CACHE_CHECK_INTERVAL) return;
-        _cacheCheckThrottle.set(batchKey, Date.now());
+        // Throttle: only throttle multi-item batches to avoid duplicate bursts, allow instant single checks
+        if (unknownIds.length > 1) {
+            const batchKey = unknownIds.slice().sort().join(',');
+            const lastCheck = _cacheCheckThrottle.get(batchKey) ?? 0;
+            if (Date.now() - lastCheck < CACHE_CHECK_INTERVAL) return;
+            _cacheCheckThrottle.set(batchKey, Date.now());
+        }
 
         // Check if server is available before sending batch
         const port = await getActiveBridgePort();
