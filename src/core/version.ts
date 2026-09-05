@@ -1,7 +1,7 @@
-// 🛡️ v5.5.325: Blob URL Guard & 60fps Audio Seek Elimination
+// 🛡️ v5.5.326: Desktop Plugin TorchCodec Monkey-Patch & Version v1.0.88
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.325";
+export const SYSTEM_VERSION = "5.5.326";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.326",
+        date: "2026-09-05",
+        changes: [
+            "fix(plugin): Implemented multi-tiered audio loader fallbacks (soundfile, built-in wave, pydub) in Local Bridge, completely eliminating torchcodec missing dependency crashes in Demucs separation.",
+            "fix(plugin): Monkey-patched demucs.separate.load_track directly inside demucs_worker process to guarantee seamless execution across standalone PyInstaller bundles.",
+            "chore(plugin): Bumped Local Bridge & Desktop Plugin version to v1.0.88."
+        ]
+    },
     {
         version: "5.5.325",
         date: "2026-09-05",
