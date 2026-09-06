@@ -155,6 +155,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
             volumes: state.volumes
         }))
     );
+    const masterVolume = usePlayerStore(state => state.volume ?? 100);
     const isMuted = usePlayerStore(state => state.isMuted);
 
     // MIDI Engine Hooks
@@ -227,7 +228,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
             if (ref.current) {
                 const isAnySolo = trackStates?.vocals?.solo || trackStates?.instrumental?.solo || trackStates?.drums?.solo || trackStates?.bass?.solo || trackStates?.other?.solo;
                 const isEffectivelyMuted = muted || (isAnySolo && !solo) || isMuted || forceMute;
-                const effectiveVolume = isEffectivelyMuted ? 0 : vol / 100;
+                const effectiveVolume = isEffectivelyMuted ? 0 : (vol / 100) * (masterVolume / 100);
 
                 ref.current.volume = effectiveVolume;
                 // Prevent browser from suspending playback of muted elements, which breaks synchronization
@@ -239,7 +240,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
         syncTrack(drumsRef, volumes?.drums ?? 100, trackStates?.drums?.muted ?? false, trackStates?.drums?.solo ?? false);
         syncTrack(bassRef, volumes?.bass ?? 100, trackStates?.bass?.muted ?? false, trackStates?.bass?.solo ?? false);
         syncTrack(otherRef, volumes?.other ?? 100, trackStates?.other?.muted ?? false, trackStates?.other?.solo ?? false);
-    }, [volumes, trackStates, isMuted, forceMute, isAnySolo]);
+    }, [volumes, trackStates, isMuted, masterVolume, forceMute, isAnySolo]);
 
     // Resilient Volume Sync (YouTube Track)
     useEffect(() => {
@@ -247,20 +248,23 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
         try {
             if (!ytPlayerRef.current.getIframe()) return;
             
+            const isInstMuted = trackStates?.instrumental?.muted ?? false;
             // If AI is ready, YouTube must be MUTED so we only hear AI tracks
             // If Master is muted, YouTube must be MUTED
+            // If Instrumental is muted on non-AI track, YouTube must be MUTED
             // If forceMute is true (e.g. Casting), YouTube must be MUTED
-            const shouldBeMuted = isMuted || (isAiReady && areStemsReady) || forceMute;
+            const shouldBeMuted = isMuted || isAiReady || isInstMuted || forceMute;
             
             if (shouldBeMuted) {
                 ytPlayerRef.current.mute();
             } else {
                 ytPlayerRef.current.unMute();
-                // Sync YouTube volume with Mixer's instrumental volume (for normal videos)
-                ytPlayerRef.current.setVolume(volumes.instrumental);
+                // Sync YouTube volume with Mixer's instrumental volume & master volume
+                const effectiveYtVol = Math.round(volumes.instrumental * (masterVolume / 100));
+                ytPlayerRef.current.setVolume(effectiveYtVol);
             }
         } catch (e) {}
-    }, [isMuted, isAiReady, areStemsReady, volumes.instrumental, forceMute]);
+    }, [isMuted, isAiReady, trackStates?.instrumental?.muted, volumes.instrumental, masterVolume, forceMute]);
 
     // Handle Play/Pause commands to YouTube & Audio Elements
     useEffect(() => {
@@ -392,28 +396,18 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
         }
     }, [isPlaying, currentVideo?.sourceType]);
 
-    // Resilient YouTube audio mute/unmute control
-    useEffect(() => {
-        if (ytPlayerRef.current && typeof ytPlayerRef.current.getIframe === 'function' && ytPlayerRef.current.getIframe()) {
-            try {
-                if (isAiReady && areStemsReady) {
-                    ytPlayerRef.current.mute();
-                } else if (!isMuted && !forceMute) {
-                    ytPlayerRef.current.unMute();
-                    ytPlayerRef.current.setVolume(volumes?.instrumental ?? 100);
-                }
-            } catch (e) {}
-        }
-    }, [isAiReady, areStemsReady, isMuted, forceMute, volumes?.instrumental]);
-
     // Fetch and create Blob URLs to bypass Chrome HTTPS mixed-content restrictions on Vercel
     useEffect(() => {
         let isMounted = true;
         let createdBlobUrls: string[] = [];
+        const abortController = new AbortController();
+
+        // Synchronously reset previous stems when video/mode changes
+        setStemUrls({});
+        setAudioLoadFailed(false);
 
         const loadStems = async () => {
             if (!isAiReady || !activeVideoId) {
-                if (isMounted) setStemUrls({});
                 return;
             }
 
@@ -435,7 +429,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                 await Promise.all(stems.map(async (stem) => {
                     const directUrl = `${baseUrl}/files/${activeVideoId}/${stem}.m4a`;
                     try {
-                        const res = await fetch(directUrl);
+                        const res = await fetch(directUrl, { signal: abortController.signal });
                         if (res.ok) {
                             const blob = await res.blob();
                             const blobUrl = URL.createObjectURL(blob);
@@ -444,12 +438,14 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                         } else {
                             console.warn(`[UniversalPlayer] Failed to load blob for stem ${stem}:`, res.statusText);
                         }
-                    } catch (err) {
-                        console.warn(`[UniversalPlayer] Failed to load blob for stem ${stem}:`, err);
+                    } catch (err: any) {
+                        if (err.name !== 'AbortError') {
+                            console.warn(`[UniversalPlayer] Failed to load blob for stem ${stem}:`, err);
+                        }
                     }
                 }));
 
-                if (isMounted) {
+                if (isMounted && !abortController.signal.aborted) {
                     // Check if all needed stems were successfully fetched as blobs
                     const allStemsLoaded = stems.every(stem => Boolean(newStemUrls[stem]));
                     if (allStemsLoaded) {
@@ -459,9 +455,11 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                         setAudioLoadFailed(true);
                     }
                 }
-            } catch (err) {
-                console.error("[UniversalPlayer] Stem loading failed:", err);
-                if (isMounted) setAudioLoadFailed(true);
+            } catch (err: any) {
+                if (err.name !== 'AbortError') {
+                    console.error("[UniversalPlayer] Stem loading failed:", err);
+                    if (isMounted) setAudioLoadFailed(true);
+                }
             }
         };
 
@@ -469,6 +467,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
 
         return () => {
             isMounted = false;
+            abortController.abort();
             createdBlobUrls.forEach(url => {
                 try { URL.revokeObjectURL(url); } catch (e) {}
             });

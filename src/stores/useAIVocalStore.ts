@@ -69,7 +69,7 @@ export async function resolveDeepgramApiKey(): Promise<string | null> {
         if (uid) {
             const { getUserProfile } = await import('@/services/userService');
             const res = await getUserProfile(uid, false);
-            const key = res?.data?.settings?.deepgramKey;
+            const key = (res?.data?.settings as any)?.deepgramKey;
             if (key && key.trim()) {
                 useAIVocalStore.getState().setDeepgramKey(key.trim());
                 if (typeof window !== 'undefined') {

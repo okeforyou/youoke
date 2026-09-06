@@ -25,6 +25,7 @@ export const usePlayerStore = create<PlayerStore>()(
             activeAdapterId: 'youtube',
             repeatMode: 'off',
             queue: [],
+            playbackHistory: [],
             currentIndex: 0,
             currentVideo: null,
             layoutMode: 'split',
@@ -532,9 +533,14 @@ export const usePlayerStore = create<PlayerStore>()(
 
             playNext: () => {
                 const state = get();
-                const { queue, currentIndex } = state;
+                const { queue, currentIndex, currentVideo, playbackHistory = [] } = state;
 
                 if (queue.length > 0) {
+                    // Save outgoing track to playback history (max 30 tracks)
+                    const nextHistory = currentVideo 
+                        ? [currentVideo, ...playbackHistory.filter(h => h.uuid !== currentVideo.uuid)].slice(0, 30)
+                        : playbackHistory;
+
                     // Determine where to slice from. 
                     // If we want to consume (vanish model), we remove everything before the NEXT song.
                     const nextIndex = currentIndex + 1;
@@ -570,6 +576,7 @@ export const usePlayerStore = create<PlayerStore>()(
 
                         const updates = {
                             queue: newQueue,
+                            playbackHistory: nextHistory,
                             currentIndex: 0,
                             currentVideo: nextVideo,
                             currentSource: source,
@@ -585,6 +592,7 @@ export const usePlayerStore = create<PlayerStore>()(
                         console.log("🏁 Store: Queue Finished");
                         const updates = {
                             queue: [],
+                            playbackHistory: nextHistory,
                             currentIndex: 0,
                             currentVideo: null,
                             currentSource: null,
@@ -601,9 +609,42 @@ export const usePlayerStore = create<PlayerStore>()(
 
             playPrevious: () => {
                 const state = get();
-                if (state.currentIndex > 0) {
-                    state.setCurrentIndex(state.currentIndex - 1);
-                    // setCurrentIndex already broadcasts
+                const { playbackHistory = [], queue, currentIndex } = state;
+
+                // 1. If currentIndex > 0 (index-based queue), step back
+                if (currentIndex > 0) {
+                    state.setCurrentIndex(currentIndex - 1);
+                    return;
+                }
+
+                // 2. If playbackHistory has previous songs (vanish slice queue model), pop and replay previous
+                if (playbackHistory.length > 0) {
+                    const [prevVideo, ...remainingHistory] = playbackHistory;
+                    let source = prevVideo.id;
+                    const type = prevVideo.sourceType || 'youtube';
+
+                    if (type === 'youtube' || type === 'youoke_ai') {
+                        source = prevVideo.videoId || prevVideo.id;
+                    } else if (type === 'vcd') {
+                        source = prevVideo.filePath || prevVideo.id;
+                    }
+
+                    console.log(`⏮️ Store: Playing Previous from history: ${prevVideo.title}`);
+                    const newQueue = [prevVideo, ...queue.filter(q => q.uuid !== prevVideo.uuid)];
+
+                    const updates = {
+                        queue: newQueue,
+                        playbackHistory: remainingHistory,
+                        currentIndex: 0,
+                        currentVideo: prevVideo,
+                        currentSource: source,
+                        isPlaying: true,
+                        currentTime: 0,
+                        seekTarget: null,
+                        ignoreUpdatesUntil: 0
+                    };
+                    set(updates);
+                    broadcast(updates);
                 }
             },
 

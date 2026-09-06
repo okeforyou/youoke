@@ -55,6 +55,7 @@ export interface PlayerState {
 
 export interface PlayerStore extends PlayerState {
     queue: QueueItem[];
+    playbackHistory?: QueueItem[];
     // ... (rest of PlayerStore)
     activeAdapterId: string;
     currentIndex: number;

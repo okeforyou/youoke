@@ -10,7 +10,7 @@ import { useShallow } from "zustand/react/shallow";
 import { useUIStore } from "../../../stores/useUIStore";
 import { useCast } from "../../../plugins/cast/context/CastContext";
 import clsx from 'clsx';
-import { useAIVocalStore } from '../../../stores/useAIVocalStore';
+import { useAIVocalStore, getActiveBridgeBaseUrl } from '../../../stores/useAIVocalStore';
 import { useDeepgramLyricsStore } from "../../lyrics/stores/useDeepgramLyricsStore";
 
 

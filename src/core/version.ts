@@ -1,7 +1,7 @@
-// 🛡️ v5.5.330: Global Queue AI Cache Sync & Seamless Autoplay Vocal Muting
+// 🛡️ v5.5.331: Zero-Leak Continuous Autoplay & Non-blocking AI Transcription Pipeline
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.330";
+export const SYSTEM_VERSION = "5.5.331";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  

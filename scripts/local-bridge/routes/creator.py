@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Body
 import os
 import json
+import asyncio
 import urllib.request
 import urllib.error
 from utils.config import get_active_storage_dir
@@ -73,11 +74,11 @@ async def transcribe_audio(
             else:
                 song_dir = cache_song_dir
                 os.makedirs(song_dir, exist_ok=True)
-                # Auto-download audio stream via yt-dlp fallback
+                # Auto-download audio stream via yt-dlp fallback non-blockingly
                 try:
                     from services.downloader import download_audio
                     yt_url = f"https://www.youtube.com/watch?v={video_id}"
-                    downloaded_file = download_audio(yt_url, song_dir, video_id)
+                    downloaded_file = await asyncio.to_thread(download_audio, yt_url, song_dir, video_id)
                     if downloaded_file and os.path.exists(downloaded_file):
                         audio_target_path = downloaded_file
                 except Exception as dl_err:
@@ -122,33 +123,36 @@ async def transcribe_audio(
             req.add_header("Authorization", f"Token {api_key}")
             req.add_header("Content-Type", content_type)
             
-            try:
-                # Use a larger timeout (600s = 10 minutes) for slow upload connections
+            def perform_deepgram_request():
                 with urllib.request.urlopen(req, timeout=600) as response:
-                    res_body = response.read()
-                    dg_result = json.loads(res_body)
+                    return response.read()
+
+            try:
+                # Use a larger timeout for upload connections, running inside thread pool to prevent blocking loop
+                res_body = await asyncio.to_thread(perform_deepgram_request)
+                dg_result = json.loads(res_body)
+                
+                # Process into our timeline format
+                words = []
+                channels = dg_result.get("results", {}).get("channels", [])
+                if channels:
+                    alts = channels[0].get("alternatives", [])
+                    if alts:
+                        dg_words = alts[0].get("words", [])
+                        for w in dg_words:
+                            words.append({
+                                "word": w.get("punctuated_word", w.get("word", "")),
+                                "start": w.get("start"),
+                                "end": w.get("end"),
+                                "confidence": w.get("confidence")
+                            })
+                
+                # Save timeline locally
+                timeline_path = os.path.join(song_dir, "lyrics_timeline.json")
+                with open(timeline_path, "w", encoding="utf-8") as f:
+                    json.dump({"provider": "deepgram", "words": words}, f, ensure_ascii=False, indent=2)
                     
-                    # Process into our timeline format
-                    words = []
-                    channels = dg_result.get("results", {}).get("channels", [])
-                    if channels:
-                        alts = channels[0].get("alternatives", [])
-                        if alts:
-                            dg_words = alts[0].get("words", [])
-                            for w in dg_words:
-                                words.append({
-                                    "word": w.get("punctuated_word", w.get("word", "")),
-                                    "start": w.get("start"),
-                                    "end": w.get("end"),
-                                    "confidence": w.get("confidence")
-                                })
-                    
-                    # Save timeline locally
-                    timeline_path = os.path.join(song_dir, "lyrics_timeline.json")
-                    with open(timeline_path, "w", encoding="utf-8") as f:
-                        json.dump({"provider": "deepgram", "words": words}, f, ensure_ascii=False, indent=2)
-                        
-                    return {"status": "success", "words": words}
+                return {"status": "success", "words": words}
             except urllib.error.HTTPError as e:
                 err_msg = e.read().decode('utf-8')
                 raise HTTPException(status_code=e.code, detail=f"Deepgram API Error: {err_msg}")
