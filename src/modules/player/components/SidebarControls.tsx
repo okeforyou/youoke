@@ -209,18 +209,38 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             id: 'vocals',
             icon: (isAiReady && trackStates.vocals.muted) ? MicOff : Mic2,
             label: "ร้อง",
-            onClick: () => {
-                if (isAiReady) {
-                    if (currentVideo && !currentVideo.aiVocalRequested) {
-                        const uuid = currentVideo.uuid || currentVideo.id;
-                        if (uuid) {
-                            usePlayerStore.getState().updateQueueItem(uuid, { aiVocalRequested: true });
-                        }
+            onClick: async () => {
+                const uuid = currentVideo?.uuid || currentVideo?.id;
+                const latestJobs = useAIVocalStore.getState().jobs;
+                const isReady = Boolean(activeVideoId && (isAiReady || latestJobs[activeVideoId]?.status === 'ready'));
+
+                if (isReady) {
+                    if (uuid && !currentVideo?.aiVocalRequested) {
+                        usePlayerStore.getState().updateQueueItem(uuid, { aiVocalRequested: true });
                     }
                     toggleMute('vocals');
-                } else if (currentVideo) {
-                    const uuid = currentVideo.uuid || currentVideo.id;
-                    if (uuid && activeVideoId) {
+                } else if (activeVideoId) {
+                    // Try checking local cache right now
+                    const baseUrl = await getActiveBridgeBaseUrl();
+                    if (baseUrl) {
+                        try {
+                            const res = await fetch(`${baseUrl}/files/${activeVideoId}/vocals.m4a`, { method: 'HEAD', signal: AbortSignal.timeout(1500) });
+                            if (res.ok) {
+                                useAIVocalStore.setState((state) => ({
+                                    jobs: {
+                                        ...state.jobs,
+                                        [activeVideoId]: { status: 'ready', message: 'พร้อมเล่น!', progress: 100, mode: 'basic' }
+                                    }
+                                }));
+                                if (uuid && !currentVideo?.aiVocalRequested) {
+                                    usePlayerStore.getState().updateQueueItem(uuid, { aiVocalRequested: true });
+                                }
+                                toggleMute('vocals');
+                                return;
+                            }
+                        } catch {}
+                    }
+                    if (uuid) {
                         useUIStore.getState().showVocalModeModal(uuid, activeVideoId);
                     }
                 }

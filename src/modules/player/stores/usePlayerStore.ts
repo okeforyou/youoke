@@ -370,6 +370,12 @@ export const usePlayerStore = create<PlayerStore>()(
                     }
                 });
 
+                // Auto-detect cached status on Local Bridge for all queue items
+                const allQueueVids = newItems.map(v => v.videoId || v.id).filter(Boolean);
+                if (allQueueVids.length > 0) {
+                    aiVocalStore.checkCachedStatus(allQueueVids).catch(() => {});
+                }
+
                 const newQueue = [...state.queue, ...newItems];
                 let updates: Partial<PlayerStore> = { queue: newQueue };
 
@@ -500,8 +506,11 @@ export const usePlayerStore = create<PlayerStore>()(
 
                 console.log(`▶️ Store: Switching Index to ${index}. Source: ${source}`);
 
-                // 🤖 Trigger AI Vocal if requested
+                // 🤖 Trigger AI Vocal or cache check
                 const aiVocalStore = useAIVocalStore.getState();
+                if (source) {
+                    aiVocalStore.checkCachedStatus([source]).catch(() => {});
+                }
                 if (video.aiVocalRequested && source) {
                     console.log(`🎤 AI Vocal requested for ${source}, starting processing...`);
                     aiVocalStore.processAudio(source, video.title, aiVocalStore.defaultMode).catch(console.error);
@@ -545,6 +554,19 @@ export const usePlayerStore = create<PlayerStore>()(
                         }
 
                         console.log(`▶️ Store: Playing Next (from index ${currentIndex} -> consumed). Next Source: ${source}`);
+
+                        // 🤖 Auto-check cache & trigger AI Vocal for next song in queue
+                        const aiVocalStore = useAIVocalStore.getState();
+                        if (source) {
+                            aiVocalStore.checkCachedStatus([source]).catch(() => {});
+                            if (nextVideo.aiVocalRequested) {
+                                aiVocalStore.processAudio(source, nextVideo.title, aiVocalStore.defaultMode).catch(console.error);
+                            }
+                        }
+                        const upcomingVids = newQueue.map(v => v.videoId || v.id).filter(Boolean);
+                        if (upcomingVids.length > 0) {
+                            aiVocalStore.checkCachedStatus(upcomingVids).catch(() => {});
+                        }
 
                         const updates = {
                             queue: newQueue,

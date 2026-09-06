@@ -1,7 +1,7 @@
-// 🛡️ v5.5.329: Resilient Multi-Source Deepgram API Key Resolution
+// 🛡️ v5.5.330: Global Queue AI Cache Sync & Seamless Autoplay Vocal Muting
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.329";
+export const SYSTEM_VERSION = "5.5.330";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.330",
+        date: "2026-09-06",
+        changes: [
+            "fix(queue): Added proactive checkCachedStatus trigger to playNext, setCurrentIndex, and addToQueue in usePlayerStore, guaranteeing songs in continuous playback are instantly recognized as AI ready.",
+            "fix(controls): Enhanced vocal mute button in SidebarControls to perform instant local bridge cache resolution on click, eliminating failures when muting vocals during continuous queue playback."
+        ]
+    },
     {
         version: "5.5.329",
         date: "2026-09-06",
