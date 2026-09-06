@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { LRCLIBLine, alignLyrics, DeepgramWord, AlignedWord, groupDeepgramWordsIntoLines } from '../engines/deepgramAlignEngine';
-import { useAIVocalStore, getActiveBridgeBaseUrl } from '../../../stores/useAIVocalStore';
+import { useAIVocalStore, getActiveBridgeBaseUrl, resolveDeepgramApiKey } from '../../../stores/useAIVocalStore';
 
 interface DeepgramLyricsState {
   alignedLyrics: LRCLIBLine[];
@@ -36,8 +36,8 @@ export const useDeepgramLyricsStore = create<DeepgramLyricsState>((set, get) => 
           // Use cached Deepgram result
           deepgramWords = JSON.parse(cached);
       } else {
-          // Verify we have the API key
-          const { deepgramKey } = useAIVocalStore.getState();
+          // Verify we have the API key (multi-source resilient resolution)
+          const deepgramKey = await resolveDeepgramApiKey();
           if (!deepgramKey) {
               throw new Error("ยังไม่ได้ตั้งค่า Deepgram API Key กรุณาตั้งค่าในหน้า AI Settings");
           }

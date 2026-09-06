@@ -35,6 +35,54 @@ export async function getActiveBridgeBaseUrl(): Promise<string | null> {
     return port ? `http://127.0.0.1:${port}` : null;
 }
 
+export async function resolveDeepgramApiKey(): Promise<string | null> {
+    // 1. In-memory store
+    const storeKey = useAIVocalStore.getState().deepgramKey;
+    if (storeKey && storeKey.trim()) return storeKey.trim();
+
+    // 2. LocalStorage direct and persisted state
+    if (typeof window !== 'undefined') {
+        const standalone = localStorage.getItem('deepgram_api_key') || localStorage.getItem('deepgramKey');
+        if (standalone && standalone.trim()) {
+            useAIVocalStore.getState().setDeepgramKey(standalone.trim());
+            return standalone.trim();
+        }
+
+        try {
+            const raw = localStorage.getItem('ai-vocal-storage');
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                const k = parsed?.state?.deepgramKey;
+                if (k && k.trim()) {
+                    useAIVocalStore.getState().setDeepgramKey(k.trim());
+                    localStorage.setItem('deepgram_api_key', k.trim());
+                    return k.trim();
+                }
+            }
+        } catch {}
+    }
+
+    // 3. Firebase user profile fallback
+    try {
+        const { useAuthStore } = await import('@/modules/auth/useAuthStore');
+        const uid = useAuthStore.getState().user?.uid;
+        if (uid) {
+            const { getUserProfile } = await import('@/services/userService');
+            const res = await getUserProfile(uid, false);
+            const key = res?.data?.settings?.deepgramKey;
+            if (key && key.trim()) {
+                useAIVocalStore.getState().setDeepgramKey(key.trim());
+                if (typeof window !== 'undefined') {
+                    localStorage.setItem('deepgram_api_key', key.trim());
+                }
+                return key.trim();
+            }
+        }
+    } catch {}
+
+    return null;
+}
+
 async function fetchWithFallback(endpoint: string, options?: RequestInit, maxRetries = 0) {
     let delayMs = 1000;
     let lastError = null;
@@ -148,9 +196,24 @@ export const useAIVocalStore = create<AIVocalState>()(
     setIsActive: (active) => set({ isActive: active }),
     setCurrentVideoId: (id) => set({ currentVideoId: id }),
     setDefaultMode: (mode) => set({ defaultMode: mode }),
-    setRapidapiKey: (key) => set({ rapidapiKey: key }),
-    setDeepgramKey: (key) => set({ deepgramKey: key }),
-    setGroqKey: (key) => set({ groqKey: key }),
+    setRapidapiKey: (key) => {
+        if (typeof window !== 'undefined' && key) {
+            localStorage.setItem('rapidapi_key', key);
+        }
+        set({ rapidapiKey: key });
+    },
+    setDeepgramKey: (key) => {
+        if (typeof window !== 'undefined' && key) {
+            localStorage.setItem('deepgram_api_key', key);
+        }
+        set({ deepgramKey: key });
+    },
+    setGroqKey: (key) => {
+        if (typeof window !== 'undefined' && key) {
+            localStorage.setItem('groq_api_key', key);
+        }
+        set({ groqKey: key });
+    },
 
     setVolume: (type, val) => set((state) => ({
         volumes: { ...state.volumes, [type]: val }

@@ -256,7 +256,8 @@ export const useLyricsStore = create<LyricsState>((set, get) => ({
                     if (cached) {
                         deepgramWords = JSON.parse(cached);
                     } else {
-                        const { deepgramKey } = (await import('../../../stores/useAIVocalStore')).useAIVocalStore.getState();
+                        const { resolveDeepgramApiKey } = await import('../../../stores/useAIVocalStore');
+                        const deepgramKey = await resolveDeepgramApiKey();
                         if (!deepgramKey) {
                             throw new Error("ยังไม่ได้ตั้งค่า Deepgram API Key กรุณาตั้งค่าในหน้า AI Settings");
                         }
