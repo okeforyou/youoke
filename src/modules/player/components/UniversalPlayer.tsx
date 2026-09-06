@@ -282,9 +282,11 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
         }
     }, [isPlaying, isAiReady, areStemsReady]);
 
-    // Continuous Master-Slave Audio Sync Loop (Rule 10)
-    // Primary audio stem is the Master Audio Clock (hardware clock).
-    // YouTube video acts as background visual reference and only snaps audio on user seek/major drift (> 1.0s).
+    // Continuous Zero-Stutter Multi-Stem Audio Sync Loop
+    // Stems naturally run at the exact same DAC hardware clock rate.
+    // Instead of destructive currentTime re-seeking (which flushes the audio decode buffer and causes stutter),
+    // we use imperceptible playbackRate micro-adjustments (+-1%) to maintain phase lock,
+    // and only hard-seek when a substantial user seek occurs (> 1.5s).
     useEffect(() => {
         let animationFrameId: number;
         
@@ -306,33 +308,34 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                                 if (!audio.paused) {
                                     audio.pause();
                                 }
+                                if (audio.playbackRate !== 1.0) audio.playbackRate = 1.0;
                             }
                         } else if (activeAudios.length > 0) {
                             const masterAudio = activeAudios[0];
                             const youtubeTime = ytPlayer.getCurrentTime();
 
-                            // 1. If master audio is paused while YouTube is playing, start playback smoothly
+                            // 1. If master audio is paused while YouTube is playing, start playback and align once
                             if (masterAudio.paused) {
                                 if (typeof youtubeTime === 'number' && youtubeTime >= 0 && Math.abs(masterAudio.currentTime - youtubeTime) > 0.5) {
                                     masterAudio.currentTime = youtubeTime;
                                 }
                                 masterAudio.play().catch(() => {});
                             } else if (typeof youtubeTime === 'number' && youtubeTime >= 0) {
-                                // 2. Resync to YouTube ONLY on substantial seek/drift (> 1.0s)
-                                // Crucial: Never seek audio on minor postMessage jitter (16-50ms), which causes continuous buffer flushing & stutter
+                                // 2. Hard seek only on large user scrub (> 1.5s)
                                 const ytDrift = Math.abs(masterAudio.currentTime - youtubeTime);
-                                if (ytDrift > 1.0) {
+                                if (ytDrift > 1.5) {
                                     masterAudio.currentTime = youtubeTime;
                                 }
                             }
 
                             const masterTime = masterAudio.currentTime;
 
-                            // 3. Master-Slave Stems Lock (150ms tolerance prevents false trigger loops from JS tick jitter)
+                            // 3. Stems Synchronization via seamless playbackRate nudging (Zero Buffer Flush)
                             for (let i = 1; i < activeAudios.length; i++) {
                                 const slave = activeAudios[i];
                                 if (masterAudio.paused) {
                                     if (!slave.paused) slave.pause();
+                                    if (slave.playbackRate !== 1.0) slave.playbackRate = 1.0;
                                 } else {
                                     if (slave.paused) {
                                         if (Math.abs(slave.currentTime - masterTime) > 0.1) {
@@ -340,9 +343,22 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                                         }
                                         slave.play().catch(() => {});
                                     } else {
-                                        const stemDrift = Math.abs(slave.currentTime - masterTime);
-                                        if (stemDrift > 0.15) {
+                                        const diff = masterTime - slave.currentTime;
+                                        const absDiff = Math.abs(diff);
+
+                                        if (absDiff > 1.5) {
+                                            // Major drift (e.g. initial start desync / hard scrub): snap once
                                             slave.currentTime = masterTime;
+                                            slave.playbackRate = 1.0;
+                                        } else if (diff > 0.04) {
+                                            // Slave is lagging behind slightly (> 40ms): nudge +1% speed
+                                            if (slave.playbackRate !== 1.01) slave.playbackRate = 1.01;
+                                        } else if (diff < -0.04) {
+                                            // Slave is slightly ahead (> 40ms): nudge -1% speed
+                                            if (slave.playbackRate !== 0.99) slave.playbackRate = 0.99;
+                                        } else if (slave.playbackRate !== 1.0) {
+                                            // Back in tight sync (< 40ms): restore normal 1.0x rate
+                                            slave.playbackRate = 1.0;
                                         }
                                     }
                                 }
