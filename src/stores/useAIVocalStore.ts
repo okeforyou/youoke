@@ -203,7 +203,7 @@ export const useAIVocalStore = create<AIVocalState>()(
                         let progress = data.percent || 0;
                         let message = data.message || '';
                         
-                        if (data.status === 'success') {
+                        if (data.status === 'success' || data.status === 'ready') {
                             status = 'ready';
                             progress = 100;
                             message = 'พร้อมเล่น!';

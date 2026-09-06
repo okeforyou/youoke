@@ -1,7 +1,7 @@
 // 🛡️ v5.5.326: Desktop Plugin TorchCodec Monkey-Patch & Version v1.0.88
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.326";
+export const SYSTEM_VERSION = "5.5.327";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,13 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.327",
+        date: "2026-09-06",
+        changes: [
+            "fix(store): Fixed infinite polling bug in useAIVocalStore where 'ready' status from the local bridge was ignored during separation, causing the UI to spin forever until a page refresh."
+        ]
+    },
     {
         version: "5.5.326",
         date: "2026-09-05",
