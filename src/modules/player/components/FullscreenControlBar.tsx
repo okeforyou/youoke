@@ -8,6 +8,7 @@ import { useAIVocalStore } from '../../../stores/useAIVocalStore';
 import { useUIStore } from '../../../stores/useUIStore';
 import { useDeepgramLyricsStore } from '../../lyrics/stores/useDeepgramLyricsStore';
 import { useToast } from '../../../context/ToastContext';
+import clsx from 'clsx';
 
 interface FullscreenControlBarProps {
     showControls: boolean;

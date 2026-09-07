@@ -1,7 +1,7 @@
-// 🛡️ v5.5.333: Integrated Key Transpose & Speed Controls in Sidebar & Fullscreen Mixer Modals
+// 🛡️ v5.5.334: Fix FullscreenControlBar clsx import crash
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.333";
+export const SYSTEM_VERSION = "5.5.334";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
