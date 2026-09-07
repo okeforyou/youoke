@@ -1,7 +1,7 @@
-// 🛡️ v5.5.339: Cohesive Palette Refinement & Glassmorphic Fullscreen Control Sync
+// 🛡️ v5.5.340: Enhanced Mixer Readability, Zero-Emoji Icon Migration & Deep Glassmorphic Popover
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.339";
+export const SYSTEM_VERSION = "5.5.340";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.340",
+        date: "2026-09-07",
+        changes: [
+            "ui(mixer): Expanded mixer modal width to max-w-[460px] with comfortable typography and spacing for clear readability.",
+            "ui(icons): Completely replaced all emojis with clean Lucide React icons across pitch, speed, and lyrics consoles.",
+            "ui(lyrics): Redesigned lyrics settings into a spacious, uncluttered 2-row layout with dedicated toggles and 1-click AI Sync.",
+            "style(fullscreen): Deepened fullscreen mixer popover background blur and opacity (bg-black/80 backdrop-blur-2xl border-white/15) to match control bar richness perfectly."
+        ]
+    },
     {
         version: "5.5.339",
         date: "2026-09-07",

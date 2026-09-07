@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useToast } from "../../../context/ToastContext";
 import { useRouter } from "next/router";
-import { Play, Pause, SkipForward, RotateCcw, Volume2, VolumeX, Maximize, Cast, Mic, MicOff, ChevronUp, Mic2, Music, SlidersHorizontal, Type, Drum, Guitar, Piano, MicVocal, X, Sparkles, FileQuestion, Edit2, Wand2 } from "lucide-react";
+import { Play, Pause, SkipForward, RotateCcw, Volume2, VolumeX, Maximize, Cast, Mic, MicOff, ChevronUp, Mic2, Music, SlidersHorizontal, Type, Drum, Guitar, Piano, MicVocal, X, Sparkles, FileQuestion, Edit2, Wand2, Database, Gauge, Minus, Plus } from "lucide-react";
 import { usePlayerStore } from "../stores/usePlayerStore";
 import { useLyricsStore } from "../stores/useLyricsStore";
 import { useMixerStore, type TrackType } from "../stores/useMixerStore";
@@ -338,124 +338,132 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                 />
             </div>
             
-            {/* Mixer Modal - Ultra Compact No Scrollbar */}
+            {/* Mixer Modal - Comfortable, Readable, Zero Scrollbar */}
             {showVocalMixer && typeof document !== "undefined" && createPortal(
                 <div className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
                     <div 
                         ref={mixerRef} 
-                        className="relative w-full max-w-[420px] bg-white dark:bg-[#121218] border border-gray-200 dark:border-zinc-800 rounded-3xl shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col overflow-hidden text-zinc-900 dark:text-white"
+                        className="relative w-full max-w-[460px] bg-white dark:bg-[#121218] border border-gray-200 dark:border-zinc-800 rounded-3xl shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col overflow-hidden text-zinc-900 dark:text-white"
                     >
-                        <div className="p-4 flex flex-col w-full">
-                            {/* 1. Header (Ultra Compact) */}
-                            <div className="flex items-center justify-between mb-3 shrink-0">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center shadow-md shadow-primary/20">
-                                        <SlidersHorizontal size={14} className="text-white" />
+                        <div className="p-4 sm:p-5 flex flex-col w-full gap-3">
+                            {/* 1. Header */}
+                            <div className="flex items-center justify-between shrink-0">
+                                <div className="flex items-center gap-2.5">
+                                    <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center shadow-md shadow-primary/20 shrink-0">
+                                        <SlidersHorizontal size={16} className="text-white" />
                                     </div>
                                     <div>
-                                        <h3 className="text-xs font-black tracking-wide text-zinc-900 dark:text-white leading-tight">
+                                        <h3 className="text-sm font-black tracking-wide text-zinc-900 dark:text-white leading-tight">
                                             ตั้งค่าเสียง & คีย์เพลง (Mixer)
                                         </h3>
-                                        <span className="text-[9px] text-zinc-400 font-medium">ปรับคีย์ ความเร็ว และแยกแทร็กเสียง</span>
+                                        <span className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium">ปรับคีย์ ความเร็ว และแยกแทร็กเสียง</span>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <button 
                                         onClick={() => resetPitchAndSpeed()}
-                                        className="text-[10px] text-zinc-400 hover:text-zinc-900 dark:hover:text-white font-medium transition-colors"
+                                        className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-white font-medium transition-colors px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800"
                                     >
                                         รีเซ็ต
                                     </button>
                                     <button 
                                         onClick={() => setShowVocalMixer(false)}
-                                        className="w-7 h-7 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 flex items-center justify-center text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                                        className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 flex items-center justify-center text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
                                     >
-                                        <X size={14} />
+                                        <X size={16} />
                                     </button>
                                 </div>
                             </div>
 
-                            {/* 2. 🎼 Key Transpose & Speed (Combined Slim Console) */}
-                            <div className="bg-gray-50 dark:bg-zinc-800/40 p-2.5 rounded-2xl border border-gray-100 dark:border-zinc-700/50 flex items-center justify-between gap-2 mb-2.5">
-                                {/* Pitch Shift */}
-                                <div className="flex items-center gap-1.5">
-                                    <span className="text-[10px] font-bold text-zinc-600 dark:text-zinc-300">🎹 คีย์:</span>
-                                    <div className="flex items-center bg-white dark:bg-zinc-900/90 p-0.5 rounded-xl border border-gray-200 dark:border-zinc-700 shadow-sm">
-                                        <button
-                                            onClick={() => setPitchShift((pitchShift ?? 0) - 1)}
-                                            disabled={(pitchShift ?? 0) <= -6}
-                                            className="w-6 h-6 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-white text-xs font-bold disabled:opacity-30 transition-all flex items-center justify-center font-mono"
-                                            title="ลดคีย์"
-                                        >
-                                            ♭
-                                        </button>
-                                        <span className="px-2 text-xs font-mono font-black text-primary min-w-[50px] text-center">
-                                            {(pitchShift ?? 0) === 0 ? 'ORIG' : ((pitchShift ?? 0) > 0 ? `+${pitchShift}` : `${pitchShift}`)}
-                                        </span>
-                                        <button
-                                            onClick={() => setPitchShift((pitchShift ?? 0) + 1)}
-                                            disabled={(pitchShift ?? 0) >= 6}
-                                            className="w-6 h-6 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-white text-xs font-bold disabled:opacity-30 transition-all flex items-center justify-center font-mono"
-                                            title="เพิ่มคีย์"
-                                        >
-                                            ♯
-                                        </button>
-                                    </div>
-                                    {(pitchShift ?? 0) !== 0 && (
-                                        <button
-                                            onClick={() => setPitchShift(0)}
-                                            className="text-[9px] text-primary hover:underline font-bold"
-                                        >
-                                            Reset
-                                        </button>
-                                    )}
-                                </div>
-
-                                {/* Speed */}
-                                <div className="flex items-center gap-1">
-                                    <span className="text-[10px] font-bold text-zinc-600 dark:text-zinc-300">⚡ เร็ว:</span>
-                                    <div className="flex items-center gap-0.5 bg-gray-200/70 dark:bg-zinc-900/80 p-0.5 rounded-xl border border-gray-200 dark:border-zinc-700">
-                                        {[0.75, 1.0, 1.25].map(rate => (
+                            {/* 2. Key Transpose & Speed Console */}
+                            <div className="bg-gray-50 dark:bg-zinc-800/40 p-3 rounded-2xl border border-gray-100 dark:border-zinc-700/60 flex flex-col gap-2.5">
+                                <div className="flex items-center justify-between gap-3">
+                                    {/* Pitch Shift Stepper */}
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-1.5 text-zinc-700 dark:text-zinc-300">
+                                            <Music size={14} className="text-primary" />
+                                            <span className="text-xs font-bold">คีย์:</span>
+                                        </div>
+                                        <div className="flex items-center bg-white dark:bg-zinc-900 p-0.5 rounded-xl border border-gray-200 dark:border-zinc-700 shadow-sm">
                                             <button
-                                                key={rate}
-                                                onClick={() => setPlaybackRate(rate)}
-                                                className={clsx(
-                                                    "px-1.5 py-0.5 text-[9px] font-bold rounded-lg transition-all",
-                                                    (playbackRate ?? 1.0) === rate 
-                                                        ? "bg-primary text-white shadow-sm" 
-                                                        : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-                                                )}
+                                                onClick={() => setPitchShift((pitchShift ?? 0) - 1)}
+                                                disabled={(pitchShift ?? 0) <= -6}
+                                                className="w-7 h-7 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-white text-xs font-bold disabled:opacity-30 transition-all flex items-center justify-center font-mono"
+                                                title="ลดคีย์ (-1 semitone)"
                                             >
-                                                {rate}x
+                                                ♭
                                             </button>
-                                        ))}
+                                            <span className="px-2.5 text-xs font-mono font-black text-primary min-w-[54px] text-center">
+                                                {(pitchShift ?? 0) === 0 ? 'ORIG' : ((pitchShift ?? 0) > 0 ? `+${pitchShift}` : `${pitchShift}`)}
+                                            </span>
+                                            <button
+                                                onClick={() => setPitchShift((pitchShift ?? 0) + 1)}
+                                                disabled={(pitchShift ?? 0) >= 6}
+                                                className="w-7 h-7 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-white text-xs font-bold disabled:opacity-30 transition-all flex items-center justify-center font-mono"
+                                                title="เพิ่มคีย์ (+1 semitone)"
+                                            >
+                                                ♯
+                                            </button>
+                                        </div>
+                                        {(pitchShift ?? 0) !== 0 && (
+                                            <button
+                                                onClick={() => setPitchShift(0)}
+                                                className="text-[10px] text-primary hover:underline font-bold px-1"
+                                            >
+                                                Reset
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    {/* Playback Speed Segmented Pills */}
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="flex items-center gap-1 text-zinc-700 dark:text-zinc-300">
+                                            <Gauge size={14} className="text-primary" />
+                                            <span className="text-xs font-bold">ความเร็ว:</span>
+                                        </div>
+                                        <div className="flex items-center gap-0.5 bg-gray-200/80 dark:bg-zinc-900 p-0.5 rounded-xl border border-gray-200 dark:border-zinc-700">
+                                            {[0.75, 1.0, 1.25].map(rate => (
+                                                <button
+                                                    key={rate}
+                                                    onClick={() => setPlaybackRate(rate)}
+                                                    className={clsx(
+                                                        "px-2 py-1 text-[10px] font-bold rounded-lg transition-all",
+                                                        (playbackRate ?? 1.0) === rate 
+                                                            ? "bg-primary text-white shadow-sm" 
+                                                            : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                                                    )}
+                                                >
+                                                    {rate}x
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* 3. AI Stem Channels & Master Mute (Slim Rows) */}
-                            <div className="flex flex-col gap-2 mb-2.5">
+                            {/* 3. AI Stem Channels (Vocals, Instrumental, Pro Mode) */}
+                            <div className="flex flex-col gap-2">
                                 {/* Vocals */}
-                                <div className="flex items-center gap-2.5 bg-gray-50 dark:bg-zinc-800/40 p-2 px-3 rounded-2xl border border-gray-100 dark:border-zinc-700/50">
+                                <div className="flex items-center gap-3 bg-gray-50 dark:bg-zinc-800/40 p-2.5 px-3 rounded-2xl border border-gray-100 dark:border-zinc-700/50">
                                     <button 
                                         onClick={() => toggleMute('vocals')}
                                         className={clsx(
-                                            "w-7 h-7 shrink-0 flex items-center justify-center rounded-xl transition-all border shadow-sm",
+                                            "w-8 h-8 shrink-0 flex items-center justify-center rounded-xl transition-all border shadow-sm",
                                             trackStates.vocals.muted 
                                                 ? "bg-red-500/15 text-red-500 border-red-500/30" 
                                                 : "bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 border-gray-200 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-700"
                                         )}
                                         title={trackStates.vocals.muted ? "เปิดเสียงร้อง" : "ปิดเสียงร้อง"}
                                     >
-                                        <MicVocal size={14} />
+                                        {trackStates.vocals.muted ? <MicOff size={15} /> : <MicVocal size={15} />}
                                     </button>
-                                    <div className="flex-1 flex flex-col justify-center">
-                                        <div className="flex justify-between items-center mb-0.5">
-                                            <span className="text-[11px] font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1">
+                                    <div className="flex-1 flex flex-col justify-center gap-0.5">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
                                                 เสียงร้อง (Vocals)
-                                                {trackStates.vocals.muted && <span className="text-[9px] text-red-500 font-medium">[ปิด]</span>}
+                                                {trackStates.vocals.muted && <span className="text-[10px] text-red-500 font-semibold">[ปิดเสียง]</span>}
                                             </span>
-                                            <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 font-bold">{volumes.vocals}%</span>
+                                            <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 font-bold">{volumes.vocals}%</span>
                                         </div>
                                         <VolumeSlider value={trackStates.vocals.muted ? 0 : volumes.vocals} onChange={(val) => handleVolumeChange('vocals', val)} muted={trackStates.vocals.muted} />
                                     </div>
@@ -463,25 +471,26 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
 
                                 {/* Instrumental (Basic Mode) */}
                                 {!isProMode && (
-                                    <div className="flex items-center gap-2.5 bg-gray-50 dark:bg-zinc-800/40 p-2 px-3 rounded-2xl border border-gray-100 dark:border-zinc-700/50">
+                                    <div className="flex items-center gap-3 bg-gray-50 dark:bg-zinc-800/40 p-2.5 px-3 rounded-2xl border border-gray-100 dark:border-zinc-700/50">
                                         <button 
                                             onClick={() => toggleMute('instrumental')}
                                             className={clsx(
-                                                "w-7 h-7 shrink-0 flex items-center justify-center rounded-xl transition-all border shadow-sm",
+                                                "w-8 h-8 shrink-0 flex items-center justify-center rounded-xl transition-all border shadow-sm",
                                                 trackStates.instrumental.muted 
                                                     ? "bg-red-500/15 text-red-500 border-red-500/30" 
                                                     : "bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 border-gray-200 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-700"
                                             )}
+                                            title={trackStates.instrumental.muted ? "เปิดเสียงดนตรี" : "ปิดเสียงดนตรี"}
                                         >
-                                            <Music size={14} />
+                                            <Music size={15} />
                                         </button>
-                                        <div className="flex-1 flex flex-col justify-center">
-                                            <div className="flex justify-between items-center mb-0.5">
-                                                <span className="text-[11px] font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1">
+                                        <div className="flex-1 flex flex-col justify-center gap-0.5">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
                                                     ดนตรี (Instrumental)
-                                                    {trackStates.instrumental.muted && <span className="text-[9px] text-red-500 font-medium">[ปิด]</span>}
+                                                    {trackStates.instrumental.muted && <span className="text-[10px] text-red-500 font-semibold">[ปิดเสียง]</span>}
                                                 </span>
-                                                <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 font-bold">{volumes.instrumental}%</span>
+                                                <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 font-bold">{volumes.instrumental}%</span>
                                             </div>
                                             <VolumeSlider value={trackStates.instrumental.muted ? 0 : volumes.instrumental} onChange={(val) => handleVolumeChange('instrumental', val)} muted={trackStates.instrumental.muted} />
                                         </div>
@@ -492,66 +501,66 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                 {isProMode && (
                                     <>
                                         {/* Drums */}
-                                        <div className="flex items-center gap-2.5 bg-gray-50 dark:bg-zinc-800/40 p-2 px-3 rounded-2xl border border-gray-100 dark:border-zinc-700/50">
+                                        <div className="flex items-center gap-3 bg-gray-50 dark:bg-zinc-800/40 p-2.5 px-3 rounded-2xl border border-gray-100 dark:border-zinc-700/50">
                                             <button 
                                                 onClick={() => toggleMute('drums')}
                                                 className={clsx(
-                                                    "w-7 h-7 shrink-0 flex items-center justify-center rounded-xl transition-all border shadow-sm",
+                                                    "w-8 h-8 shrink-0 flex items-center justify-center rounded-xl transition-all border shadow-sm",
                                                     trackStates.drums.muted 
                                                         ? "bg-red-500/15 text-red-500 border-red-500/30" 
                                                         : "bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 border-gray-200 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-700"
                                                 )}
                                             >
-                                                <Drum size={14} />
+                                                <Drum size={15} />
                                             </button>
-                                            <div className="flex-1 flex flex-col justify-center">
-                                                <div className="flex justify-between items-center mb-0.5">
-                                                    <span className="text-[11px] font-bold text-zinc-800 dark:text-zinc-200">กลอง (Drums)</span>
-                                                    <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 font-bold">{volumes.drums}%</span>
+                                            <div className="flex-1 flex flex-col justify-center gap-0.5">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">กลอง (Drums)</span>
+                                                    <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 font-bold">{volumes.drums}%</span>
                                                 </div>
                                                 <VolumeSlider value={trackStates.drums.muted ? 0 : volumes.drums} onChange={(val) => handleVolumeChange('drums', val)} muted={trackStates.drums.muted} />
                                             </div>
                                         </div>
 
                                         {/* Bass */}
-                                        <div className="flex items-center gap-2.5 bg-gray-50 dark:bg-zinc-800/40 p-2 px-3 rounded-2xl border border-gray-100 dark:border-zinc-700/50">
+                                        <div className="flex items-center gap-3 bg-gray-50 dark:bg-zinc-800/40 p-2.5 px-3 rounded-2xl border border-gray-100 dark:border-zinc-700/50">
                                             <button 
                                                 onClick={() => toggleMute('bass')}
                                                 className={clsx(
-                                                    "w-7 h-7 shrink-0 flex items-center justify-center rounded-xl transition-all border shadow-sm",
+                                                    "w-8 h-8 shrink-0 flex items-center justify-center rounded-xl transition-all border shadow-sm",
                                                     trackStates.bass.muted 
                                                         ? "bg-red-500/15 text-red-500 border-red-500/30" 
                                                         : "bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 border-gray-200 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-700"
                                                 )}
                                             >
-                                                <Guitar size={14} />
+                                                <Guitar size={15} />
                                             </button>
-                                            <div className="flex-1 flex flex-col justify-center">
-                                                <div className="flex justify-between items-center mb-0.5">
-                                                    <span className="text-[11px] font-bold text-zinc-800 dark:text-zinc-200">เบส (Bass)</span>
-                                                    <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 font-bold">{volumes.bass}%</span>
+                                            <div className="flex-1 flex flex-col justify-center gap-0.5">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">เบส (Bass)</span>
+                                                    <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 font-bold">{volumes.bass}%</span>
                                                 </div>
                                                 <VolumeSlider value={trackStates.bass.muted ? 0 : volumes.bass} onChange={(val) => handleVolumeChange('bass', val)} muted={trackStates.bass.muted} />
                                             </div>
                                         </div>
 
                                         {/* Other */}
-                                        <div className="flex items-center gap-2.5 bg-gray-50 dark:bg-zinc-800/40 p-2 px-3 rounded-2xl border border-gray-100 dark:border-zinc-700/50">
+                                        <div className="flex items-center gap-3 bg-gray-50 dark:bg-zinc-800/40 p-2.5 px-3 rounded-2xl border border-gray-100 dark:border-zinc-700/50">
                                             <button 
                                                 onClick={() => toggleMute('other')}
                                                 className={clsx(
-                                                    "w-7 h-7 shrink-0 flex items-center justify-center rounded-xl transition-all border shadow-sm",
+                                                    "w-8 h-8 shrink-0 flex items-center justify-center rounded-xl transition-all border shadow-sm",
                                                     trackStates.other.muted 
                                                         ? "bg-red-500/15 text-red-500 border-red-500/30" 
                                                         : "bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 border-gray-200 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-700"
                                                 )}
                                             >
-                                                <Piano size={14} />
+                                                <Piano size={15} />
                                             </button>
-                                            <div className="flex-1 flex flex-col justify-center">
-                                                <div className="flex justify-between items-center mb-0.5">
-                                                    <span className="text-[11px] font-bold text-zinc-800 dark:text-zinc-200">ดนตรีอื่นๆ (Other)</span>
-                                                    <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 font-bold">{volumes.other}%</span>
+                                            <div className="flex-1 flex flex-col justify-center gap-0.5">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">ดนตรีอื่นๆ (Other)</span>
+                                                    <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 font-bold">{volumes.other}%</span>
                                                 </div>
                                                 <VolumeSlider value={trackStates.other.muted ? 0 : volumes.other} onChange={(val) => handleVolumeChange('other', val)} muted={trackStates.other.muted} />
                                             </div>
@@ -560,31 +569,31 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                 )}
                             </div>
 
-                            {/* 4. 🎤 Lyrics & AI Controls (Ultra Compact Card) */}
-                            <div className="bg-gray-50 dark:bg-zinc-800/40 border border-gray-100 dark:border-zinc-700/50 rounded-2xl p-2.5 flex flex-col gap-2">
+                            {/* 4. Lyrics & Karaoke Settings (Clean, Airy & Uncluttered) */}
+                            <div className="bg-gray-50 dark:bg-zinc-800/40 border border-gray-100 dark:border-zinc-700/50 rounded-2xl p-3 flex flex-col gap-2.5">
                                 {/* Top row: Toggles for Lyrics & Karaoke */}
-                                <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-2">
                                     {/* Toggle Lyrics */}
                                     <button 
                                         onClick={toggleLyrics}
                                         className={clsx(
-                                            "flex-1 py-1.5 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-between border",
+                                            "flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-between border shadow-sm",
                                             showLyrics 
-                                                ? "bg-primary/10 text-primary border-primary/20" 
-                                                : "bg-white dark:bg-zinc-900/60 text-zinc-600 dark:text-zinc-400 border-gray-200 dark:border-zinc-700/60"
+                                                ? "bg-primary/10 text-primary border-primary/25" 
+                                                : "bg-white dark:bg-zinc-900/80 text-zinc-600 dark:text-zinc-400 border-gray-200 dark:border-zinc-700/70 hover:bg-gray-100 dark:hover:bg-zinc-800"
                                         )}
                                     >
-                                        <div className="flex items-center gap-1.5">
-                                            <Type size={13} />
-                                            <span>เนื้อเพลง</span>
+                                        <div className="flex items-center gap-2">
+                                            <Type size={14} />
+                                            <span>แสดงเนื้อร้อง</span>
                                         </div>
                                         <div className={clsx(
-                                            "w-6 h-3.5 rounded-full p-0.5 transition-colors flex items-center",
+                                            "w-7 h-4 rounded-full p-0.5 transition-colors flex items-center",
                                             showLyrics ? "bg-primary" : "bg-gray-300 dark:bg-zinc-700"
                                         )}>
                                             <div className={clsx(
-                                                "w-2.5 h-2.5 bg-white rounded-full transition-transform",
-                                                showLyrics ? "translate-x-2.5" : "translate-x-0"
+                                                "w-3 h-3 bg-white rounded-full transition-transform",
+                                                showLyrics ? "translate-x-3" : "translate-x-0"
                                             )} />
                                         </div>
                                     </button>
@@ -594,30 +603,61 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                         <button 
                                             onClick={toggleKaraokeMode}
                                             className={clsx(
-                                                "flex-1 py-1.5 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-between border",
+                                                "flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-between border shadow-sm",
                                                 isKaraokeMode 
-                                                    ? "bg-primary/10 text-primary border-primary/20" 
-                                                    : "bg-white dark:bg-zinc-900/60 text-zinc-600 dark:text-zinc-400 border-gray-200 dark:border-zinc-700/60"
+                                                    ? "bg-primary/10 text-primary border-primary/25" 
+                                                    : "bg-white dark:bg-zinc-900/80 text-zinc-600 dark:text-zinc-400 border-gray-200 dark:border-zinc-700/70 hover:bg-gray-100 dark:hover:bg-zinc-800"
                                             )}
                                         >
-                                            <div className="flex items-center gap-1.5">
-                                                <Sparkles size={13} />
-                                                <span>ปาดสี</span>
+                                            <div className="flex items-center gap-2">
+                                                <Sparkles size={14} />
+                                                <span>ปาดสีคาราโอเกะ</span>
                                             </div>
                                             <div className={clsx(
-                                                "w-6 h-3.5 rounded-full p-0.5 transition-colors flex items-center",
+                                                "w-7 h-4 rounded-full p-0.5 transition-colors flex items-center",
                                                 isKaraokeMode ? "bg-primary" : "bg-gray-300 dark:bg-zinc-700"
                                             )}>
                                                 <div className={clsx(
-                                                    "w-2.5 h-2.5 bg-white rounded-full transition-transform",
-                                                    isKaraokeMode ? "translate-x-2.5" : "translate-x-0"
+                                                    "w-3 h-3 bg-white rounded-full transition-transform",
+                                                    isKaraokeMode ? "translate-x-3" : "translate-x-0"
                                                 )} />
                                             </div>
                                         </button>
                                     )}
+                                </div>
 
-                                    {/* AI Sync Button */}
-                                    {showLyrics && (
+                                {/* Bottom row: Source Selection & 1-Click AI Sync */}
+                                {showLyrics && (
+                                    <div className="flex items-center gap-2 pt-1 border-t border-gray-200/60 dark:border-zinc-700/60">
+                                        {/* Source Selector */}
+                                        <div className="flex-1 flex items-center p-0.5 bg-gray-200/70 dark:bg-zinc-900/80 rounded-xl gap-0.5">
+                                            <button 
+                                                onClick={() => handleSourceChange('auto')}
+                                                className={clsx(
+                                                    "flex-1 py-1 px-1.5 rounded-lg text-[10px] font-bold transition-all flex items-center justify-center gap-1",
+                                                    preferredSource === 'auto' || preferredSource === 'youtube'
+                                                        ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm" 
+                                                        : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                                                )}
+                                            >
+                                                <Database size={11} />
+                                                <span>LRCLIB</span>
+                                            </button>
+                                            <button 
+                                                onClick={() => handleSourceChange('deepgram')}
+                                                className={clsx(
+                                                    "flex-1 py-1 px-1.5 rounded-lg text-[10px] font-bold transition-all flex items-center justify-center gap-1",
+                                                    preferredSource === 'deepgram' 
+                                                        ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm" 
+                                                        : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                                                )}
+                                            >
+                                                <Sparkles size={11} />
+                                                <span>Deepgram AI</span>
+                                            </button>
+                                        </div>
+
+                                        {/* AI Sync Button */}
                                         <button
                                             onClick={async () => {
                                                 if (hybridModeEnabled) {
@@ -635,44 +675,16 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                             }}
                                             disabled={isAligning || !lyrics || lyrics.length === 0}
                                             className={clsx(
-                                                "py-1.5 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 border shrink-0",
+                                                "py-1.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border shrink-0 shadow-sm",
                                                 hybridModeEnabled 
-                                                    ? "bg-primary text-white border-primary shadow-sm" 
-                                                    : "bg-white dark:bg-zinc-900/60 text-zinc-700 dark:text-zinc-300 border-gray-200 dark:border-zinc-700/60 hover:bg-gray-100 dark:hover:bg-zinc-800",
+                                                    ? "bg-primary text-white border-primary shadow-primary/20" 
+                                                    : "bg-white dark:bg-zinc-900/80 text-zinc-700 dark:text-zinc-300 border-gray-200 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-800",
                                                 (isAligning || !lyrics || lyrics.length === 0) && "opacity-50 cursor-not-allowed"
                                             )}
                                             title="เทียบจังหวะอัตโนมัติด้วย AI"
                                         >
-                                            <Wand2 size={12} className={clsx(isAligning && "animate-spin")} />
-                                            <span>{isAligning ? "รอ..." : (hybridModeEnabled ? "ตรง 100%" : "AI Sync")}</span>
-                                        </button>
-                                    )}
-                                </div>
-
-                                {/* Source Selector (LRCLIB vs Deepgram AI) */}
-                                {showLyrics && (
-                                    <div className="flex items-center p-0.5 bg-gray-200/70 dark:bg-zinc-900/70 rounded-xl gap-1">
-                                        <button 
-                                            onClick={() => handleSourceChange('auto')}
-                                            className={clsx(
-                                                "flex-1 py-1 rounded-lg text-[10px] font-bold transition-all",
-                                                preferredSource === 'auto' || preferredSource === 'youtube'
-                                                    ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm" 
-                                                    : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-                                            )}
-                                        >
-                                            🔍 ฐานข้อมูล (LRCLIB)
-                                        </button>
-                                        <button 
-                                            onClick={() => handleSourceChange('deepgram')}
-                                            className={clsx(
-                                                "flex-1 py-1 rounded-lg text-[10px] font-bold transition-all",
-                                                preferredSource === 'deepgram' 
-                                                    ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm" 
-                                                    : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-                                            )}
-                                        >
-                                            ✨ แกะสด AI (Deepgram)
+                                            <Wand2 size={13} className={clsx(isAligning && "animate-spin")} />
+                                            <span>{isAligning ? "กำลังเทียบ..." : (hybridModeEnabled ? "ซิงก์ตรง 100%" : "AI Sync")}</span>
                                         </button>
                                     </div>
                                 )}

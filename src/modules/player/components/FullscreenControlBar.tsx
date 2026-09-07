@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Minimize2, X, Play, Pause, Wand2, Mic, MicOff, Music, Type, Drum, Guitar, Piano, Sparkles, SlidersHorizontal, AlignLeft, Paintbrush } from 'lucide-react';
+import { Minimize2, X, Play, Pause, Wand2, Mic, MicOff, Music, Type, Drum, Guitar, Piano, Sparkles, SlidersHorizontal, AlignLeft, Paintbrush, Gauge } from 'lucide-react';
 import { usePlayerStore } from '../stores/usePlayerStore';
 import { useCast } from '../../../plugins/cast/context/CastContext';
 import { useLyricsStore } from '../stores/useLyricsStore';
@@ -347,7 +347,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                 {showMixerPopover && (
                     <div 
                         ref={popoverRef}
-                        className="absolute bottom-14 right-0 bg-black/60 backdrop-blur-2xl border border-white/10 p-3 rounded-2xl shadow-2xl flex flex-col gap-2.5 w-[315px] z-50 pointer-events-auto animate-in fade-in slide-in-from-bottom-2 duration-200 text-white"
+                        className="absolute bottom-14 right-0 bg-black/80 backdrop-blur-2xl border border-white/15 p-3.5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex flex-col gap-3 w-[330px] z-50 pointer-events-auto animate-in fade-in slide-in-from-bottom-2 duration-200 text-white"
                     >
                         {/* Header */}
                         <div className="flex justify-between items-center border-b border-white/10 pb-2">
@@ -375,28 +375,31 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                             </div>
                         </div>
 
-                        {/* 🎼 Key Transpose & Speed Controls Console (Unified Slim Row) */}
-                        <div className="bg-white/5 p-2 rounded-xl border border-white/10 flex items-center justify-between gap-1.5">
+                        {/* Key Transpose & Speed Controls Console */}
+                        <div className="bg-white/5 p-2.5 rounded-xl border border-white/10 flex items-center justify-between gap-2">
                             {/* Pitch Shift */}
                             <div className="flex items-center gap-1.5">
-                                <span className="text-[10px] font-bold text-zinc-300">🎹 คีย์:</span>
-                                <div className="flex items-center bg-black/40 p-0.5 rounded-lg border border-white/10">
+                                <div className="flex items-center gap-1 text-zinc-300">
+                                    <Music size={12} className="text-primary" />
+                                    <span className="text-[10px] font-bold">คีย์:</span>
+                                </div>
+                                <div className="flex items-center bg-black/50 p-0.5 rounded-lg border border-white/10">
                                     <button
                                         onClick={() => setPitchShift((pitchShift ?? 0) - 1)}
                                         disabled={(pitchShift ?? 0) <= -6}
-                                        className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 active:scale-95 text-white text-xs font-bold disabled:opacity-30 transition-all flex items-center justify-center font-mono"
-                                        title="ลดคีย์"
+                                        className="w-6 h-6 rounded bg-white/10 hover:bg-white/20 active:scale-95 text-white text-xs font-bold disabled:opacity-30 transition-all flex items-center justify-center font-mono"
+                                        title="ลดคีย์ (-1 semitone)"
                                     >
                                         ♭
                                     </button>
-                                    <span className="px-1.5 text-xs font-mono font-black text-primary min-w-[46px] text-center">
+                                    <span className="px-2 text-xs font-mono font-black text-primary min-w-[48px] text-center">
                                         {(pitchShift ?? 0) === 0 ? 'ORIG' : ((pitchShift ?? 0) > 0 ? `+${pitchShift}` : `${pitchShift}`)}
                                     </span>
                                     <button
                                         onClick={() => setPitchShift((pitchShift ?? 0) + 1)}
                                         disabled={(pitchShift ?? 0) >= 6}
-                                        className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 active:scale-95 text-white text-xs font-bold disabled:opacity-30 transition-all flex items-center justify-center font-mono"
-                                        title="เพิ่มคีย์"
+                                        className="w-6 h-6 rounded bg-white/10 hover:bg-white/20 active:scale-95 text-white text-xs font-bold disabled:opacity-30 transition-all flex items-center justify-center font-mono"
+                                        title="เพิ่มคีย์ (+1 semitone)"
                                     >
                                         ♯
                                     </button>
@@ -413,8 +416,11 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
 
                             {/* Speed Selector */}
                             <div className="flex items-center gap-1">
-                                <span className="text-[10px] font-bold text-zinc-300">⚡ เร็ว:</span>
-                                <div className="flex items-center gap-0.5 bg-black/40 p-0.5 rounded-lg border border-white/10">
+                                <div className="flex items-center gap-0.5 text-zinc-300">
+                                    <Gauge size={12} className="text-primary" />
+                                    <span className="text-[10px] font-bold">เร็ว:</span>
+                                </div>
+                                <div className="flex items-center gap-0.5 bg-black/50 p-0.5 rounded-lg border border-white/10">
                                     {[0.75, 1.0, 1.25].map(rate => (
                                         <button
                                             key={rate}
@@ -434,7 +440,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                         </div>
 
                         {/* Audio Separation Channel Strips */}
-                        <div className="flex flex-col gap-1.5">
+                        <div className="flex flex-col gap-2">
                             {isAiReady ? (
                                 <>
                                     {renderMixerRow('vocals', Mic, 'เสียงร้อง (Vocals)')}
@@ -472,7 +478,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                         </div>
 
                         {/* Tooltip Arrow pointing down toward the Mixer button */}
-                        <div className="absolute -bottom-1.5 right-[18px] w-3 h-3 bg-black/60 border-r border-b border-white/10 rotate-45 backdrop-blur-2xl" />
+                        <div className="absolute -bottom-1.5 right-[18px] w-3 h-3 bg-black/80 border-r border-b border-white/15 rotate-45 backdrop-blur-2xl" />
                     </div>
                 )}
 
