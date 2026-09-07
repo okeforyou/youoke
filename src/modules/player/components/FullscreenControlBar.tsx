@@ -347,7 +347,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                 {showMixerPopover && (
                     <div 
                         ref={popoverRef}
-                        className="absolute bottom-14 right-0 bg-black/80 backdrop-blur-2xl border border-white/15 p-3.5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex flex-col gap-3 w-[330px] z-50 pointer-events-auto animate-in fade-in slide-in-from-bottom-2 duration-200 text-white"
+                        className="absolute bottom-14 right-0 bg-[#0B0B0F]/90 backdrop-blur-3xl border border-white/15 p-3.5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.85)] flex flex-col gap-3 w-[330px] z-50 pointer-events-auto animate-in fade-in slide-in-from-bottom-2 duration-200 text-white"
                     >
                         {/* Header */}
                         <div className="flex justify-between items-center border-b border-white/10 pb-2">
@@ -477,8 +477,8 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                             )}
                         </div>
 
-                        {/* Tooltip Arrow pointing down toward the Mixer button */}
-                        <div className="absolute -bottom-1.5 right-[18px] w-3 h-3 bg-black/80 border-r border-b border-white/15 rotate-45 backdrop-blur-2xl" />
+                        {/* Tooltip Arrow pointing down toward the Mixer button seamlessly */}
+                        <div className="absolute -bottom-1.5 right-[18px] w-3 h-3 bg-[#0B0B0F] border-r border-b border-white/15 rotate-45 pointer-events-none" />
                     </div>
                 )}
 

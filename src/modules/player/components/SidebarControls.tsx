@@ -569,7 +569,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                 )}
                             </div>
 
-                            {/* 4. Lyrics & Karaoke Settings (Clean, Airy & Uncluttered) */}
+                            {/* 4. Lyrics & Karaoke Settings (User-Friendly & Crystal Clear) */}
                             <div className="bg-gray-50 dark:bg-zinc-800/40 border border-gray-100 dark:border-zinc-700/50 rounded-2xl p-3 flex flex-col gap-2.5">
                                 {/* Top row: Toggles for Lyrics & Karaoke */}
                                 <div className="flex items-center gap-2">
@@ -611,7 +611,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                         >
                                             <div className="flex items-center gap-2">
                                                 <Sparkles size={14} />
-                                                <span>ปาดสีคาราโอเกะ</span>
+                                                <span>ปาดสีตามคำร้อง</span>
                                             </div>
                                             <div className={clsx(
                                                 "w-7 h-4 rounded-full p-0.5 transition-colors flex items-center",
@@ -626,38 +626,10 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                     )}
                                 </div>
 
-                                {/* Bottom row: Source Selection & 1-Click AI Sync */}
+                                {/* Bottom row: Smart AI Alignment & Source Selection */}
                                 {showLyrics && (
-                                    <div className="flex items-center gap-2 pt-1 border-t border-gray-200/60 dark:border-zinc-700/60">
-                                        {/* Source Selector */}
-                                        <div className="flex-1 flex items-center p-0.5 bg-gray-200/70 dark:bg-zinc-900/80 rounded-xl gap-0.5">
-                                            <button 
-                                                onClick={() => handleSourceChange('auto')}
-                                                className={clsx(
-                                                    "flex-1 py-1 px-1.5 rounded-lg text-[10px] font-bold transition-all flex items-center justify-center gap-1",
-                                                    preferredSource === 'auto' || preferredSource === 'youtube'
-                                                        ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm" 
-                                                        : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-                                                )}
-                                            >
-                                                <Database size={11} />
-                                                <span>LRCLIB</span>
-                                            </button>
-                                            <button 
-                                                onClick={() => handleSourceChange('deepgram')}
-                                                className={clsx(
-                                                    "flex-1 py-1 px-1.5 rounded-lg text-[10px] font-bold transition-all flex items-center justify-center gap-1",
-                                                    preferredSource === 'deepgram' 
-                                                        ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm" 
-                                                        : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-                                                )}
-                                            >
-                                                <Sparkles size={11} />
-                                                <span>Deepgram AI</span>
-                                            </button>
-                                        </div>
-
-                                        {/* AI Sync Button */}
+                                    <div className="flex flex-col gap-2 pt-1.5 border-t border-gray-200/60 dark:border-zinc-700/60">
+                                        {/* Primary Action: 1-Click AI Sync */}
                                         <button
                                             onClick={async () => {
                                                 if (hybridModeEnabled) {
@@ -675,17 +647,50 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                             }}
                                             disabled={isAligning || !lyrics || lyrics.length === 0}
                                             className={clsx(
-                                                "py-1.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border shrink-0 shadow-sm",
+                                                "w-full py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 border shadow-sm",
                                                 hybridModeEnabled 
                                                     ? "bg-primary text-white border-primary shadow-primary/20" 
-                                                    : "bg-white dark:bg-zinc-900/80 text-zinc-700 dark:text-zinc-300 border-gray-200 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-800",
+                                                    : "bg-white dark:bg-zinc-900/80 text-zinc-800 dark:text-zinc-200 border-gray-200 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-800",
                                                 (isAligning || !lyrics || lyrics.length === 0) && "opacity-50 cursor-not-allowed"
                                             )}
-                                            title="เทียบจังหวะอัตโนมัติด้วย AI"
+                                            title="ให้ AI ฟังเสียงร้องและจัดจังหวะคำร้องให้ตรง 100%"
                                         >
-                                            <Wand2 size={13} className={clsx(isAligning && "animate-spin")} />
-                                            <span>{isAligning ? "กำลังเทียบ..." : (hybridModeEnabled ? "ซิงก์ตรง 100%" : "AI Sync")}</span>
+                                            <Wand2 size={13} className={clsx("text-primary", hybridModeEnabled && "text-white", isAligning && "animate-spin")} />
+                                            <span>{isAligning ? "กำลังเทียบจังหวะกับเสียงร้อง..." : (hybridModeEnabled ? "✓ จัดจังหวะตรงแล้ว (AI Sync)" : "🪄 ปรับจังหวะให้ตรง (AI Sync)")}</span>
                                         </button>
+
+                                        {/* Secondary Option: Source Mode (Human-Readable) */}
+                                        <div className="flex items-center justify-between text-[11px] px-0.5 pt-0.5">
+                                            <span className="text-zinc-500 dark:text-zinc-400 font-medium">แหล่งเนื้อเพลง:</span>
+                                            <div className="flex items-center p-0.5 bg-gray-200/70 dark:bg-zinc-900/80 rounded-xl gap-0.5">
+                                                <button 
+                                                    onClick={() => handleSourceChange('auto')}
+                                                    className={clsx(
+                                                        "py-1 px-2.5 rounded-lg font-bold transition-all flex items-center gap-1 text-[10px]",
+                                                        preferredSource === 'auto' || preferredSource === 'youtube'
+                                                            ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm" 
+                                                            : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                                                    )}
+                                                    title="ค้นหาจากคลังเนื้อเพลงมาตรฐาน (LRCLIB)"
+                                                >
+                                                    <Database size={11} />
+                                                    <span>คลังมาตรฐาน</span>
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleSourceChange('deepgram')}
+                                                    className={clsx(
+                                                        "py-1 px-2.5 rounded-lg font-bold transition-all flex items-center gap-1 text-[10px]",
+                                                        preferredSource === 'deepgram' 
+                                                            ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm" 
+                                                            : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                                                    )}
+                                                    title="ให้ AI ฟังเสียงร้องสดแล้วถอดเนื้อเพลง (Deepgram)"
+                                                >
+                                                    <Sparkles size={11} />
+                                                    <span>AI ถอดเสียงสด</span>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 )}
                             </div>

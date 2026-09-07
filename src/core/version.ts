@@ -1,7 +1,7 @@
-// 🛡️ v5.5.340: Enhanced Mixer Readability, Zero-Emoji Icon Migration & Deep Glassmorphic Popover
+// 🛡️ v5.5.341: User-Centric Lyrics UX & Seamless Glassmorphic Fullscreen Arrow
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.340";
+export const SYSTEM_VERSION = "5.5.341";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.341",
+        date: "2026-09-07",
+        changes: [
+            "ux(lyrics): Redesigned technical dev terminology into intuitive user language ('คลังมาตรฐาน' instead of LRCLIB, 'AI ถอดเสียงสด' instead of Deepgram, and prominent '🪄 ปรับจังหวะให้ตรง (AI Sync)' with instant status indicator).",
+            "style(fullscreen): Eliminated tooltip arrow color seams on fullscreen mixer popover and unified backdrop blur with deep black-glass styling (#0B0B0F/90 backdrop-blur-3xl)."
+        ]
+    },
     {
         version: "5.5.340",
         date: "2026-09-07",
