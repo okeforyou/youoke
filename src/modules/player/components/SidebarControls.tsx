@@ -98,9 +98,14 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
     const {
         trackStates,
         volumes,
+        pitchShift,
+        playbackRate,
         toggleMute,
         toggleSolo,
-        setVolume
+        setVolume,
+        setPitchShift,
+        setPlaybackRate,
+        resetPitchAndSpeed
     } = useMixerStore();
 
     const { isEnabled: showLyrics, setLyricsEnabled, isKaraokeMode, toggleLyrics, toggleKaraokeMode, syncOffset, setSyncOffset, preferredSource, setPreferredSource, fetchLyrics, error: lyricsError, isLoading: lyricsLoading, lyricsType, source, activeLineText, lyrics } = useLyricsStore();
@@ -342,7 +347,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                     >
                         <div className="p-6 overflow-y-auto overscroll-contain flex flex-col h-full w-full [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-gray-200 dark:[&::-webkit-scrollbar-thumb]:bg-zinc-800 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
                         {/* Header */}
-                        <div className="flex items-center justify-between mb-6 shrink-0">
+                        <div className="flex items-center justify-between mb-4 shrink-0">
                             <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
                                 <SlidersHorizontal size={16} className="text-primary" />
                                 ตั้งค่าเสียง (Mixer)
@@ -353,6 +358,60 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                             >
                                 <X size={16} />
                             </button>
+                        </div>
+
+                        {/* 🎼 Key Transpose & Speed Controls */}
+                        <div className="bg-gray-50 dark:bg-zinc-800/80 p-3 rounded-2xl border border-gray-100 dark:border-zinc-700/50 flex flex-wrap items-center justify-between gap-2 mb-4">
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs font-bold text-gray-700 dark:text-gray-300">🎹 คีย์เพลง:</span>
+                                <div className="flex items-center bg-white dark:bg-zinc-900 p-1 rounded-xl border border-gray-200 dark:border-zinc-700 shadow-sm">
+                                    <button
+                                        onClick={() => setPitchShift((pitchShift ?? 0) - 1)}
+                                        disabled={(pitchShift ?? 0) <= -6}
+                                        className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 text-black dark:text-white text-xs font-bold disabled:opacity-30 transition-colors"
+                                        title="ลดคีย์ (-1 semitone)"
+                                    >
+                                        ♭
+                                    </button>
+                                    <span className="px-2.5 text-xs font-mono font-black text-primary">
+                                        {(pitchShift ?? 0) === 0 ? 'ORIG' : ((pitchShift ?? 0) > 0 ? `+${pitchShift}` : `${pitchShift}`)}
+                                    </span>
+                                    <button
+                                        onClick={() => setPitchShift((pitchShift ?? 0) + 1)}
+                                        disabled={(pitchShift ?? 0) >= 6}
+                                        className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 text-black dark:text-white text-xs font-bold disabled:opacity-30 transition-colors"
+                                        title="เพิ่มคีย์ (+1 semitone)"
+                                    >
+                                        ♯
+                                    </button>
+                                </div>
+                                {(pitchShift ?? 0) !== 0 && (
+                                    <button
+                                        onClick={() => setPitchShift(0)}
+                                        className="text-[11px] text-gray-400 hover:text-primary underline px-1"
+                                    >
+                                        Reset
+                                    </button>
+                                )}
+                            </div>
+
+                            <div className="flex items-center gap-1.5">
+                                <span className="text-xs font-bold text-gray-700 dark:text-gray-300">⚡ ความเร็ว:</span>
+                                <div className="flex items-center gap-1 bg-white dark:bg-zinc-900 p-1 rounded-xl border border-gray-200 dark:border-zinc-700 shadow-sm">
+                                    {[0.75, 1.0, 1.25].map(rate => (
+                                        <button
+                                            key={rate}
+                                            onClick={() => setPlaybackRate(rate)}
+                                            className={clsx(
+                                                "px-2 py-1 text-[10px] font-bold rounded-lg transition-colors",
+                                                (playbackRate ?? 1.0) === rate ? "bg-primary text-white shadow-sm" : "text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white"
+                                            )}
+                                        >
+                                            {rate}x
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     
                         {/* Master Mute */}

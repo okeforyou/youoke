@@ -45,7 +45,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
     } = useDeepgramLyricsStore();
 
     // AI Separation & Mixer Store
-    const { trackStates, volumes, setVolume, toggleMute } = useMixerStore();
+    const { trackStates, volumes, pitchShift, playbackRate, setVolume, toggleMute, setPitchShift, setPlaybackRate } = useMixerStore();
     const aiVocalStore = useAIVocalStore();
     const activeVideoId = currentVideo?.videoId || currentVideo?.id;
     const aiJob = activeVideoId ? aiVocalStore.jobs[activeVideoId] : null;
@@ -334,6 +334,60 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                             <button onClick={() => setShowMixerPopover(false)} className="text-white/40 hover:text-white transition-colors">
                                 <X size={14} />
                             </button>
+                        </div>
+
+                        {/* 🎼 Key Transpose & Speed Controls */}
+                        <div className="bg-white/5 p-2.5 rounded-xl border border-white/10 flex flex-wrap items-center justify-between gap-2">
+                            <div className="flex items-center gap-1.5">
+                                <span className="text-[11px] font-bold text-white/80">🎹 คีย์:</span>
+                                <div className="flex items-center bg-black/50 p-0.5 rounded-lg border border-white/10">
+                                    <button
+                                        onClick={() => setPitchShift((pitchShift ?? 0) - 1)}
+                                        disabled={(pitchShift ?? 0) <= -6}
+                                        className="w-6 h-6 rounded bg-white/10 hover:bg-white/20 text-white text-xs font-bold disabled:opacity-30 transition-colors"
+                                        title="ลดคีย์ (-1 semitone)"
+                                    >
+                                        ♭
+                                    </button>
+                                    <span className="px-2 text-[11px] font-mono font-bold text-primary">
+                                        {(pitchShift ?? 0) === 0 ? 'ORIG' : ((pitchShift ?? 0) > 0 ? `+${pitchShift}` : `${pitchShift}`)}
+                                    </span>
+                                    <button
+                                        onClick={() => setPitchShift((pitchShift ?? 0) + 1)}
+                                        disabled={(pitchShift ?? 0) >= 6}
+                                        className="w-6 h-6 rounded bg-white/10 hover:bg-white/20 text-white text-xs font-bold disabled:opacity-30 transition-colors"
+                                        title="เพิ่มคีย์ (+1 semitone)"
+                                    >
+                                        ♯
+                                    </button>
+                                </div>
+                                {(pitchShift ?? 0) !== 0 && (
+                                    <button
+                                        onClick={() => setPitchShift(0)}
+                                        className="text-[10px] text-white/40 hover:text-primary underline px-1"
+                                    >
+                                        Reset
+                                    </button>
+                                )}
+                            </div>
+
+                            <div className="flex items-center gap-1">
+                                <span className="text-[11px] font-bold text-white/80">⚡ เร็ว:</span>
+                                <div className="flex items-center gap-0.5 bg-black/50 p-0.5 rounded-lg border border-white/10">
+                                    {[0.75, 1.0, 1.25].map(rate => (
+                                        <button
+                                            key={rate}
+                                            onClick={() => setPlaybackRate(rate)}
+                                            className={clsx(
+                                                "px-1.5 py-0.5 text-[9px] font-bold rounded transition-colors",
+                                                (playbackRate ?? 1.0) === rate ? "bg-primary text-white" : "text-white/50 hover:text-white"
+                                            )}
+                                        >
+                                            {rate}x
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
 
                         {/* Audio Separation Sliders */}
