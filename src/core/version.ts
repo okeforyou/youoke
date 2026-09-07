@@ -1,7 +1,7 @@
-// 🛡️ v5.5.342: Fullscreen Mixer 2-Row Pitch/Speed & Seamless Glassmorphism Sync
+// 🛡️ v5.5.343: Dual-Row Pitch/Speed in Sidebar Mixer Modal & Enhanced Frosted Glass Parity
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.342";
+export const SYSTEM_VERSION = "5.5.343";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.343",
+        date: "2026-09-07",
+        changes: [
+            "fix(mixer): Separated Key Transpose and Speed controls into 2 dedicated rows in the Sidebar Mixer popup modal for complete visual parity and zero overflow.",
+            "style(fullscreen): Added explicit hardware-accelerated WebKit backdrop-filter blur styles to FullscreenControlBar and Popover, ensuring matching frosted glass blur across all screen environments."
+        ]
+    },
     {
         version: "5.5.342",
         date: "2026-09-07",

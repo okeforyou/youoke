@@ -375,15 +375,15 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                 </div>
                             </div>
 
-                            {/* 2. Key Transpose & Speed Console */}
+                            {/* 2. Key Transpose & Speed Console (2 Separate Rows) */}
                             <div className="bg-gray-50 dark:bg-zinc-800/40 p-3 rounded-2xl border border-gray-100 dark:border-zinc-700/60 flex flex-col gap-2.5">
-                                <div className="flex items-center justify-between gap-3">
-                                    {/* Pitch Shift Stepper */}
+                                {/* Row 1: Pitch Shift */}
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-1.5 text-zinc-700 dark:text-zinc-300">
+                                        <Music size={14} className="text-primary" />
+                                        <span className="text-xs font-bold">คีย์เพลง:</span>
+                                    </div>
                                     <div className="flex items-center gap-2">
-                                        <div className="flex items-center gap-1.5 text-zinc-700 dark:text-zinc-300">
-                                            <Music size={14} className="text-primary" />
-                                            <span className="text-xs font-bold">คีย์:</span>
-                                        </div>
                                         <div className="flex items-center bg-white dark:bg-zinc-900 p-0.5 rounded-xl border border-gray-200 dark:border-zinc-700 shadow-sm">
                                             <button
                                                 onClick={() => setPitchShift((pitchShift ?? 0) - 1)}
@@ -393,7 +393,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                             >
                                                 ♭
                                             </button>
-                                            <span className="px-2.5 text-xs font-mono font-black text-primary min-w-[54px] text-center">
+                                            <span className="px-3 text-xs font-mono font-black text-primary min-w-[54px] text-center">
                                                 {(pitchShift ?? 0) === 0 ? 'ORIG' : ((pitchShift ?? 0) > 0 ? `+${pitchShift}` : `${pitchShift}`)}
                                             </span>
                                             <button
@@ -414,29 +414,29 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                             </button>
                                         )}
                                     </div>
+                                </div>
 
-                                    {/* Playback Speed Segmented Pills */}
-                                    <div className="flex items-center gap-1.5">
-                                        <div className="flex items-center gap-1 text-zinc-700 dark:text-zinc-300">
-                                            <Gauge size={14} className="text-primary" />
-                                            <span className="text-xs font-bold">ความเร็ว:</span>
-                                        </div>
-                                        <div className="flex items-center gap-0.5 bg-gray-200/80 dark:bg-zinc-900 p-0.5 rounded-xl border border-gray-200 dark:border-zinc-700">
-                                            {[0.75, 1.0, 1.25].map(rate => (
-                                                <button
-                                                    key={rate}
-                                                    onClick={() => setPlaybackRate(rate)}
-                                                    className={clsx(
-                                                        "px-2 py-1 text-[10px] font-bold rounded-lg transition-all",
-                                                        (playbackRate ?? 1.0) === rate 
-                                                            ? "bg-primary text-white shadow-sm" 
-                                                            : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-                                                    )}
-                                                >
-                                                    {rate}x
-                                                </button>
-                                            ))}
-                                        </div>
+                                {/* Row 2: Playback Speed */}
+                                <div className="flex items-center justify-between pt-2 border-t border-gray-200/60 dark:border-zinc-700/60">
+                                    <div className="flex items-center gap-1.5 text-zinc-700 dark:text-zinc-300">
+                                        <Gauge size={14} className="text-primary" />
+                                        <span className="text-xs font-bold">ความเร็ว:</span>
+                                    </div>
+                                    <div className="flex items-center gap-1 bg-gray-200/80 dark:bg-zinc-900 p-0.5 rounded-xl border border-gray-200 dark:border-zinc-700">
+                                        {[0.75, 1.0, 1.25].map(rate => (
+                                            <button
+                                                key={rate}
+                                                onClick={() => setPlaybackRate(rate)}
+                                                className={clsx(
+                                                    "px-3 py-1 text-[11px] font-bold rounded-lg transition-all",
+                                                    (playbackRate ?? 1.0) === rate 
+                                                        ? "bg-primary text-white shadow-sm" 
+                                                        : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                                                )}
+                                            >
+                                                {rate}x
+                                            </button>
+                                        ))}
                                     </div>
                                 </div>
                             </div>

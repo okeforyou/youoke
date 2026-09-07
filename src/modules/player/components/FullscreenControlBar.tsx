@@ -212,6 +212,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
     return (
         <div
             className={`absolute bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 md:gap-2.5 p-1.5 md:p-2 bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}
+            style={{ backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)' }}
         >
 
 
@@ -348,6 +349,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                     <div 
                         ref={popoverRef}
                         className="absolute bottom-14 right-0 bg-black/60 backdrop-blur-2xl border border-white/10 p-3.5 rounded-2xl shadow-2xl flex flex-col gap-3 w-[330px] z-50 pointer-events-auto animate-in fade-in slide-in-from-bottom-2 duration-200 text-white"
+                        style={{ backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)' }}
                     >
                         {/* Header */}
                         <div className="flex justify-between items-center border-b border-white/10 pb-2">
