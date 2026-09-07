@@ -22,10 +22,15 @@ interface MixerState {
         bass: TrackState;
         other: TrackState;
     };
+    pitchShift: number; // -6 to +6 semitones
+    playbackRate: number; // 0.5x to 2.0x
     setVolume: (type: 'vocals' | 'instrumental' | 'drums' | 'bass' | 'other', value: number) => void;
     toggleMute: (type: 'vocals' | 'instrumental' | 'drums' | 'bass' | 'other') => void;
     toggleSolo: (type: 'vocals' | 'instrumental' | 'drums' | 'bass' | 'other') => void;
     getEffectiveVolume: (type: 'vocals' | 'instrumental' | 'drums' | 'bass' | 'other') => number;
+    setPitchShift: (semitones: number) => void;
+    setPlaybackRate: (rate: number) => void;
+    resetPitchAndSpeed: () => void;
 }
 
 export const useMixerStore = create<MixerState>()(
@@ -39,6 +44,17 @@ export const useMixerStore = create<MixerState>()(
                 bass: { muted: false, solo: false },
                 other: { muted: false, solo: false }
             },
+            pitchShift: 0,
+            playbackRate: 1.0,
+            setPitchShift: (semitones) => {
+                const safeSemitones = Math.max(-6, Math.min(6, Math.round(Number(semitones) || 0)));
+                set({ pitchShift: safeSemitones });
+            },
+            setPlaybackRate: (rate) => {
+                const safeRate = Math.max(0.5, Math.min(2.0, Number(rate) || 1.0));
+                set({ playbackRate: safeRate });
+            },
+            resetPitchAndSpeed: () => set({ pitchShift: 0, playbackRate: 1.0 }),
             setVolume: (type, value) => {
                 const safeValue = Math.max(0, Math.min(100, Number(value) || 0));
                 set((state) => ({

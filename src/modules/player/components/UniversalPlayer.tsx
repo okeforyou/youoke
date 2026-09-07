@@ -149,14 +149,47 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
         }
     };
 
-    const { trackStates, volumes } = useMixerStore(
+    const { trackStates, volumes, pitchShift, playbackRate } = useMixerStore(
         useShallow(state => ({
             trackStates: state.trackStates,
-            volumes: state.volumes
+            volumes: state.volumes,
+            pitchShift: state.pitchShift ?? 0,
+            playbackRate: state.playbackRate ?? 1.0
         }))
     );
     const masterVolume = usePlayerStore(state => state.volume ?? 100);
     const isMuted = usePlayerStore(state => state.isMuted);
+
+    // Dynamic Pitch & Speed Sync (Web Audio API & HTML5 Media Element)
+    useEffect(() => {
+        const activeRefs = [vocalRef, instrumentalRef, drumsRef, bassRef, otherRef];
+        const pitchRatio = Math.pow(2, pitchShift / 12);
+        const effectiveRate = playbackRate * pitchRatio;
+
+        activeRefs.forEach(ref => {
+            if (ref.current) {
+                try {
+                    if (pitchShift !== 0) {
+                        (ref.current as any).preservesPitch = false;
+                        (ref.current as any).webkitPreservesPitch = false;
+                        (ref.current as any).mozPreservesPitch = false;
+                    } else {
+                        (ref.current as any).preservesPitch = true;
+                        (ref.current as any).webkitPreservesPitch = true;
+                        (ref.current as any).mozPreservesPitch = true;
+                    }
+                    ref.current.playbackRate = effectiveRate;
+                } catch (e) {}
+            }
+        });
+
+        // Sync Speed to YouTube Player if active
+        if (ytPlayerRef.current && typeof ytPlayerRef.current.setPlaybackRate === 'function') {
+            try {
+                ytPlayerRef.current.setPlaybackRate(playbackRate);
+            } catch (e) {}
+        }
+    }, [pitchShift, playbackRate]);
 
     // MIDI Engine Hooks
     const { playMidi, stop: stopMidi, isReady: isMidiReady, isPlaying: isMidiPlaying, synth } = useMidiEngine();

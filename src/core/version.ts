@@ -1,7 +1,7 @@
-// 🛡️ v5.5.331: Zero-Leak Continuous Autoplay & Non-blocking AI Transcription Pipeline
+// 🛡️ v5.5.332: Real-Time Key Transpose (+-6 Semitones), Speed Control & 4-Stem Pro Studio Mixer
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.331";
+export const SYSTEM_VERSION = "5.5.332";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
