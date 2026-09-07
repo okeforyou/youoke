@@ -46,7 +46,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
     } = useDeepgramLyricsStore();
 
     // AI Separation & Mixer Store
-    const { trackStates, volumes, pitchShift, playbackRate, setVolume, toggleMute, setPitchShift, setPlaybackRate } = useMixerStore();
+    const { trackStates, volumes, pitchShift, playbackRate, setVolume, toggleMute, setPitchShift, setPlaybackRate, resetPitchAndSpeed, resetMixer } = useMixerStore();
     const aiVocalStore = useAIVocalStore();
     const activeVideoId = currentVideo?.videoId || currentVideo?.id;
     const aiJob = activeVideoId ? aiVocalStore.jobs[activeVideoId] : null;
@@ -237,7 +237,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                         </div>
                         <div className="flex items-center gap-2">
                             <button 
-                                onClick={() => resetPitchAndSpeed()} 
+                                onClick={() => resetMixer()} 
                                 className="text-[10px] text-zinc-400 hover:text-white font-medium transition-colors"
                             >
                                 รีเซ็ต

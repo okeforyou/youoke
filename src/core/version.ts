@@ -1,7 +1,7 @@
-// 🛡️ v5.5.345: Synchronized Fullscreen Controls & Mixer Popover Auto-Hide
+// 🛡️ v5.5.346: Fix Master Reset Button Functionality in Fullscreen & Sidebar Mixers
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.345";
+export const SYSTEM_VERSION = "5.5.346";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.346",
+        date: "2026-09-07",
+        changes: [
+            "fix(mixer): Added comprehensive resetMixer() to useMixerStore and connected it to top header 'รีเซ็ต' button across both Fullscreen Mixer and Sidebar Mixer modals.",
+            "fix(fullscreen): Resolved missing resetPitchAndSpeed/resetMixer store destructuring in FullscreenControlBar, allowing one-click instant reset of pitch (ORIG), speed (1.0x), track volumes (100%), and un-muting."
+        ]
+    },
     {
         version: "5.5.345",
         date: "2026-09-07",

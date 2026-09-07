@@ -31,6 +31,7 @@ interface MixerState {
     setPitchShift: (semitones: number) => void;
     setPlaybackRate: (rate: number) => void;
     resetPitchAndSpeed: () => void;
+    resetMixer: () => void;
 }
 
 export const useMixerStore = create<MixerState>()(
@@ -55,6 +56,18 @@ export const useMixerStore = create<MixerState>()(
                 set({ playbackRate: safeRate });
             },
             resetPitchAndSpeed: () => set({ pitchShift: 0, playbackRate: 1.0 }),
+            resetMixer: () => set({
+                pitchShift: 0,
+                playbackRate: 1.0,
+                volumes: { vocals: 100, instrumental: 100, drums: 100, bass: 100, other: 100 },
+                trackStates: {
+                    vocals: { muted: false, solo: false },
+                    instrumental: { muted: false, solo: false },
+                    drums: { muted: false, solo: false },
+                    bass: { muted: false, solo: false },
+                    other: { muted: false, solo: false }
+                }
+            }),
             setVolume: (type, value) => {
                 const safeValue = Math.max(0, Math.min(100, Number(value) || 0));
                 set((state) => ({

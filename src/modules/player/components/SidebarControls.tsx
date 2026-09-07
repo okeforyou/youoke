@@ -105,7 +105,8 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
         setVolume,
         setPitchShift,
         setPlaybackRate,
-        resetPitchAndSpeed
+        resetPitchAndSpeed,
+        resetMixer
     } = useMixerStore();
 
     const { isEnabled: showLyrics, setLyricsEnabled, isKaraokeMode, toggleLyrics, toggleKaraokeMode, syncOffset, setSyncOffset, preferredSource, setPreferredSource, fetchLyrics, error: lyricsError, isLoading: lyricsLoading, lyricsType, source, activeLineText, lyrics } = useLyricsStore();
@@ -361,7 +362,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <button 
-                                        onClick={() => resetPitchAndSpeed()}
+                                        onClick={() => resetMixer()}
                                         className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-white font-medium transition-colors px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800"
                                     >
                                         รีเซ็ต
