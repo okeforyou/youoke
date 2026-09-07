@@ -1,7 +1,7 @@
-// 🛡️ v5.5.336: Cyber Studio Dark Glassmorphic Mixer UI & LED Key Transpose
+// 🛡️ v5.5.337: Clean Adaptive Mixer Modal & Simplified Lyrics Studio UI
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.336";
+export const SYSTEM_VERSION = "5.5.337";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.337",
+        date: "2026-09-07",
+        changes: [
+            "style(mixer): Restored clean adaptive white/light modal styling for standard sidebar popup, keeping high-contrast cyber dark for fullscreen mode.",
+            "ui(lyrics): Streamlined lyrics settings into intuitive cards (Display toggle, Karaoke sweep toggle, and 1-click AI Sync), removed redundant YouTube CC option, and simplified source selection (LRCLIB vs Deepgram AI)."
+        ]
+    },
     {
         version: "5.5.336",
         date: "2026-09-07",
