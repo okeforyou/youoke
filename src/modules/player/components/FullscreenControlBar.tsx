@@ -210,319 +210,318 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
     const tooltipClassName = "absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 hidden group-hover/tooltip:block bg-black/90 backdrop-blur-md text-white text-[10px] sm:text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-white/10 whitespace-nowrap shadow-xl z-50 pointer-events-none transition-all";
 
     return (
-        <div
-            className={`absolute bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 md:gap-2.5 p-1.5 md:p-2 bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}
-            style={{ backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)' }}
-        >
-
-
-            {/* 1. Lyrics Selection Segmented Pill Control (Animate-sliding active tab indicator) */}
-            <div className="relative flex bg-white/5 border border-white/10 rounded-xl p-0.5 pointer-events-auto shrink-0 select-none w-[394px] h-[38px] items-center">
-                {/* Sliding background indicator */}
+        <>
+            {/* 🎛️ Fullscreen Mixer Popover — Placed as Top-Level Sibling for True Hardware-Accelerated Frosted Blur */}
+            {showMixerPopover && (
                 <div 
-                    className={`absolute top-0.5 bottom-0.5 left-0.5 rounded-lg transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] ${getIndicatorColor()}`}
-                    style={{
-                        transform: `translateX(${activeLayoutTab * 130}px)`,
-                        width: '130px'
-                    }}
-                />
-                
-                <button 
-                    onClick={() => handleLayoutTabClick(0)}
-                    className={`group/tooltip relative z-10 w-[130px] h-full rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 ${activeLayoutTab === 0 ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
+                    ref={popoverRef}
+                    className="absolute bottom-[86px] left-1/2 -translate-x-1/2 sm:translate-x-0 sm:left-auto sm:right-[max(1.5rem,calc(50%-285px))] bg-black/75 backdrop-blur-2xl border border-white/15 p-3.5 rounded-2xl shadow-2xl flex flex-col gap-3 w-[335px] z-50 pointer-events-auto animate-in fade-in slide-in-from-bottom-2 duration-200 text-white"
+                    style={{ backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)' }}
                 >
-                    <MicOff size={12} />
-                    ปิดเนื้อร้อง
-                    <span className={tooltipClassName}>ปิดเนื้อร้อง</span>
-                </button>
-                <button 
-                    onClick={() => handleLayoutTabClick(1)}
-                    className={`group/tooltip relative z-10 w-[130px] h-full rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 ${activeLayoutTab === 1 ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
-                >
-                    <Mic size={12} />
-                    คาราโอเกะ
-                    <span className={tooltipClassName}>โหมดคาราโอเกะปาดสี</span>
-                </button>
-                <button 
-                    onClick={() => handleLayoutTabClick(2)}
-                    className={`group/tooltip relative z-10 w-[130px] h-full rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 ${activeLayoutTab === 2 ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
-                >
-                    <AlignLeft size={12} />
-                    เนื้อร้องเลื่อน
-                    <span className={tooltipClassName}>โหมดเนื้อร้องเลื่อนแนวตั้ง</span>
-                </button>
-            </div>
+                    {/* Header */}
+                    <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                        <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-lg bg-primary flex items-center justify-center shadow-md shadow-primary/20">
+                                <SlidersHorizontal size={13} className="text-white" />
+                            </div>
+                            <span className="text-white text-xs font-black tracking-wide">
+                                ตั้งค่าเสียง & คีย์เพลง (Mixer)
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <button 
+                                onClick={() => resetPitchAndSpeed()} 
+                                className="text-[10px] text-zinc-400 hover:text-white font-medium transition-colors"
+                            >
+                                รีเซ็ต
+                            </button>
+                            <button 
+                                onClick={() => setShowMixerPopover(false)} 
+                                className="w-6 h-6 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-zinc-400 hover:text-white transition-colors"
+                            >
+                                <X size={13} />
+                            </button>
+                        </div>
+                    </div>
 
-            {/* AI Sync / Transcribe Action Button */}
-            {isAiReady && (
-                originalLyrics && originalLyrics.length > 0 ? (
-                    <button
-                        onClick={async () => {
-                            if (isAligning) return;
-                            if (activeVideoId) {
-                                addToast?.('AI Sync: กำลังฟังและเทียบจังหวะเนื้อเพลง...', 'info');
-                                try {
-                                    await alignHybridLyrics(activeVideoId, originalLyrics);
-                                    addToast?.('AI Sync: เทียบจังหวะสำเร็จ! เนื้อเพลงตรง 100%', 'success');
-                                    setLyricsEnabled(true);
-                                    setLyricsLayout('karaoke');
-                                } catch (err: any) {
-                                    addToast?.(`AI Sync ล้มเหลว: ${err.message || 'เกิดข้อผิดพลาด'}`, 'error');
-                                }
-                            }
-                        }}
-                        disabled={isAligning}
-                        className={`group/tooltip relative h-11 px-4 flex items-center justify-center gap-1.5 rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 font-bold text-xs ${isAligning ? 'animate-pulse text-white/50 bg-white/5 border border-white/5' : (!isSynced ? 'bg-amber-500 hover:bg-amber-600 text-black shadow-lg shadow-amber-500/25 border border-amber-500/30' : 'text-white/60 hover:text-white bg-white/5 border border-white/10')}`}
-                    >
-                        <Sparkles size={14} className={isAligning ? 'animate-spin' : ''} />
-                        <span>{isAligning ? 'กำลังจัดจังหวะ...' : (isSynced ? 'ซิงก์แล้ว' : 'จัดจังหวะ AI')}</span>
-                        <span className={tooltipClassName}>{isSynced ? 'จังหวะตรงเรียบร้อยแล้ว' : 'จัดจังหวะคำร้องด้วย AI'}</span>
-                    </button>
-                ) : (
-                    <button
-                        onClick={async () => {
-                            if (lyricsLoading) return;
-                            if (activeVideoId && currentVideo) {
-                                addToast?.('AI Transcribe: กำลังถอดเนื้อร้องจากเสียงร้องไกด์...', 'info');
-                                setPreferredSource('deepgram');
-                                await fetchLyrics(activeVideoId, currentVideo.title || '', 'deepgram', currentVideo.duration);
-                                setLyricsEnabled(true);
-                            }
-                        }}
-                        disabled={lyricsLoading}
-                        className={`group/tooltip relative h-11 px-4 flex items-center justify-center gap-1.5 rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 font-bold text-xs bg-amber-500 hover:bg-amber-600 text-black shadow-lg shadow-amber-500/25 border border-amber-500/30 disabled:opacity-50`}
-                    >
-                        <Sparkles size={14} className={lyricsLoading ? 'animate-spin' : ''} />
-                        <span>{lyricsLoading ? 'กำลังแกะเนื้อ...' : 'แกะเนื้อร้อง AI'}</span>
-                        <span className={tooltipClassName}>แกะเนื้อร้องจากไฟล์เสียงร้องไกด์โดยอัตโนมัติด้วย AI</span>
-                    </button>
-                )
-            )}
+                    {/* Key Transpose & Speed Controls Console (Separate Rows) */}
+                    <div className="bg-white/5 p-2.5 rounded-xl border border-white/10 flex flex-col gap-2">
+                        {/* Row 1: Pitch Shift */}
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1.5 text-zinc-300">
+                                <Music size={13} className="text-primary" />
+                                <span className="text-xs font-bold">คีย์เพลง:</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <div className="flex items-center bg-black/40 p-0.5 rounded-lg border border-white/10">
+                                    <button
+                                        onClick={() => setPitchShift((pitchShift ?? 0) - 1)}
+                                        disabled={(pitchShift ?? 0) <= -6}
+                                        className="w-6 h-6 rounded bg-white/10 hover:bg-white/20 active:scale-95 text-white text-xs font-bold disabled:opacity-30 transition-all flex items-center justify-center font-mono"
+                                        title="ลดคีย์ (-1 semitone)"
+                                    >
+                                        ♭
+                                    </button>
+                                    <span className="px-2 text-xs font-mono font-black text-primary min-w-[48px] text-center">
+                                        {(pitchShift ?? 0) === 0 ? 'ORIG' : ((pitchShift ?? 0) > 0 ? `+${pitchShift}` : `${pitchShift}`)}
+                                    </span>
+                                    <button
+                                        onClick={() => setPitchShift((pitchShift ?? 0) + 1)}
+                                        disabled={(pitchShift ?? 0) >= 6}
+                                        className="w-6 h-6 rounded bg-white/10 hover:bg-white/20 active:scale-95 text-white text-xs font-bold disabled:opacity-30 transition-all flex items-center justify-center font-mono"
+                                        title="เพิ่มคีย์ (+1 semitone)"
+                                    >
+                                        ♯
+                                    </button>
+                                </div>
+                                {(pitchShift ?? 0) !== 0 && (
+                                    <button
+                                        onClick={() => setPitchShift(0)}
+                                        className="text-[10px] text-primary hover:underline font-bold px-1"
+                                    >
+                                        Reset
+                                    </button>
+                                )}
+                            </div>
+                        </div>
 
-            {/* 2. Toggle Karaoke Sweeping Mode (Color Sweeping vs Plain Text) */}
-            {showLyrics && lyricsLayout === 'karaoke' && (
-                <button
-                    onClick={toggleKaraokeMode}
-                    className={`group/tooltip relative w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 ${isKaraokeMode ? 'bg-primary/20 text-primary border border-primary/20' : 'text-white/50 hover:text-white hover:bg-white/10'}`}
-                >
-                    <Paintbrush size={20} />
-                    <span className={tooltipClassName}>{isKaraokeMode ? "ปิดการปาดสี" : "เปิดการปาดสี"}</span>
-                </button>
-            )}
+                        {/* Row 2: Speed Selector */}
+                        <div className="flex items-center justify-between pt-1.5 border-t border-white/5">
+                            <div className="flex items-center gap-1.5 text-zinc-300">
+                                <Gauge size={13} className="text-primary" />
+                                <span className="text-xs font-bold">ความเร็ว:</span>
+                            </div>
+                            <div className="flex items-center gap-1 bg-black/40 p-0.5 rounded-lg border border-white/10">
+                                {[0.75, 1.0, 1.25].map(rate => (
+                                    <button
+                                        key={rate}
+                                        onClick={() => setPlaybackRate(rate)}
+                                        className={clsx(
+                                            "px-2.5 py-0.5 text-[10px] font-bold rounded-md transition-all",
+                                            (playbackRate ?? 1.0) === rate 
+                                                ? "bg-primary text-white shadow-sm" 
+                                                : "text-zinc-400 hover:text-white"
+                                        )}
+                                    >
+                                        {rate}x
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
 
-            <div className="w-[1px] h-6 bg-white/10 mx-0.5 shrink-0" />
-
-            {/* 3. Quick Vocal & Music Mute Toggles directly on the bar */}
-            {isAiReady && (
-                <div className="flex items-center gap-1.5">
-                    {/* Quick Vocals Toggle */}
-                    <button
-                        onClick={() => {
-                            if (currentVideo && !currentVideo.aiVocalRequested) {
-                                const uuid = currentVideo.uuid || currentVideo.id;
-                                if (uuid) {
-                                    usePlayerStore.getState().updateQueueItem(uuid, { aiVocalRequested: true });
-                                }
-                            }
-                            toggleMute('vocals');
-                        }}
-                        className={`group/tooltip relative w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 ${trackStates.vocals.muted ? 'text-white/30 bg-white/5 border border-white/5' : 'text-green-400 bg-green-500/10 border border-green-500/15'}`}
-                    >
-                        {trackStates.vocals.muted ? <MicOff size={20} /> : <Mic size={20} />}
-                        <span className={tooltipClassName}>{trackStates.vocals.muted ? "เปิดเสียงร้องไกด์" : "ปิดเสียงร้องไกด์"}</span>
-                    </button>
-                    
-                    {/* Quick Music Toggle */}
-                    <button
-                        onClick={toggleMusicMute}
-                        className={`group/tooltip relative w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 ${isMusicMuted ? 'text-white/30 bg-white/5 border border-white/5' : 'text-blue-400 bg-blue-500/10 border border-blue-500/15'}`}
-                    >
-                        <Music size={20} className={isMusicMuted ? "opacity-30" : ""} />
-                        <span className={tooltipClassName}>{isMusicMuted ? "เปิดเสียงดนตรีหลัก" : "ปิดเสียงดนตรีหลัก"}</span>
-                    </button>
+                    {/* Audio Separation Channel Strips */}
+                    <div className="flex flex-col gap-2">
+                        {isAiReady ? (
+                            <>
+                                {renderMixerRow('vocals', Mic, 'เสียงร้อง (Vocals)')}
+                                
+                                {!isProMode ? (
+                                    renderMixerRow('instrumental', Music, 'เสียงดนตรี (Backing)')
+                                ) : (
+                                    <>
+                                        {renderMixerRow('drums', Drum, 'กลอง (Drums)')}
+                                        {renderMixerRow('bass', Guitar, 'เบส (Bass)')}
+                                        {renderMixerRow('other', Piano, 'ดนตรีอื่นๆ (Other)')}
+                                    </>
+                                )}
+                            </>
+                        ) : (
+                            <div className="py-2.5 flex flex-col gap-2 items-center text-center">
+                                <span className="text-[11px] text-zinc-400">ยังไม่ได้แยกแทร็กเสียงดนตรีด้วย AI</span>
+                                <button
+                                    onClick={() => {
+                                        setShowMixerPopover(false);
+                                        if (currentVideo) {
+                                            const uuid = currentVideo.uuid || currentVideo.id;
+                                            if (uuid && activeVideoId) {
+                                                useUIStore.getState().showVocalModeModal(uuid, activeVideoId);
+                                            }
+                                        }
+                                    }}
+                                    className="w-full py-2 flex items-center justify-center gap-1.5 rounded-xl bg-primary text-white hover:bg-primary/90 transition-all text-xs font-bold shadow-lg shadow-primary/20"
+                                >
+                                    <Sparkles size={14} />
+                                    แยกเสียงด้วย AI
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
 
-            {/* 4. Main Mixer Toggle Button — popover is relative to this wrapper */}
-            <div className="relative shrink-0">
-                {showMixerPopover && (
+            {/* 🎯 FULLSCREEN CONTROL BAR */}
+            <div
+                className={`absolute bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 md:gap-2.5 p-1.5 md:p-2 bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}
+                style={{ backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)' }}
+            >
+                {/* 1. Lyrics Selection Segmented Pill Control */}
+                <div className="relative flex bg-white/5 border border-white/10 rounded-xl p-0.5 pointer-events-auto shrink-0 select-none w-[394px] h-[38px] items-center">
                     <div 
-                        ref={popoverRef}
-                        className="absolute bottom-14 right-0 bg-black/60 backdrop-blur-2xl border border-white/10 p-3.5 rounded-2xl shadow-2xl flex flex-col gap-3 w-[330px] z-50 pointer-events-auto animate-in fade-in slide-in-from-bottom-2 duration-200 text-white"
-                        style={{ backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)' }}
+                        className={`absolute top-0.5 bottom-0.5 left-0.5 rounded-lg transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] ${getIndicatorColor()}`}
+                        style={{
+                            transform: `translateX(${activeLayoutTab * 130}px)`,
+                            width: '130px'
+                        }}
+                    />
+                    
+                    <button 
+                        onClick={() => handleLayoutTabClick(0)}
+                        className={`group/tooltip relative z-10 w-[130px] h-full rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 ${activeLayoutTab === 0 ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
                     >
-                        {/* Header */}
-                        <div className="flex justify-between items-center border-b border-white/10 pb-2">
-                            <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 rounded-lg bg-primary flex items-center justify-center shadow-md shadow-primary/20">
-                                    <SlidersHorizontal size={13} className="text-white" />
-                                </div>
-                                <span className="text-white text-xs font-black tracking-wide">
-                                    ตั้งค่าเสียง & คีย์เพลง (Mixer)
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <button 
-                                    onClick={() => resetPitchAndSpeed()} 
-                                    className="text-[10px] text-zinc-400 hover:text-white font-medium transition-colors"
-                                >
-                                    รีเซ็ต
-                                </button>
-                                <button 
-                                    onClick={() => setShowMixerPopover(false)} 
-                                    className="w-6 h-6 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-zinc-400 hover:text-white transition-colors"
-                                >
-                                    <X size={13} />
-                                </button>
-                            </div>
-                        </div>
+                        <MicOff size={12} />
+                        ปิดเนื้อร้อง
+                        <span className={tooltipClassName}>ปิดเนื้อร้อง</span>
+                    </button>
+                    <button 
+                        onClick={() => handleLayoutTabClick(1)}
+                        className={`group/tooltip relative z-10 w-[130px] h-full rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 ${activeLayoutTab === 1 ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
+                    >
+                        <Mic size={12} />
+                        คาราโอเกะ
+                        <span className={tooltipClassName}>โหมดคาราโอเกะปาดสี</span>
+                    </button>
+                    <button 
+                        onClick={() => handleLayoutTabClick(2)}
+                        className={`group/tooltip relative z-10 w-[130px] h-full rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 ${activeLayoutTab === 2 ? 'text-white' : 'text-white/40 hover:text-white/70'}`}
+                    >
+                        <AlignLeft size={12} />
+                        เนื้อร้องเลื่อน
+                        <span className={tooltipClassName}>โหมดเนื้อร้องเลื่อนแนวตั้ง</span>
+                    </button>
+                </div>
 
-                        {/* Key Transpose & Speed Controls Console (Separate Rows) */}
-                        <div className="bg-white/5 p-2.5 rounded-xl border border-white/10 flex flex-col gap-2">
-                            {/* Row 1: Pitch Shift */}
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-1.5 text-zinc-300">
-                                    <Music size={13} className="text-primary" />
-                                    <span className="text-xs font-bold">คีย์เพลง:</span>
-                                </div>
-                                <div className="flex items-center gap-1.5">
-                                    <div className="flex items-center bg-black/40 p-0.5 rounded-lg border border-white/10">
-                                        <button
-                                            onClick={() => setPitchShift((pitchShift ?? 0) - 1)}
-                                            disabled={(pitchShift ?? 0) <= -6}
-                                            className="w-6 h-6 rounded bg-white/10 hover:bg-white/20 active:scale-95 text-white text-xs font-bold disabled:opacity-30 transition-all flex items-center justify-center font-mono"
-                                            title="ลดคีย์ (-1 semitone)"
-                                        >
-                                            ♭
-                                        </button>
-                                        <span className="px-2 text-xs font-mono font-black text-primary min-w-[48px] text-center">
-                                            {(pitchShift ?? 0) === 0 ? 'ORIG' : ((pitchShift ?? 0) > 0 ? `+${pitchShift}` : `${pitchShift}`)}
-                                        </span>
-                                        <button
-                                            onClick={() => setPitchShift((pitchShift ?? 0) + 1)}
-                                            disabled={(pitchShift ?? 0) >= 6}
-                                            className="w-6 h-6 rounded bg-white/10 hover:bg-white/20 active:scale-95 text-white text-xs font-bold disabled:opacity-30 transition-all flex items-center justify-center font-mono"
-                                            title="เพิ่มคีย์ (+1 semitone)"
-                                        >
-                                            ♯
-                                        </button>
-                                    </div>
-                                    {(pitchShift ?? 0) !== 0 && (
-                                        <button
-                                            onClick={() => setPitchShift(0)}
-                                            className="text-[10px] text-primary hover:underline font-bold px-1"
-                                        >
-                                            Reset
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
+                {/* AI Sync / Transcribe Action Button */}
+                {isAiReady && (
+                    originalLyrics && originalLyrics.length > 0 ? (
+                        <button
+                            onClick={async () => {
+                                if (isAligning) return;
+                                if (activeVideoId) {
+                                    addToast?.('AI Sync: กำลังฟังและเทียบจังหวะเนื้อเพลง...', 'info');
+                                    try {
+                                        await alignHybridLyrics(activeVideoId, originalLyrics);
+                                        addToast?.('AI Sync: เทียบจังหวะสำเร็จ! เนื้อเพลงตรง 100%', 'success');
+                                        setLyricsEnabled(true);
+                                        setLyricsLayout('karaoke');
+                                    } catch (err: any) {
+                                        addToast?.(`AI Sync ล้มเหลว: ${err.message || 'เกิดข้อผิดพลาด'}`, 'error');
+                                    }
+                                }
+                            }}
+                            disabled={isAligning}
+                            className={`group/tooltip relative h-11 px-4 flex items-center justify-center gap-1.5 rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 font-bold text-xs ${isAligning ? 'animate-pulse text-white/50 bg-white/5 border border-white/5' : (!isSynced ? 'bg-amber-500 hover:bg-amber-600 text-black shadow-lg shadow-amber-500/25 border border-amber-500/30' : 'text-white/60 hover:text-white bg-white/5 border border-white/10')}`}
+                        >
+                            <Sparkles size={14} className={isAligning ? 'animate-spin' : ''} />
+                            <span>{isAligning ? 'กำลังจัดจังหวะ...' : (isSynced ? 'ซิงก์แล้ว' : 'จัดจังหวะ AI')}</span>
+                            <span className={tooltipClassName}>{isSynced ? 'จังหวะตรงเรียบร้อยแล้ว' : 'จัดจังหวะคำร้องด้วย AI'}</span>
+                        </button>
+                    ) : (
+                        <button
+                            onClick={async () => {
+                                if (lyricsLoading) return;
+                                if (activeVideoId && currentVideo) {
+                                    addToast?.('AI Transcribe: กำลังถอดเนื้อร้องจากเสียงร้องไกด์...', 'info');
+                                    setPreferredSource('deepgram');
+                                    await fetchLyrics(activeVideoId, currentVideo.title || '', 'deepgram', currentVideo.duration);
+                                    setLyricsEnabled(true);
+                                }
+                            }}
+                            disabled={lyricsLoading}
+                            className={`group/tooltip relative h-11 px-4 flex items-center justify-center gap-1.5 rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 font-bold text-xs bg-amber-500 hover:bg-amber-600 text-black shadow-lg shadow-amber-500/25 border border-amber-500/30 disabled:opacity-50`}
+                        >
+                            <Sparkles size={14} className={lyricsLoading ? 'animate-spin' : ''} />
+                            <span>{lyricsLoading ? 'กำลังแกะเนื้อ...' : 'แกะเนื้อร้อง AI'}</span>
+                            <span className={tooltipClassName}>แกะเนื้อร้องจากไฟล์เสียงร้องไกด์โดยอัตโนมัติด้วย AI</span>
+                        </button>
+                    )
+                )}
 
-                            {/* Row 2: Speed Selector */}
-                            <div className="flex items-center justify-between pt-1.5 border-t border-white/5">
-                                <div className="flex items-center gap-1.5 text-zinc-300">
-                                    <Gauge size={13} className="text-primary" />
-                                    <span className="text-xs font-bold">ความเร็ว:</span>
-                                </div>
-                                <div className="flex items-center gap-1 bg-black/40 p-0.5 rounded-lg border border-white/10">
-                                    {[0.75, 1.0, 1.25].map(rate => (
-                                        <button
-                                            key={rate}
-                                            onClick={() => setPlaybackRate(rate)}
-                                            className={clsx(
-                                                "px-2.5 py-0.5 text-[10px] font-bold rounded-md transition-all",
-                                                (playbackRate ?? 1.0) === rate 
-                                                    ? "bg-primary text-white shadow-sm" 
-                                                    : "text-zinc-400 hover:text-white"
-                                            )}
-                                        >
-                                            {rate}x
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
+                {/* 2. Toggle Karaoke Sweeping Mode */}
+                {showLyrics && lyricsLayout === 'karaoke' && (
+                    <button
+                        onClick={toggleKaraokeMode}
+                        className={`group/tooltip relative w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 ${isKaraokeMode ? 'bg-primary/20 text-primary border border-primary/20' : 'text-white/50 hover:text-white hover:bg-white/10'}`}
+                    >
+                        <Paintbrush size={20} />
+                        <span className={tooltipClassName}>{isKaraokeMode ? "ปิดการปาดสี" : "เปิดการปาดสี"}</span>
+                    </button>
+                )}
 
-                        {/* Audio Separation Channel Strips */}
-                        <div className="flex flex-col gap-2">
-                            {isAiReady ? (
-                                <>
-                                    {renderMixerRow('vocals', Mic, 'เสียงร้อง (Vocals)')}
-                                    
-                                    {!isProMode ? (
-                                        renderMixerRow('instrumental', Music, 'เสียงดนตรี (Backing)')
-                                    ) : (
-                                        <>
-                                            {renderMixerRow('drums', Drum, 'กลอง (Drums)')}
-                                            {renderMixerRow('bass', Guitar, 'เบส (Bass)')}
-                                            {renderMixerRow('other', Piano, 'ดนตรีอื่นๆ (Other)')}
-                                        </>
-                                    )}
-                                </>
-                            ) : (
-                                <div className="py-2.5 flex flex-col gap-2 items-center text-center">
-                                    <span className="text-[11px] text-zinc-400">ยังไม่ได้แยกแทร็กเสียงดนตรีด้วย AI</span>
-                                    <button
-                                        onClick={() => {
-                                            setShowMixerPopover(false);
-                                            if (currentVideo) {
-                                                const uuid = currentVideo.uuid || currentVideo.id;
-                                                if (uuid && activeVideoId) {
-                                                    useUIStore.getState().showVocalModeModal(uuid, activeVideoId);
-                                                }
-                                            }
-                                        }}
-                                        className="w-full py-2 flex items-center justify-center gap-1.5 rounded-xl bg-primary text-white hover:bg-primary/90 transition-all text-xs font-bold shadow-lg shadow-primary/20"
-                                    >
-                                        <Sparkles size={14} />
-                                        แยกเสียงด้วย AI
-                                    </button>
-                                </div>
-                            )}
-                        </div>
+                <div className="w-[1px] h-6 bg-white/10 mx-0.5 shrink-0" />
+
+                {/* 3. Quick Vocal & Music Mute Toggles */}
+                {isAiReady && (
+                    <div className="flex items-center gap-1.5">
+                        <button
+                            onClick={() => {
+                                if (currentVideo && !currentVideo.aiVocalRequested) {
+                                    const uuid = currentVideo.uuid || currentVideo.id;
+                                    if (uuid) {
+                                        usePlayerStore.getState().updateQueueItem(uuid, { aiVocalRequested: true });
+                                    }
+                                }
+                                toggleMute('vocals');
+                            }}
+                            className={`group/tooltip relative w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 ${trackStates.vocals.muted ? 'text-white/30 bg-white/5 border border-white/5' : 'text-green-400 bg-green-500/10 border border-green-500/15'}`}
+                        >
+                            {trackStates.vocals.muted ? <MicOff size={20} /> : <Mic size={20} />}
+                            <span className={tooltipClassName}>{trackStates.vocals.muted ? "เปิดเสียงร้องไกด์" : "ปิดเสียงร้องไกด์"}</span>
+                        </button>
+                        
+                        <button
+                            onClick={toggleMusicMute}
+                            className={`group/tooltip relative w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 ${isMusicMuted ? 'text-white/30 bg-white/5 border border-white/5' : 'text-blue-400 bg-blue-500/10 border border-blue-500/15'}`}
+                        >
+                            <Music size={20} className={isMusicMuted ? "opacity-30" : ""} />
+                            <span className={tooltipClassName}>{isMusicMuted ? "เปิดเสียงดนตรีหลัก" : "ปิดเสียงดนตรีหลัก"}</span>
+                        </button>
                     </div>
                 )}
 
+                {/* 4. Main Mixer Toggle Button */}
+                <div className="relative shrink-0">
+                    <button
+                        ref={mixerBtnRef}
+                        onClick={() => setShowMixerPopover(!showMixerPopover)}
+                        className={`group/tooltip relative w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto ${showMixerPopover ? 'bg-primary/25 text-primary border border-primary/20' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
+                    >
+                        <SlidersHorizontal size={20} />
+                        <span className={tooltipClassName}>แผงตั้งค่าเสียง (Mixer)</span>
+                    </button>
+                </div>
+
+                <div className="w-[1px] h-6 bg-white/10 mx-0.5 shrink-0" />
+
+                {/* 5. Play/Pause */}
                 <button
-                    ref={mixerBtnRef}
-                    onClick={() => setShowMixerPopover(!showMixerPopover)}
-                    className={`group/tooltip relative w-11 h-11 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto ${showMixerPopover ? 'bg-primary/25 text-primary border border-primary/20' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
+                    onClick={handlePlayPause}
+                    className={`group/tooltip relative w-12 h-12 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 ${isPlaying ? 'text-white/90 hover:text-white hover:bg-white/10 bg-white/5' : 'bg-primary text-white shadow-lg shadow-primary/30'}`}
                 >
-                    <SlidersHorizontal size={20} />
-                    <span className={tooltipClassName}>แผงตั้งค่าเสียง (Mixer)</span>
+                    {isPlaying ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" className="ml-0.5" />}
+                    <span className={tooltipClassName}>{isPlaying ? "หยุดเพลง" : "เล่นเพลง"}</span>
+                </button>
+
+                <div className="w-[1px] h-6 bg-white/10 mx-0.5 shrink-0" />
+
+                {/* 6. Minimize Screen */}
+                <button
+                    onClick={toggleFullscreen}
+                    className="group/tooltip relative w-11 h-11 flex items-center justify-center rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all active:scale-90 pointer-events-auto shrink-0"
+                >
+                    <Minimize2 size={20} />
+                    <span className={tooltipClassName}>ย่อหน้าจอ</span>
+                </button>
+
+                {/* 7. Close Fullscreen (Return to Split Mode) */}
+                <button
+                    onClick={() => usePlayerStore.getState().setLayoutMode('split')}
+                    className="group/tooltip relative w-11 h-11 mr-3.5 md:mr-5 flex items-center justify-center rounded-xl text-red-400/80 hover:text-white hover:bg-red-500/85 transition-all active:scale-90 pointer-events-auto shrink-0"
+                >
+                    <X size={20} strokeWidth={2.5} />
+                    <span className={tooltipClassName}>ออกจากหน้าจอเต็มจอ</span>
                 </button>
             </div>
-
-            <div className="w-[1px] h-6 bg-white/10 mx-0.5 shrink-0" />
-
-            {/* 5. Play/Pause */}
-            <button
-                onClick={handlePlayPause}
-                className={`group/tooltip relative w-12 h-12 flex items-center justify-center rounded-xl transition-all active:scale-90 pointer-events-auto shrink-0 ${isPlaying ? 'text-white/90 hover:text-white hover:bg-white/10 bg-white/5' : 'bg-primary text-white shadow-lg shadow-primary/30'}`}
-            >
-                {isPlaying ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" className="ml-0.5" />}
-                <span className={tooltipClassName}>{isPlaying ? "หยุดเพลง" : "เล่นเพลง"}</span>
-            </button>
-
-            <div className="w-[1px] h-6 bg-white/10 mx-0.5 shrink-0" />
-
-            {/* 6. Minimize Screen */}
-            <button
-                onClick={toggleFullscreen}
-                className="group/tooltip relative w-11 h-11 flex items-center justify-center rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all active:scale-90 pointer-events-auto shrink-0"
-            >
-                <Minimize2 size={20} />
-                <span className={tooltipClassName}>ย่อหน้าจอ</span>
-            </button>
-
-            {/* 7. Close Fullscreen (Return to Split Mode) */}
-            <button
-                onClick={() => usePlayerStore.getState().setLayoutMode('split')}
-                className="group/tooltip relative w-11 h-11 mr-3.5 md:mr-5 flex items-center justify-center rounded-xl text-red-400/80 hover:text-white hover:bg-red-500/85 transition-all active:scale-90 pointer-events-auto shrink-0"
-            >
-                <X size={20} strokeWidth={2.5} />
-                <span className={tooltipClassName}>ออกจากหน้าจอเต็มจอ</span>
-            </button>
-        </div>
+        </>
     );
 };

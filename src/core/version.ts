@@ -1,7 +1,7 @@
-// 🛡️ v5.5.343: Dual-Row Pitch/Speed in Sidebar Mixer Modal & Enhanced Frosted Glass Parity
+// 🛡️ v5.5.344: Un-nested Fullscreen Mixer Popover for True Hardware-Accelerated Frosted Blur
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.343";
+export const SYSTEM_VERSION = "5.5.344";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.344",
+        date: "2026-09-07",
+        changes: [
+            "fix(fullscreen): Moved Mixer Popover out of the transformed control bar container into an independent top-level sibling, allowing the GPU to sample and blur the underlying video directly (identical frosted glass blur to control bar).",
+            "style(fullscreen): Enhanced popover background to bg-black/75 backdrop-blur-2xl with 24px hardware-accelerated blur for high-contrast legibility over bright video scenes."
+        ]
+    },
     {
         version: "5.5.343",
         date: "2026-09-07",
