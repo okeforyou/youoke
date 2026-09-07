@@ -1,7 +1,7 @@
-// 🛡️ v5.5.341: User-Centric Lyrics UX & Seamless Glassmorphic Fullscreen Arrow
+// 🛡️ v5.5.342: Fullscreen Mixer 2-Row Pitch/Speed & Seamless Glassmorphism Sync
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.341";
+export const SYSTEM_VERSION = "5.5.342";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.342",
+        date: "2026-09-07",
+        changes: [
+            "fix(fullscreen): Separated Key Transpose & Speed into 2 distinct spacious rows inside Fullscreen Mixer popover, eliminating overflow and clipping completely.",
+            "style(fullscreen): Removed popover arrow pointer and synchronized popover background glassmorphism (bg-black/60 backdrop-blur-2xl border-white/10) to match player control bar perfectly."
+        ]
+    },
     {
         version: "5.5.341",
         date: "2026-09-07",

@@ -347,7 +347,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                 {showMixerPopover && (
                     <div 
                         ref={popoverRef}
-                        className="absolute bottom-14 right-0 bg-[#0B0B0F]/90 backdrop-blur-3xl border border-white/15 p-3.5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.85)] flex flex-col gap-3 w-[330px] z-50 pointer-events-auto animate-in fade-in slide-in-from-bottom-2 duration-200 text-white"
+                        className="absolute bottom-14 right-0 bg-black/60 backdrop-blur-2xl border border-white/10 p-3.5 rounded-2xl shadow-2xl flex flex-col gap-3 w-[330px] z-50 pointer-events-auto animate-in fade-in slide-in-from-bottom-2 duration-200 text-white"
                     >
                         {/* Header */}
                         <div className="flex justify-between items-center border-b border-white/10 pb-2">
@@ -375,58 +375,60 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                             </div>
                         </div>
 
-                        {/* Key Transpose & Speed Controls Console */}
-                        <div className="bg-white/5 p-2.5 rounded-xl border border-white/10 flex items-center justify-between gap-2">
-                            {/* Pitch Shift */}
-                            <div className="flex items-center gap-1.5">
-                                <div className="flex items-center gap-1 text-zinc-300">
-                                    <Music size={12} className="text-primary" />
-                                    <span className="text-[10px] font-bold">คีย์:</span>
+                        {/* Key Transpose & Speed Controls Console (Separate Rows) */}
+                        <div className="bg-white/5 p-2.5 rounded-xl border border-white/10 flex flex-col gap-2">
+                            {/* Row 1: Pitch Shift */}
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-1.5 text-zinc-300">
+                                    <Music size={13} className="text-primary" />
+                                    <span className="text-xs font-bold">คีย์เพลง:</span>
                                 </div>
-                                <div className="flex items-center bg-black/50 p-0.5 rounded-lg border border-white/10">
-                                    <button
-                                        onClick={() => setPitchShift((pitchShift ?? 0) - 1)}
-                                        disabled={(pitchShift ?? 0) <= -6}
-                                        className="w-6 h-6 rounded bg-white/10 hover:bg-white/20 active:scale-95 text-white text-xs font-bold disabled:opacity-30 transition-all flex items-center justify-center font-mono"
-                                        title="ลดคีย์ (-1 semitone)"
-                                    >
-                                        ♭
-                                    </button>
-                                    <span className="px-2 text-xs font-mono font-black text-primary min-w-[48px] text-center">
-                                        {(pitchShift ?? 0) === 0 ? 'ORIG' : ((pitchShift ?? 0) > 0 ? `+${pitchShift}` : `${pitchShift}`)}
-                                    </span>
-                                    <button
-                                        onClick={() => setPitchShift((pitchShift ?? 0) + 1)}
-                                        disabled={(pitchShift ?? 0) >= 6}
-                                        className="w-6 h-6 rounded bg-white/10 hover:bg-white/20 active:scale-95 text-white text-xs font-bold disabled:opacity-30 transition-all flex items-center justify-center font-mono"
-                                        title="เพิ่มคีย์ (+1 semitone)"
-                                    >
-                                        ♯
-                                    </button>
+                                <div className="flex items-center gap-1.5">
+                                    <div className="flex items-center bg-black/40 p-0.5 rounded-lg border border-white/10">
+                                        <button
+                                            onClick={() => setPitchShift((pitchShift ?? 0) - 1)}
+                                            disabled={(pitchShift ?? 0) <= -6}
+                                            className="w-6 h-6 rounded bg-white/10 hover:bg-white/20 active:scale-95 text-white text-xs font-bold disabled:opacity-30 transition-all flex items-center justify-center font-mono"
+                                            title="ลดคีย์ (-1 semitone)"
+                                        >
+                                            ♭
+                                        </button>
+                                        <span className="px-2 text-xs font-mono font-black text-primary min-w-[48px] text-center">
+                                            {(pitchShift ?? 0) === 0 ? 'ORIG' : ((pitchShift ?? 0) > 0 ? `+${pitchShift}` : `${pitchShift}`)}
+                                        </span>
+                                        <button
+                                            onClick={() => setPitchShift((pitchShift ?? 0) + 1)}
+                                            disabled={(pitchShift ?? 0) >= 6}
+                                            className="w-6 h-6 rounded bg-white/10 hover:bg-white/20 active:scale-95 text-white text-xs font-bold disabled:opacity-30 transition-all flex items-center justify-center font-mono"
+                                            title="เพิ่มคีย์ (+1 semitone)"
+                                        >
+                                            ♯
+                                        </button>
+                                    </div>
+                                    {(pitchShift ?? 0) !== 0 && (
+                                        <button
+                                            onClick={() => setPitchShift(0)}
+                                            className="text-[10px] text-primary hover:underline font-bold px-1"
+                                        >
+                                            Reset
+                                        </button>
+                                    )}
                                 </div>
-                                {(pitchShift ?? 0) !== 0 && (
-                                    <button
-                                        onClick={() => setPitchShift(0)}
-                                        className="text-[9px] text-primary hover:underline font-bold"
-                                    >
-                                        Reset
-                                    </button>
-                                )}
                             </div>
 
-                            {/* Speed Selector */}
-                            <div className="flex items-center gap-1">
-                                <div className="flex items-center gap-0.5 text-zinc-300">
-                                    <Gauge size={12} className="text-primary" />
-                                    <span className="text-[10px] font-bold">เร็ว:</span>
+                            {/* Row 2: Speed Selector */}
+                            <div className="flex items-center justify-between pt-1.5 border-t border-white/5">
+                                <div className="flex items-center gap-1.5 text-zinc-300">
+                                    <Gauge size={13} className="text-primary" />
+                                    <span className="text-xs font-bold">ความเร็ว:</span>
                                 </div>
-                                <div className="flex items-center gap-0.5 bg-black/50 p-0.5 rounded-lg border border-white/10">
+                                <div className="flex items-center gap-1 bg-black/40 p-0.5 rounded-lg border border-white/10">
                                     {[0.75, 1.0, 1.25].map(rate => (
                                         <button
                                             key={rate}
                                             onClick={() => setPlaybackRate(rate)}
                                             className={clsx(
-                                                "px-1.5 py-0.5 text-[9px] font-bold rounded transition-all",
+                                                "px-2.5 py-0.5 text-[10px] font-bold rounded-md transition-all",
                                                 (playbackRate ?? 1.0) === rate 
                                                     ? "bg-primary text-white shadow-sm" 
                                                     : "text-zinc-400 hover:text-white"
@@ -476,9 +478,6 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                                 </div>
                             )}
                         </div>
-
-                        {/* Tooltip Arrow pointing down toward the Mixer button seamlessly */}
-                        <div className="absolute -bottom-1.5 right-[18px] w-3 h-3 bg-[#0B0B0F] border-r border-b border-white/15 rotate-45 pointer-events-none" />
                     </div>
                 )}
 
