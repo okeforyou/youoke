@@ -72,6 +72,8 @@ separated_output/
 *.m4a
 *.wav
 *.mp3
+*.mp4
+*.webm
 test_*.py
 youoke-plugin/node_modules/
 youoke-plugin/dist/

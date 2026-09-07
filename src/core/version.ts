@@ -1,7 +1,7 @@
-// 🛡️ v5.5.346: Fix Master Reset Button Functionality in Fullscreen & Sidebar Mixers
+// 🛡️ v5.5.347: Codebase Cleanliness & Dead Code Elimination
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.346";
+export const SYSTEM_VERSION = "5.5.347";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.347",
+        date: "2026-09-07",
+        changes: [
+            "chore(cleanup): Purged all legacy and duplicate components (AudioMixer.tsx, old PlayerControls.tsx, redundant BottomAds/VideoAds placeholders).",
+            "chore(cleanup): Removed .bak backup files and large local-bridge test media files (~7.7 MB), and added *.webm to .gitignore."
+        ]
+    },
     {
         version: "5.5.346",
         date: "2026-09-07",
