@@ -326,6 +326,8 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
     // and only hard-seek when a substantial user seek occurs (> 1.5s).
     useEffect(() => {
         let animationFrameId: number;
+        const pitchRatio = Math.pow(2, (pitchShift ?? 0) / 12);
+        const baseRate = (playbackRate ?? 1.0) * pitchRatio;
         
         const syncLoop = () => {
             if (isPlaying && isAiReady && areStemsReady) {
@@ -345,11 +347,16 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                                 if (!audio.paused) {
                                     audio.pause();
                                 }
-                                if (audio.playbackRate !== 1.0) audio.playbackRate = 1.0;
+                                if (audio.playbackRate !== baseRate) audio.playbackRate = baseRate;
                             }
                         } else if (activeAudios.length > 0) {
                             const masterAudio = activeAudios[0];
                             const youtubeTime = ytPlayer.getCurrentTime();
+
+                            // Ensure masterAudio is set to the current baseRate
+                            if (masterAudio.playbackRate !== baseRate) {
+                                masterAudio.playbackRate = baseRate;
+                            }
 
                             // 1. If master audio is paused while YouTube is playing, start playback and align once
                             if (masterAudio.paused) {
@@ -357,8 +364,8 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                                     masterAudio.currentTime = youtubeTime;
                                 }
                                 masterAudio.play().catch(() => {});
-                            } else if (typeof youtubeTime === 'number' && youtubeTime >= 0) {
-                                // 2. Hard seek only on large user scrub (> 1.5s)
+                            } else if (typeof youtubeTime === 'number' && youtubeTime >= 0 && (pitchShift ?? 0) === 0) {
+                                // 2. Hard seek only on large user scrub (> 1.5s) when in normal pitch
                                 const ytDrift = Math.abs(masterAudio.currentTime - youtubeTime);
                                 if (ytDrift > 1.5) {
                                     masterAudio.currentTime = youtubeTime;
@@ -372,10 +379,10 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                                 const slave = activeAudios[i];
                                 if (masterAudio.paused) {
                                     if (!slave.paused) slave.pause();
-                                    if (slave.playbackRate !== 1.0) slave.playbackRate = 1.0;
+                                    if (slave.playbackRate !== baseRate) slave.playbackRate = baseRate;
                                 } else {
                                     if (slave.paused) {
-                                        if (Math.abs(slave.currentTime - masterTime) > 0.1) {
+                                        if (Math.abs(slave.currentTime - masterTime) > 0.05) {
                                             slave.currentTime = masterTime;
                                         }
                                         slave.play().catch(() => {});
@@ -386,16 +393,18 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                                         if (absDiff > 1.5) {
                                             // Major drift (e.g. initial start desync / hard scrub): snap once
                                             slave.currentTime = masterTime;
-                                            slave.playbackRate = 1.0;
-                                        } else if (diff > 0.04) {
-                                            // Slave is lagging behind slightly (> 40ms): nudge +1% speed
-                                            if (slave.playbackRate !== 1.01) slave.playbackRate = 1.01;
-                                        } else if (diff < -0.04) {
-                                            // Slave is slightly ahead (> 40ms): nudge -1% speed
-                                            if (slave.playbackRate !== 0.99) slave.playbackRate = 0.99;
-                                        } else if (slave.playbackRate !== 1.0) {
-                                            // Back in tight sync (< 40ms): restore normal 1.0x rate
-                                            slave.playbackRate = 1.0;
+                                            slave.playbackRate = baseRate;
+                                        } else if (diff > 0.03) {
+                                            // Slave is lagging behind slightly (> 30ms): nudge +1% speed
+                                            const faster = baseRate * 1.01;
+                                            if (slave.playbackRate !== faster) slave.playbackRate = faster;
+                                        } else if (diff < -0.03) {
+                                            // Slave is slightly ahead (> 30ms): nudge -1% speed
+                                            const slower = baseRate * 0.99;
+                                            if (slave.playbackRate !== slower) slave.playbackRate = slower;
+                                        } else if (slave.playbackRate !== baseRate) {
+                                            // Back in tight sync (< 30ms): restore normal baseRate
+                                            slave.playbackRate = baseRate;
                                         }
                                     }
                                 }
@@ -417,7 +426,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
                 cancelAnimationFrame(animationFrameId);
             }
         };
-    }, [isPlaying, isAiReady, areStemsReady, aiMode]);
+    }, [isPlaying, isAiReady, areStemsReady, aiMode, pitchShift, playbackRate]);
 
     useEffect(() => {
         if (currentVideo?.sourceType === 'vcd' && videoRef.current) {

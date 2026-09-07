@@ -1,7 +1,7 @@
-// 🛡️ v5.5.334: Fix FullscreenControlBar clsx import crash
+// 🛡️ v5.5.335: Multi-Track Dynamic Pitch BaseRate Lock (Zero-Drift Stem Key Transposition)
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.334";
+export const SYSTEM_VERSION = "5.5.335";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
