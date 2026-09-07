@@ -1,7 +1,7 @@
-// 🛡️ v5.5.344: Un-nested Fullscreen Mixer Popover for True Hardware-Accelerated Frosted Blur
+// 🛡️ v5.5.345: Synchronized Fullscreen Controls & Mixer Popover Auto-Hide
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.344";
+export const SYSTEM_VERSION = "5.5.345";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.345",
+        date: "2026-09-07",
+        changes: [
+            "fix(fullscreen): Synchronized Mixer Popover lifecycle with showControls so that when the bottom control bar auto-hides after inactivity, the mixer popover closes and fades out simultaneously.",
+            "fix(fullscreen): Bound popover rendering condition strictly to showMixerPopover && showControls to eliminate orphaned floating popovers."
+        ]
+    },
     {
         version: "5.5.344",
         date: "2026-09-07",

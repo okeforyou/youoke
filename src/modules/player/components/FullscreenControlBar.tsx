@@ -60,6 +60,13 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
     const popoverRef = useRef<HTMLDivElement>(null);
     const mixerBtnRef = useRef<HTMLButtonElement>(null);
 
+    // Close popover when controls are hidden/vanished
+    useEffect(() => {
+        if (!showControls) {
+            setShowMixerPopover(false);
+        }
+    }, [showControls]);
+
     // Close popover when clicking outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent | TouchEvent) => {
@@ -212,7 +219,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
     return (
         <>
             {/* 🎛️ Fullscreen Mixer Popover — Placed as Top-Level Sibling for True Hardware-Accelerated Frosted Blur */}
-            {showMixerPopover && (
+            {showMixerPopover && showControls && (
                 <div 
                     ref={popoverRef}
                     className="absolute bottom-[86px] left-1/2 -translate-x-1/2 sm:translate-x-0 sm:left-auto sm:right-[max(1.5rem,calc(50%-285px))] bg-black/75 backdrop-blur-2xl border border-white/15 p-3.5 rounded-2xl shadow-2xl flex flex-col gap-3 w-[335px] z-50 pointer-events-auto animate-in fade-in slide-in-from-bottom-2 duration-200 text-white"
