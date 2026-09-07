@@ -1,7 +1,7 @@
-// 🛡️ v5.5.335: Multi-Track Dynamic Pitch BaseRate Lock (Zero-Drift Stem Key Transposition)
+// 🛡️ v5.5.336: Cyber Studio Dark Glassmorphic Mixer UI & LED Key Transpose
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.335";
+export const SYSTEM_VERSION = "5.5.336";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,14 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.336",
+        date: "2026-09-07",
+        changes: [
+            "style(mixer): Redesigned AI Audio Mixer Modal & Fullscreen Popover with cyber dark glassmorphic styling, neon LED key tuner display (#00E5FF glow), dynamic gradient tempo pills, and colored stem channel strips.",
+            "fix(audio): Verified zero-drift stem sync lock during real-time key transposition and tempo adjustments across both Sidebar and Fullscreen modes."
+        ]
+    },
     {
         version: "5.5.330",
         date: "2026-09-06",
