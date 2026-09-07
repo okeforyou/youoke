@@ -115,72 +115,53 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
 
     // Helper to render a slider row inside the popover card
     const renderMixerRow = (
-        track: 'vocals' | 'instrumental' | 'drums' | 'bass' | 'other',
+        track: TrackType,
         icon: any,
-        label: string,
-        color: 'cyan' | 'blue' | 'purple' | 'amber' | 'emerald' = 'cyan'
+        label: string
     ) => {
-        const isMuted = trackStates[track].muted;
+        const isMuted = trackStates[track]?.muted;
         const vol = volumes[track];
         const Icon = icon;
         const displayValue = isMuted ? 0 : vol;
 
-        const colorMap = {
-            cyan: {
-                activeBtn: "bg-[#00E5FF]/15 text-[#00E5FF] border-[#00E5FF]/30 shadow-[0_0_10px_rgba(0,229,255,0.2)]",
-                bar: "bg-gradient-to-r from-cyan-600 to-[#00E5FF]",
-                thumb: "border-[#00E5FF] shadow-[0_0_8px_rgba(0,229,255,0.8)]"
-            },
-            blue: {
-                activeBtn: "bg-blue-500/15 text-blue-400 border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.2)]",
-                bar: "bg-gradient-to-r from-blue-600 to-blue-400",
-                thumb: "border-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.8)]"
-            },
-            purple: {
-                activeBtn: "bg-purple-500/15 text-purple-400 border-purple-500/30 shadow-[0_0_10px_rgba(168,85,247,0.2)]",
-                bar: "bg-gradient-to-r from-purple-600 to-purple-400",
-                thumb: "border-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.8)]"
-            },
-            amber: {
-                activeBtn: "bg-amber-500/15 text-amber-400 border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.2)]",
-                bar: "bg-gradient-to-r from-amber-600 to-amber-400",
-                thumb: "border-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.8)]"
-            },
-            emerald: {
-                activeBtn: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.2)]",
-                bar: "bg-gradient-to-r from-emerald-600 to-emerald-400",
-                thumb: "border-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.8)]"
-            }
-        };
-
-        const theme = colorMap[color];
-
         return (
-            <div className="flex items-center gap-2.5 bg-zinc-900/80 p-2.5 rounded-xl border border-white/5">
+            <div className="flex items-center gap-2.5 bg-white/5 p-2 px-2.5 rounded-xl border border-white/10">
                 {/* Mute Toggle Button */}
                 <button
                     onClick={() => toggleMute(track)}
                     className={clsx(
-                        "w-8 h-8 flex items-center justify-center rounded-lg transition-all active:scale-95 shrink-0 border",
+                        "w-7 h-7 flex items-center justify-center rounded-lg transition-all active:scale-95 shrink-0 border",
                         isMuted 
                             ? 'bg-red-500/20 text-red-400 border-red-500/40' 
-                            : theme.activeBtn
+                            : 'bg-white/10 text-white border-white/10 hover:bg-white/20'
                     )}
                     title={isMuted ? "เปิดเสียง" : "ปิดเสียง"}
                 >
-                    {isMuted ? <MicOff size={14} /> : <Icon size={14} />}
+                    {isMuted ? <MicOff size={13} /> : <Icon size={13} />}
                 </button>
 
                 {/* Slider and Text Info */}
-                <div className="flex-1 flex flex-col gap-1">
+                <div className="flex-1 flex flex-col gap-0.5 justify-center">
                     <div className="flex justify-between items-center text-[10px] font-bold">
-                        <span className="text-zinc-300">{label}</span>
+                        <span className="text-zinc-200">{label}</span>
                         <span className="font-mono text-zinc-400">{displayValue}%</span>
                     </div>
-                    <div className="relative h-2 w-full bg-black/60 rounded-full border border-white/5 overflow-hidden flex items-center">
+                    <div className="relative h-4 w-full flex items-center group select-none">
+                        <div className="absolute w-full h-[4px] bg-white/10 rounded-full overflow-hidden">
+                            <div 
+                                className={clsx(
+                                    "h-full transition-all duration-75 rounded-full", 
+                                    isMuted ? "bg-zinc-600" : "bg-primary shadow-sm shadow-primary/30"
+                                )}
+                                style={{ width: `${displayValue}%` }}
+                            />
+                        </div>
                         <div 
-                            className={clsx("h-full transition-all duration-75 rounded-full", isMuted ? "bg-zinc-700" : theme.bar)}
-                            style={{ width: `${displayValue}%` }}
+                            className={clsx(
+                                "absolute w-3 h-3 rounded-full border-2 bg-zinc-900 shadow-md flex items-center justify-center pointer-events-none transition-all duration-75",
+                                isMuted ? "border-zinc-600" : "border-primary"
+                            )}
+                            style={{ left: `calc(${displayValue}% - 6px)` }}
                         />
                         <input
                             type="range"
@@ -188,7 +169,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                             max="100"
                             value={displayValue}
                             onChange={(e) => handleVolumeChange(track, parseInt(e.target.value))}
-                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
                         />
                     </div>
                 </div>
@@ -366,79 +347,82 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                 {showMixerPopover && (
                     <div 
                         ref={popoverRef}
-                        className="absolute bottom-14 right-0 bg-[#0F0F14]/95 backdrop-blur-2xl border border-white/10 p-4 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.85)] flex flex-col gap-3.5 w-[310px] z-50 pointer-events-auto animate-in fade-in slide-in-from-bottom-2 duration-200 text-white"
+                        className="absolute bottom-14 right-0 bg-black/60 backdrop-blur-2xl border border-white/10 p-3 rounded-2xl shadow-2xl flex flex-col gap-2.5 w-[315px] z-50 pointer-events-auto animate-in fade-in slide-in-from-bottom-2 duration-200 text-white"
                     >
                         {/* Header */}
-                        <div className="flex justify-between items-center border-b border-white/10 pb-2.5">
+                        <div className="flex justify-between items-center border-b border-white/10 pb-2">
                             <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-primary to-pink-500 flex items-center justify-center shadow-md shadow-primary/30">
+                                <div className="w-6 h-6 rounded-lg bg-primary flex items-center justify-center shadow-md shadow-primary/20">
                                     <SlidersHorizontal size={13} className="text-white" />
                                 </div>
                                 <span className="text-white text-xs font-black tracking-wide">
-                                    AI Audio Studio Mixer
+                                    ตั้งค่าเสียง & คีย์เพลง (Mixer)
                                 </span>
                             </div>
-                            <button onClick={() => setShowMixerPopover(false)} className="w-6 h-6 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-zinc-400 hover:text-white transition-colors">
-                                <X size={13} />
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <button 
+                                    onClick={() => resetPitchAndSpeed()} 
+                                    className="text-[10px] text-zinc-400 hover:text-white font-medium transition-colors"
+                                >
+                                    รีเซ็ต
+                                </button>
+                                <button 
+                                    onClick={() => setShowMixerPopover(false)} 
+                                    className="w-6 h-6 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-zinc-400 hover:text-white transition-colors"
+                                >
+                                    <X size={13} />
+                                </button>
+                            </div>
                         </div>
 
-                        {/* 🎼 Key Transpose & Speed Controls Console */}
-                        <div className="bg-gradient-to-br from-zinc-900/90 via-black/80 to-zinc-900/90 p-3 rounded-xl border border-white/10 shadow-inner flex flex-col gap-2.5">
-                            <div className="flex items-center justify-between">
-                                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
-                                    🎹 คีย์เพลง (Pitch)
-                                </span>
+                        {/* 🎼 Key Transpose & Speed Controls Console (Unified Slim Row) */}
+                        <div className="bg-white/5 p-2 rounded-xl border border-white/10 flex items-center justify-between gap-1.5">
+                            {/* Pitch Shift */}
+                            <div className="flex items-center gap-1.5">
+                                <span className="text-[10px] font-bold text-zinc-300">🎹 คีย์:</span>
+                                <div className="flex items-center bg-black/40 p-0.5 rounded-lg border border-white/10">
+                                    <button
+                                        onClick={() => setPitchShift((pitchShift ?? 0) - 1)}
+                                        disabled={(pitchShift ?? 0) <= -6}
+                                        className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 active:scale-95 text-white text-xs font-bold disabled:opacity-30 transition-all flex items-center justify-center font-mono"
+                                        title="ลดคีย์"
+                                    >
+                                        ♭
+                                    </button>
+                                    <span className="px-1.5 text-xs font-mono font-black text-primary min-w-[46px] text-center">
+                                        {(pitchShift ?? 0) === 0 ? 'ORIG' : ((pitchShift ?? 0) > 0 ? `+${pitchShift}` : `${pitchShift}`)}
+                                    </span>
+                                    <button
+                                        onClick={() => setPitchShift((pitchShift ?? 0) + 1)}
+                                        disabled={(pitchShift ?? 0) >= 6}
+                                        className="w-5 h-5 rounded bg-white/10 hover:bg-white/20 active:scale-95 text-white text-xs font-bold disabled:opacity-30 transition-all flex items-center justify-center font-mono"
+                                        title="เพิ่มคีย์"
+                                    >
+                                        ♯
+                                    </button>
+                                </div>
                                 {(pitchShift ?? 0) !== 0 && (
                                     <button
                                         onClick={() => setPitchShift(0)}
-                                        className="text-[10px] text-[#00E5FF] hover:underline font-bold"
+                                        className="text-[9px] text-primary hover:underline font-bold"
                                     >
                                         Reset
                                     </button>
                                 )}
                             </div>
 
-                            <div className="flex items-center gap-1.5">
-                                <button
-                                    onClick={() => setPitchShift((pitchShift ?? 0) - 1)}
-                                    disabled={(pitchShift ?? 0) <= -6}
-                                    className="flex-1 py-1.5 rounded-lg bg-zinc-800/90 hover:bg-zinc-700 active:scale-95 text-white text-xs font-bold disabled:opacity-30 transition-all border border-white/5 flex items-center justify-center gap-0.5"
-                                    title="ลดคีย์ (-1 semitone)"
-                                >
-                                    <span className="font-mono text-sm">♭</span>
-                                    <span>ลด</span>
-                                </button>
-
-                                <div className="px-3 py-1 flex flex-col items-center justify-center min-w-[80px] bg-zinc-950 rounded-lg border border-white/10">
-                                    <span className="text-[11px] font-mono font-black text-[#00E5FF] drop-shadow-[0_0_8px_rgba(0,229,255,0.6)]">
-                                        {(pitchShift ?? 0) === 0 ? 'ORIGINAL' : ((pitchShift ?? 0) > 0 ? `+${pitchShift} SEMI` : `${pitchShift} SEMI`)}
-                                    </span>
-                                </div>
-
-                                <button
-                                    onClick={() => setPitchShift((pitchShift ?? 0) + 1)}
-                                    disabled={(pitchShift ?? 0) >= 6}
-                                    className="flex-1 py-1.5 rounded-lg bg-zinc-800/90 hover:bg-zinc-700 active:scale-95 text-white text-xs font-bold disabled:opacity-30 transition-all border border-white/5 flex items-center justify-center gap-0.5"
-                                    title="เพิ่มคีย์ (+1 semitone)"
-                                >
-                                    <span className="font-mono text-sm">♯</span>
-                                    <span>เพิ่ม</span>
-                                </button>
-                            </div>
-
                             {/* Speed Selector */}
-                            <div className="flex items-center justify-between pt-1.5 border-t border-white/5">
-                                <span className="text-[10px] font-bold text-zinc-400">⚡ ความเร็ว:</span>
-                                <div className="flex items-center gap-1 bg-black/60 p-0.5 rounded-lg border border-white/5">
+                            <div className="flex items-center gap-1">
+                                <span className="text-[10px] font-bold text-zinc-300">⚡ เร็ว:</span>
+                                <div className="flex items-center gap-0.5 bg-black/40 p-0.5 rounded-lg border border-white/10">
                                     {[0.75, 1.0, 1.25].map(rate => (
                                         <button
                                             key={rate}
                                             onClick={() => setPlaybackRate(rate)}
                                             className={clsx(
-                                                "px-2 py-0.5 text-[10px] font-bold rounded transition-all",
+                                                "px-1.5 py-0.5 text-[9px] font-bold rounded transition-all",
                                                 (playbackRate ?? 1.0) === rate 
-                                                    ? "bg-gradient-to-r from-primary to-pink-500 text-white shadow-[0_0_8px_rgba(239,68,68,0.4)]" 
+                                                    ? "bg-primary text-white shadow-sm" 
                                                     : "text-zinc-400 hover:text-white"
                                             )}
                                         >
@@ -450,18 +434,18 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                         </div>
 
                         {/* Audio Separation Channel Strips */}
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-1.5">
                             {isAiReady ? (
                                 <>
-                                    {renderMixerRow('vocals', Mic, 'เสียงร้อง (Vocals)', 'cyan')}
+                                    {renderMixerRow('vocals', Mic, 'เสียงร้อง (Vocals)')}
                                     
                                     {!isProMode ? (
-                                        renderMixerRow('instrumental', Music, 'เสียงดนตรี (Backing)', 'blue')
+                                        renderMixerRow('instrumental', Music, 'เสียงดนตรี (Backing)')
                                     ) : (
                                         <>
-                                            {renderMixerRow('drums', Drum, 'กลอง (Drums)', 'purple')}
-                                            {renderMixerRow('bass', Guitar, 'เบส (Bass)', 'amber')}
-                                            {renderMixerRow('other', Piano, 'ดนตรีอื่นๆ (Other)', 'emerald')}
+                                            {renderMixerRow('drums', Drum, 'กลอง (Drums)')}
+                                            {renderMixerRow('bass', Guitar, 'เบส (Bass)')}
+                                            {renderMixerRow('other', Piano, 'ดนตรีอื่นๆ (Other)')}
                                         </>
                                     )}
                                 </>
@@ -488,7 +472,7 @@ export const FullscreenControlBar = ({ showControls, layoutMode }: FullscreenCon
                         </div>
 
                         {/* Tooltip Arrow pointing down toward the Mixer button */}
-                        <div className="absolute -bottom-1.5 right-[18px] w-3 h-3 bg-[#0F0F14] border-r border-b border-white/10 rotate-45" />
+                        <div className="absolute -bottom-1.5 right-[18px] w-3 h-3 bg-black/60 border-r border-b border-white/10 rotate-45 backdrop-blur-2xl" />
                     </div>
                 )}
 

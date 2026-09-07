@@ -14,42 +14,31 @@ import { useAIVocalStore, getActiveBridgeBaseUrl } from '../../../stores/useAIVo
 import { useDeepgramLyricsStore } from "../../lyrics/stores/useDeepgramLyricsStore";
 
 
-const VolumeSlider = ({ value, onChange, muted, color = 'primary' }: { value: number, onChange: (val: number) => void, muted: boolean, color?: string }) => {
+const VolumeSlider = ({ value, onChange, muted }: { value: number, onChange: (val: number) => void, muted: boolean, color?: string }) => {
     const [isDragging, setIsDragging] = useState(false);
-    
-    const getTrackGradient = () => {
-        if (muted) return 'bg-gray-300 dark:bg-zinc-700';
-        if (color === 'cyan') return 'bg-gradient-to-r from-[#00E5FF] to-cyan-400 shadow-[0_0_8px_rgba(0,229,255,0.4)]';
-        if (color === 'blue') return 'bg-gradient-to-r from-blue-500 to-indigo-500 shadow-[0_0_8px_rgba(59,130,246,0.4)]';
-        if (color === 'purple') return 'bg-gradient-to-r from-purple-500 to-pink-500 shadow-[0_0_8px_rgba(168,85,247,0.4)]';
-        if (color === 'amber') return 'bg-gradient-to-r from-amber-500 to-orange-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]';
-        return 'bg-gradient-to-r from-primary to-pink-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]';
-    };
-
-    const getThumbBorder = () => {
-        if (muted) return 'border-gray-400 dark:border-gray-600';
-        if (color === 'cyan') return 'border-[#00E5FF] shadow-[0_0_8px_rgba(0,229,255,0.6)]';
-        if (color === 'blue') return 'border-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.6)]';
-        if (color === 'purple') return 'border-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.6)]';
-        if (color === 'amber') return 'border-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.6)]';
-        return 'border-primary shadow-[0_0_8px_rgba(239,68,68,0.6)]';
-    };
 
     return (
-        <div className="relative h-6 flex items-center group w-full select-none"
+        <div className="relative h-5 flex items-center group w-full select-none"
             onMouseEnter={() => setIsDragging(true)}
             onMouseLeave={() => setIsDragging(false)}
         >
-            <div className="absolute w-full h-[5px] bg-gray-200 dark:bg-zinc-800/80 rounded-full overflow-hidden">
+            <div className="absolute w-full h-[4px] bg-gray-200 dark:bg-zinc-700/60 rounded-full overflow-hidden">
                 <div 
-                    className={`h-full transition-all duration-75 ${getTrackGradient()}`} 
+                    className={clsx(
+                        "h-full transition-all duration-75 rounded-full",
+                        muted ? "bg-zinc-400 dark:bg-zinc-600" : "bg-primary shadow-sm shadow-primary/30"
+                    )} 
                     style={{ width: `${value}%` }} 
                 />
             </div>
             
             <div 
-                className={`absolute w-4 h-4 rounded-full border-[2.5px] bg-white dark:bg-zinc-950 shadow-md flex items-center justify-center transition-all duration-75 pointer-events-none ${isDragging ? 'scale-125' : 'scale-100'} ${getThumbBorder()}`}
-                style={{ left: `calc(${value}% - 8px)` }}
+                className={clsx(
+                    "absolute w-3.5 h-3.5 rounded-full border-2 bg-white dark:bg-zinc-900 shadow-md flex items-center justify-center transition-all duration-75 pointer-events-none",
+                    isDragging ? "scale-125" : "scale-100",
+                    muted ? "border-zinc-400 dark:border-zinc-600" : "border-primary"
+                )}
+                style={{ left: `calc(${value}% - 7px)` }}
             />
 
             <input 
@@ -454,7 +443,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                             "w-7 h-7 shrink-0 flex items-center justify-center rounded-xl transition-all border shadow-sm",
                                             trackStates.vocals.muted 
                                                 ? "bg-red-500/15 text-red-500 border-red-500/30" 
-                                                : "bg-[#00E5FF]/15 text-cyan-600 dark:text-[#00E5FF] border-cyan-500/30 hover:bg-cyan-500/25"
+                                                : "bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 border-gray-200 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-700"
                                         )}
                                         title={trackStates.vocals.muted ? "เปิดเสียงร้อง" : "ปิดเสียงร้อง"}
                                     >
@@ -468,7 +457,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                             </span>
                                             <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 font-bold">{volumes.vocals}%</span>
                                         </div>
-                                        <VolumeSlider value={trackStates.vocals.muted ? 0 : volumes.vocals} onChange={(val) => handleVolumeChange('vocals', val)} muted={trackStates.vocals.muted} color="cyan" />
+                                        <VolumeSlider value={trackStates.vocals.muted ? 0 : volumes.vocals} onChange={(val) => handleVolumeChange('vocals', val)} muted={trackStates.vocals.muted} />
                                     </div>
                                 </div>
 
@@ -481,7 +470,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                                 "w-7 h-7 shrink-0 flex items-center justify-center rounded-xl transition-all border shadow-sm",
                                                 trackStates.instrumental.muted 
                                                     ? "bg-red-500/15 text-red-500 border-red-500/30" 
-                                                    : "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30 hover:bg-blue-500/25"
+                                                    : "bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 border-gray-200 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-700"
                                             )}
                                         >
                                             <Music size={14} />
@@ -494,7 +483,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                                 </span>
                                                 <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 font-bold">{volumes.instrumental}%</span>
                                             </div>
-                                            <VolumeSlider value={trackStates.instrumental.muted ? 0 : volumes.instrumental} onChange={(val) => handleVolumeChange('instrumental', val)} muted={trackStates.instrumental.muted} color="blue" />
+                                            <VolumeSlider value={trackStates.instrumental.muted ? 0 : volumes.instrumental} onChange={(val) => handleVolumeChange('instrumental', val)} muted={trackStates.instrumental.muted} />
                                         </div>
                                     </div>
                                 )}
@@ -510,7 +499,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                                     "w-7 h-7 shrink-0 flex items-center justify-center rounded-xl transition-all border shadow-sm",
                                                     trackStates.drums.muted 
                                                         ? "bg-red-500/15 text-red-500 border-red-500/30" 
-                                                        : "bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30 hover:bg-purple-500/25"
+                                                        : "bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 border-gray-200 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-700"
                                                 )}
                                             >
                                                 <Drum size={14} />
@@ -520,7 +509,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                                     <span className="text-[11px] font-bold text-zinc-800 dark:text-zinc-200">กลอง (Drums)</span>
                                                     <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 font-bold">{volumes.drums}%</span>
                                                 </div>
-                                                <VolumeSlider value={trackStates.drums.muted ? 0 : volumes.drums} onChange={(val) => handleVolumeChange('drums', val)} muted={trackStates.drums.muted} color="purple" />
+                                                <VolumeSlider value={trackStates.drums.muted ? 0 : volumes.drums} onChange={(val) => handleVolumeChange('drums', val)} muted={trackStates.drums.muted} />
                                             </div>
                                         </div>
 
@@ -532,7 +521,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                                     "w-7 h-7 shrink-0 flex items-center justify-center rounded-xl transition-all border shadow-sm",
                                                     trackStates.bass.muted 
                                                         ? "bg-red-500/15 text-red-500 border-red-500/30" 
-                                                        : "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/25"
+                                                        : "bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 border-gray-200 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-700"
                                                 )}
                                             >
                                                 <Guitar size={14} />
@@ -542,7 +531,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                                     <span className="text-[11px] font-bold text-zinc-800 dark:text-zinc-200">เบส (Bass)</span>
                                                     <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 font-bold">{volumes.bass}%</span>
                                                 </div>
-                                                <VolumeSlider value={trackStates.bass.muted ? 0 : volumes.bass} onChange={(val) => handleVolumeChange('bass', val)} muted={trackStates.bass.muted} color="amber" />
+                                                <VolumeSlider value={trackStates.bass.muted ? 0 : volumes.bass} onChange={(val) => handleVolumeChange('bass', val)} muted={trackStates.bass.muted} />
                                             </div>
                                         </div>
 
@@ -554,7 +543,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                                     "w-7 h-7 shrink-0 flex items-center justify-center rounded-xl transition-all border shadow-sm",
                                                     trackStates.other.muted 
                                                         ? "bg-red-500/15 text-red-500 border-red-500/30" 
-                                                        : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/25"
+                                                        : "bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 border-gray-200 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-700"
                                                 )}
                                             >
                                                 <Piano size={14} />
@@ -564,7 +553,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                                     <span className="text-[11px] font-bold text-zinc-800 dark:text-zinc-200">ดนตรีอื่นๆ (Other)</span>
                                                     <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 font-bold">{volumes.other}%</span>
                                                 </div>
-                                                <VolumeSlider value={trackStates.other.muted ? 0 : volumes.other} onChange={(val) => handleVolumeChange('other', val)} muted={trackStates.other.muted} color="emerald" />
+                                                <VolumeSlider value={trackStates.other.muted ? 0 : volumes.other} onChange={(val) => handleVolumeChange('other', val)} muted={trackStates.other.muted} />
                                             </div>
                                         </div>
                                     </>

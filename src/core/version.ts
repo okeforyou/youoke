@@ -1,7 +1,7 @@
-// 🛡️ v5.5.338: Ultra-Compact Zero-Scrollbar Mixer & Streamlined Pitch/Speed Console
+// 🛡️ v5.5.339: Cohesive Palette Refinement & Glassmorphic Fullscreen Control Sync
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.338";
+export const SYSTEM_VERSION = "5.5.339";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.339",
+        date: "2026-09-07",
+        changes: [
+            "style(mixer): Replaced multi-color neon candy palette with clean, cohesive system primary & neutral zinc accents across both sidebar and fullscreen mixer popups.",
+            "style(fullscreen): Synchronized Fullscreen Mixer Popover background with control bar's glassmorphism (bg-black/60 backdrop-blur-2xl border-white/10) instead of solid pitch black.",
+            "ui(fullscreen): Standardized slim unified Pitch & Speed row inside Fullscreen Mixer for seamless UX parity with Sidebar player."
+        ]
+    },
     {
         version: "5.5.338",
         date: "2026-09-07",
