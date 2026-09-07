@@ -1,7 +1,7 @@
-// 🛡️ v5.5.337: Clean Adaptive Mixer Modal & Simplified Lyrics Studio UI
+// 🛡️ v5.5.338: Ultra-Compact Zero-Scrollbar Mixer & Streamlined Pitch/Speed Console
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.337";
+export const SYSTEM_VERSION = "5.5.338";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Premium-Unified-Omega";
  
@@ -10,6 +10,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
  
 export const CHANGELOGS = [
+    {
+        version: "5.5.338",
+        date: "2026-09-07",
+        changes: [
+            "style(mixer): Ultra-compact zero-scrollbar mixer layout fitting within 320px vertical height without scrolling.",
+            "ui(pitch-speed): Merged Pitch Shift and Playback Speed into a single slim horizontal console bar (28px height).",
+            "ui(lyrics): Streamlined lyrics settings into a clean 2-row toolbar (Lyrics toggle, Karaoke sweep, 1-click AI Sync, and LRCLIB vs Deepgram AI selector)."
+        ]
+    },
     {
         version: "5.5.337",
         date: "2026-09-07",
